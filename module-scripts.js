@@ -344,7 +344,7 @@ document.addEventListener('keydown', (e) => {
     }
   }); 
 
-  // HÄMTA DATA (BILD + STATS)
+/*   // HÄMTA DATA (BILD + STATS)
   async function loadUserData(uid) {
     const currentAvatarDisplay = document.querySelector('.current-profile-pic');
 
@@ -414,4 +414,4 @@ document.addEventListener('keydown', (e) => {
     if (user) {
       loadUserData(user.uid);
     }
-  });
+  }); */
