@@ -1,4 +1,4 @@
-  import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+/*   import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
@@ -228,7 +228,7 @@ document.addEventListener('keydown', (e) => {
 }, true);
 
  // ── GOOGLE LOGIN ──
-  /* if (googleLoginBtn) {
+  if (googleLoginBtn) {
     googleLoginBtn.addEventListener('click', async (e) => {
       e.preventDefault();
       try {
@@ -256,7 +256,7 @@ document.addEventListener('keydown', (e) => {
         console.error("Inloggning avbruten eller misslyckades:", error.message);
       }
     });
-  } */
+  }
 
   // ── GLOBAL KLICKLYSSNARE ──
   document.addEventListener('click', async (e) => {
@@ -285,7 +285,7 @@ document.addEventListener('keydown', (e) => {
     }
 
  // 3. BYT PROFILBILD (Helt rensad på gamla dropdown-hacks)
-/*     const option = e.target.closest('.profile-pic-option');
+    const option = e.target.closest('.profile-pic-option');
     if (option) {
         e.stopPropagation(); // Stoppar klicket från att bubbla och störa andra stängnings-lyssnare
         
@@ -301,7 +301,7 @@ document.addEventListener('keydown', (e) => {
         }
         return;
     }
- */
+
     // 4. GATEKEEPER FÖR SPEL-LÄNKAR
     const gameBtn = e.target.closest('.games-link-block');
     if (gameBtn && !currentUser) {
@@ -344,7 +344,7 @@ document.addEventListener('keydown', (e) => {
     }
   }); 
 
-/*   // HÄMTA DATA (BILD + STATS)
+  // HÄMTA DATA (BILD + STATS)
   async function loadUserData(uid) {
     const currentAvatarDisplay = document.querySelector('.current-profile-pic');
 
