@@ -766,7 +766,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ── GLOBAL CLICK DELAY ────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+/* document.addEventListener('DOMContentLoaded', () => {
   let locked = false;
   document.addEventListener('click', (e) => {
     if (e.target.closest('a, input, textarea, select')) return;
@@ -775,7 +775,7 @@ document.addEventListener('DOMContentLoaded', () => {
     locked = true;
     setTimeout(() => { locked = false; }, 500);
   }, true);
-});
+}); */
 
   // ── GLOBALT STOPP FÖR STANDARD TAB-FOKUS ────────────────────────────
 window.addEventListener('keydown', function(e) {
