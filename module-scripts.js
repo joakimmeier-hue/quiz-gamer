@@ -1,7 +1,6 @@
   import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAfZQM3H5XAYkEt2ARInoA1Xs-Qd1DXL_s",
@@ -49,7 +48,7 @@
       
       loginBtns.forEach(btn => btn.style.display = 'none');
       
-      } else {
+    } else {
       document.body.classList.remove("user-logged-in");
       
       logoutBtns.forEach(btn => {
@@ -228,7 +227,7 @@ document.addEventListener('keydown', (e) => {
     }
 }, true);
 
-  // ── GOOGLE LOGIN ──
+ // ── GOOGLE LOGIN ──
   if (googleLoginBtn) {
     googleLoginBtn.addEventListener('click', async (e) => {
       e.preventDefault();
@@ -236,34 +235,28 @@ document.addEventListener('keydown', (e) => {
         const result = await signInWithPopup(auth, googleProvider);
         currentUser = result.user; 
         hideLoginModal(); 
-        
-        if (googleLoginBtn) {
-  googleLoginBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      currentUser = result.user; 
-      hideLoginModal(); 
 
-      // Kolla om det är en first-time user
-      const userDocRef = doc(db, "users", currentUser.uid);
-      const userDoc = await getDoc(userDocRef);
+        // Kolla om det är en first-time user
+        const userDocRef = doc(db, "users", currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
 
-      if (!userDoc.exists()) {
-        // First-time -> visa create-profile, pendingAction ligger kvar orörd
-        setTimeout(() => {
-            showCreateProfile();
-        }, 350);
-      } else {
-        // Återkommande user -> vanligt flöde
-        resolvePendingAction();
+        if (!userDoc.exists()) {
+          // First-time -> visa create-profile, pendingAction ligger kvar orörd
+          setTimeout(() => {
+              showCreateProfile();
+          }, 350);
+        } else {
+          // Återkommande user -> vanligt flöde
+          if (typeof resolvePendingAction === 'function') {
+            resolvePendingAction();
+          }
+        }
+
+      } catch (error) {
+        console.error("Inloggning avbruten eller misslyckades:", error.message);
       }
-
-    } catch (error) {
-      console.error("Inloggning avbruten eller misslyckades:", error.message);
-    }
-  });
-}
+    });
+  }
 
   // ── GLOBAL KLICKLYSSNARE ──
   document.addEventListener('click', async (e) => {
