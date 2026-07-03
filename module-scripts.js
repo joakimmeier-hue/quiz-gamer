@@ -228,7 +228,7 @@ document.addEventListener('keydown', (e) => {
 }, true);
 
  // ── GOOGLE LOGIN ──
-  if (googleLoginBtn) {
+  /* if (googleLoginBtn) {
     googleLoginBtn.addEventListener('click', async (e) => {
       e.preventDefault();
       try {
@@ -256,7 +256,7 @@ document.addEventListener('keydown', (e) => {
         console.error("Inloggning avbruten eller misslyckades:", error.message);
       }
     });
-  }
+  } */
 
   // ── GLOBAL KLICKLYSSNARE ──
   document.addEventListener('click', async (e) => {
