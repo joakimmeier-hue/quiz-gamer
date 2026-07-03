@@ -1,4 +1,4 @@
-// --- HINDRA CTRL + SCROLL ZOOM ---
+/* // --- HINDRA CTRL + SCROLL ZOOM ---
 window.addEventListener('wheel', function(e) {
   if (e.ctrlKey) { e.preventDefault(); }
 }, { passive: true });
@@ -783,3 +783,4 @@ window.addEventListener('keydown', function(e) {
         e.preventDefault(); // Hindrar webbläsaren från att flytta fokus till slumpmässiga knappar
     }
 }, true); // 'true' gör att den fångar tangenten direkt innan något annat händer
+ */
