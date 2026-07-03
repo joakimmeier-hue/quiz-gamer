@@ -285,7 +285,7 @@ document.addEventListener('keydown', (e) => {
     }
 
  // 3. BYT PROFILBILD (Helt rensad på gamla dropdown-hacks)
-    const option = e.target.closest('.profile-pic-option');
+/*     const option = e.target.closest('.profile-pic-option');
     if (option) {
         e.stopPropagation(); // Stoppar klicket från att bubbla och störa andra stängnings-lyssnare
         
@@ -301,7 +301,7 @@ document.addEventListener('keydown', (e) => {
         }
         return;
     }
-
+ */
     // 4. GATEKEEPER FÖR SPEL-LÄNKAR
     const gameBtn = e.target.closest('.games-link-block');
     if (gameBtn && !currentUser) {
