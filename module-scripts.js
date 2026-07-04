@@ -12,7 +12,7 @@
     measurementId: "G-TNBLZFSFG6"
   };
 
-  //Ny create profile från Claude här?. men character limit i WF !!!!!????!!!
+  //Ny create profile från Claude här?
   
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
@@ -145,7 +145,7 @@
   }
 
   function closeLobbyInventory(overlay) {
-   // 1. Trigga Webflows interna animationsmotor för att stänga profilbilds-gridden
+   // 1. Trigga Webflows interna animationsmotor för att stänga pp
   try {
     const wfIx = Webflow.require("ix3");
     wfIx.emit("pp-dropdown-hide");
@@ -169,7 +169,7 @@ document.addEventListener('keydown', (e) => {
     const key = e.key.toLowerCase();
     const isGameSide = document.body.dataset.page === 'game';
 
-    // --- GAME-SIDAN: Robust "Reality Check" ---
+    // --- Inventory på GAME-SIDAN: Robust "Reality Check" ---
     if (isGameSide) {
         if (key === 'i' || key === 'tab' || key === 'escape') {
             e.preventDefault();
@@ -236,7 +236,7 @@ document.addEventListener('keydown', (e) => {
         currentUser = result.user; 
         hideLoginModal(); 
 
-        // Kolla om det är en first-time user
+        /* // Kolla om det är en first-time user
         const userDocRef = doc(db, "users", currentUser.uid);
         const userDoc = await getDoc(userDocRef);
 
@@ -250,7 +250,7 @@ document.addEventListener('keydown', (e) => {
           if (typeof resolvePendingAction === 'function') {
             resolvePendingAction();
           }
-        }
+        } */
 
       } catch (error) {
         console.error("Inloggning avbruten eller misslyckades:", error.message);
@@ -286,9 +286,7 @@ document.addEventListener('keydown', (e) => {
 
  // 3. BYT PROFILBILD (Helt rensad på gamla dropdown-hacks)
     const option = e.target.closest('.profile-pic-option');
-    if (option) {
-        e.stopPropagation(); // Stoppar klicket från att bubbla och störa andra stängnings-lyssnare
-        
+    if (option) {        
         const selectedSrc = option.src;
         const currentAvatarDisplay = document.querySelector('.current-profile-pic');
 
@@ -415,3 +413,60 @@ document.addEventListener('keydown', (e) => {
       loadUserData(user.uid);
     }
   });
+
+  
+// ══════════════════════════════════════════════════════════════════════
+// GENERISKT HOVER- & PRESS-SCALE-SYSTEM
+// Ersätter individuella Webflow IX2 hover/click-scale-interactions.
+// Lägg bara till/ta bort klassnamn i listorna nedan - ingen ny IX2 behövs
+// för nya element, bara lägg till klassen i rätt lista här.
+// ══════════════════════════════════════════════════════════════════════
+ 
+// Klasser som ska skalas upp till 1.2 vid hover (mouse enter/leave)
+const HOVER_SCALE_CLASSES = [
+    'start-btn-gma',
+    'game-info-gma-frame',
+    'link-to-lobby',
+    'games-link-block',
+    'fcp-link',
+    'burger-links',
+    'current-profile-pic',
+    'profile-pic-option',
+    'cp-create-btn'
+];
+ 
+// Klasser som ska "blow up" till 1.4 vid press (pointerdown -> pointerup)
+const PRESS_SCALE_CLASSES = [
+    // Lägg till dina click-scale-klasser här, t.ex.:
+    // 'boss-level',
+];
+ 
+// Endast riktiga mus-hover-enheter ska få hover-scale.
+// Annars fastnar mobiler i "hover"-läge efter ett tryck (klassisk touch-bugg).
+const supportsRealHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+ 
+function initScaleSystem(classList, wrapperClassName, activeClassName, useHover) {
+    classList.forEach(cls => {
+        document.querySelectorAll('.' + cls).forEach(el => {
+            el.classList.add(wrapperClassName);
+ 
+            if (useHover) {
+                el.addEventListener('mouseenter', () => el.classList.add(activeClassName));
+                el.addEventListener('mouseleave', () => el.classList.remove(activeClassName));
+            } else {
+                // Pointer events = mus + touch + penna i ett, funkar identiskt på mobil
+                el.addEventListener('pointerdown', () => el.classList.add(activeClassName));
+                el.addEventListener('pointerup', () => el.classList.remove(activeClassName));
+                el.addEventListener('pointercancel', () => el.classList.remove(activeClassName));
+                el.addEventListener('pointerleave', () => el.classList.remove(activeClassName)); // fingret/musen glider av utan pointerup
+            }
+        });
+    });
+}
+ 
+document.addEventListener('DOMContentLoaded', () => {
+    if (supportsRealHover) {
+        initScaleSystem(HOVER_SCALE_CLASSES, 'js-hover-scale', 'is-hovered', true);
+    }
+    initScaleSystem(PRESS_SCALE_CLASSES, 'js-press-scale', 'is-pressed', false);
+});

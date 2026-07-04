@@ -206,3 +206,19 @@ body .games-grid-clip.is-skewed {
 #toggle-audio.is-animating .noise-small { 
   animation: noiseFlash 0.2s ease-in-out 0.3s forwards; 
 }
+
+/* ── HOVER-SCALE SYSTEM (ersätter individuella "02-scale-medium"-interactions) ── */
+.js-hover-scale {
+  transition: scale 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955); /* ≈ Power1 In Out */
+}
+.js-hover-scale.is-hovered {
+  scale: 1.2;
+}
+ 
+/* ── PRESS-SCALE / "BLOW UP" SYSTEM (ersätter click-scale-interactions) ── */
+.js-press-scale {
+  transition: scale 0.11s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* ≈ Power1 Out */
+}
+.js-press-scale.is-pressed {
+  scale: 1.4;
+}
