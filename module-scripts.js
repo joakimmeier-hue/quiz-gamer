@@ -12,7 +12,7 @@
     measurementId: "G-TNBLZFSFG6"
   };
 
-  //Ny create profile från Claude här?
+  //Ny create profile kod från Claude här?
   
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
@@ -424,15 +424,9 @@ document.addEventListener('keydown', (e) => {
  
 // Klasser som ska skalas upp till 1.2 vid hover (mouse enter/leave)
 const HOVER_SCALE_CLASSES = [
-    'start-btn-gma',
-    'game-info-gma-frame',
-    'link-to-lobby',
-    'games-link-block',
-    'fcp-link',
-    'burger-links',
-    'current-profile-pic',
-    'profile-pic-option',
-    'cp-create-btn'
+    'exempel-exempel',
+    'exempel-exempel'
+    
 ];
  
 // Klasser som ska "blow up" till 1.4 vid press (pointerdown -> pointerup)
