@@ -424,7 +424,7 @@ document.addEventListener('keydown', (e) => {
  
 // Klasser som ska skalas upp till 1.2 vid hover (mouse enter/leave)
 const HOVER_SCALE_CLASSES = [
-    'login-wrapper',
+    'logout-btn',
     'exempel-exempel'
     
 ];
@@ -432,7 +432,7 @@ const HOVER_SCALE_CLASSES = [
 // Klasser som ska "blow up" till 1.4 vid press (pointerdown -> pointerup)
 const PRESS_SCALE_CLASSES = [
     // Lägg till dina click-scale-klasser här, t.ex.:
-    'login-wrapper',
+    'logout-btn',
     'exempel-exempel'
 ];
  
