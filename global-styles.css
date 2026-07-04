@@ -219,6 +219,11 @@ body .games-grid-clip.is-skewed {
 .js-press-scale {
   transition: scale 0.11s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* ≈ Power1 Out */
 }
-.js-press-scale.is-pressed {
-  scale: 1.4;
+/* Touch/penna: skalar UPP (blow up), som tidigare */
+.js-press-scale.is-pressed-up {
+  scale: 1.3;
+}
+/* Mus: skalar NER istället - klassisk "button press"-känsla. Justera värdet efter smak */
+.js-press-scale.is-pressed-down {
+  scale: 0.7;
 }

@@ -44,6 +44,8 @@
         btn.style.transform = 'scale(1)';
         btn.style.opacity = '1';
         btn.style.display = 'flex';
+        void btn.offsetWidth;      // NYTT: tvinga reflow så transition:none hinner appliceras
+        btn.style.transition = ''; // NYTT: släpp inline-overriden, scale-transitionen funkar igen
       });
       
       loginBtns.forEach(btn => btn.style.display = 'none');
@@ -84,6 +86,8 @@
         btn.style.transition = 'none';
         btn.style.opacity = '1';
         btn.style.display = 'flex';
+         void btn.offsetWidth;      // NYTT: tvinga reflow
+        btn.style.transition = ''; // NYTT: släpp inline-overriden
       });
     }
   }
@@ -413,55 +417,3 @@ document.addEventListener('keydown', (e) => {
       loadUserData(user.uid);
     }
   });
-
-  
-// ══════════════════════════════════════════════════════════════════════
-// GENERISKT HOVER- & PRESS-SCALE-SYSTEM
-// Ersätter individuella Webflow IX2 hover/click-scale-interactions.
-// Lägg bara till/ta bort klassnamn i listorna nedan - ingen ny IX2 behövs
-// för nya element, bara lägg till klassen i rätt lista här.
-// ══════════════════════════════════════════════════════════════════════
- 
-// Klasser som ska skalas upp till 1.2 vid hover (mouse enter/leave)
-const HOVER_SCALE_CLASSES = [
-    'logout-btn',
-    'exempel-exempel'
-    
-];
- 
-// Klasser som ska "blow up" till 1.4 vid press (pointerdown -> pointerup)
-const PRESS_SCALE_CLASSES = [
-    // Lägg till dina click-scale-klasser här, t.ex.:
-    'logout-btn',
-    'exempel-exempel'
-];
- 
-// Endast riktiga mus-hover-enheter ska få hover-scale.
-// Annars fastnar mobiler i "hover"-läge efter ett tryck (klassisk touch-bugg).
-const supportsRealHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
- 
-function initScaleSystem(classList, wrapperClassName, activeClassName, useHover) {
-    classList.forEach(cls => {
-        document.querySelectorAll('.' + cls).forEach(el => {
-            el.classList.add(wrapperClassName);
- 
-            if (useHover) {
-                el.addEventListener('mouseenter', () => el.classList.add(activeClassName));
-                el.addEventListener('mouseleave', () => el.classList.remove(activeClassName));
-            } else {
-                // Pointer events = mus + touch + penna i ett, funkar identiskt på mobil
-                el.addEventListener('pointerdown', () => el.classList.add(activeClassName));
-                el.addEventListener('pointerup', () => el.classList.remove(activeClassName));
-                el.addEventListener('pointercancel', () => el.classList.remove(activeClassName));
-                el.addEventListener('pointerleave', () => el.classList.remove(activeClassName)); // fingret/musen glider av utan pointerup
-            }
-        });
-    });
-}
- 
-document.addEventListener('DOMContentLoaded', () => {
-    if (supportsRealHover) {
-        initScaleSystem(HOVER_SCALE_CLASSES, 'js-hover-scale', 'is-hovered', true);
-    }
-    initScaleSystem(PRESS_SCALE_CLASSES, 'js-press-scale', 'is-pressed', false);
-});

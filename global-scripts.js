@@ -783,3 +783,71 @@ window.addEventListener('keydown', function(e) {
         e.preventDefault(); // Hindrar webbläsaren från att flytta fokus till slumpmässiga knappar
     }
 }, true); // 'true' gör att den fångar tangenten direkt innan något annat händer
+
+
+// ══════════════════════════════════════════════════════════════════════
+// GENERISKT HOVER- & PRESS-SCALE-SYSTEM
+// Ersätter individuella Webflow IX2 hover/click-scale-interactions.
+// Lägg bara till/ta bort klassnamn i listorna nedan - ingen ny IX2 behövs
+// för nya element, bara lägg till klassen i rätt lista här.
+// ══════════════════════════════════════════════════════════════════════
+ 
+// Klasser som ska skalas upp till 1.2 vid hover (mouse enter/leave)
+const HOVER_SCALE_CLASSES = [
+    'logout-btn',
+    'cp-create-btn'
+];
+ 
+// Klasser som ska "blow up" till 1.4 vid press (pointerdown -> pointerup)
+const PRESS_SCALE_CLASSES = [
+    // Lägg till dina click-scale-klasser här, t.ex.:
+    'logout-btn',
+    'cp-create-btn'
+];
+ 
+// Endast riktiga mus-hover-enheter ska få hover-scale.
+// Annars fastnar mobiler i "hover"-läge efter ett tryck (klassisk touch-bugg).
+const supportsRealHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+ 
+function initHoverScale(classList) {
+    classList.forEach(cls => {
+        document.querySelectorAll('.' + cls).forEach(el => {
+            el.classList.add('js-hover-scale');
+            el.addEventListener('mouseenter', () => el.classList.add('is-hovered'));
+            el.addEventListener('mouseleave', () => el.classList.remove('is-hovered'));
+        });
+    });
+}
+ 
+function initPressScale(classList) {
+    classList.forEach(cls => {
+        document.querySelectorAll('.' + cls).forEach(el => {
+            el.classList.add('js-press-scale');
+ 
+            el.addEventListener('pointerdown', (e) => {
+                // Kollar det FAKTISKA trycket, inte bara enhetens kapacitet -
+                // funkar rätt även på laptops med både mus och pekskärm.
+                if (e.pointerType === 'mouse') {
+                    el.classList.add('is-pressed-down'); // Mus -> skala NER
+                } else {
+                    el.classList.add('is-pressed-up');   // Touch/penna -> skala UPP (blow up)
+                }
+            });
+ 
+            const release = () => {
+                el.classList.remove('is-pressed-down');
+                el.classList.remove('is-pressed-up');
+            };
+            el.addEventListener('pointerup', release);
+            el.addEventListener('pointercancel', release);
+            el.addEventListener('pointerleave', release); // fingret/musen glider av utan pointerup
+        });
+    });
+}
+ 
+document.addEventListener('DOMContentLoaded', () => {
+    if (supportsRealHover) {
+        initHoverScale(HOVER_SCALE_CLASSES);
+    }
+    initPressScale(PRESS_SCALE_CLASSES);
+});
