@@ -264,8 +264,9 @@ function playButtonSoundHandler(e) {
     }
 }
 
-// 1. MOUSE DOWN: Tar hand om ALLA fysiska musklick direkt (för blixtsnabb respons)
-document.addEventListener('mousedown', playButtonSoundHandler);
+// 1. POINTER UP: Spelar ljudet vid release (mouse up / touch-up), inte vid nedtryck.
+// Pointer events = mus + touch + penna i ett, ingen separat mobil-hantering behövs.
+document.addEventListener('pointerup', playButtonSoundHandler);
 
 // 2. CLICK: Tar BARA hand om tangentbords-klick (fejkade klick från dina script)
 document.addEventListener('click', (e) => {
@@ -575,7 +576,7 @@ document.addEventListener('click', function(e) {
     const link = e.target.closest('a');
     if (!link || link.target === '_blank' || e.metaKey || e.ctrlKey) return;
     const href = link.getAttribute('href');
-    if (!href || href === '#' || href.startsWith('#') || link.classList.contains('is-password')) return;
+    if (!href || href === '#' || href.startsWith('#') || link.classList.contains('is-password') || link.closest('.pp-dropdown, .i-closer, .button.i-lobby-back')) return;
 
     e.preventDefault();
     
@@ -670,9 +671,14 @@ window.addEventListener('load', function() {
     const y = window.innerHeight / 2;
     const el = document.elementFromPoint(x, y);
     if (!el) return;
-    el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, clientX: x, clientY: y }));
-    el.dispatchEvent(new MouseEvent('mouseup',   { bubbles: true, cancelable: true, clientX: x, clientY: y }));
-    el.dispatchEvent(new MouseEvent('click',     { bubbles: true, cancelable: true, clientX: x, clientY: y }));
+    // Hoppa över om det landar på pp-dropdown eller dess close-triggers
+    // (annars stänger detta dropdownen ~150ms efter att den öppnats)
+    if (el.closest('.pp-dropdown, .i-closer, .button.i-lobby-back, .profile-pic-option, .pp-grid-wrapper')) return;
+    ['mousedown', 'mouseup', 'click'].forEach(type => {
+      const evt = new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y });
+      evt._synthetic = true;
+      el.dispatchEvent(evt);
+    });
   }
 
   // Lista över dina overlays (lägg till dina exakta klassnamn här)
@@ -769,7 +775,7 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
   let locked = false;
   document.addEventListener('click', (e) => {
-    if (e.target.closest('a, input, textarea, select')) return;
+    if (e.target.closest('a, input, textarea, select, .pp-dropdown, .i-closer, .button.i-lobby-back, .profile-pic-option, .pp-grid-wrapper')) return;
     if (e._synthetic) return; 
     if (locked) { e.stopPropagation(); e.preventDefault(); return; }
     locked = true;
@@ -794,10 +800,6 @@ window.addEventListener('keydown', function(e) {
  
 // Klasser som ska skalas upp till 1.2 vid hover (mouse enter/leave)
 const HOVER_SCALE_CLASSES = [
-    'logout-btn',
-    'cp-create-btn',
-    'profile-pic-option',
-    'current-profile-pic',
     'games-link-block',
     'link-to-lobby',
     'burger-links',
@@ -807,15 +809,17 @@ const HOVER_SCALE_CLASSES = [
     'share-score',
     'link-next-challenge',
     'link-review-answers',
-    'inventory-btn-wrapper'
+    'inventory-btn-wrapper',
+    'logout-btn',
+    'button.i-lobby-back',
+    'cp-create-btn',
+    'profile-pic-option',
+    'current-profile-pic'
 ];
  
 // Klasser som ska "blow up" till 1.4 vid press (pointerdown -> pointerup)
 const PRESS_SCALE_CLASSES = [
     // Lägg till dina click-scale-klasser här, t.ex.:
-    'logout-btn',
-    'cp-create-btn',
-    'current-profile-pic',
     'games-link-block',
     'link-to-lobby',
     'burger-links',
@@ -823,7 +827,11 @@ const PRESS_SCALE_CLASSES = [
     'start-btn-gma',
     'share-score',
     'link-next-challenge',
-    'link-review-answers'
+    'link-review-answers',
+    'logout-btn',
+    'button.i-lobby-back',
+    'cp-create-btn',
+    'current-profile-pic'
 ];
  
 // Endast riktiga mus-hover-enheter ska få hover-scale.
