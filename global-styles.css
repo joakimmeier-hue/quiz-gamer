@@ -227,3 +227,9 @@ body .games-grid-clip.is-skewed {
 .js-press-scale.is-pressed-down {
   scale: 0.8;
 }
+
+/* Lottie-spelare ska ALDRIG fånga klick/hover - släpp igenom till föräldern */
+.js-hover-scale lottie-player,
+.js-press-scale lottie-player {
+  pointer-events: none;
+}
