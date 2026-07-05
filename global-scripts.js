@@ -806,7 +806,8 @@ const HOVER_SCALE_CLASSES = [
     'start-btn-gma',
     'share-score',
     'link-next-challenge',
-    'link-review-answers'
+    'link-review-answers',
+    'inventory-btn-wrapper'
 ];
  
 // Klasser som ska "blow up" till 1.4 vid press (pointerdown -> pointerup)
