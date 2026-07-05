@@ -795,14 +795,34 @@ window.addEventListener('keydown', function(e) {
 // Klasser som ska skalas upp till 1.2 vid hover (mouse enter/leave)
 const HOVER_SCALE_CLASSES = [
     'logout-btn',
-    'cp-create-btn'
+    'cp-create-btn',
+    'profile-pic-option',
+    'current-profile-pic',
+    'games-link-block',
+    'link-to-lobby',
+    'burger-links',
+    'fcp-link',
+    'game-info-gma-frame.finish-gma',
+    'start-btn-gma',
+    'share-score',
+    'link-next-challenge',
+    'link-review-answers'
 ];
  
 // Klasser som ska "blow up" till 1.4 vid press (pointerdown -> pointerup)
 const PRESS_SCALE_CLASSES = [
     // Lägg till dina click-scale-klasser här, t.ex.:
     'logout-btn',
-    'cp-create-btn'
+    'cp-create-btn',
+    'current-profile-pic',
+    'games-link-block',
+    'link-to-lobby',
+    'burger-links',
+    'game-info-gma-frame.finish-gma',
+    'start-btn-gma',
+    'share-score',
+    'link-next-challenge',
+    'link-review-answers'
 ];
  
 // Endast riktiga mus-hover-enheter ska få hover-scale.
