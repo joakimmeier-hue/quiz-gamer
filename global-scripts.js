@@ -285,13 +285,6 @@ document.addEventListener('click', (e) => {
     playButtonSoundHandler(e);
 });
 
-// Hover
-document.addEventListener('mouseenter', (e) => {
-    if (e.target.closest('.play-sfx-hover')) {
-        playSFX('hover');
-    }
-}, true);
-  
 // ── HUVUDFUNKTION FÖR LJUD-INITIALISERING ──────────────────────
 function initAudio() {
     const enterBtn  = document.getElementById('enter-btn-lobby');
@@ -804,6 +797,7 @@ const HOVER_SCALE_CLASSES = [
     'link-to-lobby',
     'burger-links',
     'fcp-link',
+    'fat-cat-logo',
     'submit-button',
     'game-info-gma-frame.finish-gma',
     'start-btn-gma',
@@ -819,7 +813,7 @@ const HOVER_SCALE_CLASSES = [
     'current-profile-pic'
 ];
  
-// Klasser som ska "blow up" till 1.4 vid press (pointerdown -> pointerup)
+// Klasser som ska ändra scale vid press (pointerdown -> pointerup)
 const PRESS_SCALE_CLASSES = [
     // Lägg till dina click-scale-klasser här, t.ex.:
     'games-link-block',
