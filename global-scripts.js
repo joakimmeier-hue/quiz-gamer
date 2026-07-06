@@ -163,7 +163,6 @@ const sfxBuffers = {};
 
 // Funktion för att i bakgrunden hämta och spara ljudet direkt i RAM-minnet
 async function preloadBuffer(key, url) {
-    if (!url || url === 'DIN_LÄNK_TILL_HOVER_LJUD.mp3') return;
     try {
         const res = await fetch(url);
         const arrayBuffer = await res.arrayBuffer();
@@ -178,7 +177,6 @@ const SFX_CONFIG = {
     finish: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a1a2dff7a1f0df596ecc446_bd746b87bc96d389d43e488276181697_finish-magic-1.ogg',
     select: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a1a2dffba03ba59ac3cf57e_fbdab5a348821e99033e07ea1d05fe36_click-btn-select.ogg',
     back: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a1a2dffc231e9d57618b399_5b327d85abc436094132122fc0bebd69_click-btn-back.ogg',
-    hover: 'DIN_LÄNK_TILL_HOVER_LJUD.mp3',
     qalt: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a271ff59049b7423092e9ba_3f976bf8bfbf666c86a9cfa719202484_qalt-pitch_0.ogg',
     qaltminus2: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a271ff562a0882a6b43bf28_020c2575bda5261e434cf42ea90c096b_qalt-pitch_-2.ogg',
     qaltminus4: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a271ff59baf6f8ede5f16a3_a2d58a55af1e1bd75e61bd4389a6b69c_qalt-pitch_-4.ogg',
@@ -801,7 +799,7 @@ const HOVER_SCALE_CLASSES = [
     'submit-button',
     'game-info-gma-frame.finish-gma',
     'start-btn-gma',
-    'share-score-wrapper',
+    'share-score',
     'link-next-challenge',
     'link-review-answers',
     'inventory-btn-wrapper',
@@ -822,7 +820,7 @@ const PRESS_SCALE_CLASSES = [
     'submit-button',
     'game-info-gma-frame.finish-gma',
     'start-btn-gma',
-    'share-score-wrapper',
+    'share-score',
     'link-next-challenge',
     'link-review-answers',
     'logout-btn',
