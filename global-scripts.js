@@ -792,13 +792,13 @@ window.addEventListener('keydown', function(e) {
 // Klasser som ska skalas upp till 1.2 vid hover (mouse enter/leave)
 const HOVER_SCALE_CLASSES = [
     'games-link-block',
-    'link-to-lobby',
+    'q-logo',
     'burger-links',
     'fcp-link',
     'fat-cat-logo',
     'submit-button',
     'game-info-gma-frame.finish-gma',
-    'start-btn-gma',
+    'start-btn-gma-wrapper',
     'share-score',
     'link-next-challenge',
     'link-review-answers',
@@ -815,11 +815,11 @@ const HOVER_SCALE_CLASSES = [
 const PRESS_SCALE_CLASSES = [
     // Lägg till dina click-scale-klasser här, t.ex.:
     'games-link-block',
-    'link-to-lobby',
+    'q-logo',
     'burger-links',
     'submit-button',
     'game-info-gma-frame.finish-gma',
-    'start-btn-gma',
+    'start-btn-gma-wrapper',
     'share-score',
     'link-next-challenge',
     'link-review-answers',
