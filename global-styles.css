@@ -212,7 +212,7 @@ body .games-grid-clip.is-skewed {
   transition: scale 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955); /* ≈ Power1 In Out */
 }
 .js-hover-scale.is-hovered {
-  scale: 1.2;
+  scale: 1.15;
 }
  
 /* ── PRESS-SCALE / "BLOW UP" SYSTEM (ersätter click-scale-interactions) ── */
@@ -225,7 +225,7 @@ body .games-grid-clip.is-skewed {
 }
 /* Mus: skalar NER istället - klassisk "button press"-känsla. Justera värdet efter smak */
 .js-press-scale.is-pressed-down {
-  scale: 0.8;
+  scale: 0.9;
 }
 
 /* Lottie-spelare ska ALDRIG fånga klick/hover - släpp igenom till föräldern */
