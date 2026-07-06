@@ -838,38 +838,53 @@ function initHoverScale(classList) {
     classList.forEach(cls => {
         document.querySelectorAll('.' + cls).forEach(el => {
             el.classList.add('js-hover-scale');
-            el.addEventListener('mouseenter', () => el.classList.add('is-hovered'));
-            el.addEventListener('mouseleave', () => el.classList.remove('is-hovered'));
+            
+            el.addEventListener('mouseenter', () => {
+                // Lägg bara till hover-effekten om vi inte precis har klickat
+                if (!el.classList.contains('is-click-blocked')) {
+                    el.classList.add('is-hovered');
+                }
+            });
+            
+            el.addEventListener('mouseleave', () => {
+                el.classList.remove('is-hovered');
+                // Nollställ blockeringen när musen lämnar elementet
+                el.classList.remove('is-click-blocked'); 
+            });
         });
     });
 }
- 
+
 function initPressScale(classList) {
     classList.forEach(cls => {
         document.querySelectorAll('.' + cls).forEach(el => {
             el.classList.add('js-press-scale');
- 
+
             el.addEventListener('pointerdown', (e) => {
-                // Kollar det FAKTISKA trycket, inte bara enhetens kapacitet -
-                // funkar rätt även på laptops med både mus och pekskärm.
                 if (e.pointerType === 'mouse') {
                     el.classList.add('is-pressed-down'); // Mus -> skala NER
                 } else {
-                    el.classList.add('is-pressed-up');   // Touch/penna -> skala UPP (blow up)
+                    el.classList.add('is-pressed-up');   // Touch/penna -> skala UPP
                 }
             });
- 
+
             const release = () => {
                 el.classList.remove('is-pressed-down');
                 el.classList.remove('is-pressed-up');
+                
+                // --- Fixen för jojo-effekten ---
+                // Ta bort hovern direkt så den går till skala 1.0 istället för 1.2
+                el.classList.remove('is-hovered');
+                // Blockera hover tills musen lämnar elementet (mouseleave)
+                el.classList.add('is-click-blocked');
             };
+            
             el.addEventListener('pointerup', release);
             el.addEventListener('pointercancel', release);
-            el.addEventListener('pointerleave', release); // fingret/musen glider av utan pointerup
+            el.addEventListener('pointerleave', release); 
         });
     });
-}
- 
+} 
 document.addEventListener('DOMContentLoaded', () => {
     if (supportsRealHover) {
         initHoverScale(HOVER_SCALE_CLASSES);
