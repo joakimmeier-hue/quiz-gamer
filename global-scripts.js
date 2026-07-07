@@ -567,7 +567,7 @@ document.addEventListener('click', function(e) {
     const link = e.target.closest('a');
     if (!link || link.target === '_blank' || e.metaKey || e.ctrlKey) return;
     const href = link.getAttribute('href');
-    if (!href || href === '#' || href.startsWith('#') || link.classList.contains('is-password') || link.closest('.pp-dropdown, .i-closer, .button.i-lobby-back')) return;
+    if (!href || href === '#' || href.startsWith('#') || link.classList.contains('is-password') || link.closest('.pp-dropdown, .i-closer-game, .button.i-lobby-back')) return;
 
     e.preventDefault();
     
@@ -664,7 +664,7 @@ window.addEventListener('load', function() {
     if (!el) return;
     // Hoppa över om det landar på pp-dropdown eller dess close-triggers
     // (annars stänger detta dropdownen ~150ms efter att den öppnats)
-    if (el.closest('.pp-dropdown, .i-closer, .button.i-lobby-back, .profile-pic-option, .pp-grid-wrapper')) return;
+    if (el.closest('.pp-dropdown, .i-closer-game, .button.i-lobby-back, .profile-pic-option, .pp-grid-wrapper')) return;
     ['mousedown', 'mouseup', 'click'].forEach(type => {
       const evt = new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y });
       evt._synthetic = true;
@@ -766,7 +766,7 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
   let locked = false;
   document.addEventListener('click', (e) => {
-    if (e.target.closest('a, input, textarea, select, .pp-dropdown, .i-closer, .button.i-lobby-back, .profile-pic-option, .pp-grid-wrapper')) return;
+    if (e.target.closest('a, input, textarea, select, .pp-dropdown, .i-closer-game, .button.i-lobby-back, .profile-pic-option, .pp-grid-wrapper')) return;
     if (e._synthetic) return; 
     if (locked) { e.stopPropagation(); e.preventDefault(); return; }
     locked = true;

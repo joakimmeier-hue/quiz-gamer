@@ -225,7 +225,7 @@ body .games-grid-clip.is-skewed {
 }
 /* Mus: skalar NER istället - klassisk "button press"-känsla. Justera värdet efter smak */
 .js-press-scale.is-pressed-down {
-  scale: 0.9;
+  scale: 0.85;
 }
 
 /* Lottie-spelare ska ALDRIG fånga klick/hover - släpp igenom till föräldern */
