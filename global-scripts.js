@@ -912,9 +912,33 @@ function initPressScale(classList) {
         });
     });
 }
+
+
+//Stäng flik för terms and privacy
 document.addEventListener('DOMContentLoaded', () => {
     if (supportsRealHover) {
         initHoverScale(HOVER_SCALE_CLASSES);
     }
     initPressScale(PRESS_SCALE_CLASSES);
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const closeBtn = document.getElementById("tp-close-tab-btn");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      
+      // 1. Försök stänga fliken
+      window.close();
+      
+      // 2. Fallback: Om fliken fortfarande är öppen efter 200ms, backa eller gå till länk
+      setTimeout(() => {
+        if (history.length > 1) {
+          history.back();
+        } else {
+          window.location.href = closeBtn.getAttribute("href") || "/";
+        }
+      }, 200);
+    });
+  }
 });
