@@ -855,12 +855,26 @@ function initHoverScale(classList) {
     });
 }
 
+// Hur länge (minst) press-effekten ska synas, även vid ett blixtsnabbt klick
+const MIN_PRESS_VISIBLE_MS = 100;
+
 function initPressScale(classList) {
     classList.forEach(cls => {
         document.querySelectorAll('.' + cls).forEach(el => {
             el.classList.add('js-press-scale');
 
+            let pressStartTime = 0;
+            let releaseTimeoutId = null;
+
             el.addEventListener('pointerdown', (e) => {
+                // Om ett tidigare, väntande release inte hunnit köra - avbryt det, ny press har börjat
+                if (releaseTimeoutId) {
+                    clearTimeout(releaseTimeoutId);
+                    releaseTimeoutId = null;
+                }
+
+                pressStartTime = performance.now();
+
                 if (e.pointerType === 'mouse') {
                     el.classList.add('is-pressed-down'); // Mus -> skala NER
                 } else {
@@ -868,26 +882,31 @@ function initPressScale(classList) {
                 }
             });
 
-            const release = () => {
+            // Den faktiska återställningen - körs antingen direkt eller efter fördröjning
+            const doRelease = () => {
                 el.classList.remove('is-pressed-down');
                 el.classList.remove('is-pressed-up');
-                
-                // --- Fixen för jojo-effekten ---
-                // Ta bort hovern direkt så den går till skala 1.0 istället för 1.2
                 el.classList.remove('is-hovered');
-                // Blockera hover tills musen lämnar elementet (mouseleave)
                 el.classList.add('is-click-blocked');
+                releaseTimeoutId = null;
             };
-            
+
+            const release = () => {
+                const elapsed = performance.now() - pressStartTime;
+                const remaining = MIN_PRESS_VISIBLE_MS - elapsed;
+
+                if (remaining > 0) {
+                    // Trycket var kortare än minimitiden - vänta ut resten innan vi återställer
+                    releaseTimeoutId = setTimeout(doRelease, remaining);
+                } else {
+                    // Trycket varade redan längre än minimitiden - återställ direkt
+                    doRelease();
+                }
+            };
+
             el.addEventListener('pointerup', release);
             el.addEventListener('pointercancel', release);
-            el.addEventListener('pointerleave', release); 
+            el.addEventListener('pointerleave', release);
         });
     });
-} 
-document.addEventListener('DOMContentLoaded', () => {
-    if (supportsRealHover) {
-        initHoverScale(HOVER_SCALE_CLASSES);
-    }
-    initPressScale(PRESS_SCALE_CLASSES);
-});
+}
