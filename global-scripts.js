@@ -910,3 +910,9 @@ function initPressScale(classList) {
         });
     });
 }
+document.addEventListener('DOMContentLoaded', () => {
+    if (supportsRealHover) {
+        initHoverScale(HOVER_SCALE_CLASSES);
+    }
+    initPressScale(PRESS_SCALE_CLASSES);
+});

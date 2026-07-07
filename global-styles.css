@@ -103,15 +103,6 @@ body .games-grid-clip.is-skewed {
   transition: -webkit-mask-image 400ms ease, mask-image 400ms ease;
 }
 
-/* button only */
-.button {
-  font-size: 1.1rem;
-  transition: font-size 0.2s ease-out;
-}
-.button:hover {
-  font-size: 1.3rem;
-}
-
 /* ── LJUDKNAPP (Containern) ── */
 #toggle-audio {
   position: relative; 
