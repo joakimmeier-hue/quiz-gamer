@@ -798,6 +798,7 @@ const HOVER_SCALE_CLASSES = [
     'fat-cat-logo',
     'submit-button',
     'button',
+    'button-link',
     'game-info-gma-frame.finish-gma',
     'start-btn-gma-wrapper',
     'share-score-btn',
@@ -819,6 +820,7 @@ const PRESS_SCALE_CLASSES = [
     'burger-links',
     'submit-button',
     'button',
+    'button-link',
     'game-info-gma-frame.finish-gma',
     'start-btn-gma-wrapper',
     'share-score-btn',
@@ -856,7 +858,7 @@ function initHoverScale(classList) {
 }
 
 // Hur länge (minst) press-effekten ska synas, även vid ett blixtsnabbt klick
-const MIN_PRESS_VISIBLE_MS = 100;
+const MIN_PRESS_VISIBLE_MS = 140;
 
 function initPressScale(classList) {
     classList.forEach(cls => {
