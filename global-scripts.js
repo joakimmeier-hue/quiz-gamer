@@ -656,13 +656,13 @@ document.addEventListener('keydown', function(e) {
               lobbyLinkUc.click();
               return; // Avbryt här så vi inte råkar klicka på flera saker
           }
-          // 2. Framtida knapp (Exempel)
-          // const annanKnapp = document.getElementById('annan-knapp-id');
-          // if (annanKnapp) {
-          //     e.preventDefault();
-          //     annanKnapp.click();
-          //     return;
-          // }
+        // 2. Stäng/Backa-knappen på Terms & Privacy-sidorna (NY!)
+          const tpCloseBtn = document.querySelector('.button-link.tp');
+          if (tpCloseBtn) {
+              e.preventDefault();
+              tpCloseBtn.click(); // Triggar din andra click-lyssnare som sköter stängning/fallback
+              return;
+          }
       }
     }				
 });
