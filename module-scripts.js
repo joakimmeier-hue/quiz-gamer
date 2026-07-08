@@ -47,24 +47,7 @@
       loginBtns.forEach(btn => btn.style.display = 'none');
       
     } else {
-      document.body.classList.remove("user-logged-in");
-      
-      logoutBtns.forEach(btn => {
-        if (btn.style.display !== 'none') {
-          btn.style.transition = 'transform 110ms ease-out';
-          btn.style.transform = 'scale(1.4)';
-          
-          setTimeout(() => {
-            btn.style.transition = 'transform 110ms ease-in';
-            btn.style.transform = 'scale(1)';
-            
-            setTimeout(() => {
-              btn.style.transition = 'opacity 400ms ease';
-              btn.style.opacity = '0';
-              
-              setTimeout(() => {
-                btn.style.display = 'none';
-                
+      document.body.classList.remove("user-logged-in");     
                 const overlay = document.querySelector('.inventory-overlay');
                 if (overlay && window.lobbyInvOpen) {
                     closeLobbyInventory(overlay);
