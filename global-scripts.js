@@ -828,24 +828,24 @@ document.addEventListener('DOMContentLoaded', () => {
     initPressScale(PRESS_SCALE_CLASSES);
 });
 
-//Stäng flik för terms and privacy
-document.addEventListener("DOMContentLoaded", () => {
-  const closeBtn = document.getElementById("tp-close-tab-btn");
+// Stäng flik för terms and privacy
+document.addEventListener("click", (e) => {
+  // Leta efter klick på din komboklass (eller något inuti den)
+  const closeBtn = e.target.closest(".button-link.tp");
+  
   if (closeBtn) {
-    closeBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      
-      // 1. Försök stänga fliken
-      window.close();
-      
-      // 2. Fallback: Om fliken fortfarande är öppen efter 200ms, backa eller gå till länk
-      setTimeout(() => {
-        if (history.length > 1) {
-          history.back();
-        } else {
-          window.location.href = closeBtn.getAttribute("href") || "/";
-        }
-      }, 200);
-    });
+    e.preventDefault();
+    
+    // 1. Försök stänga fliken
+    window.close();
+    
+    // 2. Fallback: Om fliken fortfarande är öppen efter 200ms, backa eller gå till länk
+    setTimeout(() => {
+      if (history.length > 1) {
+        history.back();
+      } else {
+        window.location.href = closeBtn.getAttribute("href") || "/";
+      }
+    }, 200);
   }
 });
