@@ -106,7 +106,7 @@
   function resolvePendingAction() {
     if (!pendingAction) return;
 
-    if (pendingAction === 'INVENTORY') {
+    if (pendingAction === 'INVENTORY') { 
       const overlay = document.querySelector('.inventory-overlay');
       if (overlay && !window.lobbyInvOpen) {
         openLobbyInventory(overlay);
@@ -129,6 +129,7 @@
   // ── STATE TRACKERS ──
   window.gameInvOpen = false;  
   window.lobbyInvOpen = false; 
+  window.lobbyReady = false; // NYTT: Håller inventory låst under introt
   // Uppdatera staten om användaren klickar med musen på game-knapparna
   document.addEventListener('click', (e) => {
       if (e.target.closest('#i-game-btn-show')) window.gameInvOpen = true;
@@ -194,6 +195,7 @@ document.addEventListener('keydown', (e) => {
     else {
         // Hantera I och TAB (Toggle)
         if (key === 'i' || key === 'tab') {
+          if (!window.lobbyReady) return; // NYTT: Avbryt om introt fortfarande körs
             e.preventDefault();
             
             if (!currentUser) {
@@ -260,6 +262,15 @@ document.addEventListener('keydown', (e) => {
   }
   // ── GLOBAL KLICKLYSSNARE ──
   document.addEventListener('click', async (e) => {
+
+    // NYTT: Starta 4-sekunders upplåsning när man klickar på introt
+    const welcomeScreen = e.target.closest('.welcome-text-container');
+    if (welcomeScreen && !window.lobbyReady) {
+        setTimeout(() => {
+            window.lobbyReady = true;
+            console.log("Lobby är nu redo! Inventory upplåst.");
+        }, 4000); // 4000 millisekunder = 4 sekunder
+    }
     
     // 1. LOGGA UT
     const logoutBtn = e.target.closest('#logout-btn, .logout-btn');
@@ -314,6 +325,8 @@ document.addEventListener('keydown', (e) => {
     if (invBtn) {
       e.preventDefault();
       e.stopPropagation();
+
+      if (!window.lobbyReady) return; // NYTT: Avbryt musklicket om introt körs
       
       if (!currentUser) {
         pendingAction = 'INVENTORY';
