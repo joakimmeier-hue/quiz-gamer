@@ -1,7 +1,8 @@
+// module-scripts
+
   import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-
   const firebaseConfig = {
     apiKey: "AIzaSyAfZQM3H5XAYkEt2ARInoA1Xs-Qd1DXL_s",
     authDomain: "auth.quizgamer.se",
@@ -11,17 +12,14 @@
     appId: "1:229730753032:web:723d0c4334058a47084fbd",
     measurementId: "G-TNBLZFSFG6"
   };
-
-  //Ny create profile kod från Claude här?
   
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
   const googleProvider = new GoogleAuthProvider();
-
   let currentUser = null;
   let pendingAction = null; 
-
+  let isAuthenticating = false; // NYTT: skydd mot dubbla samtidiga inloggningsförsök
   // DOM Elements
   const loginModal = document.getElementById('login-modal');
   const googleLoginBtn = document.getElementById('google-login-btn');
@@ -29,12 +27,10 @@
   const userLevelEl = document.getElementById('user-level');
   const userScoreEl = document.getElementById('user-total-score');
   const userRankEl = document.getElementById('user-rank');
-
   function updateAuthUI(user) {
     const dropdownToggle = document.querySelector('.w-dropdown-toggle');
     const logoutBtns = document.querySelectorAll('#logout-btn, .logout-btn');
     const loginBtns = document.querySelectorAll('#login-btn, .login-btn');
-
     if (user) {
       document.body.classList.add("user-logged-in");
       if (userDisplayName) userDisplayName.textContent = user.displayName || user.email;
@@ -91,8 +87,8 @@
       });
     }
   }
-
   function showLoginModal() {
+    if (currentUser) return; // NYTT: redan inloggad - visa aldrig login-modalen igen
     if (loginModal) {
       loginModal.style.display = 'flex';
       loginModal.style.opacity = '0';
@@ -105,7 +101,6 @@
       });
     }
   }
-
   function hideLoginModal() {
     if (loginModal) {
       loginModal.style.transition = 'opacity 250ms ease-out';
@@ -118,22 +113,57 @@
       }, 250);
     }
   }
+  // ── CREATE PROFILE (First-time users) ──
+  function showCreateProfile() {
+    const createProfileEl = document.getElementById('create-profile') || document.querySelector('.create-profile');
+    if (createProfileEl) {
+      createProfileEl.style.display = 'flex';
+    }
+  }
+  function hideCreateProfile() {
+    const createProfileEl = document.getElementById('create-profile') || document.querySelector('.create-profile');
+    if (createProfileEl) {
+      createProfileEl.style.display = 'none';
+    }
+  }
+  // Görs tillgänglig globalt så att create-profile-flödets "klar/spara"-knapp
+  // (var den nu ligger) kan anropa hideCreateProfile() + resolvePendingAction()
+  // när användaren är klar med sin profil.
+  window.hideCreateProfile = hideCreateProfile;
+  window.resolvePendingAction = resolvePendingAction;
 
+  // ── LÖS DET SOM ANVÄNDAREN FÖRSÖKTE GÖRA INNAN INLOGGNING KRÄVDES ──
+  function resolvePendingAction() {
+    if (!pendingAction) return;
+
+    if (pendingAction === 'INVENTORY') {
+      const overlay = document.querySelector('.inventory-overlay');
+      if (overlay && !window.lobbyInvOpen) {
+        openLobbyInventory(overlay);
+      }
+    } else {
+      // pendingAction är annars en URL (spel-länk)
+      if (typeof window.triggerPageExit === 'function') {
+        window.triggerPageExit(pendingAction, false);
+      } else {
+        window.location.href = pendingAction;
+      }
+    }
+
+    pendingAction = null;
+  }
   // ── HJÄLPFUNKTION: Kollar om en knapp faktiskt syns ──
   function isVisible(el) {
     return el && window.getComputedStyle(el).display !== 'none';
   }
-
   // ── STATE TRACKERS ──
   window.gameInvOpen = false;  
   window.lobbyInvOpen = false; 
-
   // Uppdatera staten om användaren klickar med musen på game-knapparna
   document.addEventListener('click', (e) => {
       if (e.target.closest('#i-game-btn-show')) window.gameInvOpen = true;
       if (e.target.closest('#i-game-btn-hide')) window.gameInvOpen = false;
   }, true);
-
   // ── BARA FÖR LOBBYN: Animationer ──
   function openLobbyInventory(overlay) {
       window.lobbyInvOpen = true;
@@ -147,7 +177,6 @@
           });
       });
   }
-
   function closeLobbyInventory(overlay) {
    // 1. Trigga Webflows interna animationsmotor för att stänga pp
   try {
@@ -164,15 +193,12 @@
           if (!window.lobbyInvOpen) overlay.style.display = 'none';
       }, 160);
   }
-
   // ── TANGENTBORDS-LYSSNARE (I, TAB, ESC) ──
 document.addEventListener('keydown', (e) => {
     if (e.repeat) return; // Stoppar buggar om man håller inne knappen
     if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
-
     const key = e.key.toLowerCase();
     const isGameSide = document.body.dataset.page === 'game';
-
     // --- Inventory på GAME-SIDAN: Robust "Reality Check" ---
     if (isGameSide) {
         if (key === 'i' || key === 'tab' || key === 'escape') {
@@ -212,7 +238,6 @@ document.addEventListener('keydown', (e) => {
                 if (overlay) openLobbyInventory(overlay);
             }
         }
-
         // Hantera ESC (Enbart stäng)
         if (key === 'escape') {
             if (loginModal && window.getComputedStyle(loginModal).display !== 'none') {
@@ -230,38 +255,39 @@ document.addEventListener('keydown', (e) => {
         }
     }
 }, true);
-
  // ── GOOGLE LOGIN ──
   if (googleLoginBtn) {
     googleLoginBtn.addEventListener('click', async (e) => {
       e.preventDefault();
+      if (isAuthenticating) return; // NYTT: redan på gång - ignorera extra klick under popupen
+      isAuthenticating = true;
       try {
         const result = await signInWithPopup(auth, googleProvider);
         currentUser = result.user; 
         hideLoginModal(); 
 
-        /* // Kolla om det är en first-time user
+        // Kolla om det är en first-time user
         const userDocRef = doc(db, "users", currentUser.uid);
         const userDoc = await getDoc(userDocRef);
 
         if (!userDoc.exists()) {
           // First-time -> visa create-profile, pendingAction ligger kvar orörd
+          // tills profilen är klar (anropa window.resolvePendingAction() därifrån)
           setTimeout(() => {
               showCreateProfile();
           }, 350);
         } else {
-          // Återkommande user -> vanligt flöde
-          if (typeof resolvePendingAction === 'function') {
-            resolvePendingAction();
-          }
-        } */
+          // Återkommande user -> kör vidare med det man försökte göra innan inloggningen
+          resolvePendingAction();
+        }
 
       } catch (error) {
         console.error("Inloggning avbruten eller misslyckades:", error.message);
+      } finally {
+        isAuthenticating = false; // NYTT
       }
     });
   }
-
   // ── GLOBAL KLICKLYSSNARE ──
   document.addEventListener('click', async (e) => {
     
@@ -293,7 +319,6 @@ document.addEventListener('keydown', (e) => {
     if (option) {        
         const selectedSrc = option.src;
         const currentAvatarDisplay = document.querySelector('.current-profile-pic');
-
         if (selectedSrc && currentAvatarDisplay) {
             // Uppdatera bilden i UI direkt
             currentAvatarDisplay.src = selectedSrc; 
@@ -305,12 +330,23 @@ document.addEventListener('keydown', (e) => {
     }
 
     // 4. GATEKEEPER FÖR SPEL-LÄNKAR
+    // OBS: .games-link-block är nu undantagen i global-scripts.js:s egna
+    // länk/transition-hanterare, så ALL navigation för dessa länkar sköts härifrån.
     const gameBtn = e.target.closest('.games-link-block');
-    if (gameBtn && !currentUser) {
+    if (gameBtn) {
       e.preventDefault();
       e.stopPropagation();
-      pendingAction = gameBtn.href; 
-      showLoginModal();
+
+      if (!currentUser) {
+        pendingAction = gameBtn.href;
+        showLoginModal();
+      } else {
+        if (typeof window.triggerPageExit === 'function') {
+          window.triggerPageExit(gameBtn.href, false);
+        } else {
+          window.location.href = gameBtn.href;
+        }
+      }
       return;
     }
 
@@ -349,14 +385,11 @@ document.addEventListener('keydown', (e) => {
   // HÄMTA DATA (BILD + STATS)
   async function loadUserData(uid) {
     const currentAvatarDisplay = document.querySelector('.current-profile-pic');
-
     try {
       const userDocRef = doc(db, "users", uid);
       const userDoc = await getDoc(userDocRef);
-
       if (userDoc.exists()) {
         const data = userDoc.data();
-
         if (currentAvatarDisplay) {
           if (data.profilePicUrl) {
             // 1. Användaren har en sparad bild i databasen
@@ -381,7 +414,6 @@ document.addEventListener('keydown', (e) => {
             }
           }
         }
-
         if (userLevelEl) userLevelEl.textContent = "Level " + (data.level || 1);
         if (userScoreEl) userScoreEl.textContent = (data.totalScore || 0);
         if (userRankEl) userRankEl.textContent = (data.rank || 0);
@@ -395,7 +427,6 @@ document.addEventListener('keydown', (e) => {
   // SPARA PROFILBILD
   async function saveUserAvatar(avatarUrl) {
     if (!currentUser) return;
-
     try {
       const userDocRef = doc(db, "users", currentUser.uid);
       await setDoc(userDocRef, { 

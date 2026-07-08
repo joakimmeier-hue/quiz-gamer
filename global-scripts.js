@@ -1,14 +1,14 @@
+// global-scripts
+
 // --- HINDRA CTRL + SCROLL ZOOM ---
 window.addEventListener('wheel', function(e) {
   if (e.ctrlKey) { e.preventDefault(); }
 }, { passive: true });
-
 // Auto scroll to top
 if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
 window.addEventListener('load', function() {
   window.scrollTo(0, 0);
 });
-
   
 // ── LADDA LOTTIE-SPELAREN ─────────────────────────────────────────────
 if (!document.querySelector('script[src*="lottie-player"]')) {
@@ -16,7 +16,6 @@ if (!document.querySelector('script[src*="lottie-player"]')) {
     script.src = "https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js";
     document.head.appendChild(script);
 }
-
 // ── KATEGORI / ÄMNES-SYSTEM FÖR MUSIK & FÄRGER ────────────────────────
 const TOPICS = {
     gma: { 
@@ -50,7 +49,6 @@ const TOPICS = {
         fadeColor: '#000000'
     }
 };
-
 function getTopicFromUrl(url) {
     const lowerUrl = url.toLowerCase();
     if (lowerUrl.includes('gma')) return 'gma';
@@ -59,17 +57,14 @@ function getTopicFromUrl(url) {
     if (lowerUrl.includes('uc')) return 'uc';
     return 'lobby';
 }
-
 const currentTopicId = getTopicFromUrl(window.location.pathname);
 const currentConfig = TOPICS[currentTopicId];
 const audioKey = currentTopicId + 'AudioTime';
-
 // Initiera Audio
 const audio = new Audio(currentConfig.url);
 window.bgMusic = audio; 
 audio.loop = true;
 let isMuted = false; 
-
 // ── FADE LOGIK ────────────────────────────────────────────────────────
 window.forceAudioUnmute = function() {
     if (isMuted) {
@@ -77,13 +72,11 @@ window.forceAudioUnmute = function() {
         if (toggleBtn) toggleBtn.click(); 
     }
 };
-
 window.fadeOutMusic = function() {
     if (audio && audio.volume > 0 && !isMuted) {
         const startVol = audio.volume;
         const steps = 50; 
         const stepAmount = startVol / steps;
-
         let fadeOut = setInterval(() => {
             if (audio.volume - stepAmount > 0) { 
                 audio.volume -= stepAmount; 
@@ -94,7 +87,6 @@ window.fadeOutMusic = function() {
         }, 20);
     }
 };
-
 window.startMusic = function(forceInstant = false) {
     if (!audio.paused || !currentConfig.url) return; 
     let playPromise = audio.play();
@@ -123,7 +115,6 @@ window.startMusic = function(forceInstant = false) {
         });
     }
 }
-
 // Rå, central funktion för att tvinga bild och ljud att matcha exakt
 function applyMuteState(muted) {
     isMuted = muted;
@@ -143,7 +134,6 @@ function applyMuteState(muted) {
         }
     }
 }
-
   // ── WEB AUDIO API: 0 MS FÖRDRÖJNING (RAM-BUFFER) ──
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 // Vi låser sampleRate till 44100 Hz, vilket alla Bluetooth-lurar fixar utan att krascha
@@ -152,7 +142,6 @@ const sfxCtx = new AudioContext({
     sampleRate: 44100
 });
 const sfxBuffers = {}; 	
-
 // Mobiler (särskilt iOS) blockerar ljudmotorn tills användaren rör skärmen.
 // Det här låser upp ljudmotorn vid allra första klicket/touchen.
 ['mousedown', 'touchstart', 'keydown'].forEach(event => {
@@ -160,7 +149,6 @@ const sfxBuffers = {};
         if (sfxCtx.state === 'suspended') sfxCtx.resume();
     }, { once: true });
 });
-
 // Funktion för att i bakgrunden hämta och spara ljudet direkt i RAM-minnet
 async function preloadBuffer(key, url) {
     try {
@@ -171,7 +159,6 @@ async function preloadBuffer(key, url) {
         console.log("Kunde inte buffra SFX:", key);
     }
 }
-
 // ── SFX KONFIGURATION ──
 const SFX_CONFIG = {
     finish: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a1a2dff7a1f0df596ecc446_bd746b87bc96d389d43e488276181697_finish-magic-1.ogg',
@@ -184,29 +171,22 @@ const SFX_CONFIG = {
     qaltminus8: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a271ff549ae2539a25338ee_5a5a5d3ce12941ad67dae44cfc51ddb2_qalt-pitch_-8.ogg',
     deny: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a1af8aa81c60eedf18e0c0f_a7982f0695a5917df328945f1a32c008_deny.ogg'
 };
-
 // ── QALT CYCLE CONFIG ──
 let qaltIndex = 0; 
 // Här sparar vi *namnet* på egenskapen (key) istället för url:en
 const qaltKeys = ['qaltminus8', 'qaltminus6', 'qaltminus4', 'qaltminus2', 'qalt'];
-
 // Sätt igång buffringen för alla ljud i SFX_CONFIG omedelbart
 Object.entries(SFX_CONFIG).forEach(([key, url]) => preloadBuffer(key, url));
-
 // ── BLIXTSNABB UPPSPELNING ──
 function playSFX(type, vol = 0.9) {
     if (sfxCtx.state === 'suspended') sfxCtx.resume();
-
     let bufferKey = type;
-
     // Snurra index för qalt-ljuden
     if (type === 'qalt') {
         bufferKey = qaltKeys[qaltIndex];
         qaltIndex = (qaltIndex + 1) % qaltKeys.length;
     }
-
     const buffer = sfxBuffers[bufferKey];
-
     if (buffer) {
         // Ljudet är buffrat och redo. Koppla upp det och skjut ut ljudet på en gång.
         const source = sfxCtx.createBufferSource();
@@ -223,7 +203,6 @@ function playSFX(type, vol = 0.9) {
         console.log("Ljudet buffras fortfarande i bakgrunden...");
     }
 }
-
 // Spåra exakt när användaren faktiskt trycker på tangentbordet
 let lastActualKeyPressTime = 0;
 window.addEventListener('keydown', (e) => {
@@ -231,14 +210,12 @@ window.addEventListener('keydown', (e) => {
         lastActualKeyPressTime = Date.now();
     }
 }, true);
-
 function playButtonSoundHandler(e) {
     // Lägg till .profile-pic-option i sökningen här:
     const btn = e.target.closest('[class*="play-sfx-"], .alternative-row, .profile-pic-option');
     
     if (btn) {
         let type;
-
         // 1. Kolla om det är ett profilbildsalternativ (Ska ALLTID köra 'back'-ljudet)
         if (btn.classList.contains('profile-pic-option')) {
             type = 'back';
@@ -254,35 +231,29 @@ function playButtonSoundHandler(e) {
                 type = className.split('-')[2];
             }
         }
-
         // 4. Om vi hittade en typ, spela ljudet
         if (type) {
             playSFX(type);
         }
     }
 }
-
 // 1. POINTER UP: Spelar ljudet vid release (mouse up / touch-up), inte vid nedtryck.
 // Pointer events = mus + touch + penna i ett, ingen separat mobil-hantering behövs.
 document.addEventListener('pointerup', playButtonSoundHandler);
-
 // 2. CLICK: Tar BARA hand om tangentbords-klick (fejkade klick från dina script)
 document.addEventListener('click', (e) => {
     // Om det är ett ÄKTA musklick, avbryt! Mousedown ovan har redan spelat ljudet.
     if (e.isTrusted) {
         return; 
     }
-
     // Om det är ett FEJKAT klick, men INGEN har rört en tangent nyligen...
     // Då är det ett spökklick/skip-intro! Avbryt!
     if (!e.isTrusted && (Date.now() - lastActualKeyPressTime > 100)) {
         return; 
     }
-
     // Om vi nådde hit: Ett script klickade på knappen, OCH du tryckte precis på Enter. Spela ljud!
     playButtonSoundHandler(e);
 });
-
 // ── HUVUDFUNKTION FÖR LJUD-INITIALISERING ──────────────────────
 function initAudio() {
     const enterBtn  = document.getElementById('enter-btn-lobby');
@@ -291,20 +262,16 @@ function initAudio() {
     
     const fromTopic = sessionStorage.getItem('fromTopic');
     sessionStorage.removeItem('fromTopic');
-
     const savedTime = sessionStorage.getItem(audioKey);
     const isTopicPage = currentTopicId !== 'lobby';
-
     // Stenhård återställning av mute-variabeln och ikonen direkt vid laddning
     applyMuteState(false);
-
     // FIXA HOVER & KLICK-ZONER DIREKT I JS FÖR ATT SLIPPA SLÖHET
     if (toggleBtn) {
      // Säkerställ att ALLA barn till knappen (ikoner/divar) har pointer-events none
         const children = toggleBtn.querySelectorAll('*');
         children.forEach(child => child.style.pointerEvents = 'none');
     }
-
     // TIDSHANTERING VID VANLIG PAGE LOAD (Från början)
     if (currentTopicId === 'lobby' || currentTopicId === 'uc') {
         // Första gången sidan laddas -> Kör vanliga startTime (19.482s)
@@ -318,7 +285,6 @@ function initAudio() {
             audio.currentTime = currentConfig.startTime || 0;
         }
     }
-
     // Startknappar
     if (isTopicPage && startBtnTopic) {
         startBtnTopic.addEventListener('click', () => window.startMusic(false));
@@ -326,13 +292,11 @@ function initAudio() {
     if (enterBtn && !isTopicPage) {
         enterBtn.addEventListener('click', () => window.startMusic(false));
     }
-
  // ── INTRO & VISIBILITETS-LOGIK ──
     if (toggleBtn) {
         const isLobby = currentTopicId === 'lobby';
         const introOverlay = document.querySelector('.intro-overlay-grp');
         const isIntroActive = introOverlay && introOverlay.style.display !== 'none';
-
         if (isLobby && isIntroActive) {
             toggleBtn.classList.remove('is-visible');
             
@@ -356,14 +320,12 @@ function initAudio() {
                 toggleBtn.classList.add('is-visible');
             }, 50);
         }
-
       // DET ENDA KLICK-EVENTET FÖR TOGGLE-KNAPPEN
 toggleBtn.addEventListener('click', (e) => {
     e.preventDefault();
     
     // 1. Om vi redan animerar, gör inget (förhindrar spam)
     if (toggleBtn.classList.contains('is-animating')) return;
-
   // 2. BYT BILD/STATUS DIREKT OCH SPELA RÄTT LJUD
           if (!isMuted) {
               if (typeof playSFX === 'function') playSFX('back'); // Spela "Av"-ljudet
@@ -373,11 +335,9 @@ toggleBtn.addEventListener('click', (e) => {
               // window.startMusic(false); <-- Denna kan du kommentera bort/ta bort om den försöker starta om en låt som redan spelar!
               if (typeof playSFX === 'function') playSFX('select'); // Spela "På"-ljudet
           }
-
     // 3. Trigger Klick-stretch och Noise-animation
     toggleBtn.classList.add('is-clicked');
     toggleBtn.classList.add('is-animating');
-
     // 4. Städa upp animationerna efter 600ms (utan att röra statusen!)
     setTimeout(() => {
         toggleBtn.classList.remove('is-clicked');
@@ -386,22 +346,18 @@ toggleBtn.addEventListener('click', (e) => {
 	});
   }
 }
-
 // ── EVENT LISTENERS (HÄNDELSER) ──────────────────────
   
 // ── SFX GRACE PERIOD VID SIDLADDNING & BACKNING ──
 window.addEventListener('pageshow', () => {
     window.isSfxLocked = true; // Lås ljudet direkt
-
     // Släpp låset efter 1 sekund (Då har skip-intro och alla overlay-spökklick kört klart)
     setTimeout(() => {
         window.isSfxLocked = false;
     }, 1000); 
 });
-
   
 window.addEventListener('DOMContentLoaded', initAudio);
-
 // Skottsäker bfcache-fix för BACK/FORWARD-knapparna!
 window.addEventListener('pageshow', (event) => {
     // Tvinga variabeln till false och rensa gamla klasser DIREKT för att döda dubbelklick-buggen
@@ -419,7 +375,6 @@ window.addEventListener('pageshow', (event) => {
             audio.currentTime = baseStart;
         }
     }
-
     // Starta musiken direkt om vi backat eller hoppat via länk
     const introOverlay = document.querySelector('.intro-overlay-grp');
     const isIntroActive = introOverlay && introOverlay.style.display !== 'none';
@@ -428,7 +383,6 @@ window.addEventListener('pageshow', (event) => {
         window.startMusic(true);
     }
 });
-
 // Spara tid när man lämnar en undersida
 window.addEventListener('beforeunload', () => {
     if (!audio.paused && currentTopicId !== 'lobby' && currentTopicId !== 'uc') {
@@ -460,20 +414,16 @@ document.addEventListener("visibilitychange", function() {
     });
   }
 });
-
 // ── TRANSITION OVERLAY ────────────────────────────────────────────────
 const overlay = document.createElement('div');
 overlay.id = 'global-transition-overlay';
 overlay.style.cssText = "position:fixed;inset:0;z-index:999999;pointer-events:none;transition:opacity 0.8s ease;opacity:1;display:block;";
 document.body.appendChild(overlay);
-
 const savedColor = sessionStorage.getItem('exitColor');
 const bodyTheme  = document.body.getAttribute('data-theme');
 const initColor  = savedColor || (bodyTheme === 'light' ? '#ffffff' : '#000000');
 overlay.style.background = initColor;
-
 // VIKTIGT: Vi raderar INTE färgen här ute längre, vi måste låta skipIntro hinna läsa den!
-
 window.addEventListener('pageshow', () => {
     // Nu raderar vi färgen först när hela sidan (och alla skript) har laddats klart
     sessionStorage.removeItem('exitColor');
@@ -482,13 +432,11 @@ window.addEventListener('pageshow', () => {
     overlay.style.pointerEvents = 'none'; 
     overlay.style.cursor = 'auto';
     setTimeout(() => { overlay.style.display = 'none'; overlay.innerHTML = ''; }, 850);
-
     const isTopicPage = currentTopicId !== 'lobby';
     if (isTopicPage && audio.paused) {
         window.startMusic(false); 
     }
 });
-
 // ── GLOBAL EXIT FUNCTION MED LOTTIE-LOGIK ─────────────────────────────
 // Vi lägger till parametern 'isSlowFinish' (default är false)
 window.triggerPageExit = function(url, isSlowFinish = false) {
@@ -497,35 +445,28 @@ window.triggerPageExit = function(url, isSlowFinish = false) {
     const targetTopicId = getTopicFromUrl(url);
     const changingTopic = currentTopicId !== targetTopicId;
     const isLeavingLobby = currentTopicId === 'lobby' && targetTopicId !== 'lobby';
-
     if (changingTopic) {
         sessionStorage.setItem('fromTopic', currentTopicId);
         if (window.fadeOutMusic) window.fadeOutMusic();
     } else {
         sessionStorage.removeItem('fromTopic');
     }
-
     const currentTheme = document.body.getAttribute('data-theme');
     const transitionColor = (currentTheme === 'light' ? '#ffffff' : '#000000');
     
     sessionStorage.setItem('exitColor', transitionColor);
-
     overlay.style.pointerEvents = 'auto'; 
     overlay.style.cursor = 'default';
-
     overlay.style.transition = 'none';
     overlay.style.background = transitionColor;
     overlay.style.opacity = '0';
     overlay.style.display = 'block';
-
     // 1. Om spelet slutförs gör vi själva infasningen av färgen mjukare och långsammare (1.5s istället för 0.8s)
     const fadeSpeed = isSlowFinish ? '1.5s' : '0.8s';
-
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             overlay.style.transition = `opacity ${fadeSpeed} ease`;
             overlay.style.opacity = '1';
-
             if (isLeavingLobby) {
                 setTimeout(() => {
                     overlay.innerHTML = `
@@ -561,14 +502,14 @@ window.triggerPageExit = function(url, isSlowFinish = false) {
         });
     });
 };
-
 // ── CLICK HANDLER FÖR LÄNKAR ──────────────────────────────────────────
 document.addEventListener('click', function(e) {
     const link = e.target.closest('a');
     if (!link || link.target === '_blank' || e.metaKey || e.ctrlKey) return;
     const href = link.getAttribute('href');
-    if (!href || href === '#' || href.startsWith('#') || link.classList.contains('is-password') || link.closest('.pp-dropdown, .i-closer-game, .button.i-lobby-back')) return;
-
+    // NYTT: .games-link-block undantagen - den hanteras nu helt av gatekeepern
+    // i module-scripts.js, som anropar triggerPageExit själv när användaren är inloggad.
+    if (!href || href === '#' || href.startsWith('#') || link.classList.contains('is-password') || link.closest('.pp-dropdown, .i-closer-game, .button.i-lobby-back, .games-link-block')) return;
     e.preventDefault();
     
     // SMART SYSTEM: Letar efter alla länkar vars ID börjar med "finish-btn-"
@@ -583,7 +524,6 @@ document.addEventListener('click', function(e) {
         setTimeout(() => window.triggerPageExit(href, false), 200); 
     }
 });
-
 // ── KEYBOARD LISTENER FÖR INTRO (ENTER/SPACE) ─────────────────────────
 let triggered = false;
 document.addEventListener("keydown", function(e) {
@@ -592,9 +532,7 @@ document.addEventListener("keydown", function(e) {
   if (e.key === "Enter" || e.key === " ") {
     const welcomeTarget = document.querySelector(".welcome-text-container");
     if (!welcomeTarget) return;
-
     if (welcomeTarget.offsetWidth === 0 && welcomeTarget.offsetHeight === 0) return;
-
     const style = window.getComputedStyle(welcomeTarget);
     if (style.display === 'none' || parseFloat(style.opacity) < 0.1) return;
     
@@ -604,7 +542,6 @@ document.addEventListener("keydown", function(e) {
     welcomeTarget.click();
   }
 });
-
 // ── STRÖMSPAR-FUNKTIONER (VIDEO) ──────────────────────────────────────
 const powerSaveVideos = () => {
   const observer = new IntersectionObserver((entries) => {
@@ -618,7 +555,6 @@ const powerSaveVideos = () => {
 };
 if (document.readyState === 'complete') { powerSaveVideos(); } 
 else { window.addEventListener('load', powerSaveVideos); }
-
 setInterval(() => {
   document.querySelectorAll('video').forEach(v => {
     const style = window.getComputedStyle(v);
@@ -627,7 +563,6 @@ setInterval(() => {
     else if (!isHidden && v.paused && v.hasAttribute('autoplay')) { v.play().catch(() => {}); }
   });
 }, 6000); 
-
 // ── ANCHOR SECTION TRANSITION ─────────────────────────────────────────
 window.addEventListener('load', function() {
   document.querySelectorAll('[data-scroll-to]').forEach(function(el) {
@@ -652,11 +587,9 @@ window.addEventListener('load', function() {
     });
   });
 });
-
 // ── AUTO-FOCUS & SCROLL-TOP FÖR OVERLAYS (STABIL VERSION) ──────────────────
 (function() {
   const isOverlayOpen = {}; // Spårning för att undvika "dubbelkörning"
-
   function fakeClick() {
     const x = window.innerWidth / 2;
     const y = window.innerHeight / 2;
@@ -671,29 +604,23 @@ window.addEventListener('load', function() {
       el.dispatchEvent(evt);
     });
   }
-
   // Lista över dina overlays (lägg till dina exakta klassnamn här)
   const targets = ['.rules-overlay', '.inventory-overlay', '.leaderboard-overlay', '.about-overlay'];
-
   targets.forEach(selector => {
     document.querySelectorAll(selector).forEach(overlay => {
       new MutationObserver(() => {
         const style = window.getComputedStyle(overlay);
         const isVisible = style.display !== 'none' && style.visibility !== 'hidden' && parseFloat(style.opacity) > 0;
-
         // Om den är synlig OCH vi inte redan har kört koden för denna öppning:
         if (isVisible && !isOverlayOpen[selector]) {
           isOverlayOpen[selector] = true; // Lås
-
           // 1. Scrolla slidern till toppen
           const scrollEl = document.getElementById('i-slider');
           if (scrollEl) {
             scrollEl.scrollTop = 0; 
           }
-
           // 2. Fokus-klick (med en liten fördröjning för att vara säker)
           setTimeout(fakeClick, 150);
-
         } else if (!isVisible) {
           isOverlayOpen[selector] = false; // Lås upp när den stängs
         }
@@ -701,14 +628,12 @@ window.addEventListener('load', function() {
     });
   });
 })();
-
 // ── MULTI-BUTTON KEY LISTENERS (ESC/ENTER) ────────────────────────────
 document.addEventListener('keydown', function(e) {
     const triggerKeys = ["Escape", "Enter"];
     if (triggerKeys.includes(e.key)) {
       
       let overlayHandled = false; // Håller koll på om en meny tog hand om knapptrycket
-
       const overlays = document.querySelectorAll('.rules-overlay, .inventory-overlay, .leaderboard-overlay, .about-overlay');
       overlays.forEach(function(overlay) {
         const style = window.getComputedStyle(overlay);
@@ -721,7 +646,6 @@ document.addEventListener('keydown', function(e) {
           overlayHandled = true; // Markera att en overlay stängdes
         }
       });
-
       // ── SID-SPECIFIKA KNAPPAR (Körs BARA om ingen overlay var öppen) ──
       if (!overlayHandled) {
           
@@ -732,7 +656,6 @@ document.addEventListener('keydown', function(e) {
               lobbyLinkUc.click();
               return; // Avbryt här så vi inte råkar klicka på flera saker
           }
-
           // 2. Framtida knapp (Exempel)
           // const annanKnapp = document.getElementById('annan-knapp-id');
           // if (annanKnapp) {
@@ -743,7 +666,6 @@ document.addEventListener('keydown', function(e) {
       }
     }				
 });
-
 // ── CLIPPING MIN-WIDTH LOGIK ──────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   const trigger = document.querySelector('.welcome-text-container');
@@ -761,7 +683,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   window.addEventListener('resize', () => { if (hasClicked) applyMinWidth(); });
 });
-
 // ── GLOBAL CLICK DELAY ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   let locked = false;
@@ -773,15 +694,12 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => { locked = false; }, 500);
   }, true);
 });
-
   // ── GLOBALT STOPP FÖR STANDARD TAB-FOKUS ────────────────────────────
 window.addEventListener('keydown', function(e) {
     if (e.key === 'Tab') {
         e.preventDefault(); // Hindrar webbläsaren från att flytta fokus till slumpmässiga knappar
     }
 }, true); // 'true' gör att den fångar tangenten direkt innan något annat händer
-
-
 // ══════════════════════════════════════════════════════════════════════
 // GENERISKT HOVER- & PRESS-SCALE-SYSTEM
 // Ersätter individuella Webflow IX2 hover/click-scale-interactions.
@@ -856,34 +774,27 @@ function initHoverScale(classList) {
         });
     });
 }
-
 // Hur länge (minst) press-effekten ska synas, även vid ett blixtsnabbt klick
 const MIN_PRESS_VISIBLE_MS = 140;
-
 function initPressScale(classList) {
     classList.forEach(cls => {
         document.querySelectorAll('.' + cls).forEach(el => {
             el.classList.add('js-press-scale');
-
             let pressStartTime = 0;
             let releaseTimeoutId = null;
-
             el.addEventListener('pointerdown', (e) => {
                 // Om ett tidigare, väntande release inte hunnit köra - avbryt det, ny press har börjat
                 if (releaseTimeoutId) {
                     clearTimeout(releaseTimeoutId);
                     releaseTimeoutId = null;
                 }
-
                 pressStartTime = performance.now();
-
                 if (e.pointerType === 'mouse') {
                     el.classList.add('is-pressed-down'); // Mus -> skala NER
                 } else {
                     el.classList.add('is-pressed-up');   // Touch/penna -> skala UPP
                 }
             });
-
             // Den faktiska återställningen - körs antingen direkt eller efter fördröjning
             const doRelease = () => {
                 el.classList.remove('is-pressed-down');
@@ -892,11 +803,9 @@ function initPressScale(classList) {
                 el.classList.add('is-click-blocked');
                 releaseTimeoutId = null;
             };
-
             const release = () => {
                 const elapsed = performance.now() - pressStartTime;
                 const remaining = MIN_PRESS_VISIBLE_MS - elapsed;
-
                 if (remaining > 0) {
                     // Trycket var kortare än minimitiden - vänta ut resten innan vi återställer
                     releaseTimeoutId = setTimeout(doRelease, remaining);
@@ -905,16 +814,12 @@ function initPressScale(classList) {
                     doRelease();
                 }
             };
-
             el.addEventListener('pointerup', release);
             el.addEventListener('pointercancel', release);
             el.addEventListener('pointerleave', release);
         });
     });
 }
-
-
-//Stäng flik för terms and privacy
 document.addEventListener('DOMContentLoaded', () => {
     if (supportsRealHover) {
         initHoverScale(HOVER_SCALE_CLASSES);
@@ -922,6 +827,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initPressScale(PRESS_SCALE_CLASSES);
 });
 
+//Stäng flik för terms and privacy
 document.addEventListener("DOMContentLoaded", () => {
   const closeBtn = document.getElementById("tp-close-tab-btn");
   if (closeBtn) {
