@@ -27,47 +27,34 @@
   const userLevelEl = document.getElementById('user-level');
   const userScoreEl = document.getElementById('user-total-score');
   const userRankEl = document.getElementById('user-rank');
+
   function updateAuthUI(user) {
-    const dropdownToggle = document.querySelector('.w-dropdown-toggle');
     const logoutBtns = document.querySelectorAll('#logout-btn, .logout-btn');
-    const loginBtns = document.querySelectorAll('#login-btn, .login-btn');
+    
     if (user) {
+      // ANVÄNDARE ÄR INLOGGAD
       document.body.classList.add("user-logged-in");
       if (userDisplayName) userDisplayName.textContent = user.displayName || user.email;
       
+      // Visa utloggningsknappen (utan några skumma animationer)
       logoutBtns.forEach(btn => {
-        btn.style.transition = 'none'; 
-        btn.style.transform = 'scale(1)';
-        btn.style.opacity = '1';
-        btn.style.display = 'flex';
-        void btn.offsetWidth;      // NYTT: tvinga reflow så transition:none hinner appliceras
-        btn.style.transition = ''; // NYTT: släpp inline-overriden, scale-transitionen funkar igen
+        btn.style.display = 'flex'; 
       });
-      
-      loginBtns.forEach(btn => btn.style.display = 'none');
       
     } else {
-      document.body.classList.remove("user-logged-in");     
-                const overlay = document.querySelector('.inventory-overlay');
-                if (overlay && window.lobbyInvOpen) {
-                    closeLobbyInventory(overlay);
-                }
-                
-              }, 400);
-              
-            }, 200);
-            
-          }, 110);
-        }
+      // ANVÄNDARE ÄR UTLOGGAD
+      document.body.classList.remove("user-logged-in");
+      
+      // Dölj utloggningsknappen direkt
+      logoutBtns.forEach(btn => {
+        btn.style.display = 'none';
       });
       
-      loginBtns.forEach(btn => {
-        btn.style.transition = 'none';
-        btn.style.opacity = '1';
-        btn.style.display = 'flex';
-         void btn.offsetWidth;      // NYTT: tvinga reflow
-        btn.style.transition = ''; // NYTT: släpp inline-overriden
-      });
+      // Stäng inventoryt omedelbart om det råkar vara öppet när man loggar ut
+      const overlay = document.querySelector('.inventory-overlay');
+      if (overlay && window.lobbyInvOpen) {
+          closeLobbyInventory(overlay);
+      }
     }
   }
   function showLoginModal() {
@@ -284,17 +271,6 @@ document.addEventListener('keydown', (e) => {
         console.error("Fel vid utloggning:", error);
       }
       return; 
-    }
-
-    // 2. GENERISK LOGIN-KNAPP
-    const loginBtn = e.target.closest('#login-btn, .login-btn');
-    const isGoogleBtn = e.target.closest('#google-login-btn'); 
-    
-    if (loginBtn && !isGoogleBtn) {
-      e.preventDefault();
-      pendingAction = 'INVENTORY';
-      showLoginModal();
-      return;
     }
 
  // 3. BYT PROFILBILD (Helt rensad på gamla dropdown-hacks)
