@@ -832,9 +832,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ══════════════════════════════════════════════════════════════════════
 // SCROLL-PULSE SYSTEM (ersätter IX2 "Bottom row button and snake")
-// När elementet scrollas in i vy: vänta 0.7s, pulsera sedan opacity
-// 0 -> 1 -> 0 linjärt, loop infinite. Startar samtidigt .return-snake
-// lottien i samma wrapper.
+// När elementet scrollas in i vy (eller en overlay med det öppnas):
+// vänta 0.7s, pulsera sedan opacity 0 -> 1 -> 0 linjärt, loop infinite.
+// Startar samtidigt .return-snake i samma wrapper (också infinite loop).
+// Nollställs helt (pulse + snake) när elementet blir osynligt igen,
+// t.ex. när en overlay stängs.
 // ══════════════════════════════════════════════════════════════════════
 
 const SCROLL_PULSE_CLASSES = ['button', 'button-link'];
@@ -842,6 +844,26 @@ const SCROLL_PULSE_DELAY_MS = 700;
 
 function initScrollPulse(classList) {
     const pendingTimeouts = new WeakMap();
+
+    function getSnake(el) {
+        const wrapper = el.closest('.button-wrapper') || el.parentElement;
+        return wrapper ? wrapper.querySelector('.return-snake') : null;
+    }
+
+    function stopSnake(el) {
+        const snake = getSnake(el);
+        if (snake && typeof snake.stop === 'function') {
+            snake.stop(); // pausar och spolar tillbaka till frame 0
+        }
+    }
+
+    function startSnake(el) {
+        const snake = getSnake(el);
+        if (snake) {
+            if (typeof snake.setLooping === 'function') snake.setLooping(true);
+            if (typeof snake.play === 'function') snake.play();
+        }
+    }
 
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -851,31 +873,29 @@ function initScrollPulse(classList) {
                 if (pendingTimeouts.has(el) || el.classList.contains('is-pulsing')) return;
 
                 const timeoutId = setTimeout(() => {
-                    el.classList.add('js-scroll-pulse', 'is-pulsing');
+                    el.classList.add('is-pulsing');
                     pendingTimeouts.delete(el);
-
-                    // Starta return-snake-lottien i samma wrapper
-                    const wrapper = el.closest('.button-wrapper') || el.parentElement;
-                    const snake = wrapper ? wrapper.querySelector('.return-snake') : null;
-                    if (snake) {
-                        snake.setAttribute('loop', 'true');
-                        if (typeof snake.play === 'function') snake.play();
-                    }
+                    startSnake(el);
                 }, SCROLL_PULSE_DELAY_MS);
 
                 pendingTimeouts.set(el, timeoutId);
             } else {
-                // Lämnade vyn innan 0.7s hann köra klart -> avbryt
+                // Blev osynlig (scrollade ut ELLER overlayen stängdes) -> nollställ helt
                 if (pendingTimeouts.has(el)) {
                     clearTimeout(pendingTimeouts.get(el));
                     pendingTimeouts.delete(el);
                 }
+                el.classList.remove('is-pulsing'); // opacity går tillbaka till 0 (bas-klassen)
+                stopSnake(el);
             }
         });
     }, { threshold: 0.2 });
 
     classList.forEach(cls => {
-        document.querySelectorAll('.' + cls).forEach(el => observer.observe(el));
+        document.querySelectorAll('.' + cls).forEach(el => {
+            el.classList.add('js-scroll-pulse'); // sätt opacity:0 DIREKT, innan observer hinner köra
+            observer.observe(el);
+        });
     });
 }
 

@@ -227,6 +227,9 @@ body .games-grid-clip.is-skewed {
   scale: 0.85;
 }
 /* ── SCROLL-PULSE SYSTEM ── */
+.js-scroll-pulse {
+  opacity: 0; /* start-state: osynlig tills pulsen kickar in */
+}
 .js-scroll-pulse.is-pulsing {
   animation: scrollPulse 2.12s linear infinite;
 }
