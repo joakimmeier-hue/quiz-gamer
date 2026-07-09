@@ -832,75 +832,93 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ══════════════════════════════════════════════════════════════════════
 // SCROLL-PULSE SYSTEM (ersätter IX2 "Bottom row button and snake")
-// När elementet scrollas in i vy (eller en overlay med det öppnas):
-// vänta 0.7s, pulsera sedan opacity 0 -> 1 -> 0 linjärt, loop infinite.
-// Startar samtidigt .return-snake i samma wrapper (också infinite loop).
-// Nollställs helt (pulse + snake) när elementet blir osynligt igen,
-// t.ex. när en overlay stängs.
 // ══════════════════════════════════════════════════════════════════════
 
 const SCROLL_PULSE_CLASSES = ['button', 'button-link'];
 const SCROLL_PULSE_DELAY_MS = 700;
+const SCROLL_PULSE_OVERLAY_SELECTOR = '.rules-overlay, .inventory-overlay, .leaderboard-overlay, .about-overlay';
 
-function initScrollPulse(classList) {
-    const pendingTimeouts = new WeakMap();
+// Map istället för WeakMap - vi behöver kunna loopa igenom den vid overlay-stängning
+const pulsePendingTimeouts = new Map();
 
-    function getSnake(el) {
-        const wrapper = el.closest('.button-wrapper') || el.parentElement;
-        return wrapper ? wrapper.querySelector('.return-snake') : null;
+function getSnakeFor(el) {
+    const wrapper = el.closest('.button-wrapper') || el.parentElement;
+    return wrapper ? wrapper.querySelector('.return-snake') : null;
+}
+
+function resetPulseElement(el) {
+    if (pulsePendingTimeouts.has(el)) {
+        clearTimeout(pulsePendingTimeouts.get(el));
+        pulsePendingTimeouts.delete(el);
     }
+    el.classList.remove('is-pulsing');
 
-    function stopSnake(el) {
-        const snake = getSnake(el);
-        if (snake && typeof snake.stop === 'function') {
-            snake.stop(); // pausar och spolar tillbaka till frame 0
-        }
+    const snake = getSnakeFor(el);
+    if (snake && typeof snake.stop === 'function') {
+        snake.stop(); // pausar + spolar tillbaka till frame 0
     }
+}
 
-    function startSnake(el) {
-        const snake = getSnake(el);
+function startPulseElement(el) {
+    if (pulsePendingTimeouts.has(el) || el.classList.contains('is-pulsing')) return;
+
+    const timeoutId = setTimeout(() => {
+        el.classList.add('is-pulsing');
+        pulsePendingTimeouts.delete(el);
+
+        const snake = getSnakeFor(el);
         if (snake) {
             if (typeof snake.setLooping === 'function') snake.setLooping(true);
             if (typeof snake.play === 'function') snake.play();
         }
-    }
+    }, SCROLL_PULSE_DELAY_MS);
 
+    pulsePendingTimeouts.set(el, timeoutId);
+}
+
+function initScrollPulse(classList) {
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             const el = entry.target;
-
             if (entry.isIntersecting) {
-                if (pendingTimeouts.has(el) || el.classList.contains('is-pulsing')) return;
-
-                const timeoutId = setTimeout(() => {
-                    el.classList.add('is-pulsing');
-                    pendingTimeouts.delete(el);
-                    startSnake(el);
-                }, SCROLL_PULSE_DELAY_MS);
-
-                pendingTimeouts.set(el, timeoutId);
+                startPulseElement(el);
             } else {
-                // Blev osynlig (scrollade ut ELLER overlayen stängdes) -> nollställ helt
-                if (pendingTimeouts.has(el)) {
-                    clearTimeout(pendingTimeouts.get(el));
-                    pendingTimeouts.delete(el);
-                }
-                el.classList.remove('is-pulsing'); // opacity går tillbaka till 0 (bas-klassen)
-                stopSnake(el);
+                resetPulseElement(el);
             }
         });
     }, { threshold: 0.2 });
 
     classList.forEach(cls => {
         document.querySelectorAll('.' + cls).forEach(el => {
-            el.classList.add('js-scroll-pulse'); // sätt opacity:0 DIREKT, innan observer hinner köra
+            el.classList.add('js-scroll-pulse');
             observer.observe(el);
         });
     });
 }
 
+// ── FORCERAD RESET NÄR EN OVERLAY STÄNGS ────────────────────────────
+// Kör oavsett vad IntersectionObserver hinner/inte hinner tycka,
+// eftersom opacity/visibility inte påverkar dess geometri-check.
+function initScrollPulseOverlayReset() {
+    document.querySelectorAll(SCROLL_PULSE_OVERLAY_SELECTOR).forEach(overlay => {
+        let wasVisible = false;
+
+        new MutationObserver(() => {
+            const style = window.getComputedStyle(overlay);
+            const isVisible = style.display !== 'none' && parseFloat(style.opacity) > 0;
+
+            if (wasVisible && !isVisible) {
+                // Overlay stängdes -> nollställ ALLA pulse/snake-element i den
+                overlay.querySelectorAll('.js-scroll-pulse').forEach(resetPulseElement);
+            }
+            wasVisible = isVisible;
+        }).observe(overlay, { attributes: true, attributeFilter: ['style', 'class'] });
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initScrollPulse(SCROLL_PULSE_CLASSES);
+    initScrollPulseOverlayReset();
 });
 
 
