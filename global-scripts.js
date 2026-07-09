@@ -631,40 +631,41 @@ window.addEventListener('load', function() {
 // ── MULTI-BUTTON KEY LISTENERS (ESC/ENTER) ────────────────────────────
 document.addEventListener('keydown', function(e) {
     const triggerKeys = ["Escape", "Enter"];
-    if (triggerKeys.includes(e.key)) {
-      
-      let overlayHandled = false; // Håller koll på om en meny tog hand om knapptrycket
-      const overlays = document.querySelectorAll('.rules-overlay, .inventory-overlay, .leaderboard-overlay, .about-overlay');
-      overlays.forEach(function(overlay) {
+    if (!triggerKeys.includes(e.key)) return;
+
+    // 1. Är en overlay öppen? Klicka DESS egen .button och sluta.
+    const overlays = document.querySelectorAll('.rules-overlay, .inventory-overlay, .leaderboard-overlay, .about-overlay');
+    for (const overlay of overlays) {
         const style = window.getComputedStyle(overlay);
         const isOpen = style.display !== 'none' && parseFloat(style.opacity) > 0.9;
         if (isOpen) {
-          if (e.key === 'Enter' && overlay.classList.contains('about-overlay')) return;
-          e.preventDefault(); 
-          const btn = overlay.querySelector('.button');
-          if (btn) btn.click();
-          overlayHandled = true; // Markera att en overlay stängdes
+            if (e.key === 'Enter' && overlay.classList.contains('about-overlay')) return;
+            e.preventDefault();
+            const btn = overlay.querySelector('.button');
+            if (btn) btn.click();
+            return;
         }
-      });
-      // ── SID-SPECIFIKA KNAPPAR (Körs BARA om ingen overlay var öppen) ──
-      if (!overlayHandled) {
-          
-          // 1. Knappen på UC-sidan
-          const lobbyLinkUc = document.getElementById('link-to-lobby-from-uc');
-          if (lobbyLinkUc) {
-              e.preventDefault(); // Hindra standardbeteende
-              lobbyLinkUc.click();
-              return; // Avbryt här så vi inte råkar klicka på flera saker
-          }
-        // 2. Stäng/Backa-knappen på Terms & Privacy-sidorna (NY!)
-          const tpCloseBtn = document.querySelector('.button-link.close-tab');
-          if (tpCloseBtn) {
-              e.preventDefault();
-              tpCloseBtn.click(); // Triggar din andra click-lyssnare som sköter stängning/fallback
-              return;
-          }
-      }
-    }				
+    }
+
+    // 2. UC-sidans knapp
+    const lobbyLinkUc = document.getElementById('link-to-lobby-from-uc');
+    if (lobbyLinkUc) {
+        e.preventDefault();
+        lobbyLinkUc.click();
+        return;
+    }
+
+    // 3. Generisk fallback: klicka på den FAKTISKT SYNLIGA .button/.button-link
+    // i en .button-wrapper. offsetParent === null = display:none, vilket
+    // automatiskt filtrerar bort dolda variant-kopior i DOM:en.
+    const visibleWrapperBtn = Array.from(
+        document.querySelectorAll('.button-wrapper .button, .button-wrapper .button-link')
+    ).find(el => el.offsetParent !== null);
+
+    if (visibleWrapperBtn) {
+        e.preventDefault();
+        visibleWrapperBtn.click();
+    }
 });
 // ── CLIPPING MIN-WIDTH LOGIK ──────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -832,98 +833,87 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ══════════════════════════════════════════════════════════════════════
 // SCROLL-PULSE SYSTEM (ersätter IX2 "Bottom row button and snake")
-// Skopat till .button-wrapper - annars träffar det ALLA .button/.button-link
-// på hela sajten, vilket var den riktiga boven bakom både blinket och
-// "kör för alltid"-buggen.
+// DEL 1: Fristående sidor (UC, Terms, Privacy) - pulsar vid scroll-in-view.
+// DEL 2: Overlays (rules/leaderboard/about) - startas om MANUELLT varje
+// gång overlayen öppnas. Helt separat system, ingen krock med DEL 1.
 // ══════════════════════════════════════════════════════════════════════
 
-const SCROLL_PULSE_SCOPE = '.button-wrapper';
-const SCROLL_PULSE_SELECTOR = `${SCROLL_PULSE_SCOPE} .button, ${SCROLL_PULSE_SCOPE} .button-link`;
 const SCROLL_PULSE_DELAY_MS = 700;
+const MANUAL_RESTART_OVERLAYS = '.rules-overlay, .leaderboard-overlay, .about-overlay';
+const pulsePendingTimeouts = new Map(); // key = button-wrapper
 
-const pulsePendingTimeouts = new Map();
-
-function getSnakeFor(el) {
-    const wrapper = el.closest(SCROLL_PULSE_SCOPE) || el.parentElement;
-    return wrapper ? wrapper.querySelector('.return-snake') : null;
+function getSnakeFor(wrapperEl) {
+    return wrapperEl.querySelector('.return-snake');
 }
-
-// Kollar HELA förfaderkedjan - fångar display:none, visibility:hidden
-// och opacity:0, oavsett vilken overlay-struktur som döljer elementet.
-function isElementTrulyVisible(el) {
-    let node = el;
-    while (node && node !== document.body) {
-        const style = window.getComputedStyle(node);
-        if (style.display === 'none' || style.visibility === 'hidden' || parseFloat(style.opacity) === 0) {
-            return false;
-        }
-        node = node.parentElement;
-    }
-    return true;
+function stopSnake(wrapperEl) {
+    const snake = getSnakeFor(wrapperEl);
+    if (snake && typeof snake.stop === 'function') snake.stop();
 }
-
-function resetPulseElement(el) {
-    if (pulsePendingTimeouts.has(el)) {
-        clearTimeout(pulsePendingTimeouts.get(el));
-        pulsePendingTimeouts.delete(el);
-    }
-    el.classList.remove('is-pulsing');
-
-    const snake = getSnakeFor(el);
-    if (snake && typeof snake.stop === 'function') {
-        snake.stop();
+function startSnake(wrapperEl) {
+    const snake = getSnakeFor(wrapperEl);
+    if (snake) {
+        if (typeof snake.setLooping === 'function') snake.setLooping(true);
+        if (typeof snake.play === 'function') snake.play();
     }
 }
-
-function startPulseElement(el) {
-    if (pulsePendingTimeouts.has(el) || el.classList.contains('is-pulsing')) return;
-
+function resetPulse(wrapperEl) {
+    if (pulsePendingTimeouts.has(wrapperEl)) {
+        clearTimeout(pulsePendingTimeouts.get(wrapperEl));
+        pulsePendingTimeouts.delete(wrapperEl);
+    }
+    wrapperEl.querySelectorAll('.button, .button-link').forEach(btn => btn.classList.remove('is-pulsing'));
+    stopSnake(wrapperEl);
+}
+function startPulse(wrapperEl) {
+    if (pulsePendingTimeouts.has(wrapperEl)) return;
     const timeoutId = setTimeout(() => {
-        pulsePendingTimeouts.delete(el);
-        if (!isElementTrulyVisible(el)) return; // dubbelkoll innan vi visar
-
-        el.classList.add('is-pulsing');
-        const snake = getSnakeFor(el);
-        if (snake) {
-            if (typeof snake.setLooping === 'function') snake.setLooping(true);
-            if (typeof snake.play === 'function') snake.play();
-        }
+        pulsePendingTimeouts.delete(wrapperEl);
+        wrapperEl.querySelectorAll('.button, .button-link').forEach(btn => btn.classList.add('is-pulsing'));
+        startSnake(wrapperEl); // samtidigt som pulsen - precis som du bad om
     }, SCROLL_PULSE_DELAY_MS);
-
-    pulsePendingTimeouts.set(el, timeoutId);
+    pulsePendingTimeouts.set(wrapperEl, timeoutId);
 }
 
+// ── DEL 1: scroll-in-view (exkluderar wrappers inuti de 3 overlayen) ──
 function initScrollPulse() {
-    const elements = document.querySelectorAll(SCROLL_PULSE_SELECTOR);
-    if (!elements.length) return;
+    const wrappers = Array.from(document.querySelectorAll('.button-wrapper'))
+        .filter(w => !w.closest(MANUAL_RESTART_OVERLAYS));
+    if (!wrappers.length) return;
 
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            const el = entry.target;
-            if (entry.isIntersecting) startPulseElement(el);
-            else resetPulseElement(el);
+            if (entry.isIntersecting) startPulse(entry.target);
+            else resetPulse(entry.target);
         });
     }, { threshold: 0.2 });
 
-    elements.forEach(el => {
-        observer.observe(el);
+    wrappers.forEach(w => observer.observe(w));
+}
 
-        // Vaktar varje nivå i förfaderkedjan - täcker alla sätt en overlay
-        // kan döljas på, ingen hårdkodning av klassnamn behövs.
-        let ancestor = el.parentElement;
-        while (ancestor && ancestor !== document.body) {
-            new MutationObserver(() => {
-                if ((el.classList.contains('is-pulsing') || pulsePendingTimeouts.has(el)) && !isElementTrulyVisible(el)) {
-                    resetPulseElement(el);
-                }
-            }).observe(ancestor, { attributes: true, attributeFilter: ['style', 'class'] });
-            ancestor = ancestor.parentElement;
-        }
+// ── DEL 2: manuell omstart vid overlay öppen/stängd ──
+function initOverlayPulseRestart() {
+    document.querySelectorAll(MANUAL_RESTART_OVERLAYS).forEach(overlay => {
+        const wrappers = overlay.querySelectorAll('.button-wrapper');
+        if (!wrappers.length) return;
+
+        let wasOpen = false;
+        new MutationObserver(() => {
+            const style = window.getComputedStyle(overlay);
+            const isOpen = style.display !== 'none' && parseFloat(style.opacity) > 0;
+
+            if (isOpen && !wasOpen) {
+                wrappers.forEach(w => { resetPulse(w); startPulse(w); });
+            } else if (!isOpen && wasOpen) {
+                wrappers.forEach(resetPulse); // stäng av helt - ingen bakgrundskörning
+            }
+            wasOpen = isOpen;
+        }).observe(overlay, { attributes: true, attributeFilter: ['style', 'class'] });
     });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     initScrollPulse();
+    initOverlayPulseRestart();
 });
 
 // Stäng flik för terms and privacy
