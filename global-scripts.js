@@ -709,7 +709,7 @@ window.addEventListener('keydown', function(e) {
  
 // Klasser som ska skalas upp till 1.2 vid hover (mouse enter/leave)
 const HOVER_SCALE_CLASSES = [
-    'welcome-text-container',
+    'wtc-wrapper',
     'games-link-block',
     'q-logo',
     'burger-links',
