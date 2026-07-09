@@ -657,7 +657,7 @@ document.addEventListener('keydown', function(e) {
               return; // Avbryt här så vi inte råkar klicka på flera saker
           }
         // 2. Stäng/Backa-knappen på Terms & Privacy-sidorna (NY!)
-          const tpCloseBtn = document.querySelector('.button-link.tp');
+          const tpCloseBtn = document.querySelector('.button-link.close-tab');
           if (tpCloseBtn) {
               e.preventDefault();
               tpCloseBtn.click(); // Triggar din andra click-lyssnare som sköter stängning/fallback
@@ -833,7 +833,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Stäng flik för terms and privacy
 document.addEventListener("click", (e) => {
   // Leta efter klick på din komboklass (eller något inuti den)
-  const closeBtn = e.target.closest(".button-link.tp");
+  const closeBtn = e.target.closest(".button-link.close-tab");
   
   if (closeBtn) {
     e.preventDefault();
