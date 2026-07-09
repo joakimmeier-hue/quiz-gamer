@@ -198,12 +198,20 @@ body .games-grid-clip.is-skewed {
   animation: noiseFlash 0.2s ease-in-out 0.3s forwards; 
 }
 
-/* ── HOVER-SCALE SYSTEM (ersätter individuella "02-scale-medium"-interactions) ── */
+/* ── HOVER-SCALE SYSTEM STOR (1.15) ── */
 .js-hover-scale {
-  transition: scale 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955); /* ≈ Power1 In Out */
+  transition: scale 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955);
 }
 .js-hover-scale.is-hovered {
   scale: 1.15;
+}
+
+/* ── HOVER-SCALE SYSTEM SUBTIL (1.08) ── */
+.js-hover-scale-sm {
+  transition: scale 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955);
+}
+.js-hover-scale-sm.is-hovered {
+  scale: 1.08;
 }
  
 /* ── PRESS-SCALE / "BLOW UP" SYSTEM (ersätter click-scale-interactions) ── */
@@ -221,6 +229,7 @@ body .games-grid-clip.is-skewed {
 
 /* Lottie-spelare ska ALDRIG fånga klick/hover - släpp igenom till föräldern */
 .js-hover-scale lottie-player,
+.js-hover-scale-sm lottie-player,
 .js-press-scale lottie-player {
   pointer-events: none;
 }

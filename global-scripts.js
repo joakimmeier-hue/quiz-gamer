@@ -700,6 +700,7 @@ window.addEventListener('keydown', function(e) {
         e.preventDefault(); // Hindrar webbläsaren från att flytta fokus till slumpmässiga knappar
     }
 }, true); // 'true' gör att den fångar tangenten direkt innan något annat händer
+
 // ══════════════════════════════════════════════════════════════════════
 // GENERISKT HOVER- & PRESS-SCALE-SYSTEM
 // Ersätter individuella Webflow IX2 hover/click-scale-interactions.
@@ -707,9 +708,8 @@ window.addEventListener('keydown', function(e) {
 // för nya element, bara lägg till klassen i rätt lista här.
 // ══════════════════════════════════════════════════════════════════════
  
-// Klasser som ska skalas upp till 1.2 vid hover (mouse enter/leave)
+// Klasser som ska skalas upp till 1.15 vid hover (stor effekt)
 const HOVER_SCALE_CLASSES = [
-    'wtc-wrapper',
     'games-link-block',
     'q-logo',
     'burger-links',
@@ -730,10 +730,14 @@ const HOVER_SCALE_CLASSES = [
     'profile-pic-option',
     'current-profile-pic'
 ];
- 
+
+// Klasser som ska skalas upp till 1.08 vid hover (subtil effekt)
+const HOVER_SCALE_CLASSES_SM = [
+    'wtc-wrapper'
+];
+
 // Klasser som ska ändra scale vid press (pointerdown -> pointerup)
 const PRESS_SCALE_CLASSES = [
-    // Lägg till dina click-scale-klasser här, t.ex.:
     'games-link-block',
     'q-logo',
     'burger-links',
@@ -750,27 +754,24 @@ const PRESS_SCALE_CLASSES = [
     'cp-create-btn',
     'current-profile-pic'
 ];
- 
-// Endast riktiga mus-hover-enheter ska få hover-scale.
-// Annars fastnar mobiler i "hover"-läge efter ett tryck (klassisk touch-bugg).
+
 const supportsRealHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
- 
-function initHoverScale(classList) {
+
+// scaleClass = 'js-hover-scale' (1.15) eller 'js-hover-scale-sm' (1.08)
+function initHoverScale(classList, scaleClass) {
     classList.forEach(cls => {
         document.querySelectorAll('.' + cls).forEach(el => {
-            el.classList.add('js-hover-scale');
-            
+            el.classList.add(scaleClass);
+
             el.addEventListener('mouseenter', () => {
-                // Lägg bara till hover-effekten om vi inte precis har klickat
                 if (!el.classList.contains('is-click-blocked')) {
                     el.classList.add('is-hovered');
                 }
             });
-            
+
             el.addEventListener('mouseleave', () => {
                 el.classList.remove('is-hovered');
-                // Nollställ blockeringen när musen lämnar elementet
-                el.classList.remove('is-click-blocked'); 
+                el.classList.remove('is-click-blocked');
             });
         });
     });
@@ -823,7 +824,8 @@ function initPressScale(classList) {
 }
 document.addEventListener('DOMContentLoaded', () => {
     if (supportsRealHover) {
-        initHoverScale(HOVER_SCALE_CLASSES);
+        initHoverScale(HOVER_SCALE_CLASSES, 'js-hover-scale');
+        initHoverScale(HOVER_SCALE_CLASSES_SM, 'js-hover-scale-sm');
     }
     initPressScale(PRESS_SCALE_CLASSES);
 });
