@@ -830,6 +830,60 @@ document.addEventListener('DOMContentLoaded', () => {
     initPressScale(PRESS_SCALE_CLASSES);
 });
 
+// ══════════════════════════════════════════════════════════════════════
+// SCROLL-PULSE SYSTEM (ersätter IX2 "Bottom row button and snake")
+// När elementet scrollas in i vy: vänta 0.7s, pulsera sedan opacity
+// 0 -> 1 -> 0 linjärt, loop infinite. Startar samtidigt .return-snake
+// lottien i samma wrapper.
+// ══════════════════════════════════════════════════════════════════════
+
+const SCROLL_PULSE_CLASSES = ['button', 'button-link'];
+const SCROLL_PULSE_DELAY_MS = 700;
+
+function initScrollPulse(classList) {
+    const pendingTimeouts = new WeakMap();
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            const el = entry.target;
+
+            if (entry.isIntersecting) {
+                if (pendingTimeouts.has(el) || el.classList.contains('is-pulsing')) return;
+
+                const timeoutId = setTimeout(() => {
+                    el.classList.add('js-scroll-pulse', 'is-pulsing');
+                    pendingTimeouts.delete(el);
+
+                    // Starta return-snake-lottien i samma wrapper
+                    const wrapper = el.closest('.button-wrapper') || el.parentElement;
+                    const snake = wrapper ? wrapper.querySelector('.return-snake') : null;
+                    if (snake) {
+                        snake.setAttribute('loop', 'true');
+                        if (typeof snake.play === 'function') snake.play();
+                    }
+                }, SCROLL_PULSE_DELAY_MS);
+
+                pendingTimeouts.set(el, timeoutId);
+            } else {
+                // Lämnade vyn innan 0.7s hann köra klart -> avbryt
+                if (pendingTimeouts.has(el)) {
+                    clearTimeout(pendingTimeouts.get(el));
+                    pendingTimeouts.delete(el);
+                }
+            }
+        });
+    }, { threshold: 0.2 });
+
+    classList.forEach(cls => {
+        document.querySelectorAll('.' + cls).forEach(el => observer.observe(el));
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initScrollPulse(SCROLL_PULSE_CLASSES);
+});
+
+
 // Stäng flik för terms and privacy
 document.addEventListener("click", (e) => {
   // Leta efter klick på din komboklass (eller något inuti den)

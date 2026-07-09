@@ -226,10 +226,24 @@ body .games-grid-clip.is-skewed {
 .js-press-scale.is-pressed-down {
   scale: 0.85;
 }
-
+/* ── SCROLL-PULSE SYSTEM ── */
+.js-scroll-pulse.is-pulsing {
+  animation: scrollPulse 2.12s linear infinite;
+}
+@keyframes scrollPulse {
+  0%   { opacity: 0; }
+  50%  { opacity: 1; }
+  100% { opacity: 0; }
+}
 /* Lottie-spelare ska ALDRIG fånga klick/hover - släpp igenom till föräldern */
 .js-hover-scale lottie-player,
 .js-hover-scale-sm lottie-player,
 .js-press-scale lottie-player {
   pointer-events: none;
+}
+
+a.button-link,
+a.button-link:visited,
+a.button-link:hover {
+  color: inherit !important; /* eller din önskade färg */
 }
