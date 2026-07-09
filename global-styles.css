@@ -227,10 +227,12 @@ body .games-grid-clip.is-skewed {
   scale: 0.85;
 }
 /* ── SCROLL-PULSE SYSTEM ── */
-.js-scroll-pulse {
-  opacity: 0; /* start-state: osynlig tills pulsen kickar in */
+.button-wrapper .button,
+.button-wrapper .button-link {
+  opacity: 0;
 }
-.js-scroll-pulse.is-pulsing {
+.button-wrapper .button.is-pulsing,
+.button-wrapper .button-link.is-pulsing {
   animation: scrollPulse 2.12s linear infinite;
 }
 @keyframes scrollPulse {
