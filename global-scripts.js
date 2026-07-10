@@ -834,12 +834,15 @@ document.addEventListener('DOMContentLoaded', () => {
 // ══════════════════════════════════════════════════════════════════════
 // SCROLL-PULSE SYSTEM (ersätter IX2 "Bottom row button and snake")
 // DEL 1: Fristående sidor (UC, Terms, Privacy) - pulsar vid scroll-in-view.
-// DEL 2: Overlays (rules/leaderboard/about) - startas om MANUELLT varje
-// gång overlayen öppnas. Helt separat system, ingen krock med DEL 1.
+// DEL 2: Overlays på Lobby (rules/leaderboard/about) - pollar visibility
+// istället för MutationObserver, eftersom CSS-transitions bara triggar
+// EN mutation (vid start), inte vid varje frame - vi missade slutläget.
 // ══════════════════════════════════════════════════════════════════════
 
-const SCROLL_PULSE_DELAY_MS = 700;
-const MANUAL_RESTART_OVERLAYS = '.rules-overlay, .leaderboard-overlay, .about-overlay';
+const SCROLL_PULSE_DELAY_MS = 1100;
+const OVERLAY_RESTART_SELECTOR = '.rules-overlay, .leaderboard-overlay, .about-overlay';
+const OVERLAY_POLL_MS = 400;
+
 const pulsePendingTimeouts = new Map(); // key = button-wrapper
 
 function getSnakeFor(wrapperEl) {
@@ -869,7 +872,7 @@ function startPulse(wrapperEl) {
     const timeoutId = setTimeout(() => {
         pulsePendingTimeouts.delete(wrapperEl);
         wrapperEl.querySelectorAll('.button, .button-link').forEach(btn => btn.classList.add('is-pulsing'));
-        startSnake(wrapperEl); // samtidigt som pulsen - precis som du bad om
+        startSnake(wrapperEl);
     }, SCROLL_PULSE_DELAY_MS);
     pulsePendingTimeouts.set(wrapperEl, timeoutId);
 }
@@ -877,7 +880,7 @@ function startPulse(wrapperEl) {
 // ── DEL 1: scroll-in-view (exkluderar wrappers inuti de 3 overlayen) ──
 function initScrollPulse() {
     const wrappers = Array.from(document.querySelectorAll('.button-wrapper'))
-        .filter(w => !w.closest(MANUAL_RESTART_OVERLAYS));
+        .filter(w => !w.closest(OVERLAY_RESTART_SELECTOR));
     if (!wrappers.length) return;
 
     const observer = new IntersectionObserver((entries) => {
@@ -890,24 +893,43 @@ function initScrollPulse() {
     wrappers.forEach(w => observer.observe(w));
 }
 
-// ── DEL 2: manuell omstart vid overlay öppen/stängd ──
-function initOverlayPulseRestart() {
-    document.querySelectorAll(MANUAL_RESTART_OVERLAYS).forEach(overlay => {
-        const wrappers = overlay.querySelectorAll('.button-wrapper');
-        if (!wrappers.length) return;
+// ── DEL 2: Lobby-overlays - poll:ad visibility istället för Mutation ──
+function isOverlayOpen(overlay) {
+    const style = window.getComputedStyle(overlay);
+    return style.display !== 'none' && parseFloat(style.opacity) > 0;
+}
 
-        let wasOpen = false;
-        new MutationObserver(() => {
-            const style = window.getComputedStyle(overlay);
-            const isOpen = style.display !== 'none' && parseFloat(style.opacity) > 0;
+function initOverlayPulseRestart() {
+    const overlays = document.querySelectorAll(OVERLAY_RESTART_SELECTOR);
+    if (!overlays.length) return;
+
+    const wasOpenMap = new Map();
+    overlays.forEach(overlay => wasOpenMap.set(overlay, false));
+
+    setInterval(() => {
+        overlays.forEach(overlay => {
+            const isOpen = isOverlayOpen(overlay);
+            const wasOpen = wasOpenMap.get(overlay);
+            const wrappers = overlay.querySelectorAll('.button-wrapper');
 
             if (isOpen && !wasOpen) {
                 wrappers.forEach(w => { resetPulse(w); startPulse(w); });
             } else if (!isOpen && wasOpen) {
-                wrappers.forEach(resetPulse); // stäng av helt - ingen bakgrundskörning
+                wrappers.forEach(resetPulse);
             }
-            wasOpen = isOpen;
-        }).observe(overlay, { attributes: true, attributeFilter: ['style', 'class'] });
+            wasOpenMap.set(overlay, isOpen);
+        });
+    }, OVERLAY_POLL_MS);
+
+    // Extra säkerhetsnät (din idé): reset direkt vid klick på burger-menyn,
+    // ifall en overlay redan hunnit stängas innan pollningen märkte det.
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.burger-links')) return;
+        overlays.forEach(overlay => {
+            if (!isOverlayOpen(overlay)) {
+                overlay.querySelectorAll('.button-wrapper').forEach(resetPulse);
+            }
+        });
     });
 }
 
