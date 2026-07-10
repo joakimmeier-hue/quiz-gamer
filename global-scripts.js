@@ -846,15 +846,30 @@ const pulsePendingTimeouts = new Map();
 function getSnakeFor(wrapperEl) {
     return wrapperEl.querySelector('.return-snake');
 }
-function stopSnake(wrapperEl) {
-    const snake = getSnakeFor(wrapperEl);
-    if (snake && typeof snake.stop === 'function') snake.stop(); // pausar + spolar till frame 0
-}
 function startSnake(wrapperEl) {
-    const snake = getSnakeFor(wrapperEl);
-    if (snake && typeof snake.setLooping === 'function') {
-        snake.setLooping(true);
+    const snake = wrapperEl.querySelector('.return-snake');
+    if (!snake) return;
+    snake.setAttribute('loop', ''); // garanterat stöd oavsett lottie-player-version
+    if (typeof snake.setLooping === 'function') snake.setLooping(true);
+    if (typeof snake.seek === 'function') snake.seek(0);
+    if (typeof snake.play === 'function') {
         snake.play();
+    } else {
+        snake.setAttribute('autoplay', '');
+    }
+}
+
+function stopSnake(wrapperEl) {
+    const snake = wrapperEl.querySelector('.return-snake');
+    if (!snake) return;
+    if (typeof snake.stop === 'function') snake.stop();
+    if (typeof snake.seek === 'function') {
+        snake.seek(0); // "backa snabbt"-tricket från din IX2-lösning
+    } else {
+        // Sista utväg: tvinga fram en fullständig omladdning från frame 0
+        const src = snake.getAttribute('src');
+        snake.removeAttribute('src');
+        requestAnimationFrame(() => snake.setAttribute('src', src));
     }
 }
 function resetPulse(wrapperEl) {
