@@ -829,7 +829,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // SCROLL-PULSE SYSTEM (FÖR CUSTOM <LOTTIE-PLAYER>)
 // ══════════════════════════════════════════════════════════════════════
 
-const SCROLL_PULSE_DELAY_MS = 1100;
+const SCROLL_PULSE_DELAY_MS = 700;
 const pulsePendingTimeouts = new Map();
 
 function startSnake(wrapperEl) {
