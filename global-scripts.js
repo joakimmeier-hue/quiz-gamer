@@ -647,8 +647,6 @@ document.addEventListener('keydown', function(e) {
         }
     }
 
- 
-
     // 3. Generisk fallback: klicka på den FAKTISKT SYNLIGA .button/.button-link
     // i en .button-wrapper. offsetParent === null = display:none, vilket
     // automatiskt filtrerar bort dolda variant-kopior i DOM:en.

@@ -17,6 +17,7 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
   const googleProvider = new GoogleAuthProvider();
+  googleProvider.setCustomParameters({ prompt: 'select_account' });
   let currentUser = null;
   let pendingAction = null; 
   let isAuthenticating = false; // NYTT: skydd mot dubbla samtidiga inloggningsförsök
@@ -103,25 +104,31 @@
   window.resolvePendingAction = resolvePendingAction;
 
   // ── LÖS DET SOM ANVÄNDAREN FÖRSÖKTE GÖRA INNAN INLOGGNING KRÄVDES ──
-  function resolvePendingAction() {
-    if (!pendingAction) return;
+ function resolvePendingAction() {
+   console.log("resolvePendingAction() utlöst. Aktiv handling:", pendingAction);
+   if (!pendingAction) {
+     console.log("Ingen handling låg i kö.");
+     return;
+   }
 
-    if (pendingAction === 'INVENTORY') { 
-      const overlay = document.querySelector('.inventory-overlay');
-      if (overlay && !window.lobbyInvOpen) {
-        openLobbyInventory(overlay);
-      }
-    } else {
-      // pendingAction är annars en URL (spel-länk)
-      if (typeof window.triggerPageExit === 'function') {
-        window.triggerPageExit(pendingAction, false);
-      } else {
-        window.location.href = pendingAction;
-      }
-    }
+   if (pendingAction === 'INVENTORY') { 
+     const overlay = document.querySelector('.inventory-overlay');
+     console.log("Försöker öppna inventory-overlay:", overlay);
+     if (overlay && !window.lobbyInvOpen) {
+       openLobbyInventory(overlay);
+     }
+   } else {
+     // pendingAction är en URL (spel-länk)
+     console.log("Navigerar vidare till spel-länk:", pendingAction);
+     if (typeof window.triggerPageExit === 'function') {
+       window.triggerPageExit(pendingAction, false);
+     } else {
+       window.location.href = pendingAction;
+     }
+   }
 
-    pendingAction = null;
-  }
+   pendingAction = null;
+ }
   // ── HJÄLPFUNKTION: Kollar om en knapp faktiskt syns ──
   function isVisible(el) {
     return el && window.getComputedStyle(el).display !== 'none';
@@ -228,38 +235,50 @@ document.addEventListener('keydown', (e) => {
     }
 }, true);
  // ── GOOGLE LOGIN ──
-  if (googleLoginBtn) {
-    googleLoginBtn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      if (isAuthenticating) return; // NYTT: redan på gång - ignorera extra klick under popupen
-      isAuthenticating = true;
-      try {
-        const result = await signInWithPopup(auth, googleProvider);
-        currentUser = result.user; 
-        hideLoginModal(); 
+ if (googleLoginBtn) {
+   googleLoginBtn.addEventListener('click', async (e) => {
+     e.preventDefault();
+     if (isAuthenticating) return; // Skydd mot dubbla samtidiga inloggningsförsök
+     isAuthenticating = true;
+     
+     try {
+       console.log("Initierar Google Sign-In Popup...");
+       const result = await signInWithPopup(auth, googleProvider);
+       currentUser = result.user; 
+       console.log("Inloggning lyckades för:", currentUser.displayName);
+       
+       hideLoginModal(); 
 
-        // Kolla om det är en first-time user
-        const userDocRef = doc(db, "users", currentUser.uid);
-        const userDoc = await getDoc(userDocRef);
+       // Skapa en säkerhetsspärr för Firestore-läsningen
+       let isFirstTime = false;
+       try {
+         const userDocRef = doc(db, "users", currentUser.uid);
+         const userDoc = await getDoc(userDocRef);
+         if (!userDoc.exists()) {
+           isFirstTime = true;
+         }
+       } catch (firestoreError) {
+         console.warn("Kunde inte läsa från Firestore (kolla regler/molnstatus):", firestoreError.message);
+         // FALLBACK: Om databasen nekar oss, blocka inte spelaren. Kör vidare!
+       }
 
-        if (!userDoc.exists()) {
-          // First-time -> visa create-profile, pendingAction ligger kvar orörd
-          // tills profilen är klar (anropa window.resolvePendingAction() därifrån)
-          setTimeout(() => {
-              showCreateProfile();
-          }, 350);
-        } else {
-          // Återkommande user -> kör vidare med det man försökte göra innan inloggningen
-          resolvePendingAction();
-        }
+       if (isFirstTime) {
+         console.log("Ny spelare upptäckt. Visar profilskaparen...");
+         setTimeout(() => {
+             showCreateProfile();
+         }, 350);
+       } else {
+         console.log("Återkommande spelare. Verkställer sparad handling...");
+         resolvePendingAction();
+       }
 
-      } catch (error) {
-        console.error("Inloggning avbruten eller misslyckades:", error.message);
-      } finally {
-        isAuthenticating = false; // NYTT
-      }
-    });
-  }
+     } catch (error) {
+       console.error("Inloggning avbruten eller misslyckades helt:", error.message);
+     } finally {
+       isAuthenticating = false; 
+     }
+   });
+ }
   // ── GLOBAL KLICKLYSSNARE ──
   document.addEventListener('click', async (e) => {
 
