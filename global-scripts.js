@@ -833,30 +833,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ══════════════════════════════════════════════════════════════════════
 // SCROLL-PULSE SYSTEM (ersätter IX2 "Bottom row button and snake")
-// DEL 1: Fristående sidor (UC, Terms, Privacy) - pulsar vid scroll-in-view.
-// DEL 2: Overlays på Lobby (rules/leaderboard/about) - pollar visibility
-// istället för MutationObserver, eftersom CSS-transitions bara triggar
-// EN mutation (vid start), inte vid varje frame - vi missade slutläget.
+// En enda IntersectionObserver på .button-wrapper - funkar identiskt på
+// fristående sidor OCH inuti overlays, eftersom overlayens display-toggle
+// automatiskt ändrar wrapperns geometri/synlighet.
+// Reset triggas av klick på valfri knapp i wrappern, + burger-links som
+// extra säkerhetsnät för Lobby-overlays.
 // ══════════════════════════════════════════════════════════════════════
 
 const SCROLL_PULSE_DELAY_MS = 1100;
-const OVERLAY_RESTART_SELECTOR = '.rules-overlay, .leaderboard-overlay, .about-overlay';
-const OVERLAY_POLL_MS = 400;
-
-const pulsePendingTimeouts = new Map(); // key = button-wrapper
+const pulsePendingTimeouts = new Map();
 
 function getSnakeFor(wrapperEl) {
     return wrapperEl.querySelector('.return-snake');
 }
 function stopSnake(wrapperEl) {
     const snake = getSnakeFor(wrapperEl);
-    if (snake && typeof snake.stop === 'function') snake.stop();
+    if (snake && typeof snake.stop === 'function') snake.stop(); // pausar + spolar till frame 0
 }
 function startSnake(wrapperEl) {
     const snake = getSnakeFor(wrapperEl);
-    if (snake) {
-        if (typeof snake.setLooping === 'function') snake.setLooping(true);
-        if (typeof snake.play === 'function') snake.play();
+    if (snake && typeof snake.setLooping === 'function') {
+        snake.setLooping(true);
+        snake.play();
     }
 }
 function resetPulse(wrapperEl) {
@@ -877,10 +875,8 @@ function startPulse(wrapperEl) {
     pulsePendingTimeouts.set(wrapperEl, timeoutId);
 }
 
-// ── DEL 1: scroll-in-view (exkluderar wrappers inuti de 3 overlayen) ──
 function initScrollPulse() {
-    const wrappers = Array.from(document.querySelectorAll('.button-wrapper'))
-        .filter(w => !w.closest(OVERLAY_RESTART_SELECTOR));
+    const wrappers = document.querySelectorAll('.button-wrapper');
     if (!wrappers.length) return;
 
     const observer = new IntersectionObserver((entries) => {
@@ -890,53 +886,34 @@ function initScrollPulse() {
         });
     }, { threshold: 0.2 });
 
-    wrappers.forEach(w => observer.observe(w));
-}
-
-// ── DEL 2: Lobby-overlays - poll:ad visibility istället för Mutation ──
-function isOverlayOpen(overlay) {
-    const style = window.getComputedStyle(overlay);
-    return style.display !== 'none' && parseFloat(style.opacity) > 0;
-}
-
-function initOverlayPulseRestart() {
-    const overlays = document.querySelectorAll(OVERLAY_RESTART_SELECTOR);
-    if (!overlays.length) return;
-
-    const wasOpenMap = new Map();
-    overlays.forEach(overlay => wasOpenMap.set(overlay, false));
-
-    setInterval(() => {
-        overlays.forEach(overlay => {
-            const isOpen = isOverlayOpen(overlay);
-            const wasOpen = wasOpenMap.get(overlay);
-            const wrappers = overlay.querySelectorAll('.button-wrapper');
-
-            if (isOpen && !wasOpen) {
-                wrappers.forEach(w => { resetPulse(w); startPulse(w); });
-            } else if (!isOpen && wasOpen) {
-                wrappers.forEach(resetPulse);
-            }
-            wasOpenMap.set(overlay, isOpen);
+    wrappers.forEach(w => {
+        observer.observe(w);
+        w.querySelectorAll('.button, .button-link').forEach(btn => {
+            btn.addEventListener('click', () => resetPulse(w));
         });
-    }, OVERLAY_POLL_MS);
+    });
 
-    // Extra säkerhetsnät (din idé): reset direkt vid klick på burger-menyn,
-    // ifall en overlay redan hunnit stängas innan pollningen märkte det.
+    // Säkerhetsnät: klick på burger-menyn nollställer ALLA wrappers
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.burger-links')) return;
-        overlays.forEach(overlay => {
-            if (!isOverlayOpen(overlay)) {
-                overlay.querySelectorAll('.button-wrapper').forEach(resetPulse);
-            }
-        });
+        wrappers.forEach(resetPulse);
     });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    initScrollPulse();
-    initOverlayPulseRestart();
-});
+// Vänta tills lottie-player faktiskt är registrerad som custom element,
+// annars saknar .return-snake helt sina metoder (play/stop/setLooping)
+// eftersom scriptet laddas asynkront.
+if (customElements.get('lottie-player')) {
+    document.addEventListener('DOMContentLoaded', initScrollPulse);
+} else {
+    customElements.whenDefined('lottie-player').then(() => {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initScrollPulse);
+        } else {
+            initScrollPulse();
+        }
+    });
+}
 
 // Stäng flik för terms and privacy
 document.addEventListener("click", (e) => {
