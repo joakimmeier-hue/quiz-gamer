@@ -448,3 +448,125 @@ document.addEventListener('keydown', (e) => {
       loadUserData(user.uid);
     }
   });
+
+// Hämta elementen
+const createProfileSubmitBtn = document.getElementById('cp-create-btn'); 
+const createUsernameInput = document.getElementById('cp-gamertag-input'); 
+const errorMsgEl = document.getElementById('cp-error-msg');
+
+if (createProfileSubmitBtn && createUsernameInput) {
+  
+  // -- VÄCK KNAPPEN NÄR ANVÄNDAREN SKRIVER --
+  createUsernameInput.addEventListener('input', () => {
+    // Hämta texten oavsett om det är en Input eller en contenteditable Div
+    const rawText = createUsernameInput.value || createUsernameInput.textContent || "";
+    const textLength = rawText.trim().length;
+    
+    // Slå på/av knappen beroende på om det finns text
+    if (textLength > 0) {
+      createProfileSubmitBtn.style.opacity = '1';
+      createProfileSubmitBtn.style.pointerEvents = 'auto';
+    } else {
+      createProfileSubmitBtn.style.opacity = '0.26';
+      createProfileSubmitBtn.style.pointerEvents = 'none';
+    }
+  });
+
+  // -- LOGIK VID KLICK PÅ CREATE --
+  createProfileSubmitBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    
+    // 1. Återställ felmeddelanden
+    if (errorMsgEl) {
+        errorMsgEl.style.display = 'none';
+        errorMsgEl.innerHTML = "";
+    }
+    let errors = [];
+
+    // 2. Hämta och städa namnet
+    let chosenName = (createUsernameInput.value || createUsernameInput.textContent || "").trim();
+    // Rensar bort allt som inte är A-Ö, siffror eller mellanslag
+    chosenName = chosenName.replace(/[^a-zA-Z0-9åäöÅÄÖ ]/g, '');
+
+    // 3. Kolla vilken bild som är aktiv
+    const currentAvatarSrc = document.querySelector('.current-profile-pic')?.src || "";
+    
+    // -- VALIDERINGS-REGLER --
+    
+    if (currentAvatarSrc.includes('ppic0.svg')) {
+      errors.push("Please choose a profile picture");
+    }
+
+    if (chosenName.length < 3) {
+      errors.push("Minimum 3 characters");
+    } else if (chosenName.length > 15) {
+      errors.push("Maximum 15 characters");
+    }
+
+    // 4. Kolla Firestore om namnet är upptaget (Körs bara om namnet är godkänt längdmässigt)
+    if (chosenName.length >= 3 && chosenName.length <= 15) {
+       try {
+         const usersRef = collection(db, "users");
+         const q = query(usersRef, where("username", "==", chosenName));
+         const querySnapshot = await getDocs(q);
+         
+         // Om sökningen ger träff (och träffen inte är användarens egen halvfärdiga profil)
+         let nameTaken = false;
+         querySnapshot.forEach((docSnap) => {
+             if (docSnap.id !== currentUser.uid) {
+                 nameTaken = true;
+             }
+         });
+         
+         if (nameTaken) {
+             errors.push("Sorry, gamertag in use");
+         }
+       } catch (err) {
+         console.error("Fel vid kontroll av unikt namn:", err);
+       }
+    }
+
+    // 5. SKRIV UT FELMEDDELANDEN (Om det finns några)
+    if (errors.length > 0) {
+       if (errorMsgEl) {
+         // Formaterar arrayen till en snygg lista med HTML-radbrytningar
+         errorMsgEl.innerHTML = "• " + errors.join("<br>• ");
+         errorMsgEl.style.display = 'block';
+       }
+       return; // Stoppa här, skicka inget till databasen
+    }
+
+    // 6. ALLT GODKÄNT - SPARA TILL FIRESTORE
+    try {
+      // Visuell feedback att något laddar
+      createProfileSubmitBtn.textContent = "Saving..."; 
+      createProfileSubmitBtn.style.pointerEvents = 'none';
+
+      const userDocRef = doc(db, "users", currentUser.uid);
+      await setDoc(userDocRef, { 
+        username: chosenName,
+        profilePicUrl: currentAvatarSrc,
+        level: 1,
+        totalScore: 0,
+        rank: 0,
+        updatedAt: new Date()
+      }, { merge: true });
+
+      console.log("Profilen sparades i Firestore!");
+      
+      // Återställ knapptext och stäng modalen
+      createProfileSubmitBtn.textContent = "Create";
+      if (typeof hideCreateProfile === 'function') hideCreateProfile();
+      if (typeof resolvePendingAction === 'function') resolvePendingAction(); 
+
+    } catch (error) {
+      console.error("Gick inte att spara profilen:", error.message);
+      if (errorMsgEl) {
+         errorMsgEl.innerHTML = "• Database error. Please try again.";
+         errorMsgEl.style.display = 'block';
+      }
+      createProfileSubmitBtn.textContent = "Create";
+      createProfileSubmitBtn.style.pointerEvents = 'auto';
+    }
+  });
+}
