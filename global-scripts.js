@@ -647,13 +647,7 @@ document.addEventListener('keydown', function(e) {
         }
     }
 
-    // 2. UC-sidans knapp
-    const lobbyLinkUc = document.getElementById('link-to-lobby-from-uc');
-    if (lobbyLinkUc) {
-        e.preventDefault();
-        lobbyLinkUc.click();
-        return;
-    }
+ 
 
     // 3. Generisk fallback: klicka på den FAKTISKT SYNLIGA .button/.button-link
     // i en .button-wrapper. offsetParent === null = display:none, vilket
