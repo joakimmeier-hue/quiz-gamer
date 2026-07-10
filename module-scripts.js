@@ -303,20 +303,23 @@ document.addEventListener('keydown', (e) => {
       return; 
     }
 
- // 3. BYT PROFILBILD (Helt rensad på gamla dropdown-hacks)
-    const option = e.target.closest('.profile-pic-option');
-    if (option) {        
-        const selectedSrc = option.src;
-        const currentAvatarDisplay = document.querySelector('.current-profile-pic');
-        if (selectedSrc && currentAvatarDisplay) {
-            // Uppdatera bilden i UI direkt
-            currentAvatarDisplay.src = selectedSrc; 
-            
-            // Spara valet till Firestore (all logik körs i bakgrunden)
-            await saveUserAvatar(selectedSrc);      
-        }
-        return;
-    }
+// 3. BYT PROFILBILD (Uppdaterad för att ändra alla instanser av klassen)
+ const option = e.target.closest('.profile-pic-option');
+ if (option) {        
+     const selectedSrc = option.src;
+     const currentAvatars = document.querySelectorAll('.current-profile-pic');
+     
+     if (selectedSrc && currentAvatars.length > 0) {
+         // Uppdatera ALLA profilbilder i UI direkt (Lobby, dropdown, etc.)
+         currentAvatars.forEach(img => {
+             img.src = selectedSrc;
+         }); 
+         
+         // Spara valet till Firestore
+         await saveUserAvatar(selectedSrc);      
+     }
+     return;
+ }
 
     // 4. GATEKEEPER FÖR SPEL-LÄNKAR
     // OBS: .games-link-block är nu undantagen i global-scripts.js:s egna
@@ -374,46 +377,49 @@ document.addEventListener('keydown', (e) => {
   }); 
 
   // HÄMTA DATA (BILD + STATS)
-  async function loadUserData(uid) {
-    const currentAvatarDisplay = document.querySelector('.current-profile-pic');
-    try {
-      const userDocRef = doc(db, "users", uid);
-      const userDoc = await getDoc(userDocRef);
-      if (userDoc.exists()) {
-        const data = userDoc.data();
-        if (currentAvatarDisplay) {
-          if (data.profilePicUrl) {
-            // 1. Användaren har en sparad bild i databasen
-            currentAvatarDisplay.src = data.profilePicUrl;
-          } else if (auth.currentUser && auth.currentUser.photoURL) {
-            // 2. Fallback: Användaren har en bild via Google
-            currentAvatarDisplay.src = auth.currentUser.photoURL;
-          } else {
-            // 3. NY SPELARE: Slumpa en bild från dina alternativ i Webflow
-            const avatarOptions = document.querySelectorAll('.profile-pic-option');
-            
-            if (avatarOptions.length > 0) {
-              const randomIndex = Math.floor(Math.random() * avatarOptions.length);
-              const randomAvatarSrc = avatarOptions[randomIndex].src;
-              
-              // Sätt bilden i UI
-              currentAvatarDisplay.src = randomAvatarSrc;
-              
-              // Spara den slumpade bilden till Firestore direkt så den låses till spelaren
-              await saveUserAvatar(randomAvatarSrc);
-              console.log("Ny spelare! Slumpade en avatar: ", randomAvatarSrc);
-            }
-          }
-        }
-        if (userLevelEl) userLevelEl.textContent = "Level " + (data.level || 1);
-        if (userScoreEl) userScoreEl.textContent = (data.totalScore || 0);
-        if (userRankEl) userRankEl.textContent = (data.rank || 0);
-        if (userDisplayName) userDisplayName.textContent = data.username || "Player";
-      }
-    } catch (error) {
-      console.error("Failed to load user data:", error);
-    }
-  }  
+ async function loadUserData(uid) {
+   const currentAvatars = document.querySelectorAll('.current-profile-pic');
+   try {
+     const userDocRef = doc(db, "users", uid);
+     const userDoc = await getDoc(userDocRef);
+     
+     if (userDoc.exists()) {
+       const data = userDoc.data();
+       
+       if (currentAvatars.length > 0) {
+         if (data.profilePicUrl) {
+           // 1. Användaren har en sparad bild i databasen
+           currentAvatars.forEach(img => img.src = data.profilePicUrl);
+         } else if (auth.currentUser && auth.currentUser.photoURL) {
+           // 2. Fallback: Användaren har en bild via Google
+           currentAvatars.forEach(img => img.src = auth.currentUser.photoURL);
+         } else {
+           // 3. NY SPELARE: Slumpa en bild från dina alternativ i Webflow
+           const avatarOptions = document.querySelectorAll('.profile-pic-option');
+           
+           if (avatarOptions.length > 0) {
+             const randomIndex = Math.floor(Math.random() * avatarOptions.length);
+             const randomAvatarSrc = avatarOptions[randomIndex].src;
+             
+             // Sätt bilden på alla ställen i UI
+             currentAvatars.forEach(img => img.src = randomAvatarSrc);
+             
+             // Spara den slumpade bilden till Firestore direkt så den låses till spelaren
+             await saveUserAvatar(randomAvatarSrc);
+             console.log("Ny spelare! Slumpade en avatar: ", randomAvatarSrc);
+           }
+         }
+       }
+       
+       if (userLevelEl) userLevelEl.textContent = "Level " + (data.level || 1);
+       if (userScoreEl) userScoreEl.textContent = (data.totalScore || 0);
+       if (userRankEl) userRankEl.textContent = (data.rank || 0);
+       if (userDisplayName) userDisplayName.textContent = data.username || "Player";
+     }
+   } catch (error) {
+     console.error("Failed to load user data:", error);
+   }
+ }
 
   // SPARA PROFILBILD
   async function saveUserAvatar(avatarUrl) {
