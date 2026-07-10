@@ -832,46 +832,47 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════
-// SCROLL-PULSE SYSTEM (ersätter IX2 "Bottom row button and snake")
-// En enda IntersectionObserver på .button-wrapper - funkar identiskt på
-// fristående sidor OCH inuti overlays, eftersom overlayens display-toggle
-// automatiskt ändrar wrapperns geometri/synlighet.
-// Reset triggas av klick på valfri knapp i wrappern, + burger-links som
-// extra säkerhetsnät för Lobby-overlays.
+// SCROLL-PULSE SYSTEM (NUKLEÄR KLONING FÖR WEBFLOW NATIVE LOTTIE)
 // ══════════════════════════════════════════════════════════════════════
 
 const SCROLL_PULSE_DELAY_MS = 1100;
 const pulsePendingTimeouts = new Map();
 
-function getSnakeFor(wrapperEl) {
-    return wrapperEl.querySelector('.return-snake');
-}
 function startSnake(wrapperEl) {
     const snake = wrapperEl.querySelector('.return-snake');
     if (!snake) return;
-    snake.setAttribute('loop', ''); // garanterat stöd oavsett lottie-player-version
-    if (typeof snake.setLooping === 'function') snake.setLooping(true);
-    if (typeof snake.seek === 'function') snake.seek(0);
-    if (typeof snake.play === 'function') {
-        snake.play();
-    } else {
-        snake.setAttribute('autoplay', '');
+
+    // Sätt Webflows interna attribut för att tvinga fram autoplay och loop
+    snake.setAttribute('data-autoplay', 'true');
+    snake.setAttribute('data-loop', 'true');
+
+    // NUKLEÄR KLONING: Skapa en exakt kopia och ersätt originalet
+    const clone = snake.cloneNode(true);
+    snake.replaceWith(clone);
+
+    // Tvinga Webflow att initiera den nya Lottie-klonen direkt
+    if (window.Webflow && window.Webflow.require('lottie')) {
+        window.Webflow.require('lottie').init();
     }
 }
 
 function stopSnake(wrapperEl) {
     const snake = wrapperEl.querySelector('.return-snake');
     if (!snake) return;
-    if (typeof snake.stop === 'function') snake.stop();
-    if (typeof snake.seek === 'function') {
-        snake.seek(0); // "backa snabbt"-tricket från din IX2-lösning
-    } else {
-        // Sista utväg: tvinga fram en fullständig omladdning från frame 0
-        const src = snake.getAttribute('src');
-        snake.removeAttribute('src');
-        requestAnimationFrame(() => snake.setAttribute('src', src));
+
+    // Ta bort attributen så klonen inte börjar spela av sig själv
+    snake.removeAttribute('data-autoplay');
+    snake.removeAttribute('data-loop');
+
+    // NUKLEÄR KLONING: Klonar för att nollställa till frame 0
+    const clone = snake.cloneNode(true);
+    snake.replaceWith(clone);
+
+    if (window.Webflow && window.Webflow.require('lottie')) {
+        window.Webflow.require('lottie').init();
     }
 }
+
 function resetPulse(wrapperEl) {
     if (pulsePendingTimeouts.has(wrapperEl)) {
         clearTimeout(pulsePendingTimeouts.get(wrapperEl));
@@ -880,6 +881,7 @@ function resetPulse(wrapperEl) {
     wrapperEl.querySelectorAll('.button, .button-link').forEach(btn => btn.classList.remove('is-pulsing'));
     stopSnake(wrapperEl);
 }
+
 function startPulse(wrapperEl) {
     if (pulsePendingTimeouts.has(wrapperEl)) return;
     const timeoutId = setTimeout(() => {
@@ -896,6 +898,7 @@ function initScrollPulse() {
 
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
+            // Startar 1 sek efter scroll into view, resetter direkt när den lämnar
             if (entry.isIntersecting) startPulse(entry.target);
             else resetPulse(entry.target);
         });
@@ -908,28 +911,20 @@ function initScrollPulse() {
         });
     });
 
-    // Säkerhetsnät: klick på burger-menyn nollställer ALLA wrappers
+    // Säkerhetsnät: Klick på .burger-links nollställer ALLA
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.burger-links')) return;
         wrappers.forEach(resetPulse);
     });
 }
 
-// Vänta tills lottie-player faktiskt är registrerad som custom element,
-// annars saknar .return-snake helt sina metoder (play/stop/setLooping)
-// eftersom scriptet laddas asynkront.
-if (customElements.get('lottie-player')) {
+// Eftersom vi hanterar Webflows Native Lottie behöver vi inte vänta 
+// på lottie-player custom element. Vi väntar bara på att sidan laddas.
+if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initScrollPulse);
 } else {
-    customElements.whenDefined('lottie-player').then(() => {
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initScrollPulse);
-        } else {
-            initScrollPulse();
-        }
-    });
+    initScrollPulse();
 }
-
 // Stäng flik för terms and privacy
 document.addEventListener("click", (e) => {
   // Leta efter klick på din komboklass (eller något inuti den)
