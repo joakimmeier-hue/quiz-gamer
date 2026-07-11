@@ -602,8 +602,9 @@ if (createProfileSubmitBtn && createUsernameInput) {
        return; 
     }
 
-    // -- ALLT GODKÄNT - SPARA --
+// -- ALLT GODKÄNT - SPARA --
     try {
+      // Ändra texten till Saving och frys knappen
       createProfileSubmitBtn.textContent = "Saving..."; 
       createProfileSubmitBtn.style.pointerEvents = 'none';
 
@@ -617,9 +618,32 @@ if (createProfileSubmitBtn && createUsernameInput) {
         updatedAt: new Date()
       }, { merge: true });
 
-      createProfileSubmitBtn.textContent = "Create";
-      if (typeof hideCreateProfile === 'function') hideCreateProfile();
-      if (typeof resolvePendingAction === 'function') resolvePendingAction(); 
+      console.log("Profilen sparades i Firestore!");
+      
+      // -- TIMEOUT: Vänta 500ms innan vi går vidare --
+      setTimeout(() => {
+        
+        // 1. Återställ knappen i bakgrunden
+        createProfileSubmitBtn.textContent = "Create";
+        createProfileSubmitBtn.style.pointerEvents = 'auto';
+
+        // 2. UPPDATERA NAMNET DIREKT I UI:t (Lobby/Inventory)
+        // Vi letar upp alla element med klassen .player-info.username och trycker in det nya namnet
+        const uiNameElements = document.querySelectorAll('.player-info.username');
+        uiNameElements.forEach(el => {
+            el.textContent = rawName;
+        });
+
+        // (Säkerhetsåtgärd ifall du använder variabeln userDisplayName någon annanstans)
+        if (typeof userDisplayName !== 'undefined' && userDisplayName) {
+            userDisplayName.textContent = rawName;
+        }
+
+        // 3. Stäng Create-rutan och verkställ det användaren ville göra (t.ex. öppna Inventory)
+        if (typeof hideCreateProfile === 'function') hideCreateProfile();
+        if (typeof resolvePendingAction === 'function') resolvePendingAction(); 
+
+      }, 500); // 500 millisekunder
 
     } catch (error) {
       console.error("Gick inte att spara profilen:", error.message);
@@ -630,5 +654,3 @@ if (createProfileSubmitBtn && createUsernameInput) {
       createProfileSubmitBtn.textContent = "Create";
       createProfileSubmitBtn.style.pointerEvents = 'auto';
     }
-  });
-}
