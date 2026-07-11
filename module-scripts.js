@@ -295,7 +295,33 @@ document.addEventListener('keydown', (e) => {
             console.log("Lobby är nu redo! Inventory upplåst.");
         }, 4000); // 4000 millisekunder = 4 sekunder
     }
-    
+    // -- ÖPPNA CHANGE USERNAME MODAL --
+    const usernameLabel = e.target.closest('.player-info.username');
+    if (usernameLabel) {
+        const changeModal = document.querySelector('.change-username');
+        if (changeModal) {
+            changeModal.style.display = 'flex';
+            changeModal.style.opacity = '0';
+            // Liten delay så display:flex hinner registreras innan opacity animeras
+            setTimeout(() => {
+                changeModal.style.transition = 'opacity 200ms ease';
+                changeModal.style.opacity = '1';
+            }, 10);
+        }
+        return;
+    }
+
+    // -- STÄNG CHANGE USERNAME MODAL (Klick på bakgrunden) --
+    const changeModalTarget = e.target.closest('.change-username');
+    // Kolla så vi klickar PÅ själva roten (.change-username) och inte på barnen inuti
+    if (changeModalTarget && e.target === changeModalTarget) {
+        changeModalTarget.style.transition = 'opacity 200ms ease';
+        changeModalTarget.style.opacity = '0';
+        setTimeout(() => {
+            changeModalTarget.style.display = 'none';
+        }, 200);
+        return;
+    }
     // 1. LOGGA UT
     const logoutBtn = e.target.closest('#logout-btn, .logout-btn');
     if (logoutBtn) {
@@ -382,7 +408,7 @@ document.addEventListener('keydown', (e) => {
   }); 
 
 // HÄMTA DATA (BILD + STATS)
- async function loadUserData(uid) {
+async function loadUserData(uid) {
    const currentAvatars = document.querySelectorAll('.current-profile-pic');
    const defaultAvatar = "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a43d799e6705e122388ffdc_ppic0.svg";
    
@@ -396,10 +422,8 @@ document.addEventListener('keydown', (e) => {
        // 1. HANTERA PROFILBILD FÖR EXISTERANDE ANVÄNDARE
        if (currentAvatars.length > 0) {
          if (data.profilePicUrl) {
-           // Användaren har valt och sparat en bild tidigare
            currentAvatars.forEach(img => img.src = data.profilePicUrl);
          } else {
-           // Dokumentet finns men fältet saknas -> Fallback till "?"
            currentAvatars.forEach(img => img.src = defaultAvatar);
          }
        }
@@ -409,6 +433,11 @@ document.addEventListener('keydown', (e) => {
        if (userScoreEl) userScoreEl.textContent = (data.totalScore || 0);
        if (userRankEl) userRankEl.textContent = (data.rank || 0);
        if (userDisplayName) userDisplayName.textContent = data.username || "Player";
+
+       // NYTT: Kolla om användaren redan bytt namn en gång
+       if (data.hasChangedUsername) {
+           lockOutNameChangeUI(); // Låser UI:t (funktionen skapar vi längre ner)
+       }
 
      } else {
       // 2. HELT NY SPELARE
@@ -420,7 +449,6 @@ document.addEventListener('keydown', (e) => {
       if (userScoreEl) userScoreEl.textContent = "0";
       if (userRankEl) userRankEl.textContent = "0";
       
-      // HÄR ÄNDRAR VI: Använd inte Googles display name längre, dölj det tills profilen är klar
       if (userDisplayName) userDisplayName.textContent = "New Player";
       
       console.log("Ny användare detekterad. Vänter på profilskapare...");
@@ -428,8 +456,9 @@ document.addEventListener('keydown', (e) => {
    } catch (error) {
      console.error("Failed to load user data:", error);
    }
- }
-   // SPARA PROFILBILD
+}
+
+// SPARA PROFILBILD
   async function saveUserAvatar(avatarUrl) {
     if (!currentUser) return;
     try {
@@ -653,6 +682,195 @@ if (createProfileSubmitBtn && createUsernameInput) {
       }
       createProfileSubmitBtn.textContent = "Create";
       createProfileSubmitBtn.style.pointerEvents = 'auto';
+    }
+  });
+}
+
+// ==========================================
+// ── CHANGE USERNAME LOGIC ──
+// ==========================================
+const changeProfileSubmitBtn = document.getElementById('cp-change-btn'); 
+const changeUsernameInput = document.getElementById('change-username-input'); 
+const changeErrorMsgEl = document.getElementById('cp-error-msg-change');
+const changeInfoText = document.getElementById('change-username-info');
+
+// Hjälpfunktion för att låsa rutan permanent
+function lockOutNameChangeUI() {
+    if (changeUsernameInput) {
+        changeUsernameInput.setAttribute('contenteditable', 'false');
+        changeUsernameInput.style.pointerEvents = 'none';
+        changeUsernameInput.textContent = ""; // Töm texten
+        // Valfritt: Gör rutan lite mörkare/lägre opacity för att visa att den är inaktiv
+        changeUsernameInput.style.opacity = "0.3"; 
+    }
+    if (changeInfoText) {
+        changeInfoText.textContent = "Username already changed once, sorry";
+        // changeInfoText.style.color = "red"; // (Ta bort // om du vill att texten ska bli röd)
+    }
+    if (changeProfileSubmitBtn) {
+        changeProfileSubmitBtn.style.display = 'none'; // Göm knappen helt
+    }
+}
+
+if (changeProfileSubmitBtn && changeUsernameInput) {
+  const changeDefaultPlaceholder = "New username";
+
+  // -- 0. SÄTT START-UTSEENDE --
+  if (changeUsernameInput.textContent.trim() === changeDefaultPlaceholder || changeUsernameInput.textContent.trim() === "") {
+    changeUsernameInput.textContent = changeDefaultPlaceholder;
+    changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)"; 
+  }
+
+  // -- 1. PLACEHOLDER (Fokus) --
+  changeUsernameInput.addEventListener('focus', () => {
+    if (changeUsernameInput.textContent.trim() === changeDefaultPlaceholder) {
+      changeUsernameInput.textContent = "";
+    }
+    changeUsernameInput.style.color = "rgba(255, 255, 255, 1)";
+  });
+
+  // -- 2. PLACEHOLDER (Blur) --
+  changeUsernameInput.addEventListener('blur', () => {
+    changeUsernameInput.textContent = changeUsernameInput.textContent.trim();
+    if (changeUsernameInput.textContent === "") {
+      changeUsernameInput.textContent = changeDefaultPlaceholder;
+      changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
+    }
+  });
+
+  // -- 3. FYSISK SPÄRR (15 tecken, Enter, Mellanslag) --
+  changeUsernameInput.addEventListener('keydown', (e) => {
+    const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
+    const currentText = changeUsernameInput.textContent || "";
+  
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      return;
+    }
+
+    if (e.key === ' ') {
+      if (currentText.length === 0 || currentText.endsWith(' ')) {
+        e.preventDefault();
+        return;
+      }
+    }
+  
+    if (currentText.length >= 15 && !allowedKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault(); 
+    }
+  });
+
+  // -- 4. VÄCK KNAPPEN --
+  changeUsernameInput.addEventListener('input', () => {
+    const rawText = changeUsernameInput.textContent || "";
+    if (rawText.trim().length > 0 && rawText.trim() !== changeDefaultPlaceholder) {
+      changeProfileSubmitBtn.style.opacity = '1';
+      changeProfileSubmitBtn.style.pointerEvents = 'auto';
+    } else {
+      changeProfileSubmitBtn.style.opacity = '0.26';
+      changeProfileSubmitBtn.style.pointerEvents = 'none';
+    }
+  });
+
+  // -- 5. SPARA NYTT NAMN TILL FIRESTORE --
+  changeProfileSubmitBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    
+    if (changeErrorMsgEl) {
+        changeErrorMsgEl.style.display = 'none';
+        changeErrorMsgEl.innerHTML = "";
+    }
+    let errors = [];
+
+    let rawName = (changeUsernameInput.textContent || "").trim();
+    if (rawName === changeDefaultPlaceholder) rawName = ""; 
+    
+    // -- VALIDERINGS-REGLER --
+    if (rawName.length < 3) errors.push("Minimum 3 characters");
+    else if (rawName.length > 15) errors.push("Maximum 15 characters");
+
+    const validCharRegex = /^[a-zA-Z0-9åäöÅÄÖ\-_ ]+$/;
+    if (rawName.length > 0 && !validCharRegex.test(rawName)) {
+      errors.push("Ops, invalid character");
+    }
+
+    const spaceCount = (rawName.match(/ /g) || []).length;
+    if (spaceCount > 1) errors.push("Only one space allowed");
+
+    // -- DATABAS-KOLL FÖR UNIKT NAMN --
+    if (errors.length === 0) {
+       try {
+         const usersRef = collection(db, "users");
+         const q = query(usersRef, where("username", "==", rawName));
+         const querySnapshot = await getDocs(q);
+         
+         let nameTaken = false;
+         querySnapshot.forEach((docSnap) => {
+             if (docSnap.id !== currentUser.uid) {
+                 nameTaken = true;
+             }
+         });
+         
+         if (nameTaken) errors.push("Sorry, username in use");
+       } catch (err) {
+         console.error("Fel vid kontroll av unikt namn:", err);
+       }
+    }
+
+    // -- VISA FELMEDDELANDEN --
+    if (errors.length > 0) {
+       if (changeErrorMsgEl) {
+         changeErrorMsgEl.innerHTML = "■ " + errors.join("<br>■ ");
+         changeErrorMsgEl.style.display = 'block';
+       }
+       return; 
+    }
+
+    // -- ALLT GODKÄNT - SPARA TILL FIRESTORE --
+    try {
+      changeProfileSubmitBtn.textContent = "Saving..."; 
+      changeProfileSubmitBtn.style.pointerEvents = 'none';
+
+      const userDocRef = doc(db, "users", currentUser.uid);
+      await setDoc(userDocRef, { 
+        username: rawName,
+        hasChangedUsername: true, // <-- SPÄRREN SPARAS I DATABASEN!
+        updatedAt: new Date()
+      }, { merge: true });
+
+      // Spara lyckades. Lås rutan för alltid direkt i gränssnittet.
+      lockOutNameChangeUI();
+
+      // -- EFTER 1 SEKUND: Stäng fönstret --
+      setTimeout(() => {
+        const changeModal = document.querySelector('.change-username');
+        if (changeModal) {
+            changeModal.style.transition = 'opacity 200ms ease';
+            changeModal.style.opacity = '0';
+            setTimeout(() => {
+                changeModal.style.display = 'none';
+            }, 200);
+        }
+
+        // Uppdatera namnet överallt på skärmen
+        const uiNameElements = document.querySelectorAll('.player-info.username');
+        uiNameElements.forEach(el => {
+            el.textContent = rawName;
+        });
+        if (typeof userDisplayName !== 'undefined' && userDisplayName) {
+            userDisplayName.textContent = rawName;
+        }
+
+      }, 1000); // 1 sekund
+
+    } catch (error) {
+      console.error("Gick inte att spara nya namnet:", error.message);
+      if (changeErrorMsgEl) {
+         changeErrorMsgEl.innerHTML = "■ Database error. Please try again.";
+         changeErrorMsgEl.style.display = 'block';
+      }
+      changeProfileSubmitBtn.textContent = "Change";
+      changeProfileSubmitBtn.style.pointerEvents = 'auto';
     }
   });
 }
