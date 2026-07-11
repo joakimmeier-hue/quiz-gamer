@@ -311,18 +311,32 @@ document.addEventListener('keydown', (e) => {
         return;
     }
 
-    // -- STÄNG CHANGE USERNAME MODAL (Klick på bakgrunden) --
+// -- STÄNG CHANGE USERNAME MODAL (Klick på bakgrunden) --
     const changeModalTarget = e.target.closest('.change-username');
-    // Kolla så vi klickar PÅ själva roten (.change-username) och inte på barnen inuti
     if (changeModalTarget && e.target === changeModalTarget) {
         changeModalTarget.style.transition = 'opacity 200ms ease';
         changeModalTarget.style.opacity = '0';
         setTimeout(() => {
             changeModalTarget.style.display = 'none';
+            
+            // POINT 1: Återställ fältet när modalen stängs (om de inte är permanent låsta)
+            if (changeUsernameInput && changeUsernameInput.getAttribute('contenteditable') !== 'false') {
+                changeUsernameInput.textContent = changeDefaultPlaceholder;
+                changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
+                
+                if (changeProfileSubmitBtn) {
+                    changeProfileSubmitBtn.style.opacity = '0.26';
+                    changeProfileSubmitBtn.style.pointerEvents = 'none';
+                }
+                if (changeErrorMsgEl) {
+                    changeErrorMsgEl.style.display = 'none';
+                    changeErrorMsgEl.innerHTML = "";
+                }
+            }
         }, 200);
         return;
     }
-    // 1. LOGGA UT
+        // 1. LOGGA UT
     const logoutBtn = e.target.closest('#logout-btn, .logout-btn');
     if (logoutBtn) {
       e.preventDefault();
@@ -685,6 +699,26 @@ if (createProfileSubmitBtn && createUsernameInput) {
     }
   });
 }
+// Blockera globala spelevents när change username är öppen
+window.addEventListener('keydown', (e) => {
+    const changeModal = document.querySelector('.change-username');
+    
+    // Om rutan är öppen (display: flex)
+    if (changeModal && changeModal.style.display === 'flex') {
+        const gameKeys = ['i', 'I', 'Escape', 'Tab', 'Enter', ' '];
+        
+        // Fånga upp tangenten och stoppa den från att nå spelets inventory etc.
+        if (gameKeys.includes(e.key)) {
+            e.stopPropagation(); 
+            
+            // Vi tillåter Spacebar och Enter att fungera normalt INUTI textfältet 
+            // men för alla andra knappar (som ESC eller 'i') blockerar vi standardbeteendet
+            if (e.key !== ' ' && e.key !== 'Enter') {
+                e.preventDefault();
+            }
+        }
+    }
+}, true); // "true" betyder capture phase = vi fångar klicket INNAN spelet hinner se det!
 
 // ==========================================
 // ── CHANGE USERNAME LOGIC ──
@@ -692,23 +726,23 @@ if (createProfileSubmitBtn && createUsernameInput) {
 const changeProfileSubmitBtn = document.getElementById('cp-change-btn'); 
 const changeUsernameInput = document.getElementById('change-username-input'); 
 const changeErrorMsgEl = document.getElementById('cp-error-msg-change');
-const changeInfoText = document.getElementById('change-username-info');
+const changeInfoText = document.getElementById('cp-change-info'); // FIXED ID
+const changeDefaultPlaceholder = "New username";
 
-// Hjälpfunktion för att låsa rutan permanent
+// Hjälpfunktion för att låsa rutan permanent (Point 3 & 4)
 function lockOutNameChangeUI() {
     if (changeUsernameInput) {
         changeUsernameInput.setAttribute('contenteditable', 'false');
         changeUsernameInput.style.pointerEvents = 'none';
-        changeUsernameInput.textContent = ""; // Töm texten
-        // Valfritt: Gör rutan lite mörkare/lägre opacity för att visa att den är inaktiv
-        changeUsernameInput.style.opacity = "0.3"; 
+        changeUsernameInput.textContent = changeDefaultPlaceholder; // Keep grey placeholder
+        changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)"; 
     }
     if (changeInfoText) {
-        changeInfoText.textContent = "Username already changed once, sorry";
-        // changeInfoText.style.color = "red"; // (Ta bort // om du vill att texten ska bli röd)
+        changeInfoText.textContent = "Username already changed once, sorry"; // Point 5 fixed
     }
     if (changeProfileSubmitBtn) {
-        changeProfileSubmitBtn.style.display = 'none'; // Göm knappen helt
+        changeProfileSubmitBtn.style.opacity = '0.26'; // Keep it greyed out instead of hiding
+        changeProfileSubmitBtn.style.pointerEvents = 'none';
     }
 }
 
@@ -740,6 +774,7 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
 
   // -- 3. FYSISK SPÄRR (15 tecken, Enter, Mellanslag) --
   changeUsernameInput.addEventListener('keydown', (e) => {
+    e.stopPropagation();
     const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
     const currentText = changeUsernameInput.textContent || "";
   
