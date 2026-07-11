@@ -548,34 +548,33 @@ if (createProfileSubmitBtn && createUsernameInput) {
     }
   });
 
-  // -- 3. FYSISK SPÄRR (15 tecken, Enter, och Mellanslag) --
+// -- 3. FYSISK SPÄRR (15 tecken, Enter, och Mellanslag) --
   createUsernameInput.addEventListener('keydown', (e) => {
     e.stopPropagation();
     const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
     const currentText = createUsernameInput.textContent || "";
-  
+    const selection = window.getSelection().toString(); // Kollar om användaren har markerat text
+    
     // 1. Stoppa Enter-knappen
     if (e.key === 'Enter') {
       e.preventDefault();
       return;
     }
 
-    // 2. Spärra olämpliga mellanslag
+    // 2. Spärra olämpliga mellanslag (Kollar både vanligt space och non-breaking space \u00A0)
     if (e.key === ' ') {
-      // Spärra mellanslag som allra första tecken
       if (currentText.length === 0) {
         e.preventDefault();
         return;
       }
-      // Spärra dubbla mellanslag (om föregående tecken redan är ett mellanslag)
-      if (currentText.endsWith(' ')) {
+      if (currentText.slice(-1) === ' ' || currentText.slice(-1) === '\u00A0') {
         e.preventDefault();
         return;
       }
     }
-  
-    // 3. Stoppa inmatning över 15 tecken
-    if (currentText.length >= 15 && !allowedKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
+    
+    // 3. Stoppa inmatning över 15 tecken (MEN tillåt om användaren har markerat text för att skriva över)
+    if (currentText.length >= 15 && selection.length === 0 && !allowedKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
       e.preventDefault(); 
     }
   });
@@ -605,8 +604,9 @@ if (createProfileSubmitBtn && createUsernameInput) {
     }
     let errors = [];
 
-    let rawName = (createUsernameInput.textContent || "").trim();
-    if (rawName === defaultPlaceholder) rawName = ""; 
+   // Byt ut non-breaking spaces mot vanliga mellanslag innan vi kollar längd och tecken
+    let rawName = (createUsernameInput.textContent || "").replace(/\u00A0/g, ' ').trim();
+    if (rawName === defaultPlaceholder) rawName = "";
 
     const currentAvatarSrc = document.querySelector('.current-profile-pic')?.src || "";
     
@@ -818,25 +818,33 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
     }
   });
 
-  // -- 3. FYSISK SPÄRR (15 tecken, Enter, Mellanslag) --
-  changeUsernameInput.addEventListener('keydown', (e) => {
+// -- 3. FYSISK SPÄRR (15 tecken, Enter, och Mellanslag) --
+  createUsernameInput.addEventListener('keydown', (e) => {
     e.stopPropagation();
     const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
-    const currentText = changeUsernameInput.textContent || "";
-  
+    const currentText = createUsernameInput.textContent || "";
+    const selection = window.getSelection().toString(); // Kollar om användaren har markerat text
+    
+    // 1. Stoppa Enter-knappen
     if (e.key === 'Enter') {
       e.preventDefault();
       return;
     }
 
+    // 2. Spärra olämpliga mellanslag (Kollar både vanligt space och non-breaking space \u00A0)
     if (e.key === ' ') {
-      if (currentText.length === 0 || currentText.endsWith(' ')) {
+      if (currentText.length === 0) {
+        e.preventDefault();
+        return;
+      }
+      if (currentText.slice(-1) === ' ' || currentText.slice(-1) === '\u00A0') {
         e.preventDefault();
         return;
       }
     }
-  
-    if (currentText.length >= 15 && !allowedKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
+    
+    // 3. Stoppa inmatning över 15 tecken (MEN tillåt om användaren har markerat text för att skriva över)
+    if (currentText.length >= 15 && selection.length === 0 && !allowedKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
       e.preventDefault(); 
     }
   });
@@ -863,8 +871,9 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
     }
     let errors = [];
 
-    let rawName = (changeUsernameInput.textContent || "").trim();
-    if (rawName === changeDefaultPlaceholder) rawName = ""; 
+    // Byt ut non-breaking spaces mot vanliga mellanslag innan vi kollar längd och tecken
+    let rawName = (changeUsernameInput.textContent || "").replace(/\u00A0/g, ' ').trim();
+    if (rawName === changeDefaultPlaceholder) rawName = "";
     
 // -- VALIDERINGS-REGLER --
     if (rawName.length < 3) {
