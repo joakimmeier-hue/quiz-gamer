@@ -456,7 +456,7 @@ document.addEventListener('keydown', (e) => {
 
 // Hämta elementen
 const createProfileSubmitBtn = document.getElementById('cp-create-btn'); 
-const createUsernameInput = document.getElementById('cp-gamertag-input'); 
+const createUsernameInput = document.getElementById('cp-username-input'); 
 const errorMsgEl = document.getElementById('cp-error-msg');
 
 if (createProfileSubmitBtn && createUsernameInput) {
