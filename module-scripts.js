@@ -628,11 +628,6 @@ if (createProfileSubmitBtn && createUsernameInput) {
     if (rawName.length > 0 && invalidCharRegex.test(rawName)) {
       errors.push("Ops, invalid character");
     }
-    // Säkerhetskoll för mellanslag (ifall de klistrar in inkorrekt text)
-    const spaceCount = (rawName.match(/ /g) || []).length;
-    if (spaceCount > 1) {
-      errors.push("Only one space allowed");
-    }
 
     // -- DATABAS-KOLL --
     if (errors.length === 0 || (!errors.includes("Minimum 3 characters") && !errors.includes("Maximum 15 characters") && !errors.includes("Ops, invalid character"))) {
@@ -889,9 +884,6 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
     if (rawName.length > 0 && invalidCharRegex.test(rawName)) {
       errors.push("Ops, invalid character");
     }
-
-    const spaceCount = (rawName.match(/ /g) || []).length;
-    if (spaceCount > 1) errors.push("Only one space allowed");
 
     // -- DATABAS-KOLL FÖR UNIKT NAMN --
     if (errors.length === 0) {
