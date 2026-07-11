@@ -654,3 +654,5 @@ if (createProfileSubmitBtn && createUsernameInput) {
       createProfileSubmitBtn.textContent = "Create";
       createProfileSubmitBtn.style.pointerEvents = 'auto';
     }
+  });
+}
