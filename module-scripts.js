@@ -643,7 +643,7 @@ if (createProfileSubmitBtn && createUsernameInput) {
         if (typeof hideCreateProfile === 'function') hideCreateProfile();
         if (typeof resolvePendingAction === 'function') resolvePendingAction(); 
 
-      }, 500); // 500 millisekunder
+      }, 700); // 700 millisekunder
 
     } catch (error) {
       console.error("Gick inte att spara profilen:", error.message);
