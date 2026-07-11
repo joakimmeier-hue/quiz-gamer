@@ -37,11 +37,11 @@
   user-select: none;
   -webkit-user-select: none;
 }
-/* Ta bort den vita ramen (Focus Outline)*/
-#cp-username-input:focus {
-    outline: none !important;
-    box-shadow: none !important;
-  }
+/* Tar bort webbläsarens standard-fokus för ALLA element på hela sidan */
+*:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
 
 /* Only allow selection where it makes sense */
 input, 
