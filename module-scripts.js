@@ -84,19 +84,36 @@
       }, 250);
     }
   }
-  // ── CREATE PROFILE (First-time users) ──
+// ── CREATE PROFILE (First-time users) ──
   function showCreateProfile() {
     const createProfileEl = document.getElementById('create-profile') || document.querySelector('.create-profile');
     if (createProfileEl) {
       createProfileEl.style.display = 'flex';
+      createProfileEl.style.opacity = '0';
+      createProfileEl.style.transition = 'opacity 250ms ease-out';
+      
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          createProfileEl.style.opacity = '1';
+        });
+      });
     }
   }
+
   function hideCreateProfile() {
     const createProfileEl = document.getElementById('create-profile') || document.querySelector('.create-profile');
     if (createProfileEl) {
-      createProfileEl.style.display = 'none';
+      createProfileEl.style.transition = 'opacity 250ms ease-out';
+      createProfileEl.style.opacity = '0';
+      
+      setTimeout(() => {
+        if (createProfileEl.style.opacity === '0') {
+          createProfileEl.style.display = 'none';
+        }
+      }, 250);
     }
   }
+  
   // Görs tillgänglig globalt så att create-profile-flödets "klar/spara"-knapp
   // (var den nu ligger) kan anropa hideCreateProfile() + resolvePendingAction()
   // när användaren är klar med sin profil.
@@ -533,6 +550,7 @@ if (createProfileSubmitBtn && createUsernameInput) {
 
   // -- 3. FYSISK SPÄRR (15 tecken, Enter, och Mellanslag) --
   createUsernameInput.addEventListener('keydown', (e) => {
+    e.stopPropagation();
     const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
     const currentText = createUsernameInput.textContent || "";
   
@@ -592,22 +610,24 @@ if (createProfileSubmitBtn && createUsernameInput) {
 
     const currentAvatarSrc = document.querySelector('.current-profile-pic')?.src || "";
     
-    // -- VALIDERINGS-REGLER --
-    if (currentAvatarSrc.includes('ppic0.svg')) {
-      errors.push("Please choose a profile picture");
-    }
-
+// -- VALIDERINGS-REGLER --
     if (rawName.length < 3) {
       errors.push("Minimum 3 characters");
     } else if (rawName.length > 15) {
       errors.push("Maximum 15 characters");
     }
 
-    const validCharRegex = /^[a-zA-Z0-9åäöÅÄÖ\-_ ]+$/;
-    if (rawName.length > 0 && !validCharRegex.test(rawName)) {
-      errors.push("Ops, invalid character");
+    // 1. Kolla om de skrivit mer än ETT mellanslag
+    const spaceCount = (rawName.match(/ /g) || []).length;
+    if (spaceCount > 1) {
+      errors.push("Only one space allowed");
     }
 
+    // 2. Kolla efter förbjudna tecken (Regex kollar nu om det finns NÅGOT tecken som INTE är tillåtet)
+    const invalidCharRegex = /[^a-zA-Z0-9åäöÅÄÖ\-_ ]/; 
+    if (rawName.length > 0 && invalidCharRegex.test(rawName)) {
+      errors.push("Ops, invalid character");
+    }
     // Säkerhetskoll för mellanslag (ifall de klistrar in inkorrekt text)
     const spaceCount = (rawName.match(/ /g) || []).length;
     if (spaceCount > 1) {
@@ -711,8 +731,39 @@ window.addEventListener('keydown', (e) => {
         if (gameKeys.includes(e.key)) {
             e.stopPropagation(); 
             
+            // --- LÅT ESCAPE STÄNGA MODALEN ---
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                changeModal.style.transition = 'opacity 200ms ease';
+                changeModal.style.opacity = '0';
+                
+                setTimeout(() => {
+                    changeModal.style.display = 'none';
+                    
+                    // Återställ fältet när de backar ur
+                    const changeUsernameInput = document.getElementById('change-username-input');
+                    const changeProfileSubmitBtn = document.getElementById('cp-change-btn');
+                    const changeErrorMsgEl = document.getElementById('cp-error-msg-change');
+                    
+                    if (changeUsernameInput && changeUsernameInput.getAttribute('contenteditable') !== 'false') {
+                        changeUsernameInput.textContent = "New username"; // Återställ placeholder
+                        changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
+                        
+                        if (changeProfileSubmitBtn) {
+                            changeProfileSubmitBtn.style.opacity = '0.26';
+                            changeProfileSubmitBtn.style.pointerEvents = 'none';
+                        }
+                        if (changeErrorMsgEl) {
+                            changeErrorMsgEl.style.display = 'none';
+                            changeErrorMsgEl.innerHTML = "";
+                        }
+                    }
+                }, 200);
+                return; // Avbryt vidare kod
+            }
+
             // Vi tillåter Spacebar och Enter att fungera normalt INUTI textfältet 
-            // men för alla andra knappar (som ESC eller 'i') blockerar vi standardbeteendet
+            // men för 'i' och 'Tab' blockerar vi standardbeteendet
             if (e.key !== ' ' && e.key !== 'Enter') {
                 e.preventDefault();
             }
@@ -738,7 +789,7 @@ function lockOutNameChangeUI() {
         changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)"; 
     }
     if (changeInfoText) {
-        changeInfoText.textContent = "Username already changed once, sorry"; // Point 5 fixed
+        changeInfoText.textContent = "Username already changed once, sorry!"; // Point 5 fixed
     }
     if (changeProfileSubmitBtn) {
         changeProfileSubmitBtn.style.opacity = '0.26'; // Keep it greyed out instead of hiding
@@ -820,12 +871,22 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
     let rawName = (changeUsernameInput.textContent || "").trim();
     if (rawName === changeDefaultPlaceholder) rawName = ""; 
     
-    // -- VALIDERINGS-REGLER --
-    if (rawName.length < 3) errors.push("Minimum 3 characters");
-    else if (rawName.length > 15) errors.push("Maximum 15 characters");
+// -- VALIDERINGS-REGLER --
+    if (rawName.length < 3) {
+      errors.push("Minimum 3 characters");
+    } else if (rawName.length > 15) {
+      errors.push("Maximum 15 characters");
+    }
 
-    const validCharRegex = /^[a-zA-Z0-9åäöÅÄÖ\-_ ]+$/;
-    if (rawName.length > 0 && !validCharRegex.test(rawName)) {
+    // 1. Kolla om de skrivit mer än ETT mellanslag
+    const spaceCount = (rawName.match(/ /g) || []).length;
+    if (spaceCount > 1) {
+      errors.push("Only one space allowed");
+    }
+
+    // 2. Kolla efter förbjudna tecken (Regex kollar nu om det finns NÅGOT tecken som INTE är tillåtet)
+    const invalidCharRegex = /[^a-zA-Z0-9åäöÅÄÖ\-_ ]/; 
+    if (rawName.length > 0 && invalidCharRegex.test(rawName)) {
       errors.push("Ops, invalid character");
     }
 
