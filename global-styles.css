@@ -7,8 +7,6 @@
     outline: 0 !important;                     /* Tar bort standard-outline */
   }
   
-
-
   /* 2. Change the text selection highlight color site-wide */
   ::selection {
     background-color: #ffc04b;
@@ -39,6 +37,11 @@
   user-select: none;
   -webkit-user-select: none;
 }
+/* Ta bort den vita ramen (Focus Outline)*/
+#cp-username-input:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
 
 /* Only allow selection where it makes sense */
 input, 
@@ -252,3 +255,4 @@ a.button-link:visited,
 a.button-link:hover {
   color: inherit !important; /* eller din önskade färg */
 }
+

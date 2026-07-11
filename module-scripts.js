@@ -175,6 +175,11 @@
 document.addEventListener('keydown', (e) => {
     if (e.repeat) return; // Stoppar buggar om man håller inne knappen
     if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+    const cpModal = document.getElementById('create-profile'); // Hindra i och tab under cp.  din huvud-div här
+    // Om create profile-rutan är synlig (inte har display: none), avbryt knapptrycket:
+    if (cpModal && getComputedStyle(cpModal).display !== 'none') {
+    return; 
+}
     const key = e.key.toLowerCase();
     const isGameSide = document.body.dataset.page === 'game';
     // --- Inventory på GAME-SIDAN: Robust "Reality Check" ---
@@ -406,20 +411,20 @@ document.addEventListener('keydown', (e) => {
        if (userDisplayName) userDisplayName.textContent = data.username || "Player";
 
      } else {
-       // 2. HELT NY SPELARE (Inget dokument finns i Firestore än)
-       // Tvinga alla profilbilder på sidan att bli frågetecken direkt
-       if (currentAvatars.length > 0) {
-         currentAvatars.forEach(img => img.src = defaultAvatar);
-       }
-       
-       // Sätt standard-stats i gränssnittet direkt så det inte är tomt under registreringen
-       if (userLevelEl) userLevelEl.textContent = "Level 1";
-       if (userScoreEl) userScoreEl.textContent = "0";
-       if (userRankEl) userRankEl.textContent = "0";
-       if (userDisplayName) userDisplayName.textContent = auth.currentUser?.displayName || "Player";
-       
-       console.log("Ny användare detekterad i UI. Startar med standardavatar (ppic0).");
-     }
+      // 2. HELT NY SPELARE
+      if (currentAvatars.length > 0) {
+      currentAvatars.forEach(img => img.src = defaultAvatar);
+      }
+      
+      if (userLevelEl) userLevelEl.textContent = "Level 1";
+      if (userScoreEl) userScoreEl.textContent = "0";
+      if (userRankEl) userRankEl.textContent = "0";
+      
+      // HÄR ÄNDRAR VI: Använd inte Googles display name längre, dölj det tills profilen är klar
+      if (userDisplayName) userDisplayName.textContent = "New Player";
+      
+      console.log("Ny användare detekterad. Vänter på profilskapare...");
+    }
    } catch (error) {
      console.error("Failed to load user data:", error);
    }
@@ -456,14 +461,27 @@ const errorMsgEl = document.getElementById('cp-error-msg');
 
 if (createProfileSubmitBtn && createUsernameInput) {
   
+  const defaultPlaceholder = "Mr Smart";
+
+  // -- 1. PLACEHOLDER-LOGIK (Fokus / Blur) --
+  createUsernameInput.addEventListener('focus', () => {
+    if (createUsernameInput.textContent.trim() === defaultPlaceholder) {
+      createUsernameInput.textContent = "";
+    }
+  });
+
+  createUsernameInput.addEventListener('blur', () => {
+    if (createUsernameInput.textContent.trim() === "") {
+      createUsernameInput.textContent = defaultPlaceholder;
+    }
+  });
+
   // -- VÄCK KNAPPEN NÄR ANVÄNDAREN SKRIVER --
   createUsernameInput.addEventListener('input', () => {
-    // Hämta texten oavsett om det är en Input eller en contenteditable Div
-    const rawText = createUsernameInput.value || createUsernameInput.textContent || "";
-    const textLength = rawText.trim().length;
+    const rawText = createUsernameInput.textContent || "";
     
-    // Slå på/av knappen beroende på om det finns text
-    if (textLength > 0) {
+    // Väck bara knappen om texten inte är tom OCH inte är placeholdern
+    if (rawText.trim().length > 0 && rawText.trim() !== defaultPlaceholder) {
       createProfileSubmitBtn.style.opacity = '1';
       createProfileSubmitBtn.style.pointerEvents = 'auto';
     } else {
@@ -476,41 +494,50 @@ if (createProfileSubmitBtn && createUsernameInput) {
   createProfileSubmitBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     
-    // 1. Återställ felmeddelanden
+    // Återställ felmeddelanden
     if (errorMsgEl) {
         errorMsgEl.style.display = 'none';
         errorMsgEl.innerHTML = "";
     }
     let errors = [];
 
-    // 2. Hämta och städa namnet
-    let chosenName = (createUsernameInput.value || createUsernameInput.textContent || "").trim();
-    // Rensar bort allt som inte är A-Ö, siffror eller mellanslag
-    chosenName = chosenName.replace(/[^a-zA-Z0-9åäöÅÄÖ ]/g, '');
+    // Hämta namnet (använd textContent för contenteditable div)
+    let rawName = (createUsernameInput.textContent || "").trim();
+    if (rawName === defaultPlaceholder) rawName = ""; // Räkna placeholdern som tom inmatning
 
-    // 3. Kolla vilken bild som är aktiv
+    // Kolla vilken bild som är aktiv
     const currentAvatarSrc = document.querySelector('.current-profile-pic')?.src || "";
     
     // -- VALIDERINGS-REGLER --
-    
     if (currentAvatarSrc.includes('ppic0.svg')) {
       errors.push("Please choose a profile picture");
     }
 
-    if (chosenName.length < 3) {
+    if (rawName.length < 3) {
       errors.push("Minimum 3 characters");
-    } else if (chosenName.length > 15) {
+    } else if (rawName.length > 15) {
       errors.push("Maximum 15 characters");
     }
 
-    // 4. Kolla Firestore om namnet är upptaget (Körs bara om namnet är godkänt längdmässigt)
-    if (chosenName.length >= 3 && chosenName.length <= 15) {
+    // RegEx: Tillåt A-Ö, 0-9, bindestreck, understreck och mellanslag
+    const validCharRegex = /^[a-zA-Z0-9åäöÅÄÖ\-_ ]+$/;
+    if (rawName.length > 0 && !validCharRegex.test(rawName)) {
+      errors.push("Ops, invalid character");
+    }
+
+    // Kolla så det max finns ETT mellanslag i strängen
+    const spaceCount = (rawName.match(/ /g) || []).length;
+    if (spaceCount > 1) {
+      errors.push("Only one space allowed");
+    }
+
+    // -- DATABAS-KOLL (Körs bara om namnet verkar okej hittills) --
+    if (errors.length === 0 || (!errors.includes("Minimum 3 characters") && !errors.includes("Maximum 15 characters") && !errors.includes("Ops, invalid character"))) {
        try {
          const usersRef = collection(db, "users");
-         const q = query(usersRef, where("username", "==", chosenName));
+         const q = query(usersRef, where("username", "==", rawName));
          const querySnapshot = await getDocs(q);
          
-         // Om sökningen ger träff (och träffen inte är användarens egen halvfärdiga profil)
          let nameTaken = false;
          querySnapshot.forEach((docSnap) => {
              if (docSnap.id !== currentUser.uid) {
@@ -519,32 +546,30 @@ if (createProfileSubmitBtn && createUsernameInput) {
          });
          
          if (nameTaken) {
-             errors.push("Sorry, gamertag in use");
+             errors.push("Sorry, username in use");
          }
        } catch (err) {
          console.error("Fel vid kontroll av unikt namn:", err);
        }
     }
 
-    // 5. SKRIV UT FELMEDDELANDEN (Om det finns några)
+    // -- SKRIV UT FELMEDDELANDEN (Bytt till Fyrkant) --
     if (errors.length > 0) {
        if (errorMsgEl) {
-         // Formaterar arrayen till en snygg lista med HTML-radbrytningar
-         errorMsgEl.innerHTML = "• " + errors.join("<br>• ");
+         errorMsgEl.innerHTML = "■ " + errors.join("<br>■ ");
          errorMsgEl.style.display = 'block';
        }
-       return; // Stoppa här, skicka inget till databasen
+       return; // Stoppa här, skicka inget
     }
 
-    // 6. ALLT GODKÄNT - SPARA TILL FIRESTORE
+    // -- ALLT GODKÄNT - SPARA TILL FIRESTORE --
     try {
-      // Visuell feedback att något laddar
       createProfileSubmitBtn.textContent = "Saving..."; 
       createProfileSubmitBtn.style.pointerEvents = 'none';
 
       const userDocRef = doc(db, "users", currentUser.uid);
       await setDoc(userDocRef, { 
-        username: chosenName,
+        username: rawName,
         profilePicUrl: currentAvatarSrc,
         level: 1,
         totalScore: 0,
@@ -554,7 +579,6 @@ if (createProfileSubmitBtn && createUsernameInput) {
 
       console.log("Profilen sparades i Firestore!");
       
-      // Återställ knapptext och stäng modalen
       createProfileSubmitBtn.textContent = "Create";
       if (typeof hideCreateProfile === 'function') hideCreateProfile();
       if (typeof resolvePendingAction === 'function') resolvePendingAction(); 
@@ -562,7 +586,7 @@ if (createProfileSubmitBtn && createUsernameInput) {
     } catch (error) {
       console.error("Gick inte att spara profilen:", error.message);
       if (errorMsgEl) {
-         errorMsgEl.innerHTML = "• Database error. Please try again.";
+         errorMsgEl.innerHTML = "■ Database error. Please try again.";
          errorMsgEl.style.display = 'block';
       }
       createProfileSubmitBtn.textContent = "Create";
