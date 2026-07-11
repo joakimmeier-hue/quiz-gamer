@@ -256,3 +256,7 @@ a.button-link:hover {
   color: inherit !important; /* eller din önskade färg */
 }
 
+#cp-username-input {
+  white-space: nowrap !important; /* Förhindrar att texten hoppar ner på ny rad */
+  overflow: hidden !important;    /* Döljer allt som går utanför bredden */
+}

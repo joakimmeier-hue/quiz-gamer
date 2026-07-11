@@ -463,24 +463,67 @@ if (createProfileSubmitBtn && createUsernameInput) {
   
   const defaultPlaceholder = "Mr Smart";
 
-  // -- 1. PLACEHOLDER-LOGIK (Fokus / Blur) --
+  // -- 0. SÄTT START-UTSEENDE (När sidan laddas) --
+  if (createUsernameInput.textContent.trim() === defaultPlaceholder || createUsernameInput.textContent.trim() === "") {
+    createUsernameInput.textContent = defaultPlaceholder;
+    createUsernameInput.style.color = "rgba(255, 255, 255, 0.35)"; // 35% Alpha
+  }
+
+  // -- 1. PLACEHOLDER-LOGIK (Fokus) --
   createUsernameInput.addEventListener('focus', () => {
     if (createUsernameInput.textContent.trim() === defaultPlaceholder) {
       createUsernameInput.textContent = "";
     }
+    createUsernameInput.style.color = "rgba(255, 255, 255, 1)"; // 100% Alpha när man klickar i rutan
   });
 
+  // -- 2. PLACEHOLDER-LOGIK (Blur / Klick utanför) --
   createUsernameInput.addEventListener('blur', () => {
-    if (createUsernameInput.textContent.trim() === "") {
+    // Rensa automatiskt bort mellanslag på slutet om de lämnat ett
+    createUsernameInput.textContent = createUsernameInput.textContent.trim();
+
+    if (createUsernameInput.textContent === "") {
       createUsernameInput.textContent = defaultPlaceholder;
+      createUsernameInput.style.color = "rgba(255, 255, 255, 0.35)"; // Tillbaka till 35% Alpha
     }
   });
 
-  // -- VÄCK KNAPPEN NÄR ANVÄNDAREN SKRIVER --
+  // -- 3. FYSISK SPÄRR (15 tecken, Enter, och Mellanslag) --
+  createUsernameInput.addEventListener('keydown', (e) => {
+    const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
+    const currentText = createUsernameInput.textContent || "";
+  
+    // 1. Stoppa Enter-knappen
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      return;
+    }
+
+    // 2. Spärra olämpliga mellanslag
+    if (e.key === ' ') {
+      // Spärra mellanslag som allra första tecken
+      if (currentText.length === 0) {
+        e.preventDefault();
+        return;
+      }
+      // Spärra dubbla mellanslag (om föregående tecken redan är ett mellanslag)
+      if (currentText.endsWith(' ')) {
+        e.preventDefault();
+        return;
+      }
+    }
+  
+    // 3. Stoppa inmatning över 15 tecken
+    if (currentText.length >= 15 && !allowedKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault(); 
+    }
+  });
+
+  // -- 4. VÄCK KNAPPEN NÄR ANVÄNDAREN SKRIVER --
   createUsernameInput.addEventListener('input', () => {
     const rawText = createUsernameInput.textContent || "";
     
-    // Väck bara knappen om texten inte är tom OCH inte är placeholdern
+    // Knappen hanterar vi fortfarande med standard-opacity
     if (rawText.trim().length > 0 && rawText.trim() !== defaultPlaceholder) {
       createProfileSubmitBtn.style.opacity = '1';
       createProfileSubmitBtn.style.pointerEvents = 'auto';
@@ -490,7 +533,7 @@ if (createProfileSubmitBtn && createUsernameInput) {
     }
   });
 
-  // -- LOGIK VID KLICK PÅ CREATE --
+  // -- 5. LOGIK VID KLICK PÅ CREATE --
   createProfileSubmitBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     
@@ -501,11 +544,9 @@ if (createProfileSubmitBtn && createUsernameInput) {
     }
     let errors = [];
 
-    // Hämta namnet (använd textContent för contenteditable div)
     let rawName = (createUsernameInput.textContent || "").trim();
-    if (rawName === defaultPlaceholder) rawName = ""; // Räkna placeholdern som tom inmatning
+    if (rawName === defaultPlaceholder) rawName = ""; 
 
-    // Kolla vilken bild som är aktiv
     const currentAvatarSrc = document.querySelector('.current-profile-pic')?.src || "";
     
     // -- VALIDERINGS-REGLER --
@@ -519,19 +560,18 @@ if (createProfileSubmitBtn && createUsernameInput) {
       errors.push("Maximum 15 characters");
     }
 
-    // RegEx: Tillåt A-Ö, 0-9, bindestreck, understreck och mellanslag
     const validCharRegex = /^[a-zA-Z0-9åäöÅÄÖ\-_ ]+$/;
     if (rawName.length > 0 && !validCharRegex.test(rawName)) {
       errors.push("Ops, invalid character");
     }
 
-    // Kolla så det max finns ETT mellanslag i strängen
+    // Säkerhetskoll för mellanslag (ifall de klistrar in inkorrekt text)
     const spaceCount = (rawName.match(/ /g) || []).length;
     if (spaceCount > 1) {
       errors.push("Only one space allowed");
     }
 
-    // -- DATABAS-KOLL (Körs bara om namnet verkar okej hittills) --
+    // -- DATABAS-KOLL --
     if (errors.length === 0 || (!errors.includes("Minimum 3 characters") && !errors.includes("Maximum 15 characters") && !errors.includes("Ops, invalid character"))) {
        try {
          const usersRef = collection(db, "users");
@@ -553,16 +593,16 @@ if (createProfileSubmitBtn && createUsernameInput) {
        }
     }
 
-    // -- SKRIV UT FELMEDDELANDEN (Bytt till Fyrkant) --
+    // -- SKRIV UT FELMEDDELANDEN --
     if (errors.length > 0) {
        if (errorMsgEl) {
          errorMsgEl.innerHTML = "■ " + errors.join("<br>■ ");
          errorMsgEl.style.display = 'block';
        }
-       return; // Stoppa här, skicka inget
+       return; 
     }
 
-    // -- ALLT GODKÄNT - SPARA TILL FIRESTORE --
+    // -- ALLT GODKÄNT - SPARA --
     try {
       createProfileSubmitBtn.textContent = "Saving..."; 
       createProfileSubmitBtn.style.pointerEvents = 'none';
@@ -577,8 +617,6 @@ if (createProfileSubmitBtn && createUsernameInput) {
         updatedAt: new Date()
       }, { merge: true });
 
-      console.log("Profilen sparades i Firestore!");
-      
       createProfileSubmitBtn.textContent = "Create";
       if (typeof hideCreateProfile === 'function') hideCreateProfile();
       if (typeof resolvePendingAction === 'function') resolvePendingAction(); 
