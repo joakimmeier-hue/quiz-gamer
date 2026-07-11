@@ -464,6 +464,12 @@ async function loadUserData(uid) {
        if (userScoreEl) userScoreEl.textContent = (data.totalScore || 0);
        if (userRankEl) userRankEl.textContent = (data.rank || 0);
        if (userDisplayName) userDisplayName.textContent = data.username || "Player";
+       // NYTT: Tvinga ut namnet till alla UI-element när sidan laddas
+        const uiNameElements = document.querySelectorAll('.player-info.username');
+        uiNameElements.forEach(el => {
+            el.textContent = data.username || "Player";
+        });
+       
 
        // NYTT: Kolla om användaren redan bytt namn en gång
        if (data.hasChangedUsername) {
@@ -514,6 +520,7 @@ async function loadUserData(uid) {
     }
   });
 
+// CREATE PROFILE
 // Hämta elementen
 const createProfileSubmitBtn = document.getElementById('cp-create-btn'); 
 const createUsernameInput = document.getElementById('cp-username-input'); 
@@ -548,32 +555,26 @@ if (createProfileSubmitBtn && createUsernameInput) {
     }
   });
 
-// -- 3. FYSISK SPÄRR (15 tecken, Enter, och Mellanslag) --
+// -- 3. FYSISK SPÄRR CREATE (15 tecken, Enter, och Mellanslag) --
   createUsernameInput.addEventListener('keydown', (e) => {
     e.stopPropagation();
     const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
     const currentText = createUsernameInput.textContent || "";
-    const selection = window.getSelection().toString(); // Kollar om användaren har markerat text
+    const selection = window.getSelection().toString(); 
     
-    // 1. Stoppa Enter-knappen
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      return;
-    }
+    if (e.key === 'Enter') { e.preventDefault(); return; }
 
-    // 2. Spärra olämpliga mellanslag (Kollar både vanligt space och non-breaking space \u00A0)
+    // BOMBSÄKER MELLANSLAGS-SPÄRR
     if (e.key === ' ') {
-      if (currentText.length === 0) {
-        e.preventDefault();
-        return;
-      }
-      if (currentText.slice(-1) === ' ' || currentText.slice(-1) === '\u00A0') {
-        e.preventDefault();
+      // Förbjud mellanslag i början
+      if (currentText.length === 0) { e.preventDefault(); return; }
+      // Förbjud fler än 1 mellanslag totalt (såvida man inte har markerat text för att skriva över)
+      if ((currentText.includes(' ') || currentText.includes('\u00A0')) && selection.length === 0) {
+        e.preventDefault(); 
         return;
       }
     }
     
-    // 3. Stoppa inmatning över 15 tecken (MEN tillåt om användaren har markerat text för att skriva över)
     if (currentText.length >= 15 && selection.length === 0 && !allowedKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
       e.preventDefault(); 
     }
@@ -603,7 +604,14 @@ if (createProfileSubmitBtn && createUsernameInput) {
         errorMsgEl.innerHTML = "";
     }
     let errors = [];
-
+    // -- PROFILBILDS-KOLL --
+    const currentAvatarSrc = document.querySelector('.current-profile-pic')?.src || "";
+    const defaultAvatarUrl = "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a43d799e6705e122388ffdc_ppic0.svg";
+    
+    // Kollar om bilden fortfarande är default
+    if (currentAvatarSrc.includes("ppic0.svg") || currentAvatarSrc === defaultAvatarUrl || currentAvatarSrc === "") {
+        errors.push("Please select a profile picture");
+    }
    // Byt ut non-breaking spaces mot vanliga mellanslag innan vi kollar längd och tecken
     let rawName = (createUsernameInput.textContent || "").replace(/\u00A0/g, ' ').trim();
     if (rawName === defaultPlaceholder) rawName = "";
@@ -787,6 +795,7 @@ function lockOutNameChangeUI() {
         changeInfoText.textContent = "Username already changed once, sorry!"; // Point 5 fixed
     }
     if (changeProfileSubmitBtn) {
+        changeProfileSubmitBtn.textContent = "Change"; // <-- NY RAD: Återställer texten, "Change" i bakgrunden
         changeProfileSubmitBtn.style.opacity = '0.26'; // Keep it greyed out instead of hiding
         changeProfileSubmitBtn.style.pointerEvents = 'none';
     }
@@ -818,30 +827,28 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
     }
   });
 
-// -- 3. FYSISK SPÄRR (15 tecken, Enter, och Mellanslag) --
-  createUsernameInput.addEventListener('keydown', (e) => {
+// -- 3. FYSISK SPÄRR CHANGE (15 tecken, Enter, och Mellanslag) --
+  changeUsernameInput.addEventListener('keydown', (e) => { // <-- VIKTIGT! Rätt variabel här nu.
     e.stopPropagation();
     const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
-    const currentText = createUsernameInput.textContent || "";
-    const selection = window.getSelection().toString(); // Kollar om användaren har markerat text
+    const currentText = changeUsernameInput.textContent || ""; // <-- Rätt variabel här
+    const selection = window.getSelection().toString(); 
     
-    // 1. Stoppa Enter-knappen
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      return;
-    }
+    if (e.key === 'Enter') { e.preventDefault(); return; }
 
-    // 2. Spärra olämpliga mellanslag (Kollar både vanligt space och non-breaking space \u00A0)
+    // BOMBSÄKER MELLANSLAGS-SPÄRR
     if (e.key === ' ') {
-      if (currentText.length === 0) {
-        e.preventDefault();
-        return;
-      }
-      if (currentText.slice(-1) === ' ' || currentText.slice(-1) === '\u00A0') {
-        e.preventDefault();
+      if (currentText.length === 0) { e.preventDefault(); return; }
+      if ((currentText.includes(' ') || currentText.includes('\u00A0')) && selection.length === 0) {
+        e.preventDefault(); 
         return;
       }
     }
+    
+    if (currentText.length >= 15 && selection.length === 0 && !allowedKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault(); 
+    }
+  });
     
     // 3. Stoppa inmatning över 15 tecken (MEN tillåt om användaren har markerat text för att skriva över)
     if (currentText.length >= 15 && selection.length === 0 && !allowedKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
