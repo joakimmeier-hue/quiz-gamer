@@ -141,7 +141,7 @@ function updateAuthUI(user) {
   // ── STATE TRACKERS ──
   window.lobbyInvOpen = false; 
   window.isGameInvAnimating = false;
-  
+
   // ── BARA FÖR LOBBYN: Animationer ──
   function openLobbyInventory(overlay) {
       window.lobbyInvOpen = true;
@@ -226,11 +226,13 @@ function updateAuthUI(user) {
                 }, 150);
             };
 
-            if (key === 'escape') {
+           if (key === 'escape') {
                 if (isOpen) {
                     e.preventDefault(); 
-                    triggerClick(crossBtn); // Använd vår nya funktion som låser!
+                    e.stopPropagation(); // Stoppa spelet från att reagera på just denna Esc
+                    triggerClick(crossBtn);
                 }
+                return; // Släpp igenom Esc till spelet om inventoryt redan var stängt
             } 
             else if (key === 'i' || key === 'tab') {
                 e.preventDefault(); 
