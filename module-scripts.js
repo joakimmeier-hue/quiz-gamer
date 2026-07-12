@@ -171,8 +171,8 @@ function updateAuthUI(user) {
           if (!window.lobbyInvOpen) overlay.style.display = 'none';
       }, 160);
   }
-  // ── TANGENTBORDS-LYSSNARE (I, TAB, ESC) ──
-    document.addEventListener('keydown', (e) => {
+// ── TANGENTBORDS-LYSSNARE (I, TAB, ESC) ──
+  document.addEventListener('keydown', (e) => {
     if (e.repeat) return; // Stoppar buggar om man håller inne knappen
     if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
 
@@ -190,18 +190,21 @@ function updateAuthUI(user) {
         // Kollar om elementet finns och INTE har display: none
         if (el && window.getComputedStyle(el).display !== 'none') {
             isModalVisible = true;
-            break; // Vi hittade en synlig modal, vi behöver inte kolla resten
+            break; 
         }
     }
 
-    // Om någon av rutorna är synliga, avbryt knapptrycket direkt!
+    // Om någon av rutorna är synliga, avbryt inventory-scriptet!
+    // (ESC-knappen kommer då hanteras av dina modal-scripts istället)
     if (isModalVisible) {
         return; 
     }
+
+    // De här variablerna används av all logik under dem!
     const key = e.key.toLowerCase();
     const isGameSide = document.body.dataset.page === 'game';
 
-// --- Inventory på GAME-SIDAN: DOM är Single Source of Truth ---
+    // --- Inventory på GAME-SIDAN: DOM är Single Source of Truth ---
     if (isGameSide) {
         if (key === 'i' || key === 'tab' || key === 'escape') {
             
@@ -209,30 +212,27 @@ function updateAuthUI(user) {
             const crossBtn = document.querySelector('.i-btn-cross'); 
             
             if (!arrowBtn || !crossBtn) return; 
-            
-            // SPAM-SKYDD: Är Webflow redan igång med en animation? Avbryt trycket!
             if (window.isGameInvAnimating) return;
             
             const isOpen = window.getComputedStyle(crossBtn).display !== 'none';
             
-            // --- Hjälpfunktion för att klicka och låsa ---
             const triggerClick = (btn) => {
-                window.isGameInvAnimating = true; // LÅS
+                window.isGameInvAnimating = true; 
                 btn.click();
-                
-                // LÅS UPP efter 150ms (130ms animation + 20ms felmarginal)
                 setTimeout(() => {
                     window.isGameInvAnimating = false;
                 }, 150);
             };
 
-           if (key === 'escape') {
+            if (key === 'escape') {
                 if (isOpen) {
                     e.preventDefault(); 
-                    e.stopPropagation(); // Stoppa spelet från att reagera på just denna Esc
-                    triggerClick(crossBtn);
+                    e.stopPropagation(); 
+                    triggerClick(crossBtn); 
                 }
-                return; // Släpp igenom Esc till spelet om inventoryt redan var stängt
+                // Om inventoryt redan var stängt, gör return inget. 
+                // ESC skickas vidare till spelet/knappar under!
+                return; 
             } 
             else if (key === 'i' || key === 'tab') {
                 e.preventDefault(); 
@@ -246,11 +246,10 @@ function updateAuthUI(user) {
         }
     }
     
-    // --- LOBBY-SIDAN: Din original-logik (Orörd) ---
+    // --- LOBBY-SIDAN (inkl. UC) ---
     else {
         // Hantera I och TAB (Toggle)
         if (key === 'i' || key === 'tab') {
-          
             e.preventDefault();
             
             if (!currentUser) {
@@ -265,15 +264,9 @@ function updateAuthUI(user) {
                 if (overlay) openLobbyInventory(overlay);
             }
         }
-        // Hantera ESC (Enbart stäng)
+        
+        // Hantera ESC (Enbart stäng). Den kraschande loginModal-koden är nu helt borta!
         if (key === 'escape') {
-            if (loginModal && window.getComputedStyle(loginModal).display !== 'none') {
-                e.preventDefault();
-                e.stopPropagation();
-                hideLoginModal();
-                return;
-            } 
-            
             if (window.lobbyInvOpen) {
                 e.preventDefault();
                 const overlay = document.querySelector('.inventory-overlay');
@@ -282,7 +275,6 @@ function updateAuthUI(user) {
         }
     }
 }, true);
-
  // ── GOOGLE LOGIN ──
  if (googleLoginBtn) {
    googleLoginBtn.addEventListener('click', async (e) => {
