@@ -153,7 +153,6 @@
   // ── STATE TRACKERS ──
   window.gameInvOpen = false;  
   window.lobbyInvOpen = false; 
-  window.lobbyReady = false; // NYTT: Håller inventory låst under introt
   // Uppdatera staten om användaren klickar med musen på game-knapparna
   document.addEventListener('click', (e) => {
       if (e.target.closest('#i-game-btn-show')) window.gameInvOpen = true;
@@ -189,14 +188,33 @@
       }, 160);
   }
   // ── TANGENTBORDS-LYSSNARE (I, TAB, ESC) ──
-document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', (e) => {
     if (e.repeat) return; // Stoppar buggar om man håller inne knappen
     if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
-    const cpModal = document.getElementById('create-profile'); // Hindra i och tab under cp.  din huvud-div här
-    // Om create profile-rutan är synlig (inte har display: none), avbryt knapptrycket:
-    if (cpModal && getComputedStyle(cpModal).display !== 'none') {
-    return; 
-}
+
+    // --- NY BRILJANT SPÄRR: Kolla om någon modal/overlay ligger i vägen ---
+    const blockingSelectors = [
+        '.login-modal-wrapper', 
+        '.create-profile', 
+        '.change-username', 
+        '.intro-overlay-grp'
+    ];
+
+    let isModalVisible = false;
+    for (let selector of blockingSelectors) {
+        const el = document.querySelector(selector);
+        // Kollar om elementet finns och INTE har display: none
+        if (el && window.getComputedStyle(el).display !== 'none') {
+            isModalVisible = true;
+            break; // Vi hittade en synlig modal, vi behöver inte kolla resten
+        }
+    }
+
+    // Om någon av rutorna är synliga, avbryt knapptrycket direkt!
+    if (isModalVisible) {
+        return; 
+    }
+
     const key = e.key.toLowerCase();
     const isGameSide = document.body.dataset.page === 'game';
     // --- Inventory på GAME-SIDAN: Robust "Reality Check" ---
@@ -224,7 +242,7 @@ document.addEventListener('keydown', (e) => {
     else {
         // Hantera I och TAB (Toggle)
         if (key === 'i' || key === 'tab') {
-          if (!window.lobbyReady) return; // NYTT: Avbryt om introt fortfarande körs
+          
             e.preventDefault();
             
             if (!currentUser) {
@@ -256,6 +274,7 @@ document.addEventListener('keydown', (e) => {
         }
     }
 }, true);
+
  // ── GOOGLE LOGIN ──
  if (googleLoginBtn) {
    googleLoginBtn.addEventListener('click', async (e) => {
@@ -304,14 +323,7 @@ document.addEventListener('keydown', (e) => {
   // ── GLOBAL KLICKLYSSNARE ──
   document.addEventListener('click', async (e) => {
 
-    // NYTT: Starta 4-sekunders upplåsning när man klickar på introt
-    const welcomeScreen = e.target.closest('.welcome-text-container');
-    if (welcomeScreen && !window.lobbyReady) {
-        setTimeout(() => {
-            window.lobbyReady = true;
-            console.log("Lobby är nu redo! Inventory upplåst.");
-        }, 4000); // 4000 millisekunder = 4 sekunder
-    }
+   
     // -- ÖPPNA CHANGE USERNAME MODAL --
     const usernameLabel = e.target.closest('.player-info.username');
     if (usernameLabel) {
@@ -409,8 +421,6 @@ document.addEventListener('keydown', (e) => {
     if (invBtn) {
       e.preventDefault();
       e.stopPropagation();
-
-      if (!window.lobbyReady) return; // NYTT: Avbryt musklicket om introt körs
       
       if (!currentUser) {
         pendingAction = 'INVENTORY';
