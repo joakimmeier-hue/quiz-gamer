@@ -29,27 +29,15 @@
   const userScoreEl = document.getElementById('user-total-score');
   const userRankEl = document.getElementById('user-rank');
 
-  function updateAuthUI(user) {
-    const logoutBtns = document.querySelectorAll('#logout-btn, .logout-btn');
-    
+function updateAuthUI(user) {
     if (user) {
       // ANVÄNDARE ÄR INLOGGAD
       document.body.classList.add("user-logged-in");
       if (userDisplayName) userDisplayName.textContent = user.displayName || user.email;
       
-      // Visa utloggningsknappen (utan några skumma animationer)
-      logoutBtns.forEach(btn => {
-        btn.style.display = 'flex'; 
-      });
-      
     } else {
       // ANVÄNDARE ÄR UTLOGGAD
       document.body.classList.remove("user-logged-in");
-      
-      // Dölj utloggningsknappen direkt
-      logoutBtns.forEach(btn => {
-        btn.style.display = 'none';
-      });
       
       // Stäng inventoryt omedelbart om det råkar vara öppet när man loggar ut
       const overlay = document.querySelector('.inventory-overlay');
@@ -58,7 +46,7 @@
       }
     }
   }
-  function showLoginModal() {
+    function showLoginModal() {
     if (currentUser) return; // NYTT: redan inloggad - visa aldrig login-modalen igen
     if (loginModal) {
       loginModal.style.display = 'flex';
@@ -214,30 +202,50 @@
     if (isModalVisible) {
         return; 
     }
-
     const key = e.key.toLowerCase();
     const isGameSide = document.body.dataset.page === 'game';
-    // --- Inventory på GAME-SIDAN: Robust "Reality Check" ---
+
+// --- Inventory på GAME-SIDAN: Robust "Reality Check" ---
     if (isGameSide) {
         if (key === 'i' || key === 'tab' || key === 'escape') {
-            e.preventDefault();
             
             const showBtn = document.getElementById('i-game-btn-show');
             const hideBtn = document.getElementById('i-game-btn-hide');
             
-            // Kolla vad som faktiskt syns i DOM:en just nu
-            const isHideVisible = hideBtn && window.getComputedStyle(hideBtn).display !== 'none';
+            // VI ANVÄNDER DIN STATE-VARIABEL ISTÄLLET FÖR CSS!
+            const isOpen = window.gameInvOpen;
             
-            // Om ESC trycks eller om Inventory är öppet (hide-knappen syns) -> Stäng
-            if (key === 'escape' || isHideVisible) {
-                if (hideBtn) hideBtn.click();
+            if (key === 'escape') {
+                // Om ESC trycks: Stäng BARA om inventoryt faktiskt är öppet
+                if (isOpen) {
+                    e.preventDefault(); 
+                    if (hideBtn) {
+                        hideBtn.click();
+                        window.gameInvOpen = false; // <-- Synka staten!
+                    }
+                }
             } 
-            // Om Toggle trycks och Inventory är stängt -> Öppna
             else if (key === 'i' || key === 'tab') {
-                if (showBtn) showBtn.click();
+                e.preventDefault(); 
+                
+                // Om Toggle trycks och Inventory är öppet -> Stäng
+                if (isOpen) {
+                    if (hideBtn) {
+                        hideBtn.click();
+                        window.gameInvOpen = false; // <-- Synka staten!
+                    }
+                } 
+                // Om Toggle trycks och Inventory är stängt -> Öppna
+                else {
+                    if (showBtn) {
+                        showBtn.click();
+                        window.gameInvOpen = true; // <-- Synka staten!
+                    }
+                }
             }
         }
-    } 
+    }
+    
     // --- LOBBY-SIDAN: Din original-logik (Orörd) ---
     else {
         // Hantera I och TAB (Toggle)
