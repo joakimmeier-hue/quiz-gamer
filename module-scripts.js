@@ -139,13 +139,9 @@ function updateAuthUI(user) {
     return el && window.getComputedStyle(el).display !== 'none';
   }
   // ── STATE TRACKERS ──
-  window.gameInvOpen = false;  
   window.lobbyInvOpen = false; 
-  // Uppdatera staten om användaren klickar med musen på game-knapparna
-  document.addEventListener('click', (e) => {
-      if (e.target.closest('#i-game-btn-show')) window.gameInvOpen = true;
-      if (e.target.closest('#i-game-btn-hide')) window.gameInvOpen = false;
-  }, true);
+  window.isGameInvAnimating = false;
+  
   // ── BARA FÖR LOBBYN: Animationer ──
   function openLobbyInventory(overlay) {
       window.lobbyInvOpen = true;
@@ -205,42 +201,44 @@ function updateAuthUI(user) {
     const key = e.key.toLowerCase();
     const isGameSide = document.body.dataset.page === 'game';
 
-// --- Inventory på GAME-SIDAN: Robust "Reality Check" ---
+// --- Inventory på GAME-SIDAN: DOM är Single Source of Truth ---
     if (isGameSide) {
         if (key === 'i' || key === 'tab' || key === 'escape') {
             
-            const showBtn = document.getElementById('i-game-btn-show');
-            const hideBtn = document.getElementById('i-game-btn-hide');
+            const arrowBtn = document.querySelector('.i-btn-arrow'); 
+            const crossBtn = document.querySelector('.i-btn-cross'); 
             
-            // VI ANVÄNDER DIN STATE-VARIABEL ISTÄLLET FÖR CSS!
-            const isOpen = window.gameInvOpen;
+            if (!arrowBtn || !crossBtn) return; 
             
+            // SPAM-SKYDD: Är Webflow redan igång med en animation? Avbryt trycket!
+            if (window.isGameInvAnimating) return;
+            
+            const isOpen = window.getComputedStyle(crossBtn).display !== 'none';
+            
+            // --- Hjälpfunktion för att klicka och låsa ---
+            const triggerClick = (btn) => {
+                window.isGameInvAnimating = true; // LÅS
+                btn.click();
+                
+                // LÅS UPP efter 150ms (130ms animation + 20ms felmarginal)
+                setTimeout(() => {
+                    window.isGameInvAnimating = false;
+                }, 150);
+            };
+
             if (key === 'escape') {
-                // Om ESC trycks: Stäng BARA om inventoryt faktiskt är öppet
                 if (isOpen) {
                     e.preventDefault(); 
-                    if (hideBtn) {
-                        hideBtn.click();
-                        window.gameInvOpen = false; // <-- Synka staten!
-                    }
+                    triggerClick(crossBtn); // Använd vår nya funktion som låser!
                 }
             } 
             else if (key === 'i' || key === 'tab') {
                 e.preventDefault(); 
                 
-                // Om Toggle trycks och Inventory är öppet -> Stäng
                 if (isOpen) {
-                    if (hideBtn) {
-                        hideBtn.click();
-                        window.gameInvOpen = false; // <-- Synka staten!
-                    }
-                } 
-                // Om Toggle trycks och Inventory är stängt -> Öppna
-                else {
-                    if (showBtn) {
-                        showBtn.click();
-                        window.gameInvOpen = true; // <-- Synka staten!
-                    }
+                    triggerClick(crossBtn);
+                } else {
+                    triggerClick(arrowBtn);
                 }
             }
         }
