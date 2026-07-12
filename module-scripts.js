@@ -614,10 +614,9 @@ if (createProfileSubmitBtn && createUsernameInput) {
     }
    // Byt ut non-breaking spaces mot vanliga mellanslag innan vi kollar längd och tecken
     let rawName = (createUsernameInput.textContent || "").replace(/\u00A0/g, ' ').trim();
-    if (rawName === defaultPlaceholder) rawName = "";
-
-    const currentAvatarSrc = document.querySelector('.current-profile-pic')?.src || "";
-    
+    if (rawName === defaultPlaceholder) {
+    rawName = "";
+    }     
 // -- VALIDERINGS-REGLER --
     if (rawName.length < 3) {
       errors.push("Minimum 3 characters");
@@ -844,19 +843,11 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
         return;
       }
     }
-    
     if (currentText.length >= 15 && selection.length === 0 && !allowedKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
       e.preventDefault(); 
     }
   });
-    
-    // 3. Stoppa inmatning över 15 tecken (MEN tillåt om användaren har markerat text för att skriva över)
-    if (currentText.length >= 15 && selection.length === 0 && !allowedKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
-      e.preventDefault(); 
-    }
-  });
-
-  // -- 4. VÄCK KNAPPEN --
+    // -- 4. VÄCK KNAPPEN --
   changeUsernameInput.addEventListener('input', () => {
     const rawText = changeUsernameInput.textContent || "";
     if (rawText.trim().length > 0 && rawText.trim() !== changeDefaultPlaceholder) {
@@ -977,3 +968,4 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
       changeProfileSubmitBtn.style.pointerEvents = 'auto';
     }
   });
+}
