@@ -26,7 +26,7 @@ const TOPICS = {
     },
     cars: { 
         url: '', 
-        volume: 0.6, 
+        volume: 0.6,
         startTime: 0,
         fadeColor: '#000000'
     },
