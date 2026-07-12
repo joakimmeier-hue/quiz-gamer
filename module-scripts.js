@@ -977,4 +977,3 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
       changeProfileSubmitBtn.style.pointerEvents = 'auto';
     }
   });
-}
