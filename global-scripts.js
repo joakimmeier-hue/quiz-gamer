@@ -67,6 +67,8 @@ function getTopicFromUrl(url) {
     if (lowerUrl.includes('cars')) return 'cars';
     if (lowerUrl.includes('history')) return 'history';
     if (lowerUrl.includes('uc')) return 'uc';
+    if (lowerUrl.includes('terms')) return 'terms';  
+    if (lowerUrl.includes('privacy')) return 'privacy';
     return 'lobby';
 }
 const currentTopicId = getTopicFromUrl(window.location.pathname);
