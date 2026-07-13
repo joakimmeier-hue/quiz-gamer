@@ -228,8 +228,7 @@ function updateAuthUI(user) {
             if (key === 'escape') {
                 if (isOpen) {
                     // INVENTORYT ÄR ÖPPET: Stäng det, och "sluka" ESC-knappen.
-                    e.preventDefault(); 
-                    e.stopPropagation(); 
+                    e.preventDefault();               
                     triggerClick(crossBtn); 
                 }
                 // INVENTORYT ÄR STÄNGT: Vi gör ingenting. 
