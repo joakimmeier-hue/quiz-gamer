@@ -655,7 +655,7 @@ document.addEventListener('keydown', function(e) {
         if (isOpen) {
             if (e.key === 'Enter' && overlay.classList.contains('about-overlay')) return;
             e.preventDefault();
-            const btn = overlay.querySelector('.button');
+            const btn = overlay.querySelector('.button', '.button-link');
             if (btn) btn.click();
             return;
         }
