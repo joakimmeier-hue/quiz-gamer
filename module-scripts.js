@@ -574,11 +574,16 @@ if (createProfileSubmitBtn && createUsernameInput) {
     const currentText = createUsernameInput.textContent || "";
     const selection = window.getSelection().toString(); 
     
-    if (e.key === 'Enter') { 
+ if (e.key === 'Enter') { 
     e.preventDefault(); 
-    // Fejka ett klick på knappen om den är "vaken"
-    if (createProfileSubmitBtn.style.pointerEvents !== 'none') {
+    
+    // Läs av den exakta stilen från CSS
+    const btnStyle = window.getComputedStyle(createProfileSubmitBtn);    
+    if (btnStyle.pointerEvents !== 'none') {
+        console.log("Create-knappen är vaken, fejkar klick!");
         createProfileSubmitBtn.click(); 
+    } else {
+        console.log("Create-knappen är blockerad av CSS, gör inget.");
     }
     return; 
 }
@@ -852,11 +857,16 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
     const currentText = changeUsernameInput.textContent || ""; // <-- Rätt variabel här
     const selection = window.getSelection().toString(); 
     
-    if (e.key === 'Enter') { 
+ if (e.key === 'Enter') { 
     e.preventDefault(); 
-    // Fejka ett klick på knappen om den är "vaken"
-    if (changeProfileSubmitBtn.style.pointerEvents !== 'none') {
+    
+    // Läs av den exakta stilen från CSS
+    const btnStyle = window.getComputedStyle(changeProfileSubmitBtn);    
+    if (btnStyle.pointerEvents !== 'none') {
+        console.log("Change-knappen är vaken, fejkar klick!");
         changeProfileSubmitBtn.click(); 
+    } else {
+        console.log("Change-knappen är blockerad av CSS, gör inget.");
     }
     return; 
 }
