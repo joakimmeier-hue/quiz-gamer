@@ -204,7 +204,7 @@ function updateAuthUI(user) {
     const key = e.key.toLowerCase();
     const isGameSide = document.body.dataset.page === 'game';
 
-    // --- Inventory på GAME-SIDAN: DOM är Single Source of Truth ---
+// --- Inventory på GAME-SIDAN: DOM är Single Source of Truth ---
     if (isGameSide) {
         if (key === 'i' || key === 'tab' || key === 'escape') {
             
@@ -214,6 +214,7 @@ function updateAuthUI(user) {
             if (!arrowBtn || !crossBtn) return; 
             if (window.isGameInvAnimating) return;
             
+            // Vi litar på Webflows interaction! (Från image_e1657d.png)
             const isOpen = window.getComputedStyle(crossBtn).display !== 'none';
             
             const triggerClick = (btn) => {
@@ -226,12 +227,13 @@ function updateAuthUI(user) {
 
             if (key === 'escape') {
                 if (isOpen) {
+                    // INVENTORYT ÄR ÖPPET: Stäng det, och "sluka" ESC-knappen.
                     e.preventDefault(); 
                     e.stopPropagation(); 
                     triggerClick(crossBtn); 
                 }
-                // Om inventoryt redan var stängt, gör return inget. 
-                // ESC skickas vidare till spelet/knappar under!
+                // INVENTORYT ÄR STÄNGT: Vi gör ingenting. 
+                // koden släpper igenom ESC-knappen ner till din button-link!
                 return; 
             } 
             else if (key === 'i' || key === 'tab') {
@@ -245,7 +247,7 @@ function updateAuthUI(user) {
             }
         }
     }
-    
+        
     // --- LOBBY-SIDAN (inkl. UC) ---
     else {
         // Hantera I och TAB (Toggle)
