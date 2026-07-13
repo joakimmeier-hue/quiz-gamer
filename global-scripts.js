@@ -648,14 +648,14 @@ document.addEventListener('keydown', function(e) {
     if (!triggerKeys.includes(e.key)) return;
 
     // 1. Är en overlay öppen? Klicka DESS egen .button och sluta.
-    const overlays = document.querySelectorAll('.rules-overlay, .inventory-overlay, .leaderboard-overlay, .about-overlay');
+    const overlays = document.querySelectorAll('.rules-overlay, .leaderboard-overlay, .about-overlay');
     for (const overlay of overlays) {
         const style = window.getComputedStyle(overlay);
         const isOpen = style.display !== 'none' && parseFloat(style.opacity) > 0.9;
         if (isOpen) {
             if (e.key === 'Enter' && overlay.classList.contains('about-overlay')) return;
             e.preventDefault();
-            const btn = overlay.querySelector('.button', '.button-link');
+            const btn = overlay.querySelector('.button');
             if (btn) btn.click();
             return;
         }
