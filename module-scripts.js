@@ -574,7 +574,14 @@ if (createProfileSubmitBtn && createUsernameInput) {
     const currentText = createUsernameInput.textContent || "";
     const selection = window.getSelection().toString(); 
     
-    if (e.key === 'Enter') { e.preventDefault(); return; }
+    if (e.key === 'Enter') { 
+    e.preventDefault(); 
+    // Fejka ett klick på knappen om den är "vaken"
+    if (createProfileSubmitBtn.style.pointerEvents !== 'none') {
+        createProfileSubmitBtn.click(); 
+    }
+    return; 
+}
 
     // BOMBSÄKER MELLANSLAGS-SPÄRR
     if (e.key === ' ') {
@@ -845,7 +852,14 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
     const currentText = changeUsernameInput.textContent || ""; // <-- Rätt variabel här
     const selection = window.getSelection().toString(); 
     
-    if (e.key === 'Enter') { e.preventDefault(); return; }
+    if (e.key === 'Enter') { 
+    e.preventDefault(); 
+    // Fejka ett klick på knappen om den är "vaken"
+    if (changeProfileSubmitBtn.style.pointerEvents !== 'none') {
+        changeProfileSubmitBtn.click(); 
+    }
+    return; 
+}
 
     // BOMBSÄKER MELLANSLAGS-SPÄRR
     if (e.key === ' ') {
