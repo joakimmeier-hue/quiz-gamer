@@ -546,7 +546,7 @@ async function loadUserData(uid) {
   });
 // ── ROUTE GUARD SYSTEM ──────────────────────────────────────────────
 function routeGuard(isLoggedIn) {
-    const PUBLIC_PAGES = ['lobby', 'terms', 'privacy', 'uc'];
+    const PUBLIC_PAGES = ['lobby', 'terms', 'privacy'];
 
     if (!isLoggedIn && !PUBLIC_PAGES.includes(currentSlug)) {
         window.location.replace('/');
