@@ -208,11 +208,11 @@ function updateAuthUI(user) {
         }
         return; // Avbryter alltid vidare logik så inventoryt inte öppnas i bakgrunden
     }
-
+  }
     // De här variablerna används av all logik under dem!
     const key = e.key.toLowerCase();
     const isGameSide = document.body.dataset.page === 'game';
-
+  
 // --- Inventory på GAME-SIDAN: DOM är Single Source of Truth ---
     if (isGameSide) {
         if (key === 'i' || key === 'tab' || key === 'escape') {
