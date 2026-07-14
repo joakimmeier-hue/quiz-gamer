@@ -285,6 +285,8 @@ function updateAuthUI(user) {
         }
     }
 }, true);
+
+
  // ── GOOGLE LOGIN ──
  if (googleLoginBtn) {
    googleLoginBtn.addEventListener('click', async (e) => {
