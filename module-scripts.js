@@ -174,9 +174,14 @@ function updateAuthUI(user) {
 // ── TANGENTBORDS-LYSSNARE (I, TAB, ESC) ──
   document.addEventListener('keydown', (e) => {
     if (e.repeat) return; // Stoppar buggar om man håller inne knappen
-    if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+    
+    const key = e.key.toLowerCase();
 
-    // --- NY BRILJANT SPÄRR: Kolla om någon modal/overlay ligger i vägen ---
+    // VIKTIG ÄNDRING: Släpp igenom ESC-knappen även om användaren står inuti textfältet!
+    // Annars händer inget om man försöker stänga medan man skriver.
+    if (key !== 'escape' && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+    // --- BRILJANT SPÄRR: Kolla om någon modal/overlay ligger i vägen ---
     const blockingSelectors = [
         '.login-modal-wrapper', 
         '.create-profile', 
@@ -184,20 +189,24 @@ function updateAuthUI(user) {
         '.intro-overlay-grp'
     ];
 
-    let isModalVisible = false;
+    let visibleModal = null;
     for (let selector of blockingSelectors) {
         const el = document.querySelector(selector);
         // Kollar om elementet finns och INTE har display: none
         if (el && window.getComputedStyle(el).display !== 'none') {
-            isModalVisible = true;
+            visibleModal = el;
             break; 
         }
     }
 
     // Om någon av rutorna är synliga, avbryt inventory-scriptet!
-    // (ESC-knappen kommer då hanteras av dina modal-scripts istället)
-    if (isModalVisible) {
-        return; 
+    if (visibleModal) {
+        // NY FIX: Om rutan är Change Username, och vi tryckte ESC, stäng den!
+        if (key === 'escape' && visibleModal.classList.contains('change-username')) {
+            // Detta triggar automatiskt din andra stängnings-kod (Klick på bakgrunden)
+            visibleModal.click(); 
+        }
+        return; // Avbryter alltid vidare logik så inventoryt inte öppnas i bakgrunden
     }
 
     // De här variablerna används av all logik under dem!
