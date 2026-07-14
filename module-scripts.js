@@ -204,6 +204,9 @@ function updateAuthUI(user) {
         if (key === 'escape' && visibleModal.classList.contains('change-username')) {
             // Detta triggar automatiskt din andra stängnings-kod (Klick på bakgrunden)
             visibleModal.click(); 
+            // NEW: close the login modal on Escape
+        if (key === 'escape' && visibleModal.classList.contains('login-modal-wrapper')) {
+            hideLoginModal();
         }
         return; // Avbryter alltid vidare logik så inventoryt inte öppnas i bakgrunden
     }
