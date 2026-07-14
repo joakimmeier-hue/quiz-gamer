@@ -72,6 +72,7 @@ function getTopicFromUrl(url) {
     return 'lobby';
 }
 const currentTopicId = getTopicFromUrl(window.location.pathname);
+const currentSlug = window.location.pathname.split('/').filter(Boolean).pop() || 'lobby';
 const currentConfig = TOPICS[currentTopicId];
 const audioKey = currentTopicId + 'AudioTime';
 // Initiera Audio
@@ -453,7 +454,11 @@ window.addEventListener('pageshow', () => {
 });
 // ── GLOBAL EXIT FUNCTION MED LOTTIE-LOGIK ─────────────────────────────
 // Vi lägger till parametern 'isSlowFinish' (default är false)
-window.triggerPageExit = function(url, isSlowFinish = false) {
+window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false) {
+    sessionStorage.setItem('navFrom', currentSlug);
+    if (isFinishBtn) {
+        sessionStorage.setItem('scoreAuthorized', 'true');
+    }
     sessionStorage.setItem('skipIntro', 'true');
     
     const targetTopicId = getTopicFromUrl(url);
@@ -521,23 +526,20 @@ document.addEventListener('click', function(e) {
     const link = e.target.closest('a');
     if (!link || link.target === '_blank' || e.metaKey || e.ctrlKey) return;
     const href = link.getAttribute('href');
-    // NYTT: .games-link-block undantagen - den hanteras nu helt av gatekeepern
-    // i module-scripts.js, som anropar triggerPageExit själv när användaren är inloggad.
     if (!href || href === '#' || href.startsWith('#') || link.classList.contains('is-password') || link.closest('.pp-dropdown, .i-closer-game, .button.i-lobby-back, .games-link-block')) return;
     e.preventDefault();
-    
-    // SMART SYSTEM: Letar efter alla länkar vars ID börjar med "finish-btn-"
+
     const isFinishBtn = link.id && link.id.startsWith('finish-btn-');
-    
-    if (link.id === 'boss-level') { 
-        setTimeout(() => window.triggerPageExit(href, false), 1000); 
+
+    if (link.id === 'boss-level') {
+        setTimeout(() => window.triggerPageExit(href, false), 1000);
     } else if (isFinishBtn) {
-        // Skickar med "true" för att aktivera isSlowFinish-logiken ovan!
-        setTimeout(() => window.triggerPageExit(href, true), 200); 
-    } else { 
-        setTimeout(() => window.triggerPageExit(href, false), 200); 
+        setTimeout(() => window.triggerPageExit(href, true, true), 200);
+    } else {
+        setTimeout(() => window.triggerPageExit(href, false), 200);
     }
 });
+
 // ── KEYBOARD LISTENER FÖR INTRO (ENTER/SPACE) ─────────────────────────
 let triggered = false;
 document.addEventListener("keydown", function(e) {
@@ -726,7 +728,7 @@ const HOVER_SCALE_CLASSES = [
     'submit-button',
     'button',
     'button-link',
-    'game-info-gma-frame.finish-gma',
+    'finish-btn',
     'start-btn-gma-wrapper',
     'share-score-btn',
     'link-next-challenge',
@@ -753,7 +755,7 @@ const PRESS_SCALE_CLASSES = [
     'submit-button',
     'button',
     'button-link',
-    'game-info-gma-frame.finish-gma',
+    'finish-btn',
     'start-btn-gma-wrapper',
     'share-score-btn',
     'link-next-challenge',

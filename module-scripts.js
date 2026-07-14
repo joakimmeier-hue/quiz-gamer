@@ -1,5 +1,4 @@
 // module-scripts
-// claude see this code: 884433
   import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
@@ -540,7 +539,42 @@ async function loadUserData(uid) {
     if (user) {
       loadUserData(user.uid);
     }
+    routeGuard(!!user); // NEW
   });
+// ── ROUTE GUARD SYSTEM ──────────────────────────────────────────────
+function routeGuard(isLoggedIn) {
+    const PUBLIC_PAGES = ['lobby', 'terms', 'privacy', 'uc'];
+
+    if (!isLoggedIn && !PUBLIC_PAGES.includes(currentSlug)) {
+        window.location.replace('/');
+        return;
+    }
+    if (!isLoggedIn) return;
+
+    const cameFrom = sessionStorage.getItem('navFrom');
+    sessionStorage.removeItem('navFrom');
+
+    if (currentSlug === 'score') {
+        const authorized = sessionStorage.getItem('scoreAuthorized') === 'true';
+        sessionStorage.removeItem('scoreAuthorized');
+        if (!authorized) {
+            window.location.replace('/');
+            return;
+        }
+    }
+
+    // Game pages: must arrive from their theme's start page (any difficulty, not sequential)
+    const gameMatch = currentSlug.match(/^([a-z]+)-game-(\d+)$/);
+    if (gameMatch) {
+    const theme = gameMatch[1];
+    const validPrevious = `${theme}-start`;
+
+    if (cameFrom !== validPrevious) {
+        window.location.replace('/');
+        return;
+    }
+  }
+}
 
 // ==========================================
 // ── 1. DELAD KOMPONENT FÖR TEXTFÄLT ──
