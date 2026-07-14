@@ -573,7 +573,7 @@ function routeGuard(isLoggedIn) {
     const validPrevious = `${theme}-start`;
 
     if (cameFrom !== validPrevious) {
-        window.location.replace('/');
+        window.location.replace('/' + validPrevious); // send to that theme's start instead of home
         return;
     }
   }
