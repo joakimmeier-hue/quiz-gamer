@@ -532,133 +532,141 @@ async function loadUserData(uid) {
     }
   });
 
-// CREATE PROFILE
-// Hämta elementen
+// ==========================================
+// ── 1. DELAD KOMPONENT FÖR TEXTFÄLT ──
+// ==========================================
+// Denna funktion fungerar som en komponent. Den ger båda fälten exakt samma beteende.
+
+function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
+    if (!inputEl || !btnEl) return;
+
+    // -- START-UTSEENDE --
+    if (inputEl.textContent.trim() === defaultPlaceholder || inputEl.textContent.trim() === "") {
+        inputEl.textContent = defaultPlaceholder;
+        inputEl.style.color = "rgba(255, 255, 255, 0.35)";
+    }
+
+    // -- FOKUS --
+    inputEl.addEventListener('focus', () => {
+        if (inputEl.textContent.trim() === defaultPlaceholder) {
+            inputEl.textContent = "";
+        }
+        inputEl.style.color = "rgba(255, 255, 255, 1)";
+    });
+
+    // -- BLUR --
+    inputEl.addEventListener('blur', () => {
+        inputEl.textContent = inputEl.textContent.trim();
+        if (inputEl.textContent === "") {
+            inputEl.textContent = defaultPlaceholder;
+            inputEl.style.color = "rgba(255, 255, 255, 0.35)";
+        }
+    });
+
+    // -- TANGENTTRYCK (Enter, Mellanslag, Max 15) --
+    inputEl.addEventListener('keydown', (e) => {
+        e.stopPropagation();
+        const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
+        const currentText = inputEl.textContent || "";
+        const selection = window.getSelection().toString(); 
+        
+        // ENTER: Hindra radbyte och klicka på fältets tillhörande knapp
+        if (e.key === 'Enter') { 
+            e.preventDefault(); 
+            const btnStyle = window.getComputedStyle(btnEl);    
+            if (btnStyle.pointerEvents !== 'none') {
+                btnEl.click(); 
+            }
+            return; 
+        }
+
+        // MELLANSLAG: Stoppa endast om det är det allra första tecknet. 
+        // (Fler än ett hanteras nu istället av valideringen nedan så error msg visas!)
+        if (e.key === ' ' && currentText.length === 0) {
+            e.preventDefault(); 
+            return; 
+        }
+        
+        // MAX 15 TECKEN (Fysisk spärr, tillåter navigering/radering)
+        if (currentText.length >= 15 && selection.length === 0 && !allowedKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
+            e.preventDefault(); 
+        }
+    });
+
+    // -- KLISTRA IN (Tvätta bort radbrytningar) --
+    inputEl.addEventListener('paste', (e) => {
+        e.preventDefault();
+        let pasteText = (e.clipboardData || window.clipboardData).getData('text');
+        pasteText = pasteText.replace(/[\r\n]+/g, ''); // Kastar bort alla line breaks
+        document.execCommand('insertText', false, pasteText);
+    });
+
+    // -- VÄCK KNAPPEN NÄR MAN SKRIVER --
+    inputEl.addEventListener('input', () => {
+        const rawText = inputEl.textContent || "";
+        if (rawText.trim().length > 0 && rawText.trim() !== defaultPlaceholder) {
+            btnEl.style.opacity = '1';
+            btnEl.style.pointerEvents = 'auto';
+        } else {
+            btnEl.style.opacity = '0.26';
+            btnEl.style.pointerEvents = 'none';
+        }
+    });
+}
+
+// -- DELAD VALIDERINGS-KOMPONENT --
+// Kontrollerar reglerna och skickar tillbaka en array med eventuella fel.
+function validateUsernameRules(rawName) {
+    let errors = [];
+    if (rawName.length < 3) errors.push("Minimum 3 characters");
+    if (rawName.length > 15) errors.push("Maximum 15 characters");
+
+    const spaceCount = (rawName.match(/ /g) || []).length;
+    if (spaceCount > 1) errors.push("Only one space allowed");
+
+    const invalidCharRegex = /[^a-zA-Z0-9åäöÅÄÖ\-_ ]/; 
+    if (rawName.length > 0 && invalidCharRegex.test(rawName)) {
+        errors.push("Ops, invalid character");
+    }
+    return errors;
+}
+
+
+// ==========================================
+// ── 2. CREATE PROFILE LOGIC ──
+// ==========================================
 const createProfileSubmitBtn = document.getElementById('cp-create-btn'); 
 const createUsernameInput = document.getElementById('cp-username-input'); 
 const errorMsgEl = document.getElementById('cp-error-msg');
+const createDefaultPlaceholder = "Mr Smart";
 
 if (createProfileSubmitBtn && createUsernameInput) {
   
-  const defaultPlaceholder = "Mr Smart";
+  // 1. Koppla fältet till vår nya gemensamma funktion
+  setupUsernameInput(createUsernameInput, createProfileSubmitBtn, createDefaultPlaceholder);
 
-  // -- 0. SÄTT START-UTSEENDE (När sidan laddas) --
-  if (createUsernameInput.textContent.trim() === defaultPlaceholder || createUsernameInput.textContent.trim() === "") {
-    createUsernameInput.textContent = defaultPlaceholder;
-    createUsernameInput.style.color = "rgba(255, 255, 255, 0.35)"; // 35% Alpha
-  }
-
-  // -- 1. PLACEHOLDER-LOGIK (Fokus) --
-  createUsernameInput.addEventListener('focus', () => {
-    if (createUsernameInput.textContent.trim() === defaultPlaceholder) {
-      createUsernameInput.textContent = "";
-    }
-    createUsernameInput.style.color = "rgba(255, 255, 255, 1)"; // 100% Alpha när man klickar i rutan
-  });
-
-  // -- 2. PLACEHOLDER-LOGIK (Blur / Klick utanför) --
-  createUsernameInput.addEventListener('blur', () => {
-    // Rensa automatiskt bort mellanslag på slutet om de lämnat ett
-    createUsernameInput.textContent = createUsernameInput.textContent.trim();
-
-    if (createUsernameInput.textContent === "") {
-      createUsernameInput.textContent = defaultPlaceholder;
-      createUsernameInput.style.color = "rgba(255, 255, 255, 0.35)"; // Tillbaka till 35% Alpha
-    }
-  });
-
-// -- 3. FYSISK SPÄRR CREATE (15 tecken, Enter, och Mellanslag) --
-  createUsernameInput.addEventListener('keydown', (e) => {
-    e.stopPropagation();
-    const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
-    const currentText = createUsernameInput.textContent || "";
-    const selection = window.getSelection().toString(); 
-    
- if (e.key === 'Enter') { 
-    e.preventDefault(); 
-    
-    // Läs av den exakta stilen från CSS
-    const btnStyle = window.getComputedStyle(createProfileSubmitBtn);    
-    if (btnStyle.pointerEvents !== 'none') {
-        console.log("Create-knappen är vaken, fejkar klick!");
-        createProfileSubmitBtn.click(); 
-    } else {
-        console.log("Create-knappen är blockerad av CSS, gör inget.");
-    }
-    return; 
-}
-
-    // BOMBSÄKER MELLANSLAGS-SPÄRR
-    if (e.key === ' ') {
-      // Förbjud mellanslag i början
-      if (currentText.length === 0) { e.preventDefault(); return; }
-      // Förbjud fler än 1 mellanslag totalt (såvida man inte har markerat text för att skriva över)
-      if ((currentText.includes(' ') || currentText.includes('\u00A0')) && selection.length === 0) {
-        e.preventDefault(); 
-        return;
-      }
-    }
-    
-    if (currentText.length >= 15 && selection.length === 0 && !allowedKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
-      e.preventDefault(); 
-    }
-  });
-
-  // -- 4. VÄCK KNAPPEN NÄR ANVÄNDAREN SKRIVER --
-  createUsernameInput.addEventListener('input', () => {
-    const rawText = createUsernameInput.textContent || "";
-    
-    // Knappen hanterar vi fortfarande med standard-opacity
-    if (rawText.trim().length > 0 && rawText.trim() !== defaultPlaceholder) {
-      createProfileSubmitBtn.style.opacity = '1';
-      createProfileSubmitBtn.style.pointerEvents = 'auto';
-    } else {
-      createProfileSubmitBtn.style.opacity = '0.26';
-      createProfileSubmitBtn.style.pointerEvents = 'none';
-    }
-  });
-
-  // -- 5. LOGIK VID KLICK PÅ CREATE --
+  // 2. Klick på Create
   createProfileSubmitBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     
-    // Återställ felmeddelanden
     if (errorMsgEl) {
         errorMsgEl.style.display = 'none';
         errorMsgEl.innerHTML = "";
     }
     let errors = [];
+
     // -- PROFILBILDS-KOLL --
     const currentAvatarSrc = document.querySelector('.current-profile-pic')?.src || "";
     const defaultAvatarUrl = "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a43d799e6705e122388ffdc_ppic0.svg";
-    
-    // Kollar om bilden fortfarande är default
     if (currentAvatarSrc.includes("ppic0.svg") || currentAvatarSrc === defaultAvatarUrl || currentAvatarSrc === "") {
         errors.push("Please select a profile picture");
     }
-   // Byt ut non-breaking spaces mot vanliga mellanslag innan vi kollar längd och tecken
+
     let rawName = (createUsernameInput.textContent || "").replace(/\u00A0/g, ' ').trim();
-    if (rawName === defaultPlaceholder) {
-    rawName = "";
-    }     
-// -- VALIDERINGS-REGLER --
-    if (rawName.length < 3) {
-      errors.push("Minimum 3 characters");
-    } else if (rawName.length > 15) {
-      errors.push("Maximum 15 characters");
-    }
-
-    // 1. Kolla om de skrivit mer än ETT mellanslag
-    const spaceCount = (rawName.match(/ /g) || []).length;
-    if (spaceCount > 1) {
-      errors.push("Only one space allowed");
-    }
-
-    // 2. Kolla efter förbjudna tecken (Regex kollar nu om det finns NÅGOT tecken som INTE är tillåtet)
-    const invalidCharRegex = /[^a-zA-Z0-9åäöÅÄÖ\-_ ]/; 
-    if (rawName.length > 0 && invalidCharRegex.test(rawName)) {
-      errors.push("Ops, invalid character");
-    }
+    if (rawName === createDefaultPlaceholder) rawName = "";
+    
+    // -- KÖR DELAD VALIDERING --
+    errors = errors.concat(validateUsernameRules(rawName));
 
     // -- DATABAS-KOLL --
     if (errors.length === 0 || (!errors.includes("Minimum 3 characters") && !errors.includes("Maximum 15 characters") && !errors.includes("Ops, invalid character"))) {
@@ -669,20 +677,16 @@ if (createProfileSubmitBtn && createUsernameInput) {
          
          let nameTaken = false;
          querySnapshot.forEach((docSnap) => {
-             if (docSnap.id !== currentUser.uid) {
-                 nameTaken = true;
-             }
+             if (docSnap.id !== currentUser.uid) nameTaken = true;
          });
          
-         if (nameTaken) {
-             errors.push("Sorry, username in use");
-         }
+         if (nameTaken) errors.push("Sorry, username in use");
        } catch (err) {
          console.error("Fel vid kontroll av unikt namn:", err);
        }
     }
 
-    // -- SKRIV UT FELMEDDELANDEN --
+    // -- VISA FELMEDDELANDEN --
     if (errors.length > 0) {
        if (errorMsgEl) {
          errorMsgEl.innerHTML = "■ " + errors.join("<br>■ ");
@@ -691,9 +695,8 @@ if (createProfileSubmitBtn && createUsernameInput) {
        return; 
     }
 
-// -- ALLT GODKÄNT - SPARA --
+    // -- ALLT GODKÄNT - SPARA --
     try {
-      // Ändra texten till Saving och frys knappen
       createProfileSubmitBtn.textContent = "Saving..."; 
       createProfileSubmitBtn.style.pointerEvents = 'none';
 
@@ -707,32 +710,18 @@ if (createProfileSubmitBtn && createUsernameInput) {
         updatedAt: new Date()
       }, { merge: true });
 
-      console.log("Profilen sparades i Firestore!");
-      
-      // -- TIMEOUT: Vänta 500ms innan vi går vidare --
       setTimeout(() => {
-        
-        // 1. Återställ knappen i bakgrunden
         createProfileSubmitBtn.textContent = "Create";
         createProfileSubmitBtn.style.pointerEvents = 'auto';
 
-        // 2. UPPDATERA NAMNET DIREKT I UI:t (Lobby/Inventory)
-        // Vi letar upp alla element med klassen .player-info.username och trycker in det nya namnet
         const uiNameElements = document.querySelectorAll('.player-info.username');
-        uiNameElements.forEach(el => {
-            el.textContent = rawName;
-        });
+        uiNameElements.forEach(el => el.textContent = rawName);
+        if (typeof userDisplayName !== 'undefined' && userDisplayName) userDisplayName.textContent = rawName;
 
-        // (Säkerhetsåtgärd ifall du använder variabeln userDisplayName någon annanstans)
-        if (typeof userDisplayName !== 'undefined' && userDisplayName) {
-            userDisplayName.textContent = rawName;
-        }
-
-        // 3. Stäng Create-rutan och verkställ det användaren ville göra (t.ex. öppna Inventory)
         if (typeof hideCreateProfile === 'function') hideCreateProfile();
         if (typeof resolvePendingAction === 'function') resolvePendingAction(); 
 
-      }, 700); // 700 millisekunder
+      }, 700);
 
     } catch (error) {
       console.error("Gick inte att spara profilen:", error.message);
@@ -745,177 +734,40 @@ if (createProfileSubmitBtn && createUsernameInput) {
     }
   });
 }
-// Blockera globala spelevents när change username är öppen
-window.addEventListener('keydown', (e) => {
-    const changeModal = document.querySelector('.change-username');
-    
-    if (changeModal && changeModal.style.display === 'flex') {
-        const gameKeys = ['i', 'I', 'Escape', 'Tab', 'Enter', ' '];
-        
-        if (gameKeys.includes(e.key)) {
-            // 1. Hantera Escape (stäng fönster precis som innan)
-            if (e.key === 'Escape') {
-                e.stopPropagation();
-                e.preventDefault();
-                changeModal.style.transition = 'opacity 200ms ease';
-                changeModal.style.opacity = '0';
-                
-                setTimeout(() => {
-                    changeModal.style.display = 'none';
-                    
-                    const changeUsernameInput = document.getElementById('change-username-input');
-                    const changeProfileSubmitBtn = document.getElementById('cp-change-btn');
-                    const changeErrorMsgEl = document.getElementById('cp-error-msg-change');
-                    
-                    if (changeUsernameInput && changeUsernameInput.getAttribute('contenteditable') !== 'false') {
-                        changeUsernameInput.textContent = "New username";
-                        changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
-                        
-                        if (changeProfileSubmitBtn) {
-                            changeProfileSubmitBtn.style.opacity = '0.26';
-                            changeProfileSubmitBtn.style.pointerEvents = 'none';
-                        }
-                        if (changeErrorMsgEl) {
-                            changeErrorMsgEl.style.display = 'none';
-                            changeErrorMsgEl.innerHTML = "";
-                        }
-                    }
-                }, 200);
-                return;
-            }
-
-            // 2. Blockera spel-knappar från att trigga spelets UI
-            if (e.key === 'i' || e.key === 'I' || e.key === 'Tab') {
-                e.stopPropagation(); 
-                e.preventDefault();
-            }
-            
-            // 3. OBS! Om knappen är 'Enter' eller 'Space', gör vi INGENTING här.
-            // Vi låter dem passera vidare ner till textfältet så din input-logik kan ta hand om dem!
-        }
-    }
-}, true);
-
-// Förhindra att man klistrar in radbrytningar i Change-fältet
-changeUsernameInput.addEventListener('paste', (e) => {
-    e.preventDefault();
-    // Hämta texten som klistras in, ta bort alla radbrytningar och klistra in det som ren text
-    let pasteText = (e.clipboardData || window.clipboardData).getData('text');
-    pasteText = pasteText.replace(/[\r\n]+/g, ''); 
-    document.execCommand('insertText', false, pasteText);
-});
 
 
 // ==========================================
-// ── CHANGE USERNAME LOGIC ──
+// ── 3. CHANGE USERNAME LOGIC ──
 // ==========================================
 const changeProfileSubmitBtn = document.getElementById('cp-change-btn'); 
 const changeUsernameInput = document.getElementById('change-username-input'); 
 const changeErrorMsgEl = document.getElementById('cp-error-msg-change');
-const changeInfoText = document.getElementById('cp-change-info'); // FIXED ID
+const changeInfoText = document.getElementById('cp-change-info'); 
 const changeDefaultPlaceholder = "New username";
 
-// Hjälpfunktion för att låsa rutan permanent (Point 3 & 4)
 function lockOutNameChangeUI() {
     if (changeUsernameInput) {
         changeUsernameInput.setAttribute('contenteditable', 'false');
         changeUsernameInput.style.pointerEvents = 'none';
-        changeUsernameInput.textContent = changeDefaultPlaceholder; // Keep grey placeholder
+        changeUsernameInput.textContent = changeDefaultPlaceholder; 
         changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)"; 
     }
     if (changeInfoText) {
-        changeInfoText.textContent = "Username already changed once, sorry!"; // Point 5 fixed
+        changeInfoText.textContent = "Username already changed once, sorry!"; 
     }
     if (changeProfileSubmitBtn) {
-        changeProfileSubmitBtn.textContent = "Change"; // <-- NY RAD: Återställer texten, "Change" i bakgrunden
-        changeProfileSubmitBtn.style.opacity = '0.26'; // Keep it greyed out instead of hiding
+        changeProfileSubmitBtn.textContent = "Change"; 
+        changeProfileSubmitBtn.style.opacity = '0.26'; 
         changeProfileSubmitBtn.style.pointerEvents = 'none';
     }
 }
 
 if (changeProfileSubmitBtn && changeUsernameInput) {
-  const changeDefaultPlaceholder = "New username";
-
-  // -- 0. SÄTT START-UTSEENDE --
-  if (changeUsernameInput.textContent.trim() === changeDefaultPlaceholder || changeUsernameInput.textContent.trim() === "") {
-    changeUsernameInput.textContent = changeDefaultPlaceholder;
-    changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)"; 
-  }
-
-  // -- 1. PLACEHOLDER (Fokus) --
-  changeUsernameInput.addEventListener('focus', () => {
-    if (changeUsernameInput.textContent.trim() === changeDefaultPlaceholder) {
-      changeUsernameInput.textContent = "";
-    }
-    changeUsernameInput.style.color = "rgba(255, 255, 255, 1)";
-  });
-
-  // -- 2. PLACEHOLDER (Blur) --
-  changeUsernameInput.addEventListener('blur', () => {
-    changeUsernameInput.textContent = changeUsernameInput.textContent.trim();
-    if (changeUsernameInput.textContent === "") {
-      changeUsernameInput.textContent = changeDefaultPlaceholder;
-      changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
-    }
-  });
-
-// -- 3. FYSISK SPÄRR CHANGE (15 tecken, Enter, och Mellanslag) --
-  changeUsernameInput.addEventListener('keydown', (e) => { // <-- VIKTIGT! Rätt variabel här nu.
-    e.stopPropagation();
-    const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
-    const currentText = changeUsernameInput.textContent || ""; // <-- Rätt variabel här
-    const selection = window.getSelection().toString(); 
-    
- if (e.key === 'Enter') { 
-    e.preventDefault(); 
-    
-    // Läs av den exakta stilen från CSS
-    const btnStyle = window.getComputedStyle(changeProfileSubmitBtn);    
-    if (btnStyle.pointerEvents !== 'none') {
-        console.log("Change-knappen är vaken, fejkar klick!");
-        changeProfileSubmitBtn.click(); 
-    } else {
-        console.log("Change-knappen är blockerad av CSS, gör inget.");
-    }
-    return; 
-}
-
-    // BOMBSÄKER MELLANSLAGS-SPÄRR
-    if (e.key === ' ') {
-      if (currentText.length === 0) { e.preventDefault(); return; }
-      if ((currentText.includes(' ') || currentText.includes('\u00A0')) && selection.length === 0) {
-        e.preventDefault(); 
-        return;
-      }
-    }
-    if (currentText.length >= 15 && selection.length === 0 && !allowedKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
-      e.preventDefault(); 
-    }
-  });
-  // -- 3.5 STOPPA INKLISTRADE RADBRYTNINGAR (Ctrl+V) --
-  createUsernameInput.addEventListener('paste', (e) => {
-      e.preventDefault();
-      // Hämta texten som klistras in
-      let pasteText = (e.clipboardData || window.clipboardData).getData('text');
-      // Tvätta bort alla radbrytningar
-      pasteText = pasteText.replace(/[\r\n]+/g, '');
-      // Klistra in den tvättade texten
-      document.execCommand('insertText', false, pasteText);
-  });
   
-    // -- 4. VÄCK KNAPPEN --
-  changeUsernameInput.addEventListener('input', () => {
-    const rawText = changeUsernameInput.textContent || "";
-    if (rawText.trim().length > 0 && rawText.trim() !== changeDefaultPlaceholder) {
-      changeProfileSubmitBtn.style.opacity = '1';
-      changeProfileSubmitBtn.style.pointerEvents = 'auto';
-    } else {
-      changeProfileSubmitBtn.style.opacity = '0.26';
-      changeProfileSubmitBtn.style.pointerEvents = 'none';
-    }
-  });
+  // 1. Koppla fältet till vår nya gemensamma funktion (samma som för Create!)
+  setupUsernameInput(changeUsernameInput, changeProfileSubmitBtn, changeDefaultPlaceholder);
 
-  // -- 5. SPARA NYTT NAMN TILL FIRESTORE --
+  // 2. Klick på Change
   changeProfileSubmitBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     
@@ -923,32 +775,14 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
         changeErrorMsgEl.style.display = 'none';
         changeErrorMsgEl.innerHTML = "";
     }
-    let errors = [];
 
-    // Byt ut non-breaking spaces mot vanliga mellanslag innan vi kollar längd och tecken
     let rawName = (changeUsernameInput.textContent || "").replace(/\u00A0/g, ' ').trim();
     if (rawName === changeDefaultPlaceholder) rawName = "";
     
-// -- VALIDERINGS-REGLER --
-    if (rawName.length < 3) {
-      errors.push("Minimum 3 characters");
-    } else if (rawName.length > 15) {
-      errors.push("Maximum 15 characters");
-    }
+    // -- KÖR DELAD VALIDERING --
+    let errors = validateUsernameRules(rawName);
 
-    // 1. Kolla om de skrivit mer än ETT mellanslag
-    const spaceCount = (rawName.match(/ /g) || []).length;
-    if (spaceCount > 1) {
-      errors.push("Only one space allowed");
-    }
-
-    // 2. Kolla efter förbjudna tecken (Regex kollar nu om det finns NÅGOT tecken som INTE är tillåtet)
-    const invalidCharRegex = /[^a-zA-Z0-9åäöÅÄÖ\-_ ]/; 
-    if (rawName.length > 0 && invalidCharRegex.test(rawName)) {
-      errors.push("Ops, invalid character");
-    }
-
-    // -- DATABAS-KOLL FÖR UNIKT NAMN --
+    // -- DATABAS-KOLL --
     if (errors.length === 0) {
        try {
          const usersRef = collection(db, "users");
@@ -957,9 +791,7 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
          
          let nameTaken = false;
          querySnapshot.forEach((docSnap) => {
-             if (docSnap.id !== currentUser.uid) {
-                 nameTaken = true;
-             }
+             if (docSnap.id !== currentUser.uid) nameTaken = true;
          });
          
          if (nameTaken) errors.push("Sorry, username in use");
@@ -977,7 +809,7 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
        return; 
     }
 
-    // -- ALLT GODKÄNT - SPARA TILL FIRESTORE --
+    // -- ALLT GODKÄNT - SPARA --
     try {
       changeProfileSubmitBtn.textContent = "Saving..."; 
       changeProfileSubmitBtn.style.pointerEvents = 'none';
@@ -985,14 +817,12 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
       const userDocRef = doc(db, "users", currentUser.uid);
       await setDoc(userDocRef, { 
         username: rawName,
-        hasChangedUsername: true, // <-- SPÄRREN SPARAS I DATABASEN!
+        hasChangedUsername: true, 
         updatedAt: new Date()
       }, { merge: true });
 
-      // Spara lyckades. Lås rutan för alltid direkt i gränssnittet.
       lockOutNameChangeUI();
 
-      // -- EFTER 1 SEKUND: Stäng fönstret --
       setTimeout(() => {
         const changeModal = document.querySelector('.change-username');
         if (changeModal) {
@@ -1003,16 +833,11 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
             }, 200);
         }
 
-        // Uppdatera namnet överallt på skärmen
         const uiNameElements = document.querySelectorAll('.player-info.username');
-        uiNameElements.forEach(el => {
-            el.textContent = rawName;
-        });
-        if (typeof userDisplayName !== 'undefined' && userDisplayName) {
-            userDisplayName.textContent = rawName;
-        }
+        uiNameElements.forEach(el => el.textContent = rawName);
+        if (typeof userDisplayName !== 'undefined' && userDisplayName) userDisplayName.textContent = rawName;
 
-      }, 1000); // 1 sekund
+      }, 1000);
 
     } catch (error) {
       console.error("Gick inte att spara nya namnet:", error.message);
