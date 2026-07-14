@@ -208,7 +208,7 @@ function updateAuthUI(user) {
         }
         return; // Avbryter alltid vidare logik så inventoryt inte öppnas i bakgrunden
     }
-  }
+  
     // De här variablerna används av all logik under dem!
     const isGameSide = document.body.dataset.page === 'game';
   
