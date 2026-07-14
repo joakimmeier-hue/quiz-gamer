@@ -749,16 +749,13 @@ if (createProfileSubmitBtn && createUsernameInput) {
 window.addEventListener('keydown', (e) => {
     const changeModal = document.querySelector('.change-username');
     
-    // Om rutan är öppen (display: flex)
     if (changeModal && changeModal.style.display === 'flex') {
         const gameKeys = ['i', 'I', 'Escape', 'Tab', 'Enter', ' '];
         
-        // Fånga upp tangenten och stoppa den från att nå spelets inventory etc.
         if (gameKeys.includes(e.key)) {
-            e.stopPropagation(); 
-            
-            // --- LÅT ESCAPE STÄNGA MODALEN ---
+            // 1. Hantera Escape (stäng fönster precis som innan)
             if (e.key === 'Escape') {
+                e.stopPropagation();
                 e.preventDefault();
                 changeModal.style.transition = 'opacity 200ms ease';
                 changeModal.style.opacity = '0';
@@ -766,13 +763,12 @@ window.addEventListener('keydown', (e) => {
                 setTimeout(() => {
                     changeModal.style.display = 'none';
                     
-                    // Återställ fältet när de backar ur
                     const changeUsernameInput = document.getElementById('change-username-input');
                     const changeProfileSubmitBtn = document.getElementById('cp-change-btn');
                     const changeErrorMsgEl = document.getElementById('cp-error-msg-change');
                     
                     if (changeUsernameInput && changeUsernameInput.getAttribute('contenteditable') !== 'false') {
-                        changeUsernameInput.textContent = "New username"; // Återställ placeholder
+                        changeUsernameInput.textContent = "New username";
                         changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
                         
                         if (changeProfileSubmitBtn) {
@@ -785,17 +781,30 @@ window.addEventListener('keydown', (e) => {
                         }
                     }
                 }, 200);
-                return; // Avbryt vidare kod
+                return;
             }
 
-            // Vi tillåter Spacebar och Enter att fungera normalt INUTI textfältet 
-            // men för 'i' och 'Tab' blockerar vi standardbeteendet
-            if (e.key !== ' ' && e.key !== 'Enter') {
+            // 2. Blockera spel-knappar från att trigga spelets UI
+            if (e.key === 'i' || e.key === 'I' || e.key === 'Tab') {
+                e.stopPropagation(); 
                 e.preventDefault();
             }
+            
+            // 3. OBS! Om knappen är 'Enter' eller 'Space', gör vi INGENTING här.
+            // Vi låter dem passera vidare ner till textfältet så din input-logik kan ta hand om dem!
         }
     }
-}, true); // "true" betyder capture phase = vi fångar klicket INNAN spelet hinner se det!
+}, true);
+
+// Förhindra att man klistrar in radbrytningar i Change-fältet
+changeUsernameInput.addEventListener('paste', (e) => {
+    e.preventDefault();
+    // Hämta texten som klistras in, ta bort alla radbrytningar och klistra in det som ren text
+    let pasteText = (e.clipboardData || window.clipboardData).getData('text');
+    pasteText = pasteText.replace(/[\r\n]+/g, ''); 
+    document.execCommand('insertText', false, pasteText);
+});
+
 
 // ==========================================
 // ── CHANGE USERNAME LOGIC ──
@@ -883,6 +892,17 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
       e.preventDefault(); 
     }
   });
+  // -- 3.5 STOPPA INKLISTRADE RADBRYTNINGAR (Ctrl+V) --
+  createUsernameInput.addEventListener('paste', (e) => {
+      e.preventDefault();
+      // Hämta texten som klistras in
+      let pasteText = (e.clipboardData || window.clipboardData).getData('text');
+      // Tvätta bort alla radbrytningar
+      pasteText = pasteText.replace(/[\r\n]+/g, '');
+      // Klistra in den tvättade texten
+      document.execCommand('insertText', false, pasteText);
+  });
+  
     // -- 4. VÄCK KNAPPEN --
   changeUsernameInput.addEventListener('input', () => {
     const rawText = changeUsernameInput.textContent || "";
