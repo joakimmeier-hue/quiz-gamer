@@ -650,15 +650,15 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
 
     // -- VÄCK KNAPPEN NÄR MAN SKRIVER --
     inputEl.addEventListener('input', () => {
-        const rawText = inputEl.textContent || "";
-        if (rawText.trim().length > 0 && rawText.trim() !== defaultPlaceholder) {
-            btnEl.style.opacity = '1';
-            btnEl.style.pointerEvents = 'auto';
-        } else {
-            btnEl.style.opacity = '0.26';
-            btnEl.style.pointerEvents = 'none';
-        }
-    });
+    const rawText = inputEl.textContent || "";
+    if (rawText.trim().length > 0 && rawText.trim() !== defaultPlaceholder) {
+        btnEl.classList.add('is-active');
+        btnEl.style.pointerEvents = 'auto';
+    } else {
+        btnEl.classList.remove('is-active');
+        btnEl.style.pointerEvents = 'none';
+    }
+  });
 }
 
 // -- DELAD VALIDERINGS-KOMPONENT --
@@ -804,7 +804,7 @@ function lockOutNameChangeUI() {
     }
     if (changeProfileSubmitBtn) {
         changeProfileSubmitBtn.textContent = "Change"; 
-        changeProfileSubmitBtn.style.opacity = '0.26'; 
+        changeProfileSubmitBtn.classList.remove('is-active'); // NEW — replaces opacity line 
         changeProfileSubmitBtn.style.pointerEvents = 'none';
     }
 }
