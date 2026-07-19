@@ -610,7 +610,7 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
         }
     });
 
-    // -- TANGENTTRYCK (Enter, Mellanslag, Max 12) --
+    // -- TANGENTTRYCK (Enter, Mellanslag, Max 14) --
     inputEl.addEventListener('keydown', (e) => {
         e.stopPropagation();
         const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
@@ -634,8 +634,8 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
             return; 
         }
         
-        // MAX 12 TECKEN (Fysisk spärr, tillåter navigering/radering)
-        if (currentText.length >= 12 && selection.length === 0 && !allowedKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
+        // MAX 14 TECKEN (Fysisk spärr, tillåter navigering/radering)
+        if (currentText.length >= 14 && selection.length === 0 && !allowedKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
             e.preventDefault(); 
         }
     });
@@ -666,7 +666,7 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
 function validateUsernameRules(rawName) {
     let errors = [];
     if (rawName.length < 3) errors.push("Minimum 3 characters");
-    if (rawName.length > 12) errors.push("Maximum 12 characters");
+    if (rawName.length > 14) errors.push("Maximum 14 characters");
 
     const spaceCount = (rawName.match(/ /g) || []).length;
     if (spaceCount > 1) errors.push("Only one space allowed");
@@ -716,7 +716,7 @@ if (createProfileSubmitBtn && createUsernameInput) {
     errors = errors.concat(validateUsernameRules(rawName));
 
     // -- DATABAS-KOLL --
-    if (errors.length === 0 || (!errors.includes("Minimum 3 characters") && !errors.includes("Maximum 12 characters") && !errors.includes("Ops, invalid character"))) {
+    if (errors.length === 0 || (!errors.includes("Minimum 3 characters") && !errors.includes("Maximum 14 characters") && !errors.includes("Ops, invalid character"))) {
        try {
          const usersRef = collection(db, "users");
          const q = query(usersRef, where("username", "==", rawName));
