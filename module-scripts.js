@@ -368,7 +368,7 @@ function updateAuthUI(user) {
                 changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
                 
                 if (changeProfileSubmitBtn) {
-                    changeProfileSubmitBtn.style.opacity = '0.26';
+                    changeProfileSubmitBtn.classList.remove('is-active');
                     changeProfileSubmitBtn.style.pointerEvents = 'none';
                 }
                 if (changeErrorMsgEl) {
