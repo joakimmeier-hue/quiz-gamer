@@ -260,14 +260,14 @@ a.button-link:hover {
   white-space: nowrap !important; /* Förhindrar att texten hoppar ner på ny rad */
   overflow: hidden !important;    /* Döljer allt som går utanför bredden */
 }
-#cp-submit-btn {
+.cp-submit-btn {
     opacity: 1; /* always fully opaque now */
     transition: background-color 200ms ease, color 200ms ease;
     color: var(--grey-text);
     background-color: var(--gold-dark);
 }
 
-#cp-submit-btn.is-active {
+.cp-submit-btn.is-active {
     color: var(--white-1);
     background-color: var(--gold);
 }
