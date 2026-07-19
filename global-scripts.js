@@ -809,13 +809,21 @@ function initPressScale(classList) {
                 }
             });
             // Den faktiska återställningen - körs antingen direkt eller efter fördröjning
+            const CLICK_BLOCK_DURATION_MS = 350; // safety auto-clear window
+
             const doRelease = () => {
-                el.classList.remove('is-pressed-down');
-                el.classList.remove('is-pressed-up');
-                el.classList.remove('is-hovered');
-                el.classList.add('is-click-blocked');
-                releaseTimeoutId = null;
-            };
+            el.classList.remove('is-pressed-down');
+            el.classList.remove('is-pressed-up');
+            el.classList.remove('is-hovered');
+            el.classList.add('is-click-blocked');
+            releaseTimeoutId = null;
+
+            // NEW: guarantee this clears itself even if mouseleave never fires
+            if (el._clickBlockTimeout) clearTimeout(el._clickBlockTimeout);
+            el._clickBlockTimeout = setTimeout(() => {
+                el.classList.remove('is-click-blocked');
+            }, CLICK_BLOCK_DURATION_MS);
+};
             const release = () => {
                 const elapsed = performance.now() - pressStartTime;
                 const remaining = MIN_PRESS_VISIBLE_MS - elapsed;
