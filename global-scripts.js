@@ -736,7 +736,7 @@ const HOVER_SCALE_CLASSES = [
     'inventory-btn-wrapper',
     'logout-btn',
     'button.i-lobby-back',
-    'cp-create-btn',
+    'cp-submit-btn',
     'profile-pic-option',
     'current-profile-pic'
 ];
@@ -762,7 +762,7 @@ const PRESS_SCALE_CLASSES = [
     'link-review-answers',
     'logout-btn',
     'button.i-lobby-back',
-    'cp-create-btn',
+    'cp-submit-btn',
     'current-profile-pic'
 ];
 
