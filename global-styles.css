@@ -261,8 +261,7 @@ a.button-link:hover {
   overflow: hidden !important;    /* Döljer allt som går utanför bredden */
 }
 .cp-submit-btn {
-    opacity: 1; /* always fully opaque now */
-    transition: background-color 200ms ease, color 200ms ease;
+    /* opacity: 1; */ /* always fully opaque now */
     color: var(--grey-text);
     background-color: var(--gold-dark);
 }
