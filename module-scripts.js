@@ -334,12 +334,133 @@ function updateAuthUI(user) {
      }
    });
  }
- 
+  // ── GLOBAL KLICKLYSSNARE ──
+  document.addEventListener('click', async (e) => {
 
+   
+    // -- ÖPPNA CHANGE USERNAME MODAL --
+    const usernameLabel = e.target.closest('.player-info.username');
+    if (usernameLabel) {
+        const changeModal = document.querySelector('.change-username');
+        if (changeModal) {
+            changeModal.style.display = 'flex';
+            changeModal.style.opacity = '0';
+            // Liten delay så display:flex hinner registreras innan opacity animeras
+            setTimeout(() => {
+                changeModal.style.transition = 'opacity 200ms ease';
+                changeModal.style.opacity = '1';
+            }, 10);
+        }
+        return;
+    }
 
+// -- STÄNG CHANGE USERNAME MODAL (Klick på bakgrunden) --
+    const changeModalTarget = e.target.closest('.change-username');
+    if (changeModalTarget && e.target === changeModalTarget) {
+        changeModalTarget.style.transition = 'opacity 200ms ease';
+        changeModalTarget.style.opacity = '0';
+        setTimeout(() => {
+            changeModalTarget.style.display = 'none';
+            
+            // POINT 1: Återställ fältet när modalen stängs (om de inte är permanent låsta)
+            if (changeUsernameInput && changeUsernameInput.getAttribute('contenteditable') !== 'false') {
+                changeUsernameInput.textContent = changeDefaultPlaceholder;
+                changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
+                
+                if (changeProfileSubmitBtn) {
+                    changeProfileSubmitBtn.classList.remove('is-active');
+                    changeProfileSubmitBtn.style.pointerEvents = 'none';
+                }
+                if (changeErrorMsgEl) {
+                    changeErrorMsgEl.style.display = 'none';
+                    changeErrorMsgEl.innerHTML = "";
+                }
+            }
+        }, 200);
+        return;
+    }
+        // 1. LOGGA UT
+    const logoutBtn = e.target.closest('#logout-btn, .logout-btn');
+    if (logoutBtn) {
+      e.preventDefault();
+      try {
+        await signOut(auth);
+      } catch (error) {
+        console.error("Fel vid utloggning:", error);
+      }
+      return; 
+    }
 
+// 3. BYT PROFILBILD (Uppdaterad för att ändra alla instanser av klassen)
+ const option = e.target.closest('.profile-pic-option');
+ if (option) {        
+     const selectedSrc = option.src;
+     const currentAvatars = document.querySelectorAll('.current-profile-pic');
+     
+     if (selectedSrc && currentAvatars.length > 0) {
+         // Uppdatera ALLA profilbilder i UI direkt (Lobby, dropdown, etc.)
+         currentAvatars.forEach(img => {
+             img.src = selectedSrc;
+         }); 
+         
+         // Spara valet till Firestore
+         await saveUserAvatar(selectedSrc);      
+     }
+     return;
+ }
 
+    // 4. GATEKEEPER FÖR SPEL-LÄNKAR
+    // OBS: .games-link-block är nu undantagen i global-scripts.js:s egna
+    // länk/transition-hanterare, så ALL navigation för dessa länkar sköts härifrån.
+    const gameBtn = e.target.closest('.games-link-block');
+    if (gameBtn) {
+      e.preventDefault();
+      e.stopPropagation();
 
+      if (!currentUser) {
+        pendingAction = gameBtn.href;
+        showLoginModal();
+      } else {
+        if (typeof window.triggerPageExit === 'function') {
+          window.triggerPageExit(gameBtn.href, false);
+        } else {
+          window.location.href = gameBtn.href;
+        }
+      }
+      return;
+    }
+
+    // 5. GATEKEEPER & ÖPPNA FÖR LOBBY INVENTORY
+    const invBtn = e.target.closest('#lobby-inventory-btn');
+    if (invBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      if (!currentUser) {
+        pendingAction = 'INVENTORY';
+        showLoginModal();
+      } else {
+        const overlay = document.querySelector('.inventory-overlay');
+        if (overlay && !window.lobbyInvOpen) {
+            openLobbyInventory(overlay);
+        }
+      }
+      return;
+    }
+
+    // 5b. STÄNG-KNAPP FÖR LOBBY INVENTORY
+    const closeBtn = e.target.closest('#i-lobby-back');
+    if (closeBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const overlay = document.querySelector('.inventory-overlay');
+      if (overlay && window.lobbyInvOpen) {
+          closeLobbyInventory(overlay);
+      }
+      return;
+    }
+  }); 
 
 // HÄMTA DATA (BILD + STATS)
 async function loadUserData(uid) {
@@ -587,22 +708,16 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
 // Kontrollerar reglerna och skickar tillbaka en array med eventuella fel.
 function validateUsernameRules(rawName) {
     let errors = [];
-
-    if (rawName.length < 3) errors.push("Minimum 3 characters");
-
-    const letterCount = (rawName.match(/[a-zA-ZåäöÅÄÖ]/g) || []).length;
-    if (letterCount < 1) errors.push("Minimum 1 letter");
-
+    if (rawName.length < 3) errors.push("Minimum 3 characters including 1 letter");
     if (rawName.length > 14) errors.push("Maximum 14 characters");
 
     const spaceCount = (rawName.match(/ /g) || []).length;
     if (spaceCount > 1) errors.push("Only one space allowed");
 
-    const invalidCharRegex = /[^a-zA-Z0-9åäöÅÄÖ\-_ ]/;
+    const invalidCharRegex = /[^a-zA-Z0-9åäöÅÄÖ\-_ ]/; 
     if (rawName.length > 0 && invalidCharRegex.test(rawName)) {
         errors.push("Ops, invalid character");
     }
-
     return errors;
 }
 
@@ -720,132 +835,6 @@ if (createProfileSubmitBtn && createUsernameInput) {
 }
 
 
-// ── GLOBAL KLICKLYSSNARE ──
-document.addEventListener('click', async (e) => {
-
-    // -- ÖPPNA CHANGE USERNAME MODAL --
-    const usernameLabel = e.target.closest('.player-info.username');
-    if (usernameLabel) {
-        const changeModal = document.querySelector('.change-username');
-        if (changeModal) {
-            changeModal.style.display = 'flex';
-            changeModal.style.opacity = '0';
-            setTimeout(() => {
-                changeModal.style.transition = 'opacity 200ms ease';
-                changeModal.style.opacity = '1';
-            }, 10);
-        }
-        return;
-    }
-
-    // -- STÄNG CHANGE USERNAME MODAL (Klick på bakgrunden) --
-    const changeModalTarget = e.target.closest('.change-username');
-    if (changeModalTarget && e.target === changeModalTarget) {
-        changeModalTarget.style.transition = 'opacity 200ms ease';
-        changeModalTarget.style.opacity = '0';
-        setTimeout(() => {
-            changeModalTarget.style.display = 'none';
-            if (changeUsernameInput && changeUsernameInput.getAttribute('contenteditable') !== 'false') {
-                changeUsernameInput.textContent = changeDefaultPlaceholder;
-                changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
-                if (changeProfileSubmitBtn) {
-                    changeProfileSubmitBtn.classList.remove('is-active');
-                    changeProfileSubmitBtn.style.pointerEvents = 'none';
-                }
-                if (changeErrorMsgEl) {
-                    changeErrorMsgEl.style.display = 'none';
-                    changeErrorMsgEl.innerHTML = "";
-                }
-            }
-        }, 200);
-        return;
-    }
-
-    // 1. LOGGA UT
-    const logoutBtn = e.target.closest('#logout-btn, .logout-btn');
-    if (logoutBtn) {
-      e.preventDefault();
-      try {
-        await signOut(auth);
-      } catch (error) {
-        console.error("Fel vid utloggning:", error);
-      }
-      return; 
-    }
-
-    // 3. BYT PROFILBILD
-    const option = e.target.closest('.profile-pic-option');
-    if (option) {        
-        const selectedSrc = option.src;
-        const currentAvatars = document.querySelectorAll('.current-profile-pic');
-        if (selectedSrc && currentAvatars.length > 0) {
-            currentAvatars.forEach(img => { img.src = selectedSrc; }); 
-            await saveUserAvatar(selectedSrc);      
-        }
-        return;
-    }
-
-    // 4. GATEKEEPER FÖR SPEL-LÄNKAR
-    const gameBtn = e.target.closest('.games-link-block');
-    if (gameBtn) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (!currentUser) {
-        pendingAction = gameBtn.href;
-        showLoginModal();
-      } else {
-        if (typeof window.triggerPageExit === 'function') {
-          window.triggerPageExit(gameBtn.href, false);
-        } else {
-          window.location.href = gameBtn.href;
-        }
-      }
-      return;
-    }
-
-    // 5. GATEKEEPER & ÖPPNA FÖR LOBBY INVENTORY
-    const invBtn = e.target.closest('#lobby-inventory-btn');
-    if (invBtn) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (!currentUser) {
-        pendingAction = 'INVENTORY';
-        showLoginModal();
-      } else {
-        const overlay = document.querySelector('.inventory-overlay');
-        if (overlay && !window.lobbyInvOpen) {
-            openLobbyInventory(overlay);
-        }
-      }
-      return;
-    }
-
-    // 5b. STÄNG-KNAPP FÖR LOBBY INVENTORY
-    const closeBtn = e.target.closest('#i-lobby-back');
-    if (closeBtn) {
-      e.preventDefault();
-      e.stopPropagation();
-      const overlay = document.querySelector('.inventory-overlay');
-      if (overlay && window.lobbyInvOpen) {
-          closeLobbyInventory(overlay);
-      }
-      return;
-    }
-
-    // 1. LOGGA UT
-    const logoutBtn = e.target.closest('#logout-btn, .logout-btn');
-    if (logoutBtn) {
-    e.preventDefault();
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error("Fel vid utloggning:", error);
-    }
-    return; 
-    }
-
-});
-    
 // ==========================================
 // ── 3. CHANGE USERNAME LOGIC ──
 // ==========================================
@@ -960,4 +949,3 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
     }
   });
 }
-
