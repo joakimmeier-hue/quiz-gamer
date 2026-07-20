@@ -96,6 +96,19 @@ function updateAuthUI(user) {
       setTimeout(() => {
         if (createProfileEl.style.opacity === '0') {
           createProfileEl.style.display = 'none';
+           // NYTT: Återställ fältet till placeholder för nästa användare
+          if (typeof createUsernameInput !== 'undefined' && createUsernameInput) {
+              createUsernameInput.textContent = createDefaultPlaceholder;
+              createUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
+          }
+          if (typeof createProfileSubmitBtn !== 'undefined' && createProfileSubmitBtn) {
+              createProfileSubmitBtn.classList.remove('is-active');
+              createProfileSubmitBtn.style.pointerEvents = 'none';
+          }
+          if (typeof errorMsgEl !== 'undefined' && errorMsgEl) {
+              errorMsgEl.style.display = 'none';
+              errorMsgEl.innerHTML = "";
+          }
         }
       }, 250);
     }
