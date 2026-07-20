@@ -338,58 +338,6 @@ function updateAuthUI(user) {
   document.addEventListener('click', async (e) => {
 
    
-    // -- ÖPPNA CHANGE USERNAME MODAL --
-    const usernameLabel = e.target.closest('.player-info.username');
-    if (usernameLabel) {
-        const changeModal = document.querySelector('.change-username');
-        if (changeModal) {
-            changeModal.style.display = 'flex';
-            changeModal.style.opacity = '0';
-            // Liten delay så display:flex hinner registreras innan opacity animeras
-            setTimeout(() => {
-                changeModal.style.transition = 'opacity 200ms ease';
-                changeModal.style.opacity = '1';
-            }, 10);
-        }
-        return;
-    }
-
-// -- STÄNG CHANGE USERNAME MODAL (Klick på bakgrunden) --
-    const changeModalTarget = e.target.closest('.change-username');
-    if (changeModalTarget && e.target === changeModalTarget) {
-        changeModalTarget.style.transition = 'opacity 200ms ease';
-        changeModalTarget.style.opacity = '0';
-        setTimeout(() => {
-            changeModalTarget.style.display = 'none';
-            
-            // POINT 1: Återställ fältet när modalen stängs (om de inte är permanent låsta)
-            if (changeUsernameInput && changeUsernameInput.getAttribute('contenteditable') !== 'false') {
-                changeUsernameInput.textContent = changeDefaultPlaceholder;
-                changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
-                
-                if (changeProfileSubmitBtn) {
-                    changeProfileSubmitBtn.classList.remove('is-active');
-                    changeProfileSubmitBtn.style.pointerEvents = 'none';
-                }
-                if (changeErrorMsgEl) {
-                    changeErrorMsgEl.style.display = 'none';
-                    changeErrorMsgEl.innerHTML = "";
-                }
-            }
-        }, 200);
-        return;
-    }
-        // 1. LOGGA UT
-    const logoutBtn = e.target.closest('#logout-btn, .logout-btn');
-    if (logoutBtn) {
-      e.preventDefault();
-      try {
-        await signOut(auth);
-      } catch (error) {
-        console.error("Fel vid utloggning:", error);
-      }
-      return; 
-    }
 
 // 3. BYT PROFILBILD (Uppdaterad för att ändra alla instanser av klassen)
  const option = e.target.closest('.profile-pic-option');
@@ -709,10 +657,10 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
 function validateUsernameRules(rawName) {
     let errors = [];
 
-    if (rawName.length < 3) errors.push("Minimum 3 characters, including 1 letter");
+    if (rawName.length < 3) errors.push("Minimum 3 characters");
 
     const letterCount = (rawName.match(/[a-zA-ZåäöÅÄÖ]/g) || []).length;
-    if (letterCount < 1) errors.push("Minimum 3 characters, including 1 letter");
+    if (letterCount < 1) errors.push("Minimum 1 letter");
 
     if (rawName.length > 14) errors.push("Maximum 14 characters");
 
@@ -840,7 +788,60 @@ if (createProfileSubmitBtn && createUsernameInput) {
   });
 }
 
+    // -- ÖPPNA CHANGE USERNAME MODAL --
+    const usernameLabel = e.target.closest('.player-info.username');
+    if (usernameLabel) {
+        const changeModal = document.querySelector('.change-username');
+        if (changeModal) {
+            changeModal.style.display = 'flex';
+            changeModal.style.opacity = '0';
+            // Liten delay så display:flex hinner registreras innan opacity animeras
+            setTimeout(() => {
+                changeModal.style.transition = 'opacity 200ms ease';
+                changeModal.style.opacity = '1';
+            }, 10);
+        }
+        return;
+    }
 
+// -- STÄNG CHANGE USERNAME MODAL (Klick på bakgrunden) --
+const changeModalTarget = e.target.closest('.change-username');
+if (changeModalTarget && e.target === changeModalTarget) {
+    changeModalTarget.style.transition = 'opacity 200ms ease';
+    changeModalTarget.style.opacity = '0';
+    setTimeout(() => {
+        changeModalTarget.style.display = 'none';
+        
+        // POINT 1: Återställ fältet när modalen stängs (om de inte är permanent låsta)
+        if (changeUsernameInput && changeUsernameInput.getAttribute('contenteditable') !== 'false') {
+            changeUsernameInput.textContent = changeDefaultPlaceholder;
+            changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
+            
+            if (changeProfileSubmitBtn) {
+                changeProfileSubmitBtn.classList.remove('is-active');
+                changeProfileSubmitBtn.style.pointerEvents = 'none';
+            }
+            if (changeErrorMsgEl) {
+                changeErrorMsgEl.style.display = 'none';
+                changeErrorMsgEl.innerHTML = "";
+            }
+        }
+    }, 200);
+    return;
+}
+
+// 1. LOGGA UT
+const logoutBtn = e.target.closest('#logout-btn, .logout-btn');
+if (logoutBtn) {
+  e.preventDefault();
+  try {
+    await signOut(auth);
+  } catch (error) {
+    console.error("Fel vid utloggning:", error);
+  }
+  return; 
+  }
+    
 // ==========================================
 // ── 3. CHANGE USERNAME LOGIC ──
 // ==========================================
