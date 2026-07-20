@@ -341,9 +341,7 @@ function updateAuthUI(user) {
     // -- ÖPPNA CHANGE USERNAME MODAL --
     const usernameLabel = e.target.closest('.player-info.username');
     if (usernameLabel) {
-        console.log('Username clicked, found label:', usernameLabel);
         const changeModal = document.querySelector('.change-username');
-        console.log('Found modal:', changeModal);
         if (changeModal) {
             changeModal.style.display = 'flex';
             changeModal.style.opacity = '0';
