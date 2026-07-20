@@ -966,7 +966,7 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// ── BLUR OVERLAY MANAGER ──────────────────────────────────────────
+// ── SMART BLUR OVERLAY MANAGER ──────────────────────────────────────────
 // Create single blur overlay if it doesn't exist
 function initBlurOverlay() {
   let blurOverlay = document.querySelector('.blur-overlay');
@@ -976,29 +976,48 @@ function initBlurOverlay() {
     document.body.appendChild(blurOverlay);
   }
   
+  // Priority order (highest priority first)
   const MODAL_SELECTORS = [
-    '.login-modal-wrapper',
-    '.create-profile',
-    '.change-username',
-    '.intro-overlay-grp',
-    'pp-grid'
+    '.create-profile',      // Priority 1 (highest)
+    '.login-modal-wrapper', // Priority 2
+    '.change-username',     // Priority 3
+    '.intro-overlay-grp'    // Priority 4 (lowest)
   ];
   
-  // Check modals every 100ms (catches all visibility changes)
-  setInterval(() => {
-    const isAnyModalVisible = MODAL_SELECTORS.some(selector => {
+  function updateBlurOverlay() {
+    // Find the topmost visible modal
+    let topModal = null;
+    let topModalIndex = -1;
+    
+    MODAL_SELECTORS.forEach((selector, idx) => {
       const modal = document.querySelector(selector);
-      if (!modal) return false;
+      if (!modal) return;
+      
       const style = window.getComputedStyle(modal);
-      return style.display !== 'none' && parseFloat(style.opacity) > 0.1;
+      const isVisible = style.display !== 'none' && parseFloat(style.opacity) > 0.1;
+      
+      if (isVisible && idx > topModalIndex) {
+        topModal = modal;
+        topModalIndex = idx;
+      }
     });
     
-    if (isAnyModalVisible) {
+    if (topModal) {
+      // Get the z-index of the topmost modal
+      const modalZIndex = parseInt(window.getComputedStyle(topModal).zIndex) || 99999;
+      // Set blur to sit just below it
+      blurOverlay.style.zIndex = (modalZIndex - 1).toString();
       blurOverlay.classList.add('is-active');
     } else {
       blurOverlay.classList.remove('is-active');
     }
-  }, 100);
+  }
+  
+  // Check every 100ms (catches all visibility changes)
+  setInterval(updateBlurOverlay, 100);
+  
+  // Also check on clicks (faster response)
+  document.addEventListener('click', updateBlurOverlay);
 }
 
 // Run after DOM is ready
