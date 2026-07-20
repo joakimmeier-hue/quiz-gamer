@@ -334,10 +334,18 @@ function updateAuthUI(user) {
      }
    });
  }
-  // ── GLOBAL KLICKLYSSNARE ──
-  document.addEventListener('click', async (e) => {
+ 
 
    
+
+
+
+
+
+
+
+
+
 
 // 3. BYT PROFILBILD (Uppdaterad för att ändra alla instanser av klassen)
  const option = e.target.closest('.profile-pic-option');
@@ -788,6 +796,10 @@ if (createProfileSubmitBtn && createUsernameInput) {
   });
 }
 
+
+ // ── GLOBAL KLICKLYSSNARE ──
+  document.addEventListener('click', async (e) => {
+
     // -- ÖPPNA CHANGE USERNAME MODAL --
     const usernameLabel = e.target.closest('.player-info.username');
     if (usernameLabel) {
@@ -828,19 +840,9 @@ if (changeModalTarget && e.target === changeModalTarget) {
         }
     }, 200);
     return;
-}
+  }
+});
 
-// 1. LOGGA UT
-const logoutBtn = e.target.closest('#logout-btn, .logout-btn');
-if (logoutBtn) {
-  e.preventDefault();
-  try {
-    await signOut(auth);
-  } catch (error) {
-    console.error("Fel vid utloggning:", error);
-  }
-  return; 
-  }
     
 // ==========================================
 // ── 3. CHANGE USERNAME LOGIC ──
@@ -956,3 +958,15 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
     }
   });
 }
+
+// 1. LOGGA UT
+const logoutBtn = e.target.closest('#logout-btn, .logout-btn');
+if (logoutBtn) {
+  e.preventDefault();
+  try {
+    await signOut(auth);
+  } catch (error) {
+    console.error("Fel vid utloggning:", error);
+  }
+  return; 
+  }

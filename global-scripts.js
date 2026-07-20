@@ -709,7 +709,7 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
   let locked = false;
   document.addEventListener('click', (e) => {
-    if (e.target.closest('a, input, textarea, select, .pp-dropdown, .i-closer-game, .button.i-lobby-back, .profile-pic-option, .pp-grid-wrapper')) return;
+    if (e.target.closest('a, input, textarea, select, .pp-dropdown, .i-closer-game, .button.i-lobby-back, .profile-pic-option, .pp-grid-wrapper, .player-info.username, .logout-btn, #logout-btn')) return;
     if (e._synthetic) return; 
     if (locked) { e.stopPropagation(); e.preventDefault(); return; }
     locked = true;
