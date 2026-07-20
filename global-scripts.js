@@ -548,7 +548,8 @@ document.addEventListener("keydown", function(e) {
   const blockingModals = [
     '.login-modal-wrapper',
     '.create-profile',
-    '.change-username'
+    '.change-username',
+    '.intro-overlay-grp'
   ];
   
   for (let selector of blockingModals) {
@@ -963,5 +964,49 @@ document.addEventListener("click", (e) => {
         window.location.href = closeBtn.getAttribute("href") || "/";
       }
     }, 200);
+  }
+});
+
+// Show blur overlay
+document.querySelector('.blur-overlay').classList.add('is-active');
+
+// Hide blur overlay
+document.querySelector('.blur-overlay').classList.remove('is-active');
+
+// Auto-toggle blur overlay when modals open/close
+const MODAL_SELECTORS = [
+  '.login-modal-wrapper',
+  '.create-profile',
+  '.change-username'
+];
+
+// Create single blur overlay
+if (!document.querySelector('.blur-overlay')) {
+  const blurOverlay = document.createElement('div');
+  blurOverlay.className = 'blur-overlay';
+  document.body.appendChild(blurOverlay);
+}
+
+const blurOverlay = document.querySelector('.blur-overlay');
+
+// Watch all modals
+MODAL_SELECTORS.forEach(selector => {
+  const observer = new MutationObserver(() => {
+    const modal = document.querySelector(selector);
+    if (!modal) return;
+    
+    const style = window.getComputedStyle(modal);
+    const isVisible = style.display !== 'none' && parseFloat(style.opacity) > 0;
+    
+    if (isVisible) {
+      blurOverlay.classList.add('is-active');
+    } else {
+      blurOverlay.classList.remove('is-active');
+    }
+  });
+  
+  const modal = document.querySelector(selector);
+  if (modal) {
+    observer.observe(modal, { attributes: true, attributeFilter: ['style', 'class'] });
   }
 });
