@@ -966,12 +966,6 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// Show blur overlay
-document.querySelector('.blur-overlay').classList.add('is-active');
-
-// Hide blur overlay
-document.querySelector('.blur-overlay').classList.remove('is-active');
-
 // ── BLUR OVERLAY MANAGER ──────────────────────────────────────────
 // Create single blur overlay if it doesn't exist
 function initBlurOverlay() {
