@@ -416,7 +416,6 @@ function updateAuthUI(user) {
       }
       return;
     }
-  }); 
 
 // HÄMTA DATA (BILD + STATS)
 async function loadUserData(uid) {
