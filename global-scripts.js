@@ -548,8 +548,7 @@ document.addEventListener("keydown", function(e) {
   const blockingModals = [
     '.login-modal-wrapper',
     '.create-profile',
-    '.change-username',
-    '.intro-overlay-grp'
+    '.change-username'
   ];
   
   for (let selector of blockingModals) {
@@ -977,7 +976,8 @@ document.querySelector('.blur-overlay').classList.remove('is-active');
 const MODAL_SELECTORS = [
   '.login-modal-wrapper',
   '.create-profile',
-  '.change-username'
+  '.change-username',
+  '.intro-overlay-grp'
 ];
 
 // Create single blur overlay
