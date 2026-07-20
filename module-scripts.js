@@ -544,6 +544,48 @@ async function loadUserData(uid) {
     }
     routeGuard(!!user); // NEW
   });
+
+// ── INCOMPLETE ACCOUNT RECOVERY ──
+onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    updateAuthUI(user);
+    
+    if (user) {
+        try {
+            const userDocRef = doc(db, "users", user.uid);
+            const userDoc = await getDoc(userDocRef);
+            
+            // CASE 1: First-time user (new to Firestore)
+            if (!userDoc.exists()) {
+                console.log("🔴 NEW USER - Showing create profile");
+                showCreateProfile();
+                return;
+            }
+            
+            // CASE 2: User exists but is INCOMPLETE (missing username OR profile pic)
+            const userData = userDoc.data();
+            const hasUsername = userData.username && userData.username.trim() !== "";
+            const hasProfilePic = userData.profilePicUrl && userData.profilePicUrl !== "";
+            
+            if (!hasUsername || !hasProfilePic) {
+                console.log("🟡 INCOMPLETE PROFILE - Missing username or profile picture. Forcing create profile...");
+                showCreateProfile();
+                return;
+            }
+            
+            // CASE 3: User is complete ✅
+            console.log("✅ COMPLETE USER - Loading data");
+            loadUserData(user.uid);
+            
+        } catch (firestoreError) {
+            console.warn("Firestore error:", firestoreError.message);
+            // Fallback: show create profile to be safe
+            showCreateProfile();
+        }
+    }
+    
+    routeGuard(!!user);
+});
 // ── ROUTE GUARD SYSTEM ──────────────────────────────────────────────
 function routeGuard(isLoggedIn) {
     const PUBLIC_PAGES = ['lobby', 'terms', 'privacy'];
@@ -701,6 +743,13 @@ if (createProfileSubmitBtn && createUsernameInput) {
         errorMsgEl.innerHTML = "";
     }
     let errors = [];
+
+
+    
+    Put safety check here???
+
+
+
 
     // -- PROFILBILDS-KOLL --
     const currentAvatarSrc = document.querySelector('.current-profile-pic')?.src || "";

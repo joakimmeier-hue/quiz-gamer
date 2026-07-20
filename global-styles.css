@@ -295,5 +295,5 @@ a.button-link:hover {
 }
 .cp-submit-btn.is-active {
     color: var(--white-1, #ffffff);
-    background-color: var(--gold,  #947434);
+    background-color: var(--gold, #947434);
 }
