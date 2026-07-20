@@ -1004,7 +1004,7 @@ function initBlurOverlay() {
     
     if (topModal) {
       // Get the z-index of the topmost modal
-      const modalZIndex = parseInt(window.getComputedStyle(topModal).zIndex) || 99999;
+      const modalZIndex = parseInt(window.getComputedStyle(topModal).zIndex) || 999;
       // Set blur to sit just below it
       blurOverlay.style.zIndex = (modalZIndex - 1).toString();
       blurOverlay.classList.add('is-active');
