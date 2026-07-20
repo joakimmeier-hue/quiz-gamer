@@ -334,9 +334,9 @@ function updateAuthUI(user) {
      }
    });
  }
+
   // ── GLOBAL KLICKLYSSNARE ──
   document.addEventListener('click', async (e) => {
-
    
     // -- ÖPPNA CHANGE USERNAME MODAL --
     const usernameLabel = e.target.closest('.player-info.username');
