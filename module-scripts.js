@@ -832,6 +832,18 @@ document.addEventListener('click', async (e) => {
       return;
     }
 
+    // 1. LOGGA UT
+    const logoutBtn = e.target.closest('#logout-btn, .logout-btn');
+    if (logoutBtn) {
+    e.preventDefault();
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Fel vid utloggning:", error);
+    }
+    return; 
+    }
+
 });
     
 // ==========================================
@@ -949,14 +961,3 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
   });
 }
 
-// 1. LOGGA UT
-const logoutBtn = e.target.closest('#logout-btn, .logout-btn');
-if (logoutBtn) {
-  e.preventDefault();
-  try {
-    await signOut(auth);
-  } catch (error) {
-    console.error("Fel vid utloggning:", error);
-  }
-  return; 
-  }
