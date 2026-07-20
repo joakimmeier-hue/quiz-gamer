@@ -1,4 +1,4 @@
-  :root {
+:root {
   --yellow: #ffc04b;
   --gold: #947434;
   --gold-dark: #47391c;
@@ -296,4 +296,55 @@ a.button-link:hover {
 .cp-submit-btn.is-active {
     color: var(--white-1, #ffffff);
     background-color: var(--gold, #947434);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   REUSABLE BLUR OVERLAY EFFECT
+   Hardware-accelerated using backdrop-filter (very CPU-light)
+   ════════════════════════════════════════════════════════════════ */
+
+/* Base overlay - creates the blurred background effect */
+.blur-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: rgba(0, 0, 0, 0.55); /* Darker overlay */
+  backdrop-filter: blur(8px); /* The magic! Hardware-accelerated blur */
+  -webkit-backdrop-filter: blur(8px); /* Safari support */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, backdrop-filter 0.3s ease;
+}
+
+/* Active state - make it visible */
+.blur-overlay.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Optional: Lighter blur variant (5px instead of 8px) */
+.blur-overlay.is-light {
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  background-color: rgba(0, 0, 0, 0.35);
+}
+
+/* Optional: Stronger blur variant (12px) */
+.blur-overlay.is-strong {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background-color: rgba(0, 0, 0, 0.65);
+}
+
+/* Optional: White/light overlay for light themes */
+.blur-overlay.is-white {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Optional: Full-screen but doesn't block scrolling on body */
+.blur-overlay.is-transparent-click {
+  pointer-events: none;
+}
+.blur-overlay.is-transparent-click.is-active {
+  pointer-events: auto;
 }
