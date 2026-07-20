@@ -308,7 +308,7 @@ a.button-link:hover {
   position: fixed;
   inset: 0;
   z-index: 995;
-  background-color: rgba(0, 0, 0, 0.55); /* Darker overlay */
+  background-color: rgba(0, 0, 0, 0.3); /* Darker overlay */
   backdrop-filter: blur(6px); /* The magic! Hardware-accelerated blur */
   -webkit-backdrop-filter: blur(6px); /* Safari support */
   opacity: 0;
