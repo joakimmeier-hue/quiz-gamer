@@ -972,41 +972,43 @@ document.querySelector('.blur-overlay').classList.add('is-active');
 // Hide blur overlay
 document.querySelector('.blur-overlay').classList.remove('is-active');
 
-// Auto-toggle blur overlay when modals open/close
-const MODAL_SELECTORS = [
-  '.login-modal-wrapper',
-  '.create-profile',
-  '.change-username',
-  '.intro-overlay-grp'
-];
-
-// Create single blur overlay
-if (!document.querySelector('.blur-overlay')) {
-  const blurOverlay = document.createElement('div');
-  blurOverlay.className = 'blur-overlay';
-  document.body.appendChild(blurOverlay);
-}
-
-const blurOverlay = document.querySelector('.blur-overlay');
-
-// Watch all modals
-MODAL_SELECTORS.forEach(selector => {
-  const observer = new MutationObserver(() => {
-    const modal = document.querySelector(selector);
-    if (!modal) return;
+// ── BLUR OVERLAY MANAGER ──────────────────────────────────────────
+// Create single blur overlay if it doesn't exist
+function initBlurOverlay() {
+  let blurOverlay = document.querySelector('.blur-overlay');
+  if (!blurOverlay) {
+    blurOverlay = document.createElement('div');
+    blurOverlay.className = 'blur-overlay';
+    document.body.appendChild(blurOverlay);
+  }
+  
+  const MODAL_SELECTORS = [
+    '.login-modal-wrapper',
+    '.create-profile',
+    '.change-username',
+    '.intro-overlay-grp'
+  ];
+  
+  // Check modals every 100ms (catches all visibility changes)
+  setInterval(() => {
+    const isAnyModalVisible = MODAL_SELECTORS.some(selector => {
+      const modal = document.querySelector(selector);
+      if (!modal) return false;
+      const style = window.getComputedStyle(modal);
+      return style.display !== 'none' && parseFloat(style.opacity) > 0.1;
+    });
     
-    const style = window.getComputedStyle(modal);
-    const isVisible = style.display !== 'none' && parseFloat(style.opacity) > 0;
-    
-    if (isVisible) {
+    if (isAnyModalVisible) {
       blurOverlay.classList.add('is-active');
     } else {
       blurOverlay.classList.remove('is-active');
     }
-  });
-  
-  const modal = document.querySelector(selector);
-  if (modal) {
-    observer.observe(modal, { attributes: true, attributeFilter: ['style', 'class'] });
-  }
-});
+  }, 100);
+}
+
+// Run after DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initBlurOverlay);
+} else {
+  initBlurOverlay();
+}
