@@ -708,16 +708,22 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
 // Kontrollerar reglerna och skickar tillbaka en array med eventuella fel.
 function validateUsernameRules(rawName) {
     let errors = [];
-    if (rawName.length < 3) errors.push("Minimum 3 characters");
+
+    if (rawName.length < 3) errors.push("Minimum 3 characters, including 1 letter");
+
+    const letterCount = (rawName.match(/[a-zA-ZåäöÅÄÖ]/g) || []).length;
+    if (letterCount < 1) errors.push("Minimum 3 characters, including 1 letter");
+
     if (rawName.length > 14) errors.push("Maximum 14 characters");
 
     const spaceCount = (rawName.match(/ /g) || []).length;
     if (spaceCount > 1) errors.push("Only one space allowed");
 
-    const invalidCharRegex = /[^a-zA-Z0-9åäöÅÄÖ\-_ ]/; 
+    const invalidCharRegex = /[^a-zA-Z0-9åäöÅÄÖ\-_ ]/;
     if (rawName.length > 0 && invalidCharRegex.test(rawName)) {
         errors.push("Ops, invalid character");
     }
+
     return errors;
 }
 
