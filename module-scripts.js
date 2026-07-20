@@ -586,6 +586,7 @@ onAuthStateChanged(auth, async (user) => {
     
     routeGuard(!!user);
 });
+
 // ── ROUTE GUARD SYSTEM ──────────────────────────────────────────────
 function routeGuard(isLoggedIn) {
     const PUBLIC_PAGES = ['lobby', 'terms', 'privacy'];

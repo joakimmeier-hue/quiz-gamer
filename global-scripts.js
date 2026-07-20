@@ -544,6 +544,19 @@ document.addEventListener('click', function(e) {
 let triggered = false;
 document.addEventListener("keydown", function(e) {
   if (triggered) return;
+  // NEW: Block if any modal is open (create-profile, login, etc)
+  const blockingModals = [
+    '.login-modal-wrapper',
+    '.create-profile',
+    '.change-username'
+  ];
+  
+  for (let selector of blockingModals) {
+    const modal = document.querySelector(selector);
+    if (modal && window.getComputedStyle(modal).display !== 'none') {
+      return; // Exit early - don't trigger intro
+    }
+  }
   if (document.getElementById('back-overlay')) return; 
   if (e.key === "Enter" || e.key === " ") {
     const welcomeTarget = document.querySelector(".welcome-text-container");
