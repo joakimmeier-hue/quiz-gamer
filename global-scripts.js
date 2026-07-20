@@ -980,7 +980,8 @@ function initBlurOverlay() {
     '.login-modal-wrapper',
     '.create-profile',
     '.change-username',
-    '.intro-overlay-grp'
+    '.intro-overlay-grp',
+    'pp-grid'
   ];
   
   // Check modals every 100ms (catches all visibility changes)
