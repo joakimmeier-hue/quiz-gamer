@@ -263,10 +263,11 @@ a.button-link:hover {
 
 .cp-submit-btn {
     opacity: 1;
-    color: var(--grey-text);
-    background-color: var(--gold-dark);
+    color: #9b9b9b; /* grey-text, hardcoded */
+    background-color: #47391c; /* gold-dark, hardcoded */
     transition: background-color 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955),
-                color 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955);
+                color 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955),
+                scale 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955);
 }
 
 .cp-submit-btn.is-active {
