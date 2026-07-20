@@ -341,7 +341,9 @@ function updateAuthUI(user) {
     // -- ÖPPNA CHANGE USERNAME MODAL --
     const usernameLabel = e.target.closest('.player-info.username');
     if (usernameLabel) {
+        console.log('Username clicked, found label:', usernameLabel);
         const changeModal = document.querySelector('.change-username');
+        console.log('Found modal:', changeModal);
         if (changeModal) {
             changeModal.style.display = 'flex';
             changeModal.style.opacity = '0';
@@ -708,12 +710,13 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
 // Kontrollerar reglerna och skickar tillbaka en array med eventuella fel.
 function validateUsernameRules(rawName) {
     let errors = [];
-    if (rawName.length < 3) errors.push("Minimum 3 characters including 1 letter");
+    const letterCount = (rawName.match(/[a-zA-ZåäöÅÄÖ]/g) || []).length;
+    if (rawName.length < 3 || letterCount < 1) {
+        errors.push("Minimum 3 characters including 1 letter");
+    }
     if (rawName.length > 14) errors.push("Maximum 14 characters");
-
     const spaceCount = (rawName.match(/ /g) || []).length;
     if (spaceCount > 1) errors.push("Only one space allowed");
-
     const invalidCharRegex = /[^a-zA-Z0-9åäöÅÄÖ\-_ ]/; 
     if (rawName.length > 0 && invalidCharRegex.test(rawName)) {
         errors.push("Ops, invalid character");
@@ -768,7 +771,7 @@ if (createProfileSubmitBtn && createUsernameInput) {
     errors = errors.concat(validateUsernameRules(rawName));
 
     // -- DATABAS-KOLL --
-    if (errors.length === 0 || (!errors.includes("Minimum 3 characters") && !errors.includes("Maximum 14 characters") && !errors.includes("Ops, invalid character"))) {
+    if (errors.length === 0 || (!errors.includes("Minimum 3 characters including 1 letter") && !errors.includes("Maximum 14 characters") && !errors.includes("Ops, invalid character"))) {
        try {
          const usersRef = collection(db, "users");
          const q = query(usersRef, where("username", "==", rawName));
