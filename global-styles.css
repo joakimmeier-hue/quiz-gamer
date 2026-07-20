@@ -1,4 +1,29 @@
-  /* Tvingar bort de blå linjerna på sidorna i Webflow-formulär */
+  :root {
+  --yellow: #ffc04b;
+  --gold: #947434;
+  --gold-dark: #47391c;
+  --sand: #494643;
+  --white-1: #ffffff;
+  --light: #dfdfdf;
+  --grey-text: #9b9b9b;
+  --grey-stroke: #8d8d8d;
+  --grey: #464443;
+  --dark-grey: #181717;
+}
+
+.cp-submit-btn {
+    opacity: 1;
+    color: var(--grey-text);
+    background-color: var(--gold-dark);
+}
+
+.cp-submit-btn.is-active {
+    opacity: 1;
+    color: var(--white-1);
+    background-color: var(--gold);
+}
+
+/* Tvingar bort de blå linjerna på sidorna i Webflow-formulär */
   .w-input:focus, 
   .w-input[data-name]:focus,
   .w-select:focus {
@@ -260,18 +285,6 @@ a.button-link:hover {
   white-space: nowrap !important; /* Förhindrar att texten hoppar ner på ny rad */
   overflow: hidden !important;    /* Döljer allt som går utanför bredden */
 }
-
-/* .cp-submit-btn {
-    color: var(--grey-text, #9b9b9b);
-    background-color: var(--gold-dark, #47391c);
-    transition: background-color 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955),
-                color 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955),
-                scale 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955);
-}
-.cp-submit-btn.is-active {
-    color: var(--white-1, #ffffff);
-    background-color: var(--gold, #947434);
-} */
 
 .cp-submit-btn {
     color: #9b9b9b;
