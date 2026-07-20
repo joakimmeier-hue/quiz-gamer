@@ -744,13 +744,15 @@ if (createProfileSubmitBtn && createUsernameInput) {
     }
     let errors = [];
 
-
-    
-    Put safety check here???
-
-
-
-
+// NEW: Safety check - ensure user is authenticated
+    if (!currentUser || !currentUser.uid) {
+        console.error("❌ User not authenticated!");
+        if (errorMsgEl) {
+            errorMsgEl.innerHTML = "■ Authentication error. Please log in again.";
+            errorMsgEl.style.display = 'block';
+        }
+        return;
+    }
     // -- PROFILBILDS-KOLL --
     const currentAvatarSrc = document.querySelector('.current-profile-pic')?.src || "";
     const defaultAvatarUrl = "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a43d799e6705e122388ffdc_ppic0.svg";
