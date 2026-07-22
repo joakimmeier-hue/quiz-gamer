@@ -181,7 +181,7 @@ function updateAuthUI(user) {
       overlay.style.opacity = '0';
       setTimeout(() => {
           if (!window.lobbyInvOpen) overlay.style.display = 'none';
-      }, 160);
+      }, 200);
   }
 // ── TANGENTBORDS-LYSSNARE (I, TAB, ESC) ──
   document.addEventListener('keydown', (e) => {
@@ -624,13 +624,14 @@ function routeGuard(isLoggedIn) {
 
     // Game pages: must arrive from their theme's start page (any difficulty, not sequential)
     const gameMatch = currentSlug.match(/^([a-z]+)-game-(\d+)$/);
-    if (gameMatch) {
+if (gameMatch) {
     const theme = gameMatch[1];
     const validPrevious = `${theme}-start`;
-
+    console.log('DEBUG', { currentSlug, gameMatch, theme, validPrevious, cameFrom });
     if (cameFrom !== validPrevious) {
-        window.location.replace('/' + validPrevious); // send to that theme's start instead of home
+        window.location.replace('/' + validPrevious);
         return;
+
     }
   }
 }

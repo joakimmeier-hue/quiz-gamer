@@ -186,6 +186,18 @@ const SFX_CONFIG = {
     qaltminus8: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a271ff549ae2539a25338ee_5a5a5d3ce12941ad67dae44cfc51ddb2_qalt-pitch_-8.ogg',
     deny: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a1af8aa81c60eedf18e0c0f_a7982f0695a5917df328945f1a32c008_deny.ogg'
 };
+// ── SFX VOLYMER (per ljud) ──
+const SFX_VOLUMES = {
+    finish: 0.9,
+    select: 0.5,
+    back: 0.9,
+    qalt: 0.9,
+    qaltminus2: 0.9,
+    qaltminus4: 0.9,
+    qaltminus6: 0.9,
+    qaltminus8: 0.9,
+    deny: 0.9
+};
 // ── QALT CYCLE CONFIG ──
 let qaltIndex = 0; 
 // Här sparar vi *namnet* på egenskapen (key) istället för url:en
@@ -193,7 +205,7 @@ const qaltKeys = ['qaltminus8', 'qaltminus6', 'qaltminus4', 'qaltminus2', 'qalt'
 // Sätt igång buffringen för alla ljud i SFX_CONFIG omedelbart
 Object.entries(SFX_CONFIG).forEach(([key, url]) => preloadBuffer(key, url));
 // ── BLIXTSNABB UPPSPELNING ──
-function playSFX(type, vol = 0.9) {
+function playSFX(type, vol) {
     if (sfxCtx.state === 'suspended') sfxCtx.resume();
     let bufferKey = type;
     // Snurra index för qalt-ljuden
@@ -201,14 +213,14 @@ function playSFX(type, vol = 0.9) {
         bufferKey = qaltKeys[qaltIndex];
         qaltIndex = (qaltIndex + 1) % qaltKeys.length;
     }
+    const finalVol = vol !== undefined ? vol : (SFX_VOLUMES[bufferKey] ?? 0.9);
     const buffer = sfxBuffers[bufferKey];
     if (buffer) {
-        // Ljudet är buffrat och redo. Koppla upp det och skjut ut ljudet på en gång.
         const source = sfxCtx.createBufferSource();
         const gainNode = sfxCtx.createGain();
         
         source.buffer = buffer;
-        gainNode.gain.value = vol;
+        gainNode.gain.value = finalVol;
         
         source.connect(gainNode);
         gainNode.connect(sfxCtx.destination);
@@ -218,6 +230,7 @@ function playSFX(type, vol = 0.9) {
         console.log("Ljudet buffras fortfarande i bakgrunden...");
     }
 }
+
 // Spåra exakt när användaren faktiskt trycker på tangentbordet
 let lastActualKeyPressTime = 0;
 window.addEventListener('keydown', (e) => {
@@ -307,6 +320,7 @@ function initAudio() {
     if (enterBtn && !isTopicPage) {
         enterBtn.addEventListener('click', () => window.startMusic(false));
     }
+
  // ── INTRO & VISIBILITETS-LOGIK ──
     if (toggleBtn) {
         const isLobby = currentTopicId === 'lobby';
