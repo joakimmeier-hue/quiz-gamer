@@ -601,18 +601,22 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 // ── ROUTE GUARD SYSTEM ──────────────────────────────────────────────
-function routeGuard(isLoggedIn) {
-    const PUBLIC_PAGES = ['lobby', 'terms', 'privacy'];
+let routeGuardHasRun = false;
 
+function routeGuard(isLoggedIn) {
+    if (routeGuardHasRun) return;
+
+    const PUBLIC_PAGES = ['lobby', 'terms', 'privacy'];
     if (!isLoggedIn && !PUBLIC_PAGES.includes(currentSlug)) {
         window.location.replace('/');
         return;
     }
     if (!isLoggedIn) return;
 
+    routeGuardHasRun = true;
+
     const cameFrom = sessionStorage.getItem('navFrom');
     sessionStorage.removeItem('navFrom');
-
     if (currentSlug === 'score') {
         const authorized = sessionStorage.getItem('scoreAuthorized') === 'true';
         sessionStorage.removeItem('scoreAuthorized');
@@ -621,19 +625,15 @@ function routeGuard(isLoggedIn) {
             return;
         }
     }
-
-    // Game pages: must arrive from their theme's start page (any difficulty, not sequential)
     const gameMatch = currentSlug.match(/^([a-z]+)-game-(\d+)$/);
-if (gameMatch) {
-    const theme = gameMatch[1];
-    const validPrevious = `${theme}-start`;
-    console.log('DEBUG', { currentSlug, gameMatch, theme, validPrevious, cameFrom });
-    if (cameFrom !== validPrevious) {
-        window.location.replace('/' + validPrevious);
-        return;
-
+    if (gameMatch) {
+        const theme = gameMatch[1];
+        const validPrevious = `${theme}-start`;
+        if (cameFrom !== validPrevious) {
+            window.location.replace('/' + validPrevious);
+            return;
+        }
     }
-  }
 }
 
 // ==========================================
