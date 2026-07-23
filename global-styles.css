@@ -284,7 +284,3 @@ a.button-link:hover {
     color: var(--white-1, #ffffff);
     background-color: var(--gold, #947434);
 }
-/* SAFE AREA FIX: Ensures mobile top bar / notch never covers content */
-.basic-v {
-  padding-top: calc(env(safe-area-inset-top) + 2rem) !important;
-}
