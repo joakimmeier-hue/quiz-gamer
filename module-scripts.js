@@ -168,21 +168,21 @@ function updateAuthUI(user) {
       });
   }
   function closeLobbyInventory(overlay) {
-   // 1. Trigga Webflows interna animationsmotor för att stänga pp
-  try {
-    const wfIx = Webflow.require("ix3");
-    wfIx.emit("pp-dropdown-hide");
-    console.log("Webflow IX3-event 'pp-dropdown-hide' skickat.");
-  } catch (error) {
-    console.error("Gick inte att köra Webflows custom event:", error);
-  }
-      window.lobbyInvOpen = false;
-      overlay.style.transition = 'opacity 160ms ease-out';
-      overlay.style.opacity = '0';
-      setTimeout(() => {
-          if (!window.lobbyInvOpen) overlay.style.display = 'none';
-      }, 200);
-  }
+  // Close pp-dropdown if open, by clicking its real closer element directly
+  const ppClosers = document.querySelectorAll('.pp-dropdown-closer');
+  ppClosers.forEach(closer => {
+    if (window.getComputedStyle(closer).display !== 'none' && closer.offsetParent !== null) {
+      closer.click();
+    }
+  });
+
+  window.lobbyInvOpen = false;
+  overlay.style.transition = 'opacity 160ms ease-out';
+  overlay.style.opacity = '0';
+  setTimeout(() => {
+      if (!window.lobbyInvOpen) overlay.style.display = 'none';
+  }, 200);
+}
 // ── TANGENTBORDS-LYSSNARE (I, TAB, ESC) ──
   document.addEventListener('keydown', (e) => {
     if (e.repeat) return; // Stoppar buggar om man håller inne knappen
