@@ -181,7 +181,7 @@ function updateAuthUI(user) {
       overlay.style.opacity = '0';
       setTimeout(() => {
           if (!window.lobbyInvOpen) overlay.style.display = 'none';
-      }, 500);
+      }, 200);
   }
 // ── TANGENTBORDS-LYSSNARE (I, TAB, ESC) ──
   document.addEventListener('keydown', (e) => {
@@ -245,7 +245,7 @@ function updateAuthUI(user) {
                 btn.click();
                 setTimeout(() => {
                     window.isGameInvAnimating = false;
-                }, 500);
+                }, 150);
             };
 
             if (key === 'escape') {
