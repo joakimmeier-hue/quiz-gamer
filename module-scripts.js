@@ -167,15 +167,7 @@ function updateAuthUI(user) {
           });
       });
   }
-  function closeLobbyInventory(overlay) {
-  // Close pp-dropdown if open, by clicking its real closer element directly
-  const ppClosers = document.querySelectorAll('.pp-dropdown-closer');
-  ppClosers.forEach(closer => {
-    if (window.getComputedStyle(closer).display !== 'none' && closer.offsetParent !== null) {
-      closer.click();
-    }
-  });
-
+ function closeLobbyInventory(overlay) {
   window.lobbyInvOpen = false;
   overlay.style.transition = 'opacity 160ms ease-out';
   overlay.style.opacity = '0';
