@@ -290,8 +290,9 @@ function updateAuthUI(user) {
             }
         }
         
-        // Hantera ESC (Enbart stäng). Den kraschande loginModal-koden är nu helt borta!
+        // Hantera ESC (Enbart stäng).
         if (key === 'escape') {
+          console.log('ESC pressed, lobbyInvOpen =', window.lobbyInvOpen);
             if (window.lobbyInvOpen) {
                 e.preventDefault();
                 const overlay = document.querySelector('.inventory-overlay');
