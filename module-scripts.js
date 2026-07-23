@@ -181,7 +181,7 @@ function updateAuthUI(user) {
       overlay.style.opacity = '0';
       setTimeout(() => {
           if (!window.lobbyInvOpen) overlay.style.display = 'none';
-      }, 200);
+      }, 500);
   }
 // ── TANGENTBORDS-LYSSNARE (I, TAB, ESC) ──
   document.addEventListener('keydown', (e) => {
