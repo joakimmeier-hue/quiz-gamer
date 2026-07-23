@@ -245,7 +245,7 @@ function updateAuthUI(user) {
                 btn.click();
                 setTimeout(() => {
                     window.isGameInvAnimating = false;
-                }, 150);
+                }, 500);
             };
 
             if (key === 'escape') {
