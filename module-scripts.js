@@ -189,6 +189,23 @@ function updateAuthUI(user) {
     
     const key = e.key.toLowerCase();
 
+    // ── PP-GRID PRIORITY CHECK: if the picker grid is open, ESC only closes that ──
+    if (key === 'escape') {
+        const openGrid = Array.from(document.querySelectorAll('.pp-dropdown')).find(el => {
+            const style = window.getComputedStyle(el);
+            // adjust this condition to match however the grid is actually shown -
+            // e.g. check a class like .is-open, or a transform, or visibility
+            return style.display !== 'none' && el.offsetParent !== null;
+        });
+        if (openGrid) {
+            e.preventDefault();
+            e.stopPropagation();
+            const closer = openGrid.querySelector('.pp-dropdown-closer');
+            if (closer) closer.click();
+            return; // swallow ESC entirely, nothing else runs
+        }
+    }
+
     // VIKTIG ÄNDRING: Släpp igenom ESC-knappen även om användaren står inuti textfältet!
     // Annars händer inget om man försöker stänga medan man skriver.
     if (key !== 'escape' && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
