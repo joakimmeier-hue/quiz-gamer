@@ -44,29 +44,33 @@
   text-rendering: optimizeLegibility;
 }
 
-/* Disable text selection everywhere */
+/* Disable text selection everywhere by default */
 * {
   user-select: none;
   -webkit-user-select: none;
 }
-/* Tar bort webbläsarens standard-fokus för ALLA element på hela sidan */
+
+/* Remove default browser focus outline globally */
 *:focus {
   outline: none !important;
   box-shadow: none !important;
 }
 
-/* Only allow selection where it makes sense */
-input, 
-textarea, 
+/* Re-enable selection/interaction only where it makes sense */
+input,
+textarea,
 [contenteditable],
-.w-input, .w-select, .form-block-contact,
-#submit-btn {
+.w-input,
+.w-select,
+.form-block-contact,
+.submit-button {
   user-select: text !important;
   -webkit-user-select: text !important;
+  pointer-events: auto !important;
 }
 
 /* Tvinga knappar och inputs att alltid fungera */
-input, textarea, button, .w-button, #submit-btn {
+input, textarea, button, .w-button, #submit-btn-vanilla {
   user-select: text !important;
   -webkit-user-select: text !important;
   pointer-events: auto !important;
