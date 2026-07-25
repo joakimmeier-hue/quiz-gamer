@@ -731,16 +731,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }, true);
 });
 
-/* // ── GLOBALT STOPP FÖR STANDARD TAB-FOKUS ────────────────────────────
+// ── GLOBALT STOPP FÖR STANDARD TAB-FOKUS ────────────────────────────
 window.addEventListener('keydown', function(e) {
-    if (e.key === 'Tab') return;
+    if (e.key !== 'Tab') return;
           
     if (e.target.closest('.form-block-contact')) {
             return; // innuti, gör inget, låt Tab bete sig normalt
         }
         e.preventDefault(); // utanför formuläret: blockera Tab helt
      
-}, true); // 'true' gör att den fångar tangenten direkt innan något annat händer */
+}, true); // 'true' gör att den fångar tangenten direkt innan något annat händer
 
 // ══════════════════════════════════════════════════════════════════════
 // GENERISKT HOVER- & PRESS-SCALE-SYSTEM
