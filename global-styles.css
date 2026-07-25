@@ -17,7 +17,6 @@
   .submit-button:focus-visible {
     border-color: #ffc04b !important; /* Ändra färg eller osynlig */
     box-shadow: none !important;               /* Tar bort eventuell blå glöd */
-    outline: 0 !important;                     /* Tar bort standard-outline */
   }
   
   /* 2. Change the text selection highlight color site-wide */
