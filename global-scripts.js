@@ -731,13 +731,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }, true);
 });
   // ── GLOBALT STOPP FÖR STANDARD TAB-FOKUS ────────────────────────────
-window.addEventListener('keydown', function(e) {
+/* window.addEventListener('keydown', function(e) {
     if (e.key === 'Tab') {
         e.preventDefault(); // Hindrar webbläsaren från att flytta fokus till slumpmässiga knappar
     }
 }, true); // 'true' gör att den fångar tangenten direkt innan något annat händer
 
-// ══════════════════════════════════════════════════════════════════════
+ */// ══════════════════════════════════════════════════════════════════════
 // GENERISKT HOVER- & PRESS-SCALE-SYSTEM
 // Ersätter individuella Webflow IX2 hover/click-scale-interactions.
 // Lägg bara till/ta bort klassnamn i listorna nedan - ingen ny IX2 behövs
