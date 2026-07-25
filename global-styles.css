@@ -13,7 +13,8 @@
 /* Tvingar bort de blå linjerna på sidorna i Webflow-formulär */
   .w-input:focus, 
   .w-input[data-name]:focus,
-  .w-select:focus {
+  .w-select:focus
+  .submit-button:focus-visible {
     border-color: #ffc04b !important; /* Ändra färg eller osynlig */
     box-shadow: none !important;               /* Tar bort eventuell blå glöd */
     outline: 0 !important;                     /* Tar bort standard-outline */
