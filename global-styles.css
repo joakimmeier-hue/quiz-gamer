@@ -13,37 +13,24 @@
 /* Tvingar bort de blå linjerna på sidorna i Webflow-formulär */
   .w-input:focus, 
   .w-input[data-name]:focus,
-  .w-select:focus
+  .w-select:focus,
   .submit-button:focus-visible {
-    border-color: #ffc04b !important; /* Ändra färg eller osynlig */
+    border-color: var(--yellow, #ffc04b) !important; /* Ändra färg eller osynlig */
     box-shadow: none !important;               /* Tar bort eventuell blå glöd */
   }
   
   /* 2. Change the text selection highlight color site-wide */
   ::selection {
-    background-color: #ffc04b;
+    background-color: var(--yellow, #ffc04b);
     color: #111111; /* Makes the text dark when highlighted so it's readable against the yellow/orange */
   }
 
   /* Fallback for older Firefox browsers */
   ::-moz-selection {
-    background-color: #ffc04b;
+    background-color: var(--yellow, #ffc04b);
     color: #111111;
   }
   
-/* 1. Avstavning och Mobil-fixar */
-* {
-  -webkit-hyphens: auto;
-  -ms-hyphens: auto;
-  hyphens: auto;
-  -webkit-tap-highlight-color: transparent;
-
-  /* Tvingar fram mjukare text i Chrome på 1080p-skärmar */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
-
 /* Disable text selection everywhere by default */
 * {
   user-select: none;
@@ -74,6 +61,19 @@ input, textarea, button, .w-button, #submit-btn-vanilla {
   user-select: text !important;
   -webkit-user-select: text !important;
   pointer-events: auto !important;
+}
+
+/* 1. Avstavning och Mobil-fixar */
+* {
+  -webkit-hyphens: auto;
+  -ms-hyphens: auto;
+  hyphens: auto;
+  -webkit-tap-highlight-color: transparent;
+
+  /* Tvingar fram mjukare text i Chrome på 1080p-skärmar */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* Göm scrollbar för både clipping och games-grid-clip */
