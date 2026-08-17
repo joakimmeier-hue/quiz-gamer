@@ -984,3 +984,96 @@ document.addEventListener("click", (e) => {
     }, 200);
   }
 });
+
+// TIMER DISPLAY
+var Webflow = window.Webflow || [];
+Webflow.push(function() {
+ if (!document.getElementById('timer-display')) return; // not a game page, skip entirely
+  let totalSeconds = 0;
+  let timerInterval = null;
+
+  window.FinalTimeStr = "00:00"; 
+  window.FinalTimeSecs = 0;      
+  window.TimerRunning = false;
+
+  // 1. STARTA LOTTIE-ANIMATIONEN (Tjuvstartar före siffrorna)
+  setTimeout(function() {
+    // Förhindra start om man på något sjukt sätt redan klickat Finish
+    if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
+
+    // Starta Lottie via Webflows Custom Event
+    const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
+    if (wfIx) {
+        wfIx.emit("start-stopwatch"); 
+        console.log("Lottie tjuvstartad!");
+    }
+  }, 2000); // ÄNDRA HÄR: 2000 ms är 700 ms tidigare än 2700 ms
+
+
+  // 2. STARTA SIFFER-TIMERN
+  setTimeout(function() {
+    if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
+
+    window.TimerRunning = true;
+    console.log("Siffrorna börjar rulla!");
+
+    // Starta uppräkningen
+    timerInterval = setInterval(function() {
+      totalSeconds++;
+      
+      let minutes = Math.floor(totalSeconds / 60);
+      let seconds = totalSeconds % 60;
+
+      let minStr = String(minutes).padStart(2, '0');
+      let secStr = String(seconds).padStart(2, '0');
+      
+      const displayEl = document.getElementById('timer-display');
+      if (displayEl) {
+        displayEl.innerText = minStr + ':' + secStr;
+      }
+
+      // Maxgräns (nöd-stopp) simulerar ett klick på Finish
+      if (minutes >= 99 && seconds >= 59) {
+        const finishBtn = document.getElementById('finish-btn');
+        if(finishBtn) finishBtn.click(); 
+      }
+    }, 1000);
+  }, 4400); // ÄNDRA HÄR: Tiden då siffrorna ska starta
+
+
+  // LYSSNA PÅ FINISH-KNAPPEN (Dödar och klonar Lottien)
+  function setupFinishListener() {
+    const finishBtn = document.getElementById('finish-btn');
+    
+    if (finishBtn) {
+      finishBtn.addEventListener('click', function() {
+        // 1. Stoppa sifferräknaren
+        clearInterval(timerInterval);
+        window.TimerRunning = false; 
+
+        // 2. DEN AUTOMATISKA KLONEN (Dödar Webflows kontroll)
+        const lottieContainer = document.getElementById('stopwatch-lottie');
+        if (lottieContainer) {
+          const frozenSVG = lottieContainer.innerHTML;
+          const frozenDiv = document.createElement('div');
+          frozenDiv.className = lottieContainer.className; // Behåller din styling
+          frozenDiv.innerHTML = frozenSVG;
+          
+          lottieContainer.parentNode.replaceChild(frozenDiv, lottieContainer);
+          console.log("Lottien mördades och ersattes med en fryst klon!");
+        }
+
+        // 3. Spara sluttiden
+        const finalDisplay = document.getElementById('timer-display');
+        if (finalDisplay) window.FinalTimeStr = finalDisplay.innerText;
+        window.FinalTimeSecs = totalSeconds;
+
+        console.log("Avslutad! Sluttid:", window.FinalTimeStr);
+      });
+    } else {
+      setTimeout(setupFinishListener, 200);
+    }
+  }
+
+  setupFinishListener();
+});
