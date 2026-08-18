@@ -2,6 +2,8 @@
   import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+  import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-functions.js";
+
   const firebaseConfig = {
     apiKey: "AIzaSyAfZQM3H5XAYkEt2ARInoA1Xs-Qd1DXL_s",
     authDomain: "auth.quizgamer.se",
@@ -15,6 +17,10 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
+  const functions = getFunctions(app);
+  const completeProfileFn = httpsCallable(functions, "completeProfile");
+  const changeUsernameFn = httpsCallable(functions, "changeUsername");
+
   const googleProvider = new GoogleAuthProvider();
   googleProvider.setCustomParameters({ prompt: 'select_account' });
   let currentUser = null;
@@ -744,7 +750,6 @@ function validateUsernameRules(rawName) {
     return errors;
 }
 
-
 // ==========================================
 // ── 2. CREATE PROFILE LOGIC ──
 // ==========================================
@@ -768,7 +773,7 @@ if (createProfileSubmitBtn && createUsernameInput) {
     }
     let errors = [];
 
-// NEW: Safety check - ensure user is authenticated
+    // NEW: Safety check - ensure user is authenticated
     if (!currentUser || !currentUser.uid) {
         console.error("❌ User not authenticated!");
         if (errorMsgEl) {
@@ -777,6 +782,7 @@ if (createProfileSubmitBtn && createUsernameInput) {
         }
         return;
     }
+
     // -- PROFILBILDS-KOLL --
     const currentAvatarSrc = document.querySelector('.current-profile-pic')?.src || "";
     const defaultAvatarUrl = "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a43d799e6705e122388ffdc_ppic0.svg";
@@ -790,25 +796,7 @@ if (createProfileSubmitBtn && createUsernameInput) {
     // -- KÖR DELAD VALIDERING --
     errors = errors.concat(validateUsernameRules(rawName));
 
-    // -- DATABAS-KOLL --
-    if (errors.length === 0 || (!errors.includes("Minimum 3 characters including 1 letter") && !errors.includes("Maximum 14 characters") && !errors.includes("Ops, invalid character"))) {
-       try {
-         const usersRef = collection(db, "users");
-         const q = query(usersRef, where("username", "==", rawName));
-         const querySnapshot = await getDocs(q);
-         
-         let nameTaken = false;
-         querySnapshot.forEach((docSnap) => {
-             if (docSnap.id !== currentUser.uid) nameTaken = true;
-         });
-         
-         if (nameTaken) errors.push("Sorry, username in use");
-       } catch (err) {
-         console.error("Fel vid kontroll av unikt namn:", err);
-       }
-    }
-
-    // -- VISA FELMEDDELANDEN --
+    // -- VISA FELMEDDELANDEN (client-side instant feedback) --
     if (errors.length > 0) {
        if (errorMsgEl) {
          errorMsgEl.innerHTML = "■ " + errors.join("<br>■ ");
@@ -817,38 +805,31 @@ if (createProfileSubmitBtn && createUsernameInput) {
        return; 
     }
 
-    // -- ALLT GODKÄNT - SPARA --
+    // -- ALLT GODKÄNT - SPARA (server-side via Cloud Function) --
     try {
-      createProfileSubmitBtn.textContent = "Saving..."; 
+      createProfileSubmitBtn.textContent = "Saving...";
       createProfileSubmitBtn.style.pointerEvents = 'none';
 
-      const userDocRef = doc(db, "users", currentUser.uid);
-      await setDoc(userDocRef, { 
+      const result = await completeProfileFn({
         username: rawName,
-        profilePicUrl: currentAvatarSrc,
-        level: 1,
-        totalScore: 0,
-        rank: 0,
-        updatedAt: new Date()
-      }, { merge: true });
+        profilePicUrl: currentAvatarSrc
+      });
 
       setTimeout(() => {
         createProfileSubmitBtn.textContent = "Create";
         createProfileSubmitBtn.style.pointerEvents = 'auto';
-
+        const savedName = result.data.username;
         const uiNameElements = document.querySelectorAll('.player-info.username');
-        uiNameElements.forEach(el => el.textContent = rawName);
-        if (typeof userDisplayName !== 'undefined' && userDisplayName) userDisplayName.textContent = rawName;
-
+        uiNameElements.forEach(el => el.textContent = savedName);
+        if (typeof userDisplayName !== 'undefined' && userDisplayName) userDisplayName.textContent = savedName;
         if (typeof hideCreateProfile === 'function') hideCreateProfile();
-        if (typeof resolvePendingAction === 'function') resolvePendingAction(); 
-
+        if (typeof resolvePendingAction === 'function') resolvePendingAction();
       }, 700);
 
     } catch (error) {
       console.error("Gick inte att spara profilen:", error.message);
       if (errorMsgEl) {
-         errorMsgEl.innerHTML = "■ Database error. Please try again.";
+         errorMsgEl.innerHTML = "■ " + (error.message || "Database error. Please try again.");
          errorMsgEl.style.display = 'block';
       }
       createProfileSubmitBtn.textContent = "Create";
@@ -856,7 +837,6 @@ if (createProfileSubmitBtn && createUsernameInput) {
     }
   });
 }
-
 
 // ==========================================
 // ── 3. CHANGE USERNAME LOGIC ──
@@ -879,7 +859,7 @@ function lockOutNameChangeUI() {
     }
     if (changeProfileSubmitBtn) {
         changeProfileSubmitBtn.textContent = "Change"; 
-        changeProfileSubmitBtn.classList.remove('is-active'); // NEW — replaces opacity line 
+        changeProfileSubmitBtn.classList.remove('is-active');
         changeProfileSubmitBtn.style.pointerEvents = 'none';
     }
 }
@@ -901,26 +881,8 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
     let rawName = (changeUsernameInput.textContent || "").replace(/\u00A0/g, ' ').trim();
     if (rawName === changeDefaultPlaceholder) rawName = "";
     
-    // -- KÖR DELAD VALIDERING --
+    // -- KÖR DELAD VALIDERING (client-side instant feedback) --
     let errors = validateUsernameRules(rawName);
-
-    // -- DATABAS-KOLL --
-    if (errors.length === 0) {
-       try {
-         const usersRef = collection(db, "users");
-         const q = query(usersRef, where("username", "==", rawName));
-         const querySnapshot = await getDocs(q);
-         
-         let nameTaken = false;
-         querySnapshot.forEach((docSnap) => {
-             if (docSnap.id !== currentUser.uid) nameTaken = true;
-         });
-         
-         if (nameTaken) errors.push("Sorry, username in use");
-       } catch (err) {
-         console.error("Fel vid kontroll av unikt namn:", err);
-       }
-    }
 
     // -- VISA FELMEDDELANDEN --
     if (errors.length > 0) {
@@ -931,17 +893,12 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
        return; 
     }
 
-    // -- ALLT GODKÄNT - SPARA --
+    // -- ALLT GODKÄNT - SPARA (server-side via Cloud Function) --
     try {
-      changeProfileSubmitBtn.textContent = "Saving..."; 
+      changeProfileSubmitBtn.textContent = "Saving...";
       changeProfileSubmitBtn.style.pointerEvents = 'none';
 
-      const userDocRef = doc(db, "users", currentUser.uid);
-      await setDoc(userDocRef, { 
-        username: rawName,
-        hasChangedUsername: true, 
-        updatedAt: new Date()
-      }, { merge: true });
+      const result = await changeUsernameFn({ username: rawName });
 
       lockOutNameChangeUI();
 
@@ -954,17 +911,16 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
                 changeModal.style.display = 'none';
             }, 200);
         }
-
+        const savedName = result.data.username;
         const uiNameElements = document.querySelectorAll('.player-info.username');
-        uiNameElements.forEach(el => el.textContent = rawName);
-        if (typeof userDisplayName !== 'undefined' && userDisplayName) userDisplayName.textContent = rawName;
-
+        uiNameElements.forEach(el => el.textContent = savedName);
+        if (typeof userDisplayName !== 'undefined' && userDisplayName) userDisplayName.textContent = savedName;
       }, 1000);
 
     } catch (error) {
       console.error("Gick inte att spara nya namnet:", error.message);
       if (changeErrorMsgEl) {
-         changeErrorMsgEl.innerHTML = "■ Database error. Please try again.";
+         changeErrorMsgEl.innerHTML = "■ " + (error.message || "Database error. Please try again.");
          changeErrorMsgEl.style.display = 'block';
       }
       changeProfileSubmitBtn.textContent = "Change";
