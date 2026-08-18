@@ -996,7 +996,7 @@ Webflow.push(function() {
   window.FinalTimeSecs = 0;      
   window.TimerRunning = false;
 
-  // 1. STARTA LOTTIE-ANIMATIONEN (Tjuvstartar före siffrorna)
+  // 1. Starta lottie animationen (Tjuvstartar före siffrorna)
   setTimeout(function() {
     // Förhindra start om man på något sjukt sätt redan klickat Finish
     if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
@@ -1010,7 +1010,7 @@ Webflow.push(function() {
   }, 2000); // ÄNDRA HÄR: 2000 ms är 700 ms tidigare än 2700 ms
 
 
-  // 2. STARTA SIFFER-TIMERN
+  // 2. Starta siffror i timern
   setTimeout(function() {
     if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
 
