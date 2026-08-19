@@ -20,6 +20,8 @@
   const functions = getFunctions(app);
   const completeProfileFn = httpsCallable(functions, "completeProfile");
   const changeUsernameFn = httpsCallable(functions, "changeUsername");
+  const startGameFn = httpsCallable(functions, "startGame");
+  const gradeGameFn = httpsCallable(functions, "gradeGame");
 
   const googleProvider = new GoogleAuthProvider();
   googleProvider.setCustomParameters({ prompt: 'select_account' });
@@ -928,3 +930,84 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
     }
   });
 }
+
+// ── GAME SESSION: START + GRADE ─────────────────────────────────
+let currentGameSessionId = null;
+
+(function initGameSession() {
+  const gameMatch = currentSlug.match(/^([a-z]+)-game-(\d+)$/);
+  if (!gameMatch) return; // not a game page
+
+  const topic = gameMatch[1];
+  const level = parseInt(gameMatch[2], 10);
+
+  // Wait for auth before starting the session (currentUser may not be set yet on fresh load)
+  const tryStart = async () => {
+    if (!currentUser) {
+      setTimeout(tryStart, 200);
+      return;
+    }
+    try {
+      const result = await startGameFn({ topic, level });
+      currentGameSessionId = result.data.sessionId;
+      console.log("Game session started:", currentGameSessionId);
+    } catch (err) {
+      console.error("Failed to start game session:", err.message);
+    }
+  };
+  tryStart();
+})();
+
+function setupGameFinishListener() {
+  const finishBtn = document.getElementById('finish-btn');
+  if (!finishBtn) return;
+
+  finishBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!currentGameSessionId) {
+      console.error("No active game session — cannot submit.");
+      return;
+    }
+
+    const gameMatch = currentSlug.match(/^([a-z]+)-game-(\d+)$/);
+    if (!gameMatch) return;
+    const topic = gameMatch[1];
+    const level = parseInt(gameMatch[2], 10);
+
+    // Collect answers from every question block on the page
+    const questionWrappers = document.querySelectorAll('[data-question-id]');
+    const answers = Array.from(questionWrappers).map((wrapper) => {
+      const questionId = wrapper.getAttribute('data-question-id');
+      const activeRow = wrapper.querySelector('.alternative-row .checkbox.is-active')?.closest('[data-choice]');
+      const choice = activeRow ? activeRow.getAttribute('data-choice') : null;
+      return { questionId, choice };
+    });
+
+    finishBtn.style.pointerEvents = 'none';
+
+    try {
+      const result = await gradeGameFn({
+        topic,
+        level,
+        answers,
+        sessionId: currentGameSessionId,
+      });
+
+      sessionStorage.setItem('lastGameResult', JSON.stringify(result.data));
+      sessionStorage.setItem('scoreAuthorized', 'true');
+
+      const scoreHref = finishBtn.getAttribute('href') || '/score';
+      if (typeof window.triggerPageExit === 'function') {
+        window.triggerPageExit(scoreHref, false);
+      } else {
+        window.location.href = scoreHref;
+      }
+    } catch (err) {
+      console.error("Gick inte att skicka in spelet:", err.message);
+      finishBtn.style.pointerEvents = 'auto';
+    }
+  });
+}
+setupGameFinishListener();

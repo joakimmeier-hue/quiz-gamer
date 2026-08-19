@@ -1077,3 +1077,132 @@ Webflow.push(function() {
 
   setupFinishListener();
 });
+
+// GAME ALTERNATIVE-ROW
+document.addEventListener("DOMContentLoaded", function() {
+  const scrollDuration = 400; 
+  const topOffsetPercent = 0.20; 
+  const animationDelay = 450;  // Väntar tills keyframe-animationen är klar
+
+  const alternativeRows = document.querySelectorAll('.alternative-row');
+
+  alternativeRows.forEach(row => {
+    // VIKTIGT: Vi lyssnar på 'mousedown' precis som ditt SFX-script! 
+    // Då sker båda exakt samtidigt.
+    row.addEventListener('mousedown', function(e) {
+      const currentQuestionWrapper = this.closest('.question-wrapper');
+      if (!currentQuestionWrapper) return;
+
+      // 1. Nollställ ALLA checkboxar
+      const allCheckboxesInQuestion = currentQuestionWrapper.querySelectorAll('.checkbox');
+      allCheckboxesInQuestion.forEach(cb => {
+        cb.classList.remove('is-active');
+      });
+
+      // 2. Aktivera den klickade
+      const clickedCheckbox = this.querySelector('.checkbox');
+      if (clickedCheckbox) {
+        // Eftersom vi bytt till @keyframes behöver vi reflow-tricket.
+        void clickedCheckbox.offsetWidth; 
+        clickedCheckbox.classList.add('is-active');
+      }
+
+      // 3. Debounce Scroll (Väntar på att animationen gör klart sitt)
+      if (currentQuestionWrapper.scrollTimeout) {
+        clearTimeout(currentQuestionWrapper.scrollTimeout);
+      }
+
+      const currentTableRow = this.closest('.gma-game-row-1');
+      if (!currentTableRow) return;
+      
+      const nextTableRow = currentTableRow.nextElementSibling;
+      
+      if (nextTableRow) {
+        currentQuestionWrapper.scrollTimeout = setTimeout(() => {
+          const start = window.scrollY;
+          const end = nextTableRow.getBoundingClientRect().top + window.scrollY - (window.innerHeight * topOffsetPercent);
+          const distance = end - start;
+          let startTime = null;
+
+          function easeInOut(t) { 
+            return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; 
+          }
+
+          function smoothScrollStep(timestamp) {
+            if (!startTime) startTime = timestamp;
+            const progress = Math.min((timestamp - startTime) / scrollDuration, 1);
+            
+            window.scrollTo(0, start + distance * easeInOut(progress));
+            
+            if (progress < 1) {
+              requestAnimationFrame(smoothScrollStep);
+            }
+          }
+
+          requestAnimationFrame(smoothScrollStep);
+
+        }, animationDelay);
+      }
+    });
+  });
+});
+
+// ── SCORE PAGE: DISPLAY RESULTS ─────────────────────────────────
+var Webflow = window.Webflow || [];
+Webflow.push(function() {
+  const resultDataRaw = sessionStorage.getItem('lastGameResult');
+  if (!resultDataRaw) return; // not arriving from a finished game, skip entirely
+
+  let data;
+  try {
+    data = JSON.parse(resultDataRaw);
+  } catch (err) {
+    console.error("Kunde inte tolka spelresultatet:", err);
+    return;
+  }
+
+  // Topic name
+  const setText = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
+
+  setText('list-game', data.topic.toUpperCase());
+  setText('list-result', `${data.correctCount}/${data.totalQuestions}`);
+  setText('list-time', data.timeStr);
+  setText('list-attempts', data.attemptCount);
+  setText('list-leaderboard', data.leaderboardPosition);
+  setText('list-score', data.finalScore);
+  setText('list-unlimited-score', data.unlimitedScore);
+
+  // Clean up so a page refresh doesn't redisplay stale results
+  sessionStorage.removeItem('lastGameResult');
+  sessionStorage.removeItem('scoreAuthorized');
+
+     // ── LEVEL UP POPUP ──
+  if (data.levelsGained > 0) {
+    const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
+    const levelUpEl = document.querySelector('.level-up');
+
+    if (wfIx && levelUpEl) {
+      let remaining = data.levelsGained;
+
+      const popNext = () => {
+        if (remaining <= 0) return;
+        remaining--;
+        wfIx.emit("lvlup");
+      };
+
+      // Watch for the popup closing (display: none) to chain the next one
+      const observer = new MutationObserver(() => {
+        const isHidden = window.getComputedStyle(levelUpEl).display === 'none';
+        if (isHidden && remaining > 0) {
+          setTimeout(popNext, 500);
+        }
+      });
+      observer.observe(levelUpEl, { attributes: true, attributeFilter: ['style', 'class'] });
+
+      setTimeout(popNext, 13000);
+    }
+  }
+});
