@@ -1011,3 +1011,46 @@ function setupGameFinishListener() {
   });
 }
 setupGameFinishListener();
+
+// ── GAME-START INFO PANEL ──────────────────────────────────────
+(function initGameInfoPanel() {
+  const gameMatch = currentSlug.match(/^([a-z]+)-start$/);
+  if (!gameMatch) return; // not a start page
+
+  const topic = gameMatch[1];
+  // NOTE: level isn't in the slug on start pages — assumes level 1 for now.
+  // If start pages later support multiple levels via a dropdown, this needs
+  // to read the selected level instead of hardcoding it.
+  const level = 1;
+  const gameId = `${topic}-l${level}`;
+
+  const tryLoad = async () => {
+    if (!currentUser) {
+      setTimeout(tryLoad, 200);
+      return;
+    }
+    try {
+      const attemptRef = doc(db, "users", currentUser.uid, "attempts", gameId);
+      const attemptSnap = await getDoc(attemptRef);
+      const preAttempts = attemptSnap.exists() ? attemptSnap.data().attemptCount || 0 : 0;
+      const highscore = attemptSnap.exists() ? attemptSnap.data().bestScore || 0 : 0;
+
+      const preAttemptsEl = document.getElementById('pre-attempts');
+      if (preAttemptsEl) preAttemptsEl.textContent = preAttempts;
+      const highscoreEl = document.getElementById('highscore');
+      if (highscoreEl) highscoreEl.textContent = highscore;
+    } catch (err) {
+      console.error("Failed to load attempt data:", err.message);
+    }
+
+    try {
+      const getGameInfoFn = httpsCallable(functions, "getGameInfo");
+      const result = await getGameInfoFn({ topic, level });
+      const lbHighscoreEl = document.getElementById('lb-highscore');
+      if (lbHighscoreEl) lbHighscoreEl.textContent = result.data.lbHighscore;
+    } catch (err) {
+      console.error("Failed to load leaderboard highscore:", err.message);
+    }
+  };
+  tryLoad();
+})();
