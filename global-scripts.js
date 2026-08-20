@@ -1171,7 +1171,7 @@ Webflow.push(function() {
   setText('list-result', `${data.correctCount}/${data.totalQuestions}`);
   setText('list-time', data.timeStr);
   setText('list-attempts', data.attemptCount);
-  setText('list-leaderboard', data.leaderboardPosition);
+  setText('list-leaderboard', `${data.leaderboardPosition}/100`);
   setText('list-score', data.finalScore);
   setText('list-unlimited-score', data.unlimitedScore);
 
