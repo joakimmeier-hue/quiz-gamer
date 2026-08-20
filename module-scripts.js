@@ -564,7 +564,7 @@ async function loadUserData(uid) {
     }
   }
 
-/*   // ── FIREBASE AUTH OBSERVER ──
+  // ── FIREBASE AUTH OBSERVER ──
   onAuthStateChanged(auth, (user) => {
     currentUser = user;
     updateAuthUI(user);
@@ -616,7 +616,7 @@ onAuthStateChanged(auth, async (user) => {
     routeGuard(!!user);
 });
 
-// ── ROUTE GUARD SYSTEM ──────────────────────────────────────────────
+/* // ── ROUTE GUARD SYSTEM ──────────────────────────────────────────────
 let routeGuardHasRun = false;
 
 function routeGuard(isLoggedIn) {
@@ -650,9 +650,9 @@ function routeGuard(isLoggedIn) {
             return;
         }
     }
-}
+} */
 
- */
+
 // ==========================================
 // ── 1. DELAD KOMPONENT FÖR TEXTFÄLT ──
 // ==========================================
