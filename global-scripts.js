@@ -1177,7 +1177,6 @@ Webflow.push(function() {
 
   // Clean up so a page refresh doesn't redisplay stale results
   sessionStorage.removeItem('lastGameResult');
-  sessionStorage.removeItem('scoreAuthorized');
 
      // ── LEVEL UP POPUP ──
   if (data.levelsGained > 0) {

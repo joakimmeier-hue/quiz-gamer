@@ -616,7 +616,7 @@ onAuthStateChanged(auth, async (user) => {
     routeGuard(!!user);
 });
 
-/* // ── ROUTE GUARD SYSTEM ──────────────────────────────────────────────
+// ── ROUTE GUARD SYSTEM ──────────────────────────────────────────────
 let routeGuardHasRun = false;
 
 function routeGuard(isLoggedIn) {
@@ -650,7 +650,7 @@ function routeGuard(isLoggedIn) {
             return;
         }
     }
-} */
+}
 
 
 // ==========================================
