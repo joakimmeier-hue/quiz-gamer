@@ -564,7 +564,7 @@ async function loadUserData(uid) {
     }
   }
 
-  // ── FIREBASE AUTH OBSERVER ──
+/*   // ── FIREBASE AUTH OBSERVER ──
   onAuthStateChanged(auth, (user) => {
     currentUser = user;
     updateAuthUI(user);
@@ -652,7 +652,7 @@ function routeGuard(isLoggedIn) {
     }
 }
 
-
+ */
 // ==========================================
 // ── 1. DELAD KOMPONENT FÖR TEXTFÄLT ──
 // ==========================================
