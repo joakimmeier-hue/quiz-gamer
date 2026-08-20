@@ -617,7 +617,7 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 // ── ROUTE GUARD SYSTEM ──────────────────────────────────────────────
-/* let routeGuardHasRun = false;
+let routeGuardHasRun = false;
 
 function routeGuard(isLoggedIn) {
     if (routeGuardHasRun) return;
@@ -651,7 +651,7 @@ function routeGuard(isLoggedIn) {
         }
     }
 }
- */
+
 
 // ==========================================
 // ── 1. DELAD KOMPONENT FÖR TEXTFÄLT ──
@@ -963,17 +963,30 @@ function setupGameFinishListener() {
   const finishBtn = document.getElementById('finish-btn');
   if (!finishBtn) return;
 
+  // <-- ADDED 1: Declare the flag outside the click event
+  let gameSubmitInProgress = false; 
+
   finishBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
+    // <-- ADDED 2: Hard stop if a submission is already running, otherwise lock it
+    if (gameSubmitInProgress) return; 
+    gameSubmitInProgress = true;      
+
     if (!currentGameSessionId) {
       console.error("No active game session — cannot submit.");
+      // <-- ADDED 3: Unlock the flag if we fail early
+      gameSubmitInProgress = false; 
       return;
     }
 
     const gameMatch = currentSlug.match(/^([a-z]+)-game-(\d+)$/);
-    if (!gameMatch) return;
+    if (!gameMatch) {
+      gameSubmitInProgress = false; // (Bonus protection if slug fails)
+      return;
+    }
+    
     const topic = gameMatch[1];
     const level = parseInt(gameMatch[2], 10);
 
@@ -1005,9 +1018,14 @@ function setupGameFinishListener() {
       } else {
         window.location.href = scoreHref;
       }
+      
+      // Note: No need to reset the flag here because a successful run navigates the user to a new page!
+      
     } catch (err) {
       console.error("Gick inte att skicka in spelet:", err.message);
       finishBtn.style.pointerEvents = 'auto';
+      // <-- ADDED 4: Unlock the flag if the server request fails, allowing the user to try again
+      gameSubmitInProgress = false; 
     }
   });
 }
