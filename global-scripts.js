@@ -527,7 +527,7 @@ window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false
             
             } else {
                 // 2. Om spelet slutförs drar vi ut väntetiden till 3 sekunder (3000ms) för spänningens skull
-                const waitTime = isSlowFinish ? 3000 : 1000;
+                const waitTime = isSlowFinish ? 30000 : 1000;
                 setTimeout(() => {
                     window.location.href = url;
                 }, waitTime); 
@@ -606,6 +606,7 @@ setInterval(() => {
     else if (!isHidden && v.paused && v.hasAttribute('autoplay')) { v.play().catch(() => {}); }
   });
 }, 6000); 
+
 // ── ANCHOR SECTION TRANSITION ─────────────────────────────────────────
 window.addEventListener('load', function() {
   document.querySelectorAll('[data-scroll-to]').forEach(function(el) {
