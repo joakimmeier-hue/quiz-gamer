@@ -995,10 +995,12 @@ function setupGameFinishListener() {
     const answers = Array.from(questionWrappers).map((wrapper) => {
       const questionId = wrapper.getAttribute('data-question-id');
       const activeRow = wrapper.querySelector('.alternative-row .checkbox.is-active')?.closest('[data-choice]');
-      const choice = activeRow ? activeRow.getAttribute('data-choice') : null;
+      // FIX: Konvertera strängen från HTML till en riktig siffra med Number()
+      const choice = activeRow ? Number(activeRow.getAttribute('data-choice')) : null;
       return { questionId, choice };
     });
-
+    console.log("DEBUG - Mina svar:", answers);
+    
     finishBtn.style.pointerEvents = 'none';
 
     try {
