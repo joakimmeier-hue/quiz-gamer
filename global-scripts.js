@@ -447,16 +447,11 @@ document.addEventListener("visibilitychange", function() {
 const overlay = document.createElement('div');
 overlay.id = 'global-transition-overlay';
 overlay.style.cssText = "position:fixed;inset:0;z-index:999999;pointer-events:none;transition:opacity 0.8s ease;opacity:1;display:block;";
+overlay.style.background = '#000000'; // Alltid svart, inga variabler behövs!
 document.body.appendChild(overlay);
-const savedColor = sessionStorage.getItem('exitColor');
-const bodyTheme  = document.body.getAttribute('data-theme');
-const initColor  = savedColor || (bodyTheme === 'light' ? '#ffffff' : '#000000');
-overlay.style.background = initColor;
-// VIKTIGT: Vi raderar INTE färgen här ute längre, vi måste låta skipIntro hinna läsa den!
+
 window.addEventListener('pageshow', () => {
-    // Nu raderar vi färgen först när hela sidan (och alla skript) har laddats klart
-    sessionStorage.removeItem('exitColor');
-    
+    // Samma logik som innan
     overlay.style.opacity = '0';
     overlay.style.pointerEvents = 'none'; 
     overlay.style.cursor = 'auto';
@@ -466,40 +461,38 @@ window.addEventListener('pageshow', () => {
         window.startMusic(false); 
     }
 });
-// ── GLOBAL EXIT FUNCTION MED LOTTIE-LOGIK ─────────────────────────────
-// Vi lägger till parametern 'isSlowFinish' (default är false)
+
+// ── GLOBAL EXIT FUNCTION ─────────────────────────────
 window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false) {
     sessionStorage.setItem('navFrom', currentSlug);
-    if (isFinishBtn) {
-        sessionStorage.setItem('scoreAuthorized', 'true');
-    }
+    if (isFinishBtn) sessionStorage.setItem('scoreAuthorized', 'true');
     sessionStorage.setItem('skipIntro', 'true');
     
     const targetTopicId = getTopicFromUrl(url);
     const changingTopic = currentTopicId !== targetTopicId;
     const isLeavingLobby = currentTopicId === 'lobby' && targetTopicId !== 'lobby';
+    
     if (changingTopic) {
         sessionStorage.setItem('fromTopic', currentTopicId);
         if (window.fadeOutMusic) window.fadeOutMusic();
     } else {
         sessionStorage.removeItem('fromTopic');
     }
-    const currentTheme = document.body.getAttribute('data-theme');
-    const transitionColor = (currentTheme === 'light' ? '#ffffff' : '#000000');
     
-    sessionStorage.setItem('exitColor', transitionColor);
     overlay.style.pointerEvents = 'auto'; 
     overlay.style.cursor = 'default';
     overlay.style.transition = 'none';
-    overlay.style.background = transitionColor;
+    overlay.style.background = '#000000'; // Alltid svart
     overlay.style.opacity = '0';
     overlay.style.display = 'block';
-    // 1. Om spelet slutförs gör vi själva infasningen av färgen mjukare och långsammare (1.5s istället för 0.8s)
+    
     const fadeSpeed = isSlowFinish ? '1.5s' : '0.8s';
+    
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             overlay.style.transition = `opacity ${fadeSpeed} ease`;
             overlay.style.opacity = '1';
+            
             if (isLeavingLobby) {
                 setTimeout(() => {
                     overlay.innerHTML = `
@@ -517,17 +510,14 @@ window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false
                         </lottie-player>
                     </div>`;
                     
+                    // VIKTIGT: Vi raderar INTE lottien här längre, vi låter den spela tills sidan byts!
                     setTimeout(() => {
-                        overlay.innerHTML = ''; 
-                        setTimeout(() => {
-                            window.location.href = url;
-                        }, 50); 
+                        window.location.href = url;
                     }, 1345); 
                 }, 800);
             
             } else {
-                // 2. Om spelet slutförs drar vi ut väntetiden till 3 sekunder (3000ms) för spänningens skull
-                const waitTime = isSlowFinish ? 15000 : 1000;
+                const waitTime = isSlowFinish ? 3000 : 1000;
                 setTimeout(() => {
                     window.location.href = url;
                 }, waitTime); 
