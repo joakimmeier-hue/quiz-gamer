@@ -617,7 +617,7 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 // ── ROUTE GUARD SYSTEM ──────────────────────────────────────────────
-let routeGuardHasRun = false;
+/* let routeGuardHasRun = false;
 
 function routeGuard(isLoggedIn) {
     if (routeGuardHasRun) return;
@@ -651,6 +651,7 @@ function routeGuard(isLoggedIn) {
         }
     }
 }
+ */
 
 // ==========================================
 // ── 1. DELAD KOMPONENT FÖR TEXTFÄLT ──
