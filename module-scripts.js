@@ -1015,10 +1015,10 @@ function setupGameFinishListener() {
       sessionStorage.setItem('scoreAuthorized', 'true');
 
       if (typeof window.triggerPageExit === 'function') {
-  window.triggerPageExit(scoreHref, true, true); // isSlowFinish, isFinishBtn
-} else {
-  window.location.href = scoreHref;
-}
+      window.triggerPageExit(scoreHref, true, true); // isSlowFinish, isFinishBtn
+      } else {
+      window.location.href = scoreHref;
+      }
       
       // Note: No need to reset the flag here because a successful run navigates the user to a new page!
       
