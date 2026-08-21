@@ -1001,8 +1001,9 @@ function setupGameFinishListener() {
     });
     console.log("DEBUG - Mina svar:", answers);
 
+    const finishText = document.getElementById('finish-btn-text');
     finishBtn.style.pointerEvents = 'none';
-
+    if (finishText) finishText.textContent = 'Calculating...';
     try {
       const result = await gradeGameFn({
         topic,
@@ -1024,10 +1025,10 @@ function setupGameFinishListener() {
       // Note: No need to reset the flag here because a successful run navigates the user to a new page!
       
     } catch (err) {
-      console.error("Gick inte att skicka in spelet:", err.message);
-      finishBtn.style.pointerEvents = 'auto';
-      // <-- ADDED 4: Unlock the flag if the server request fails, allowing the user to try again
-      gameSubmitInProgress = false; 
+    console.error("Gick inte att skicka in spelet:", err.message);
+    finishBtn.style.pointerEvents = 'auto';
+    if (finishText) finishText.textContent = 'Finish!';
+    gameSubmitInProgress = false; 
     }
   });
 }
