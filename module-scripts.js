@@ -1001,8 +1001,8 @@ function setupGameFinishListener() {
     });
     console.log("DEBUG - Mina svar:", answers);
 
-    const finishText1 = finishBtn.querySelector('.finishBtntext1');
-    const finishText2 = finishBtn.querySelector('.finishBtntext2');
+    const finishText1 = finishBtn.querySelector('.finish-btn-text1');
+    const finishText2 = finishBtn.querySelector('.finish-btn-text2');
 
     finishBtn.style.pointerEvents = 'none';
     if (finishText1 && finishText2) {
