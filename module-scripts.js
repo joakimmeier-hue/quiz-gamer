@@ -1000,7 +1000,7 @@ function setupGameFinishListener() {
       return { questionId, choice };
     });
     console.log("DEBUG - Mina svar:", answers);
-    
+
     finishBtn.style.pointerEvents = 'none';
 
     try {
@@ -1014,12 +1014,11 @@ function setupGameFinishListener() {
       sessionStorage.setItem('lastGameResult', JSON.stringify(result.data));
       sessionStorage.setItem('scoreAuthorized', 'true');
 
-      const scoreHref = finishBtn.getAttribute('href') || '/score';
       if (typeof window.triggerPageExit === 'function') {
-        window.triggerPageExit(scoreHref, false);
-      } else {
-        window.location.href = scoreHref;
-      }
+  window.triggerPageExit(scoreHref, true, true); // isSlowFinish, isFinishBtn
+} else {
+  window.location.href = scoreHref;
+}
       
       // Note: No need to reset the flag here because a successful run navigates the user to a new page!
       
