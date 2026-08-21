@@ -537,13 +537,15 @@ document.addEventListener('click', function(e) {
     if (!href || href === '#' || href.startsWith('#') || link.classList.contains('is-password') || link.closest('.pp-dropdown, .i-closer-game, .button.i-lobby-back, .games-link-block')) return;
     e.preventDefault();
 
-    const isFinishBtn = link.id && link.id.startsWith('finish-btn-');
+    /* const isFinishBtn = link.id && link.id.startsWith('finish-btn-'); */
 
     if (link.id === 'boss-level') {
         setTimeout(() => window.triggerPageExit(href, false), 1000);
-    } else if (isFinishBtn) {
+    } 
+    /* else if (isFinishBtn) {
         setTimeout(() => window.triggerPageExit(href, true, true), 200);
-    } else {
+    }  */
+    else {
         setTimeout(() => window.triggerPageExit(href, false), 200);
     }
 });
