@@ -1083,6 +1083,16 @@ document.addEventListener("DOMContentLoaded", function() {
 
   const alternativeRows = document.querySelectorAll('.alternative-row');
 
+  // ── LOCK: no answers selectable for the first 2s after page load ──
+  alternativeRows.forEach(row => {
+    row.style.pointerEvents = 'none';
+  });
+  setTimeout(() => {
+    alternativeRows.forEach(row => {
+      row.style.pointerEvents = 'auto';
+    });
+  }, 2000);
+
   alternativeRows.forEach(row => {
     // VIKTIGT: Vi lyssnar på 'mousedown' precis som ditt SFX-script! 
     // Då sker båda exakt samtidigt.
