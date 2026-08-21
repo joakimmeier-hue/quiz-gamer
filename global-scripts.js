@@ -1035,7 +1035,7 @@ Webflow.push(function() {
         if(finishBtn) finishBtn.click(); 
       }
     }, 1000);
-  }, 1400); // ÄNDRA HÄR: Tiden då siffrorna ska starta
+  }, 400); // ÄNDRA HÄR: Tiden då siffrorna ska starta
 
 
   // LYSSNA PÅ FINISH-KNAPPEN (Dödar och klonar Lottien)
