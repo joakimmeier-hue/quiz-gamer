@@ -447,11 +447,14 @@ document.addEventListener("visibilitychange", function() {
 const overlay = document.createElement('div');
 overlay.id = 'global-transition-overlay';
 overlay.style.cssText = "position:fixed;inset:0;z-index:999999;pointer-events:none;transition:opacity 0.8s ease;opacity:1;display:block;";
-overlay.style.background = '#000000'; // Alltid svart, inga variabler behövs!
+const savedColor = sessionStorage.getItem('exitColor');
+const bodyTheme  = document.body.getAttribute('data-theme');
+const initColor  = savedColor || (bodyTheme === 'light' ? '#ffffff' : '#000000');
+overlay.style.background = initColor;
 document.body.appendChild(overlay);
 
 window.addEventListener('pageshow', () => {
-    // Samma logik som innan
+    sessionStorage.removeItem('exitColor');
     overlay.style.opacity = '0';
     overlay.style.pointerEvents = 'none'; 
     overlay.style.cursor = 'auto';
@@ -467,32 +470,36 @@ window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false
     sessionStorage.setItem('navFrom', currentSlug);
     if (isFinishBtn) sessionStorage.setItem('scoreAuthorized', 'true');
     sessionStorage.setItem('skipIntro', 'true');
-    
+
     const targetTopicId = getTopicFromUrl(url);
     const changingTopic = currentTopicId !== targetTopicId;
     const isLeavingLobby = currentTopicId === 'lobby' && targetTopicId !== 'lobby';
-    
+
     if (changingTopic) {
         sessionStorage.setItem('fromTopic', currentTopicId);
         if (window.fadeOutMusic) window.fadeOutMusic();
     } else {
         sessionStorage.removeItem('fromTopic');
     }
-    
+
+    const currentTheme = document.body.getAttribute('data-theme');
+    const transitionColor = (currentTheme === 'light' ? '#ffffff' : '#000000');
+    sessionStorage.setItem('exitColor', transitionColor);
+
     overlay.style.pointerEvents = 'auto'; 
     overlay.style.cursor = 'default';
     overlay.style.transition = 'none';
-    overlay.style.background = '#000000'; // Alltid svart
+    overlay.style.background = transitionColor;
     overlay.style.opacity = '0';
     overlay.style.display = 'block';
-    
+
     const fadeSpeed = isSlowFinish ? '1.5s' : '0.8s';
-    
+
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             overlay.style.transition = `opacity ${fadeSpeed} ease`;
             overlay.style.opacity = '1';
-            
+
             if (isLeavingLobby) {
                 setTimeout(() => {
                     overlay.innerHTML = `
@@ -509,13 +516,10 @@ window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false
                             autoplay>
                         </lottie-player>
                     </div>`;
-                    
-                    // VIKTIGT: Vi raderar INTE lottien här längre, vi låter den spela tills sidan byts!
                     setTimeout(() => {
                         window.location.href = url;
                     }, 1345); 
                 }, 800);
-            
             } else {
                 const waitTime = isSlowFinish ? 3000 : 1000;
                 setTimeout(() => {
