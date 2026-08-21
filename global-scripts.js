@@ -1167,7 +1167,7 @@ Webflow.push(function() {
   setText('list-game', data.topic.toUpperCase());
   setText('list-result', `${data.correctCount}/${data.totalQuestions}`);
   setText('list-time', data.timeStr);
-  setText('list-attempts', data.attemptCount);
+  setText('list-attempts', data.attemptCount- 1);
   setText('list-leaderboard', `${data.leaderboardPosition}/100`);
   setText('list-score', data.finalScore);
   setText('list-unlimited-score', data.unlimitedScore);
