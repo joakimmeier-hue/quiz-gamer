@@ -493,7 +493,7 @@ window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false
     overlay.style.opacity = '0';
     overlay.style.display = 'block';
 
-    const fadeSpeed = isSlowFinish ? '4s' : '0.8s';
+    const fadeSpeed = isSlowFinish ? '1s' : '0.8s';
 
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -521,7 +521,7 @@ window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false
                     }, 1345); 
                 }, 800);
             } else {
-                const waitTime = isSlowFinish ? 4000 : 1000;
+                const waitTime = isSlowFinish ? 1000 : 1000;
                 setTimeout(() => {
                     window.location.href = url;
                 }, waitTime); 
