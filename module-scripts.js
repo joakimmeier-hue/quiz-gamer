@@ -1001,9 +1001,15 @@ function setupGameFinishListener() {
     });
     console.log("DEBUG - Mina svar:", answers);
 
-    const finishText = document.getElementById('finish-btn-text');
+    const finishText1 = finishBtn.querySelector('.finishBtntext1');
+    const finishText2 = finishBtn.querySelector('.finishBtntext2');
+
     finishBtn.style.pointerEvents = 'none';
-    if (finishText) finishText.textContent = 'Calculating...';
+    if (finishText1 && finishText2) {
+      finishText1.style.display = 'none';
+      finishText2.style.display = 'flex';
+    }
+
     try {
       const result = await gradeGameFn({
         topic,
@@ -1011,24 +1017,24 @@ function setupGameFinishListener() {
         answers,
         sessionId: currentGameSessionId,
       });
-
-            sessionStorage.setItem('lastGameResult', JSON.stringify(result.data));
+      sessionStorage.setItem('lastGameResult', JSON.stringify(result.data));
       sessionStorage.setItem('scoreAuthorized', 'true');
 
       const scoreHref = finishBtn.getAttribute('href') || '/score';
       if (typeof window.triggerPageExit === 'function') {
-        window.triggerPageExit(scoreHref, true, true); // isSlowFinish, isFinishBtn
+        window.triggerPageExit(scoreHref, true, true);
       } else {
         window.location.href = scoreHref;
       }
-      
-      // Note: No need to reset the flag here because a successful run navigates the user to a new page!
-      
+
     } catch (err) {
-    console.error("Gick inte att skicka in spelet:", err.message);
-    finishBtn.style.pointerEvents = 'auto';
-    if (finishText) finishText.textContent = 'Finish!';
-    gameSubmitInProgress = false; 
+      console.error("Gick inte att skicka in spelet:", err.message);
+      finishBtn.style.pointerEvents = 'auto';
+      if (finishText1 && finishText2) {
+        finishText1.style.display = 'flex';
+        finishText2.style.display = 'none';
+      }
+      gameSubmitInProgress = false; 
     }
   });
 }
