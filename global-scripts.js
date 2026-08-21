@@ -1004,7 +1004,7 @@ Webflow.push(function() {
         wfIx.emit("start-stopwatch"); 
         console.log("Lottie tjuvstartad!");
     }
-  }, 2000); // ÄNDRA HÄR: 2000 ms är 700 ms tidigare än 2700 ms
+  }, 2000);
 
 
   // 2. Starta siffror i timern
@@ -1035,7 +1035,7 @@ Webflow.push(function() {
         if(finishBtn) finishBtn.click(); 
       }
     }, 1000);
-  }, 4400); // ÄNDRA HÄR: Tiden då siffrorna ska starta
+  }, 1400); // ÄNDRA HÄR: Tiden då siffrorna ska starta
 
 
   // LYSSNA PÅ FINISH-KNAPPEN (Dödar och klonar Lottien)
