@@ -1011,13 +1011,14 @@ function setupGameFinishListener() {
         sessionId: currentGameSessionId,
       });
 
-      sessionStorage.setItem('lastGameResult', JSON.stringify(result.data));
+            sessionStorage.setItem('lastGameResult', JSON.stringify(result.data));
       sessionStorage.setItem('scoreAuthorized', 'true');
 
+      const scoreHref = finishBtn.getAttribute('href') || '/score';
       if (typeof window.triggerPageExit === 'function') {
-      window.triggerPageExit(scoreHref, true, true); // isSlowFinish, isFinishBtn
+        window.triggerPageExit(scoreHref, true, true); // isSlowFinish, isFinishBtn
       } else {
-      window.location.href = scoreHref;
+        window.location.href = scoreHref;
       }
       
       // Note: No need to reset the flag here because a successful run navigates the user to a new page!
