@@ -657,16 +657,13 @@ function routeGuard(isLoggedIn) {
 // ── 1. DELAD KOMPONENT FÖR TEXTFÄLT ──
 // ==========================================
 // Denna funktion fungerar som en komponent. Den ger båda fälten exakt samma beteende.
-
 function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
     if (!inputEl || !btnEl) return;
-
     // -- START-UTSEENDE --
     if (inputEl.textContent.trim() === defaultPlaceholder || inputEl.textContent.trim() === "") {
         inputEl.textContent = defaultPlaceholder;
         inputEl.style.color = "rgba(255, 255, 255, 0.35)";
     }
-
     // -- FOKUS --
     inputEl.addEventListener('focus', () => {
         if (inputEl.textContent.trim() === defaultPlaceholder) {
@@ -674,7 +671,6 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
         }
         inputEl.style.color = "rgba(255, 255, 255, 1)";
     });
-
     // -- BLUR --
     inputEl.addEventListener('blur', () => {
         inputEl.textContent = inputEl.textContent.trim();
@@ -683,7 +679,6 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
             inputEl.style.color = "rgba(255, 255, 255, 0.35)";
         }
     });
-
     // -- TANGENTTRYCK (Enter, Mellanslag, Max 14) --
     inputEl.addEventListener('keydown', (e) => {
         e.stopPropagation();
@@ -700,9 +695,7 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
             }
             return; 
         }
-
         // MELLANSLAG: Stoppa endast om det är det allra första tecknet. 
-        // (Fler än ett hanteras nu istället av valideringen nedan så error msg visas!)
         if (e.key === ' ' && currentText.length === 0) {
             e.preventDefault(); 
             return; 
@@ -713,18 +706,41 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
             e.preventDefault(); 
         }
     });
-
     // -- KLISTRA IN (Tvätta bort radbrytningar) --
     inputEl.addEventListener('paste', (e) => {
         e.preventDefault();
         let pasteText = (e.clipboardData || window.clipboardData).getData('text');
-        pasteText = pasteText.replace(/[\r\n]+/g, ''); // Kastar bort alla line breaks
+        pasteText = pasteText.replace(/[\r\n]+/g, '');
         document.execCommand('insertText', false, pasteText);
     });
-
     // -- VÄCK KNAPPEN NÄR MAN SKRIVER --
     inputEl.addEventListener('input', () => {
-    const rawText = inputEl.textContent || "";
+    let rawText = inputEl.textContent || "";
+
+    // FIX: iOS Safari race condition — occasionally the very first keystroke
+    // lands INSIDE the placeholder before 'focus' has cleared it (typically
+    // right after the modal's fade-in), producing e.g. "jMr Smart" instead
+    // of clearing to "" first. If that's happened, the text will still
+    // CONTAIN the placeholder as a substring (even though it no longer
+    // EQUALS it, which is why the focus-handler's check missed it).
+    // Strip just the placeholder portion out, keeping whatever was typed.
+    if (rawText !== defaultPlaceholder && rawText.includes(defaultPlaceholder)) {
+        const cleaned = rawText.split(defaultPlaceholder).join('');
+        inputEl.textContent = cleaned;
+        inputEl.style.color = "rgba(255, 255, 255, 1)";
+
+        try {
+            const range = document.createRange();
+            const sel = window.getSelection();
+            range.selectNodeContents(inputEl);
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
+        } catch (err) { /* non-fatal */ }
+
+        rawText = cleaned;
+    }
+
     if (rawText.trim().length > 0 && rawText.trim() !== defaultPlaceholder) {
         btnEl.classList.add('is-active');
         btnEl.style.pointerEvents = 'auto';
@@ -734,9 +750,7 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
     }
   });
 }
-
 // -- DELAD VALIDERINGS-KOMPONENT --
-// Kontrollerar reglerna och skickar tillbaka en array med eventuella fel.
 function validateUsernameRules(rawName) {
     let errors = [];
     const letterCount = (rawName.match(/[a-zA-ZåäöÅÄÖ]/g) || []).length;
