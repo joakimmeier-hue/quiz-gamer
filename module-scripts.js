@@ -803,6 +803,10 @@ const createProfileSubmitBtn = document.getElementById('cp-create-btn');
 const createUsernameInput = document.getElementById('cp-username-input'); 
 const errorMsgEl = document.getElementById('cp-error-msg');
 const createDefaultPlaceholder = "Mr Smart";
+// Ensure focusable if Webflow didn't set tabindex
+if (typeof createUsernameInput !== 'undefined' && createUsernameInput && !createUsernameInput.hasAttribute('tabindex')) {
+  createUsernameInput.setAttribute('tabindex', '0');
+}
 
 if (createProfileSubmitBtn && createUsernameInput) {
   
@@ -888,6 +892,10 @@ if (createProfileSubmitBtn && createUsernameInput) {
 // ── 3. CHANGE USERNAME LOGIC ──
 // ==========================================
 const changeProfileSubmitBtn = document.getElementById('cp-change-btn'); 
+// Ensure focusable if Webflow didn't set tabindex
+if (typeof changeUsernameInput !== 'undefined' && changeUsernameInput && !changeUsernameInput.hasAttribute('tabindex')) {
+  changeUsernameInput.setAttribute('tabindex', '0');
+}
 const changeUsernameInput = document.getElementById('change-username-input'); 
 const changeErrorMsgEl = document.getElementById('cp-error-msg-change');
 const changeInfoText = document.getElementById('cp-change-info'); 
