@@ -88,10 +88,16 @@ function updateAuthUI(user) {
       createProfileEl.style.transition = 'opacity 250ms ease-out';
       
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          createProfileEl.style.opacity = '1';
+    requestAnimationFrame(() => {
+    createProfileEl.style.opacity = '1';
+    // focus after it becomes visible (small delay to ensure paint + keyboard on mobile)
+    setTimeout(() => {
+            if (typeof createUsernameInput !== 'undefined' && createUsernameInput) {
+              focusContentEditableAtEnd(createUsernameInput);
+            }
+          }, 120);
         });
-      });
+      });   
     }
   }
 
@@ -378,6 +384,12 @@ function updateAuthUI(user) {
             setTimeout(() => {
                 changeModal.style.transition = 'opacity 200ms ease';
                 changeModal.style.opacity = '1';
+                  // Ensure input is visible before focusing – small delay helps on mobile
+    setTimeout(() => {
+        if (changeUsernameInput && changeUsernameInput.getAttribute('contenteditable') !== 'false') {
+            focusContentEditableAtEnd(changeUsernameInput);
+                }
+              }, 120); // 80-200ms usually works; tune if needed
             }, 10);
         }
         return;
@@ -749,6 +761,23 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
         btnEl.style.pointerEvents = 'none';
     }
   });
+}
+function focusContentEditableAtEnd(el) {
+  if (!el) return;
+  try {
+    // Ensure element is focusable
+    if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
+    el.focus();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false); // caret at end
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  } catch (err) {
+    // non-fatal, fail silently
+    console.warn('focusContentEditableAtEnd error', err);
+  }
 }
 // -- DELAD VALIDERINGS-KOMPONENT --
 function validateUsernameRules(rawName) {
