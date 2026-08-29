@@ -174,22 +174,23 @@ function updateAuthUI(user) {
 // Robust close for the profile-pic dropdown / pp-grid
 function hidePPDropdown() {
   try {
-    // 1) If there is an open .pp-grid, try the component closer
+    // 1) Find any visible pp-grid using bounding rect (works inside overlays)
     const openGrid = Array.from(document.querySelectorAll('.pp-grid')).find(el => {
       const style = window.getComputedStyle(el);
-      return style.display !== 'none' && el.offsetParent !== null;
+      const rect = el.getBoundingClientRect();
+      return style.display !== 'none' && (rect.width > 0 || rect.height > 0);
     });
     if (openGrid) {
       const dropdown = openGrid.closest('.pp-dropdown');
       const closer = dropdown?.querySelector('.pp-dropdown-closer');
       if (closer) {
-        // native closer exists → click it (this triggers WF in-component interactions)
+        // native closer exists → click it (triggers Webflow component interactions)
         closer.click();
         return;
       }
     }
 
-    // 2) Try Webflow ix3 custom event if available (emit the same event name you used in WF)
+    // 2) Try Webflow ix3 custom event (pp-dropdown-hide) if available
     try {
       if (window.Webflow && typeof Webflow.require === 'function') {
         const wfx = Webflow.require('ix3');
@@ -199,11 +200,10 @@ function hidePPDropdown() {
         }
       }
     } catch (err) {
-      // safe to ignore if ix3 not present/ready
       console.warn('hidePPDropdown: ix3 emit failed', err);
     }
 
-    // 3) Last-resort: hide any visible grid element
+    // 3) Last-resort fallback: hide any .pp-grid element (non-destructive)
     const anyGrid = document.querySelector('.pp-grid');
     if (anyGrid) anyGrid.style.display = 'none';
   } catch (err) {
@@ -244,13 +244,9 @@ document.addEventListener('keydown', (e) => {
 
   const key = (e.key || '').toLowerCase();
 
-  // Optional lightweight debug line — keep or remove as needed
-  console.log('[kbd] key=', key, 'lobbyInvOpen=', !!window.lobbyInvOpen, 'active=', document.activeElement?.tagName || 'none');
-
   // --- 1) PP-GRID PRIORITY: ESC should close any open pp-grid first ---
   if (key === 'escape') {
     const openGrid = Array.from(document.querySelectorAll('.pp-grid')).find(el => {
-      // consider element visible if computed display isn't 'none' and it has size on screen
       const style = window.getComputedStyle(el);
       const rect = el.getBoundingClientRect();
       return style.display !== 'none' && (rect.width > 0 || rect.height > 0);
@@ -263,7 +259,7 @@ document.addEventListener('keydown', (e) => {
     }
   }
 
-  // --- Allow ESC to operate even if user is typing (we only block other keys while typing) ---
+  // Allow ESC to operate even if user is typing
   if (key !== 'escape' && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
 
   // --- BRILJANT SPÄRR: Kolla om någon modal/overlay ligger i vägen ---
@@ -283,10 +279,8 @@ document.addEventListener('keydown', (e) => {
     }
   }
 
-  // If a blocking modal is visible, handle ESC for those and stop (inventory shouldn't open behind)
   if (visibleModal) {
     if (key === 'escape' && visibleModal.classList.contains('change-username')) {
-      // clicking the modal background triggers the modal's existing close code
       visibleModal.click();
     }
     if (key === 'escape' && visibleModal.classList.contains('login-modal-wrapper')) {
@@ -295,10 +289,8 @@ document.addEventListener('keydown', (e) => {
     return;
   }
 
-  // De här variablerna används av all logik under dem!
   const isGameSide = document.body.dataset.page === 'game';
 
-  // --- Inventory on game page (handles i, tab, escape) ---
   if (isGameSide) {
     if (key === 'i' || key === 'tab' || key === 'escape') {
       const arrowBtn = document.querySelector('.i-btn-arrow');
@@ -307,7 +299,6 @@ document.addEventListener('keydown', (e) => {
       if (!arrowBtn || !crossBtn) return;
       if (window.isGameInvAnimating) return;
 
-      // isOpen: check visibility of cross button (inventory open)
       const isOpen = window.getComputedStyle(crossBtn).display !== 'none';
 
       const triggerClick = (btn) => {
@@ -330,10 +321,7 @@ document.addEventListener('keydown', (e) => {
       }
     }
     return;
-  }
-
-  // --- Lobby page logic (inventory toggling with I/TAB) ---
-  else {
+  } else {
     if (key === 'i' || key === 'tab') {
       e.preventDefault();
 
@@ -351,7 +339,6 @@ document.addEventListener('keydown', (e) => {
     }
 
     if (key === 'escape') {
-      // If inventory is open, closing should happen (pp-dropdown was already closed earlier)
       if (window.lobbyInvOpen) {
         e.preventDefault();
         const overlay = document.querySelector('.inventory-overlay');
