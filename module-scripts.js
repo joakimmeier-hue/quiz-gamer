@@ -245,7 +245,7 @@ document.addEventListener('keydown', (e) => {
   const key = (e.key || '').toLowerCase();
 
   // Optional lightweight debug line — keep or remove as needed
-  // console.log('[kbd] key=', key, 'lobbyInvOpen=', !!window.lobbyInvOpen, 'active=', document.activeElement?.tagName || 'none');
+  console.log('[kbd] key=', key, 'lobbyInvOpen=', !!window.lobbyInvOpen, 'active=', document.activeElement?.tagName || 'none');
 
   // --- 1) PP-GRID PRIORITY: ESC should close any open pp-grid first ---
   if (key === 'escape') {
