@@ -239,147 +239,127 @@ function hidePPDropdown() {
   }, 200);
 }
 // ── TANGENTBORDS-LYSSNARE (I, TAB, ESC) ──
-  document.addEventListener('keydown', (e) => {
-  // DEBUG - show key and context (remove after debugging)
-  // NOTE: keep this lightweight; don't spam logs in prod
-  try {
-    const keyName = e.key ? e.key.toLowerCase() : 'unknown';
-    const isInvOpen = !!window.lobbyInvOpen;
-    const activeTag = document.activeElement ? document.activeElement.tagName : 'none';
-    console.log('[kbd] key=', keyName, 'lobbyInvOpen=', isInvOpen, 'active=', activeTag);
-  } catch (err) { /* ignore */ }
+document.addEventListener('keydown', (e) => {
+  if (e.repeat) return; // Stoppar buggar om man håller inne knappen
 
-    if (e.repeat) return; // Stoppar buggar om man håller inne knappen
-    
-    const key = e.key.toLowerCase();
+  const key = (e.key || '').toLowerCase();
 
-    // ── PP-GRID PRIORITY CHECK: if the picker grid is open, ESC only closes that ──
-    if (key === 'escape') {
+  // Optional lightweight debug line — keep or remove as needed
+  // console.log('[kbd] key=', key, 'lobbyInvOpen=', !!window.lobbyInvOpen, 'active=', document.activeElement?.tagName || 'none');
+
+  // --- 1) PP-GRID PRIORITY: ESC should close any open pp-grid first ---
+  if (key === 'escape') {
+    const openGrid = Array.from(document.querySelectorAll('.pp-grid')).find(el => {
+      // consider element visible if computed display isn't 'none' and it has size on screen
+      const style = window.getComputedStyle(el);
+      const rect = el.getBoundingClientRect();
+      return style.display !== 'none' && (rect.width > 0 || rect.height > 0);
+    });
     if (openGrid) {
-    e.preventDefault();
-    e.stopPropagation();
-    hidePPDropdown();
+      e.preventDefault();
+      e.stopPropagation();
+      hidePPDropdown();
+      return; // stop further handling — pp-grid closed
+    }
+  }
+
+  // --- Allow ESC to operate even if user is typing (we only block other keys while typing) ---
+  if (key !== 'escape' && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+  // --- BRILJANT SPÄRR: Kolla om någon modal/overlay ligger i vägen ---
+  const blockingSelectors = [
+    '.login-modal-wrapper',
+    '.create-profile',
+    '.change-username',
+    '.intro-overlay-grp'
+  ];
+
+  let visibleModal = null;
+  for (let selector of blockingSelectors) {
+    const el = document.querySelector(selector);
+    if (el && window.getComputedStyle(el).display !== 'none') {
+      visibleModal = el;
+      break;
+    }
+  }
+
+  // If a blocking modal is visible, handle ESC for those and stop (inventory shouldn't open behind)
+  if (visibleModal) {
+    if (key === 'escape' && visibleModal.classList.contains('change-username')) {
+      // clicking the modal background triggers the modal's existing close code
+      visibleModal.click();
+    }
+    if (key === 'escape' && visibleModal.classList.contains('login-modal-wrapper')) {
+      hideLoginModal();
+    }
     return;
-}
-}
-     // Hantera ESC (Enbart stäng).
-        if (key === 'escape') {
-        const openGrid = Array.from(document.querySelectorAll('.pp-grid')).find(el => {
-          const style = window.getComputedStyle(el);
-          return style.display !== 'none' && el.offsetParent !== null;
-        });
-        if (openGrid) {
+  }
+
+  // De här variablerna används av all logik under dem!
+  const isGameSide = document.body.dataset.page === 'game';
+
+  // --- Inventory on game page (handles i, tab, escape) ---
+  if (isGameSide) {
+    if (key === 'i' || key === 'tab' || key === 'escape') {
+      const arrowBtn = document.querySelector('.i-btn-arrow');
+      const crossBtn = document.querySelector('.i-btn-cross');
+
+      if (!arrowBtn || !crossBtn) return;
+      if (window.isGameInvAnimating) return;
+
+      // isOpen: check visibility of cross button (inventory open)
+      const isOpen = window.getComputedStyle(crossBtn).display !== 'none';
+
+      const triggerClick = (btn) => {
+        window.isGameInvAnimating = true;
+        btn.click();
+        setTimeout(() => { window.isGameInvAnimating = false; }, 150);
+      };
+
+      if (key === 'escape') {
+        if (isOpen) {
           e.preventDefault();
           e.stopPropagation();
-          console.log('[kbd] closing pp-grid via hidePPDropdown()');
-          hidePPDropdown();
-          return;
+          triggerClick(crossBtn);
         }
+        return;
+      } else if (key === 'i' || key === 'tab') {
+        e.preventDefault();
+        if (isOpen) triggerClick(crossBtn);
+        else triggerClick(arrowBtn);
       }
+    }
+    return;
+  }
 
-    // VIKTIG ÄNDRING: Släpp igenom ESC-knappen även om användaren står inuti textfältet!
-    // Annars händer inget om man försöker stänga medan man skriver.
-    if (key !== 'escape' && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+  // --- Lobby page logic (inventory toggling with I/TAB) ---
+  else {
+    if (key === 'i' || key === 'tab') {
+      e.preventDefault();
 
-    // --- BRILJANT SPÄRR: Kolla om någon modal/overlay ligger i vägen ---
-    const blockingSelectors = [
-        '.login-modal-wrapper', 
-        '.create-profile', 
-        '.change-username', 
-        '.intro-overlay-grp'
-    ];
-
-    let visibleModal = null;
-    for (let selector of blockingSelectors) {
-        const el = document.querySelector(selector);
-        // Kollar om elementet finns och INTE har display: none
-        if (el && window.getComputedStyle(el).display !== 'none') {
-            visibleModal = el;
-            break; 
-        }
+      if (!currentUser) {
+        pendingAction = 'INVENTORY';
+        showLoginModal();
+        return;
+      }
+      const overlay = document.querySelector('.inventory-overlay');
+      if (window.lobbyInvOpen) {
+        if (overlay) closeLobbyInventory(overlay);
+      } else {
+        if (overlay) openLobbyInventory(overlay);
+      }
     }
 
-    // Om någon av rutorna är synliga, avbryt inventory-scriptet!
-    if (visibleModal) {
-        // NY FIX: Om rutan är Change Username, och vi tryckte ESC, stäng den!
-        if (key === 'escape' && visibleModal.classList.contains('change-username')) {
-            // Detta triggar automatiskt din andra stängnings-kod (Klick på bakgrunden)
-            visibleModal.click(); 
-        }
-            // NEW: close the login modal on Escape
-        if (key === 'escape' && visibleModal.classList.contains('login-modal-wrapper')) {
-            hideLoginModal();
-        }
-        return; // Avbryter alltid vidare logik så inventoryt inte öppnas i bakgrunden
+    if (key === 'escape') {
+      // If inventory is open, closing should happen (pp-dropdown was already closed earlier)
+      if (window.lobbyInvOpen) {
+        e.preventDefault();
+        const overlay = document.querySelector('.inventory-overlay');
+        if (overlay) closeLobbyInventory(overlay);
       }
-    // De här variablerna används av all logik under dem!
-    const isGameSide = document.body.dataset.page === 'game';
-  
-// --- Inventory på GAME-SIDAN: DOM är Single Source of Truth ---
-    if (isGameSide) {
-        if (key === 'i' || key === 'tab' || key === 'escape') {
-            
-            const arrowBtn = document.querySelector('.i-btn-arrow'); 
-            const crossBtn = document.querySelector('.i-btn-cross'); 
-            
-            if (!arrowBtn || !crossBtn) return; 
-            if (window.isGameInvAnimating) return;
-            
-            // Vi litar på Webflows interaction! (Från image_e1657d.png)
-            const isOpen = window.getComputedStyle(crossBtn).display !== 'none';
-            
-            const triggerClick = (btn) => {
-                window.isGameInvAnimating = true; 
-                btn.click();
-                setTimeout(() => {
-                    window.isGameInvAnimating = false;
-                }, 150);
-            };
-
-            if (key === 'escape') {
-                if (isOpen) {
-                    // INVENTORYT ÄR ÖPPET: Stäng det, och "sluka" ESC-knappen.
-                    e.preventDefault(); 
-                    e.stopPropagation(); 
-                    triggerClick(crossBtn); 
-                }
-                // INVENTORYT ÄR STÄNGT: Vi gör ingenting. 
-                // koden släpper igenom ESC-knappen ner till din button-link!
-                return; 
-            } 
-            else if (key === 'i' || key === 'tab') {
-                e.preventDefault(); 
-                
-                if (isOpen) {
-                    triggerClick(crossBtn);
-                } else {
-                    triggerClick(arrowBtn);
-                }
-            }
-        }
     }
-        
-    // --- LOBBY-SIDAN (inkl. UC) ---
-    else {
-        // Hantera I och TAB (Toggle)
-        if (key === 'i' || key === 'tab') {
-            e.preventDefault();
-            
-            if (!currentUser) {
-                pendingAction = 'INVENTORY';
-                showLoginModal();
-                return;
-            }
-            const overlay = document.querySelector('.inventory-overlay');
-            if (window.lobbyInvOpen) {
-                if (overlay) closeLobbyInventory(overlay);
-            } else {
-                if (overlay) openLobbyInventory(overlay);
-            }
-          }
-       }
+  }
 }, true);
-
 
  // ── GOOGLE LOGIN ──
  if (googleLoginBtn) {
