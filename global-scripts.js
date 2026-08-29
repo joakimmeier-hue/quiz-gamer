@@ -603,30 +603,84 @@ setInterval(() => {
   });
 }, 6000); 
 
-// ── ANCHOR SECTION TRANSITION ─────────────────────────────────────────
-window.addEventListener('load', function() {
-  document.querySelectorAll('[data-scroll-to]').forEach(function(el) {
-    el.addEventListener('click', function(e) {
-      e.preventDefault();
-      const target = document.getElementById(this.getAttribute('data-scroll-to'));
-      if (!target) return;
-      const start = window.scrollY;
-      const multiplier = window.innerWidth <= 479 ? 0.67: 0.4;
-      const end = target.getBoundingClientRect().top + window.scrollY - (window.innerHeight * multiplier);
-      const distance = end - start;
-      const duration = 1000;
-      let startTime = null;
-      function easeInOut(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
-      function step(timestamp) {
-        if (!startTime) startTime = timestamp;
-        const progress = Math.min((timestamp - startTime) / duration, 1);
-        window.scrollTo(0, start + distance * easeInOut(progress));
-        if (progress < 1) requestAnimationFrame(step);
+// Robust smooth scroll to element id (cancelable)
+function smoothScrollToId(targetId, opts = {}) {
+  const duration = opts.duration ?? 1000;
+  const topOffsetPercent = opts.topOffsetPercent ?? (window.innerWidth < 600 ? 0.12 : 0.2);
+
+  const target = document.getElementById(targetId);
+  if (!target) return Promise.resolve(false);
+
+  const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  const elementTop = target.getBoundingClientRect().top + window.scrollY;
+  const targetPos = Math.max(0, Math.round(elementTop - viewportHeight * topOffsetPercent));
+
+  let start = window.scrollY;
+  const distance = targetPos - start;
+  let startTime = null;
+  let rafId = null;
+  let canceled = false;
+
+  const cancelOnUser = () => { canceled = true; cleanup(); };
+  window.addEventListener('wheel', cancelOnUser, { passive: true, once: true });
+  window.addEventListener('touchstart', cancelOnUser, { passive: true, once: true });
+  window.addEventListener('keydown', cancelOnUser, { once: true });
+
+  function easeInOut(t) {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+  }
+
+  function step(ts) {
+    if (canceled) return;
+    if (!startTime) startTime = ts;
+    const progress = Math.min((ts - startTime) / duration, 1);
+    const pos = Math.round(start + distance * easeInOut(progress));
+    window.scrollTo(0, pos);
+    if (progress < 1) {
+      rafId = requestAnimationFrame(step);
+    } else {
+      cleanup();
+    }
+  }
+
+  function cleanup() {
+    if (rafId) cancelAnimationFrame(rafId);
+    try {
+      window.removeEventListener('wheel', cancelOnUser);
+      window.removeEventListener('touchstart', cancelOnUser);
+      window.removeEventListener('keydown', cancelOnUser);
+    } catch (e) {}
+  }
+
+  return new Promise((resolve) => {
+    rafId = requestAnimationFrame(step);
+    const finishCheck = setInterval(() => {
+      if (canceled || window.scrollY === targetPos) {
+        clearInterval(finishCheck);
+        cleanup();
+        resolve(!canceled);
       }
-      requestAnimationFrame(step);
-    });
+    }, 50);
   });
-});
+}
+
+// Attach smooth scroll to elements with data-scroll-to (run once on load/DOMContentLoaded)
+(function attachDataScrollHandlers() {
+  const triggers = document.querySelectorAll('[data-scroll-to]');
+  triggers.forEach(trigger => {
+    trigger.addEventListener('click', function (e) {
+      e.preventDefault();
+
+      // ignore clicks when element visually hidden/disabled
+      const cs = window.getComputedStyle(this);
+      if (cs.pointerEvents === 'none' || parseFloat(cs.opacity) === 0) return;
+
+      const id = this.getAttribute('data-scroll-to');
+      if (!id) return;
+      smoothScrollToId(id, { duration: 900, topOffsetPercent: window.innerWidth < 600 ? 0.12 : 0.20 });
+    }, { passive: true });
+  });
+})();
 
 // ── AUTO-FOCUS & SCROLL-TOP FÖR OVERLAYS (STABIL VERSION) ──────────────────
 (function() {
@@ -758,8 +812,8 @@ const HOVER_SCALE_CLASSES = [
     'submit-button',
     'button',
     'button-link',
-    'finish-btn',
-    'start-btn-gma-wrapper',
+    'start-btn',
+    'finish-btn',    
     'share-score-btn',
     'link-next-challenge',
     'link-review-answers',
@@ -786,8 +840,8 @@ const PRESS_SCALE_CLASSES = [
     'submit-button',
     'button',
     'button-link',
-    'finish-btn',
-    'start-btn-gma-wrapper',
+    'start-btn',
+    'finish-btn',    
     'share-score-btn',
     'link-next-challenge',
     'link-review-answers',
