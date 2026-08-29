@@ -388,15 +388,9 @@ function updateAuthUI(user) {
             changeModal.style.opacity = '0';
             // Liten delay så display:flex hinner registreras innan opacity animeras
             setTimeout(() => {
-                changeModal.style.transition = 'opacity 200ms ease';
-                changeModal.style.opacity = '1';
-                  // Ensure input is visible before focusing – small delay helps on mobile
-    setTimeout(() => {
-        if (changeUsernameInput && changeUsernameInput.getAttribute('contenteditable') !== 'false') {
-            focusContentEditableAtEnd(changeUsernameInput);
-                }
-              }, 120); // 80-200ms usually works; tune if needed
-            }, 10);
+              changeModal.style.transition = 'opacity 200ms ease';
+              changeModal.style.opacity = '1';
+          }, 10);
         }
         return;
     }
@@ -929,11 +923,28 @@ if (createProfileSubmitBtn && createUsernameInput) {
 // ── 3. CHANGE USERNAME LOGIC ──
 // ==========================================
 const changeProfileSubmitBtn = document.getElementById('cp-change-btn'); 
+const changeUsernameInput = document.getElementById('change-username-input'); 
 // Ensure focusable if Webflow didn't set tabindex
 if (typeof changeUsernameInput !== 'undefined' && changeUsernameInput && !changeUsernameInput.hasAttribute('tabindex')) {
   changeUsernameInput.setAttribute('tabindex', '0');
 }
-const changeUsernameInput = document.getElementById('change-username-input'); 
+// Ensure single-tap focus on mobile/desktop: only focus when the user actually taps/clicks.
+if (typeof changeUsernameInput !== 'undefined' && changeUsernameInput) {
+  const chUserFirstInteraction = (e) => {
+    // If already focused, do nothing
+    if (document.activeElement === changeUsernameInput) return;
+    // Focus and place caret at end (also clears placeholder if matches)
+    focusContentEditableAtEnd(changeUsernameInput);
+    // Do not preventDefault — allow normal input behavior
+  };
+
+  changeUsernameInput.addEventListener('touchstart', chUserFirstInteraction, { passive: true });
+  changeUsernameInput.addEventListener('mousedown', chUserFirstInteraction);
+  changeUsernameInput.addEventListener('click', (e) => {
+    if (document.activeElement !== changeUsernameInput) focusContentEditableAtEnd(changeUsernameInput);
+  });
+}
+
 const changeErrorMsgEl = document.getElementById('cp-error-msg-change');
 const changeInfoText = document.getElementById('cp-change-info'); 
 const changeDefaultPlaceholder = "New username";
