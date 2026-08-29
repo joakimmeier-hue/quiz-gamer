@@ -1074,7 +1074,7 @@ Webflow.push(function() {
 // GAME ALTERNATIVE-ROW
 document.addEventListener("DOMContentLoaded", function() {
   const scrollDuration = 400; 
-  const topOffsetPercent = window.innerWidth < 600 ? 0.12 : 0.20;
+  const topOffsetPercent = window.innerWidth < 600 ? 0.15 : 0.20;
   const animationDelay = 450;  // Väntar tills keyframe-animationen är klar
 
   const alternativeRows = document.querySelectorAll('.alternative-row');
