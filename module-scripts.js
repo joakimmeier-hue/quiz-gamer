@@ -483,9 +483,11 @@ function hidePPDropdown() {
          }); 
          
          // Spara valet till Firestore
-         await saveUserAvatar(selectedSrc);      
+         await saveUserAvatar(selectedSrc);
+        // Close the pp-dropdown if still open (robust: closer click → ix3 event → fallback)
+        hidePPDropdown();
+        return;
      }
-     return;
  }
 
     // 4. GATEKEEPER FÖR SPEL-LÄNKAR
