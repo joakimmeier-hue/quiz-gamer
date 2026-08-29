@@ -322,21 +322,27 @@ document.addEventListener('keydown', (e) => {
     }
     return;
   } else {
-    if (key === 'i' || key === 'tab') {
-      e.preventDefault();
+   if (key === 'i' || key === 'tab') {
+  e.preventDefault();
 
-      if (!currentUser) {
-        pendingAction = 'INVENTORY';
-        showLoginModal();
-        return;
-      }
-      const overlay = document.querySelector('.inventory-overlay');
-      if (window.lobbyInvOpen) {
-        if (overlay) closeLobbyInventory(overlay);
-      } else {
-        if (overlay) openLobbyInventory(overlay);
-      }
+  if (!currentUser) {
+    pendingAction = 'INVENTORY';
+    showLoginModal();
+    return;
+  }
+
+  const overlay = document.querySelector('.inventory-overlay');
+
+  // Close pp-dropdown first, then toggle inventory after a short delay
+  hidePPDropdown();
+  setTimeout(() => {
+    if (window.lobbyInvOpen) {
+      if (overlay) closeLobbyInventory(overlay);
+    } else {
+      if (overlay) openLobbyInventory(overlay);
     }
+  }, 40);
+}
 
     if (key === 'escape') {
       if (window.lobbyInvOpen) {
