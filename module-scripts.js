@@ -402,6 +402,7 @@ document.addEventListener('keydown', (e) => {
 
   // ── GLOBAL KLICKLYSSNARE ──
   document.addEventListener('click', async (e) => {
+    const isGameSide = document.body.dataset.page === 'game';
    
     // -- ÖPPNA CHANGE USERNAME MODAL --
     const usernameLabel = e.target.closest('.player-info.username');
@@ -457,24 +458,25 @@ document.addEventListener('keydown', (e) => {
     }
 
 // 3. BYT PROFILBILD (Uppdaterad för att ändra alla instanser av klassen)
- const option = e.target.closest('.profile-pic-option');
- if (option) {        
-     const selectedSrc = option.src;
-     const currentAvatars = document.querySelectorAll('.current-profile-pic');
-     
-     if (selectedSrc && currentAvatars.length > 0) {
-         // Uppdatera ALLA profilbilder i UI direkt (Lobby, dropdown, etc.)
-         currentAvatars.forEach(img => {
-             img.src = selectedSrc;
-         }); 
-         
-         // Spara valet till Firestore
-         await saveUserAvatar(selectedSrc);
-        // Close the pp-dropdown if still open (robust: closer click → ix3 event → fallback)
-        hidePPDropdown();
-        return;
-     }
- }
+const option = e.target.closest('.profile-pic-option');
+if (option && !isGameSide) {
+  const selectedSrc = option.src;
+  const currentAvatars = document.querySelectorAll('.current-profile-pic');
+
+  if (selectedSrc && currentAvatars.length > 0) {
+    // Uppdatera ALLA profilbilder i UI direkt (Lobby, dropdown, etc.)
+    currentAvatars.forEach(img => img.src = selectedSrc);
+
+    // Spara valet till Firestore
+    await saveUserAvatar(selectedSrc);
+
+    // Close the pp-dropdown if still open (robust: closer click → ix3 event → fallback)
+    hidePPDropdown();
+  }
+
+  // Stop further click handling for this event
+  return;
+}
 
     // 4. GATEKEEPER FÖR SPEL-LÄNKAR
     // OBS: .games-link-block är nu undantagen i global-scripts.js:s egna
