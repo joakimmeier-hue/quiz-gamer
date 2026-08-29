@@ -1074,7 +1074,7 @@ Webflow.push(function() {
 // GAME ALTERNATIVE-ROW
 document.addEventListener("DOMContentLoaded", function() {
   const scrollDuration = 400; 
-  const topOffsetPercent = window.innerWidth < 600 ? 0.15 : 0.20;
+  const topOffsetPercent = 0.20; 
   const animationDelay = 450;  // Väntar tills keyframe-animationen är klar
 
   const alternativeRows = document.querySelectorAll('.alternative-row');
@@ -1093,71 +1093,62 @@ document.addEventListener("DOMContentLoaded", function() {
     // VIKTIGT: Vi lyssnar på 'mousedown' precis som ditt SFX-script! 
     // Då sker båda exakt samtidigt.
     row.addEventListener('mousedown', function(e) {
-  const currentQuestionWrapper = this.closest('.question-wrapper');
-  if (!currentQuestionWrapper) return;
+      const currentQuestionWrapper = this.closest('.question-wrapper');
+      if (!currentQuestionWrapper) return;
 
-  // 1) Nollställ ALLA checkboxar
-  const allCheckboxesInQuestion = currentQuestionWrapper.querySelectorAll('.checkbox');
-  allCheckboxesInQuestion.forEach(cb => cb.classList.remove('is-active'));
+      // 1. Nollställ ALLA checkboxar
+      const allCheckboxesInQuestion = currentQuestionWrapper.querySelectorAll('.checkbox');
+      allCheckboxesInQuestion.forEach(cb => {
+        cb.classList.remove('is-active');
+      });
 
-  // 2) Aktivera den klickade
-  const clickedCheckbox = this.querySelector('.checkbox');
-  if (clickedCheckbox) {
-    void clickedCheckbox.offsetWidth;
-    clickedCheckbox.classList.add('is-active');
-  }
+      // 2. Aktivera den klickade
+      const clickedCheckbox = this.querySelector('.checkbox');
+      if (clickedCheckbox) {
+        // Eftersom vi bytt till @keyframes behöver vi reflow-tricket.
+        void clickedCheckbox.offsetWidth; 
+        clickedCheckbox.classList.add('is-active');
+      }
 
-  // 2.5) MOBILE TRICK: small immediate "nudge" scroll so the browser treats scrolling as user-initiated
-  // This helps the browser hide the address bar on mobile before the delayed smooth scroll runs.
-  const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-  if (isTouch) {
-    try {
-      // tiny, instant scroll — do NOT use smooth behavior here
-      window.scrollBy({ top: 1, left: 0, behavior: 'auto' });
-    } catch (err) {
-      // fallback
-      window.scrollBy(0, 1);
-    }
-  }
+      // 3. Debounce Scroll (Väntar på att animationen gör klart sitt)
+      if (currentQuestionWrapper.scrollTimeout) {
+        clearTimeout(currentQuestionWrapper.scrollTimeout);
+      }
 
-  // 3) Debounce Scroll (Väntar på att animationen gör klart sitt)
-  if (currentQuestionWrapper.scrollTimeout) {
-    clearTimeout(currentQuestionWrapper.scrollTimeout);
-  }
-
-  const currentTableRow = this.closest('.gma-game-row-1');
-  if (!currentTableRow) return;
-
-  const nextTableRow = currentTableRow.nextElementSibling;
-
-    if (nextTableRow) {
+      const currentTableRow = this.closest('.gma-game-row-1');
+      if (!currentTableRow) return;
+      
+      const nextTableRow = currentTableRow.nextElementSibling;
+      
+      if (nextTableRow) {
         currentQuestionWrapper.scrollTimeout = setTimeout(() => {
-        // your smooth-scroll logic unchanged
-        const start = window.scrollY;
-        const end = nextTableRow.getBoundingClientRect().top + window.scrollY - (window.innerHeight * topOffsetPercent);
-        const distance = end - start;
-        let startTime = null;
+          const start = window.scrollY;
+          const end = nextTableRow.getBoundingClientRect().top + window.scrollY - (window.innerHeight * topOffsetPercent);
+          const distance = end - start;
+          let startTime = null;
 
-        function easeInOut(t) {
-            return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-        }
+          function easeInOut(t) { 
+            return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; 
+          }
 
-        function smoothScrollStep(timestamp) {
+          function smoothScrollStep(timestamp) {
             if (!startTime) startTime = timestamp;
             const progress = Math.min((timestamp - startTime) / scrollDuration, 1);
+            
             window.scrollTo(0, start + distance * easeInOut(progress));
+            
             if (progress < 1) {
-            requestAnimationFrame(smoothScrollStep);
+              requestAnimationFrame(smoothScrollStep);
             }
-        }
+          }
 
-        requestAnimationFrame(smoothScrollStep);
+          requestAnimationFrame(smoothScrollStep);
+
         }, animationDelay);
       }
     });
   });
 });
-
 // ── SCORE PAGE: DISPLAY RESULTS ─────────────────────────────────
 var Webflow = window.Webflow || [];
 Webflow.push(function() {
