@@ -81,25 +81,31 @@ function updateAuthUI(user) {
   }
 // ── CREATE PROFILE (First-time users) ──
   function showCreateProfile() {
-    const createProfileEl = document.getElementById('create-profile') || document.querySelector('.create-profile');
-    if (createProfileEl) {
-      createProfileEl.style.display = 'flex';
-      createProfileEl.style.opacity = '0';
-      createProfileEl.style.transition = 'opacity 250ms ease-out';
-      
-      requestAnimationFrame(() => {
+  const createProfileEl = document.getElementById('create-profile') || document.querySelector('.create-profile');
+  if (createProfileEl) {
+    createProfileEl.style.display = 'flex';
+    createProfileEl.style.opacity = '0';
+    createProfileEl.style.transition = 'opacity 250ms ease-out';
+
     requestAnimationFrame(() => {
-    createProfileEl.style.opacity = '1';
-    // focus after it becomes visible (small delay to ensure paint + keyboard on mobile)
-    setTimeout(() => {
+      requestAnimationFrame(() => {
+        createProfileEl.style.opacity = '1';
+
+        // Ensure the create input is NOT focused when the modal opens.
+        // This keeps the modal "neutral" until the user actually taps it.
+        setTimeout(() => {
+          try {
             if (typeof createUsernameInput !== 'undefined' && createUsernameInput) {
-              focusContentEditableAtEnd(createUsernameInput);
+              // blur to guarantee neutral start
+              createUsernameInput.blur();
             }
-          }, 120);
-        });
-      });   
-    }
+          } catch (err) { /* non-fatal */ }
+        }, 0);
+
+      });
+    });
   }
+}
 
   function hideCreateProfile() {
     const createProfileEl = document.getElementById('create-profile') || document.querySelector('.create-profile');
@@ -815,11 +821,30 @@ const createProfileSubmitBtn = document.getElementById('cp-create-btn');
 const createUsernameInput = document.getElementById('cp-username-input'); 
 const errorMsgEl = document.getElementById('cp-error-msg');
 const createDefaultPlaceholder = "Mr Smart";
-// Ensure focusable if Webflow didn't set tabindex
+// Make sure the create input is focusable (fallback if Webflow didn't add tabindex)
 if (typeof createUsernameInput !== 'undefined' && createUsernameInput && !createUsernameInput.hasAttribute('tabindex')) {
   createUsernameInput.setAttribute('tabindex', '0');
 }
 
+// Ensure single-tap focus on mobile/desktop: only focus when the user actually taps/clicks.
+// We add touchstart and mousedown handlers which call the same focus helper used elsewhere.
+if (typeof createUsernameInput !== 'undefined' && createUsernameInput) {
+  const cpUserFirstInteraction = (e) => {
+    // If already focused, do nothing
+    if (document.activeElement === createUsernameInput) return;
+    // Focus and place caret at end (also clears placeholder if matches)
+    focusContentEditableAtEnd(createUsernameInput);
+    // Let the browser continue; do NOT preventDefault here — we want normal input behavior afterwards.
+  };
+
+  // touchstart ensures immediate focus on mobile; mousedown helps desktop first-click cases.
+  createUsernameInput.addEventListener('touchstart', cpUserFirstInteraction, { passive: true });
+  createUsernameInput.addEventListener('mousedown', cpUserFirstInteraction);
+  // as a fallback, ensure click also focuses if nothing else did
+  createUsernameInput.addEventListener('click', (e) => {
+    if (document.activeElement !== createUsernameInput) focusContentEditableAtEnd(createUsernameInput);
+  });
+}
 if (createProfileSubmitBtn && createUsernameInput) {
   
   // 1. Koppla fältet till vår nya gemensamma funktion
