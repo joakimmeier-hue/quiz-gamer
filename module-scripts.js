@@ -171,11 +171,10 @@ function updateAuthUI(user) {
     return el && window.getComputedStyle(el).display !== 'none';
   }
 
-// Hide the pp-dropdown/pp-grid robustly.
-// Tries: click the native closer → emit Webflow ix3 custom event 'pp-dropdown-hide' → fallback DOM hide.
+// Robust close for the profile-pic dropdown / pp-grid
 function hidePPDropdown() {
   try {
-    // 1) If a visible pp-grid exists, try to click its .pp-dropdown-closer
+    // 1) If there is an open .pp-grid, try the component closer
     const openGrid = Array.from(document.querySelectorAll('.pp-grid')).find(el => {
       const style = window.getComputedStyle(el);
       return style.display !== 'none' && el.offsetParent !== null;
@@ -184,34 +183,35 @@ function hidePPDropdown() {
       const dropdown = openGrid.closest('.pp-dropdown');
       const closer = dropdown?.querySelector('.pp-dropdown-closer');
       if (closer) {
+        // native closer exists → click it (this triggers WF in-component interactions)
         closer.click();
         return;
       }
     }
 
-    // 2) Fallback: emit the Webflow ix3 custom event (if ix3 is available)
-    if (window.Webflow && typeof Webflow.require === 'function') {
-      try {
+    // 2) Try Webflow ix3 custom event if available (emit the same event name you used in WF)
+    try {
+      if (window.Webflow && typeof Webflow.require === 'function') {
         const wfx = Webflow.require('ix3');
         if (wfx && typeof wfx.emit === 'function') {
           wfx.emit('pp-dropdown-hide');
           return;
         }
-      } catch (err) {
-        // ignore ix3 errors, continue to fallback
       }
+    } catch (err) {
+      // safe to ignore if ix3 not present/ready
+      console.warn('hidePPDropdown: ix3 emit failed', err);
     }
 
-    // 3) Last-resort fallback: hide any .pp-grid visually (non-destructive)
+    // 3) Last-resort: hide any visible grid element
     const anyGrid = document.querySelector('.pp-grid');
-    if (anyGrid) {
-      anyGrid.style.display = 'none';
-    }
+    if (anyGrid) anyGrid.style.display = 'none';
   } catch (err) {
     console.warn('hidePPDropdown error', err);
   }
 }
-  // ── STATE TRACKERS ──
+
+// ── STATE TRACKERS ──
   window.lobbyInvOpen = false; 
   window.isGameInvAnimating = false;
 
@@ -240,6 +240,15 @@ function hidePPDropdown() {
 }
 // ── TANGENTBORDS-LYSSNARE (I, TAB, ESC) ──
   document.addEventListener('keydown', (e) => {
+  // DEBUG - show key and context (remove after debugging)
+  // NOTE: keep this lightweight; don't spam logs in prod
+  try {
+    const keyName = e.key ? e.key.toLowerCase() : 'unknown';
+    const isInvOpen = !!window.lobbyInvOpen;
+    const activeTag = document.activeElement ? document.activeElement.tagName : 'none';
+    console.log('[kbd] key=', keyName, 'lobbyInvOpen=', isInvOpen, 'active=', activeTag);
+  } catch (err) { /* ignore */ }
+
     if (e.repeat) return; // Stoppar buggar om man håller inne knappen
     
     const key = e.key.toLowerCase();
@@ -253,6 +262,20 @@ function hidePPDropdown() {
     return;
 }
 }
+     // Hantera ESC (Enbart stäng).
+        if (key === 'escape') {
+        const openGrid = Array.from(document.querySelectorAll('.pp-grid')).find(el => {
+          const style = window.getComputedStyle(el);
+          return style.display !== 'none' && el.offsetParent !== null;
+        });
+        if (openGrid) {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('[kbd] closing pp-grid via hidePPDropdown()');
+          hidePPDropdown();
+          return;
+        }
+      }
 
     // VIKTIG ÄNDRING: Släpp igenom ESC-knappen även om användaren står inuti textfältet!
     // Annars händer inget om man försöker stänga medan man skriver.
@@ -353,18 +376,8 @@ function hidePPDropdown() {
             } else {
                 if (overlay) openLobbyInventory(overlay);
             }
-        }
-        
-        // Hantera ESC (Enbart stäng).
-        if (key === 'escape') {
-          console.log('ESC pressed, lobbyInvOpen =', window.lobbyInvOpen);
-            if (window.lobbyInvOpen) {
-                e.preventDefault();
-                const overlay = document.querySelector('.inventory-overlay');
-                if (overlay) closeLobbyInventory(overlay);
-            }
-        }
-    }
+          }
+       }
 }, true);
 
 
