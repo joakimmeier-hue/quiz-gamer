@@ -603,7 +603,7 @@ setInterval(() => {
   });
 }, 6000); 
 
-// ── ANCHOR SECTION TRANSITION ─────────────────────────────────────────
+/* // ── ANCHOR SECTION TRANSITION ─────────────────────────────────────────
 window.addEventListener('load', function() {
   document.querySelectorAll('[data-scroll-to]').forEach(function(el) {
     el.addEventListener('click', function(e) {
@@ -626,7 +626,8 @@ window.addEventListener('load', function() {
       requestAnimationFrame(step);
     });
   });
-});
+}); */
+
 // ── AUTO-FOCUS & SCROLL-TOP FÖR OVERLAYS (STABIL VERSION) ──────────────────
 (function() {
   const isOverlayOpen = {}; // Spårning för att undvika "dubbelkörning"
