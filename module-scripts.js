@@ -671,6 +671,8 @@ function routeGuard(isLoggedIn) {
 // Denna funktion fungerar som en komponent. Den ger båda fälten exakt samma beteende.
 function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
     if (!inputEl || !btnEl) return;
+    // store placeholder on element so focus helper can detect it reliably
+    inputEl.dataset.defaultPlaceholder = defaultPlaceholder;
     // -- START-UTSEENDE --
     if (inputEl.textContent.trim() === defaultPlaceholder || inputEl.textContent.trim() === "") {
         inputEl.textContent = defaultPlaceholder;
@@ -762,11 +764,21 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
     }
   });
 }
+// helper: focus a contenteditable and place caret at end
+// Also clears a stored data-default-placeholder if the element currently contains it.
 function focusContentEditableAtEnd(el) {
   if (!el) return;
   try {
     // Ensure element is focusable
     if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
+
+    // If the element contains the stored placeholder text, clear it now
+    const storedPlaceholder = el.dataset.defaultPlaceholder;
+    if (storedPlaceholder && el.textContent.trim() === storedPlaceholder) {
+      el.textContent = "";
+      el.style.color = "rgba(255, 255, 255, 1)";
+    }
+
     el.focus();
     const range = document.createRange();
     range.selectNodeContents(el);
