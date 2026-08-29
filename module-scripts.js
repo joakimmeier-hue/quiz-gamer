@@ -952,23 +952,25 @@ if (createProfileSubmitBtn && createUsernameInput) {
 // ==========================================
 const changeProfileSubmitBtn = document.getElementById('cp-change-btn'); 
 const changeUsernameInput = document.getElementById('change-username-input'); 
-// Ensure focusable if Webflow didn't set tabindex
-if (typeof changeUsernameInput !== 'undefined' && changeUsernameInput && !changeUsernameInput.hasAttribute('tabindex')) {
-  changeUsernameInput.setAttribute('tabindex', '0');
-}
-// Ensure single-tap focus on mobile/desktop: only focus when the user actually taps/clicks.
-if (typeof changeUsernameInput !== 'undefined' && changeUsernameInput) {
+// Ensure changeUsernameInput exists and is focusable if needed
+if (changeUsernameInput) {
+  if (!changeUsernameInput.hasAttribute('tabindex')) {
+    changeUsernameInput.setAttribute('tabindex', '0');
+  }
+
   const chUserFirstInteraction = (e) => {
-    // If already focused, do nothing
+    // If the field is locked (contenteditable false) or explicitly flagged as locked, do nothing.
+    if (changeUsernameInput.getAttribute('contenteditable') === 'false' || changeUsernameInput.dataset.locked === 'true') return;
+    // If already focused, nothing to do
     if (document.activeElement === changeUsernameInput) return;
-    // Focus and place caret at end (also clears placeholder if matches)
+    // Otherwise focus & place caret
     focusContentEditableAtEnd(changeUsernameInput);
-    // Do not preventDefault — allow normal input behavior
   };
 
   changeUsernameInput.addEventListener('touchstart', chUserFirstInteraction, { passive: true });
   changeUsernameInput.addEventListener('mousedown', chUserFirstInteraction);
   changeUsernameInput.addEventListener('click', (e) => {
+    if (changeUsernameInput.getAttribute('contenteditable') === 'false' || changeUsernameInput.dataset.locked === 'true') return;
     if (document.activeElement !== changeUsernameInput) focusContentEditableAtEnd(changeUsernameInput);
   });
 }
@@ -979,16 +981,25 @@ const changeDefaultPlaceholder = "New username";
 
 function lockOutNameChangeUI() {
     if (changeUsernameInput) {
+        // Make non-editable and non-interactive
         changeUsernameInput.setAttribute('contenteditable', 'false');
         changeUsernameInput.style.pointerEvents = 'none';
-        changeUsernameInput.textContent = changeDefaultPlaceholder; 
-        changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)"; 
+        changeUsernameInput.textContent = changeDefaultPlaceholder;
+        changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
+
+        // Ensure it cannot be focused (remove tabindex), blur if focused,
+        // and mark it so handlers can quickly short-circuit.
+        try {
+          changeUsernameInput.blur();
+        } catch (err) { /* ignore */ }
+        changeUsernameInput.removeAttribute('tabindex');
+        changeUsernameInput.dataset.locked = 'true';
     }
     if (changeInfoText) {
-        changeInfoText.textContent = "Username already changed once, sorry!"; 
+        changeInfoText.textContent = "Username already changed once, sorry!";
     }
     if (changeProfileSubmitBtn) {
-        changeProfileSubmitBtn.textContent = "Change"; 
+        changeProfileSubmitBtn.textContent = "Change";
         changeProfileSubmitBtn.classList.remove('is-active');
         changeProfileSubmitBtn.style.pointerEvents = 'none';
     }
