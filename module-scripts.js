@@ -170,12 +170,55 @@ function updateAuthUI(user) {
   function isVisible(el) {
     return el && window.getComputedStyle(el).display !== 'none';
   }
+
+// Hide the pp-dropdown/pp-grid robustly.
+// Tries: click the native closer → emit Webflow ix3 custom event 'pp-dropdown-hide' → fallback DOM hide.
+function hidePPDropdown() {
+  try {
+    // 1) If a visible pp-grid exists, try to click its .pp-dropdown-closer
+    const openGrid = Array.from(document.querySelectorAll('.pp-grid')).find(el => {
+      const style = window.getComputedStyle(el);
+      return style.display !== 'none' && el.offsetParent !== null;
+    });
+    if (openGrid) {
+      const dropdown = openGrid.closest('.pp-dropdown');
+      const closer = dropdown?.querySelector('.pp-dropdown-closer');
+      if (closer) {
+        closer.click();
+        return;
+      }
+    }
+
+    // 2) Fallback: emit the Webflow ix3 custom event (if ix3 is available)
+    if (window.Webflow && typeof Webflow.require === 'function') {
+      try {
+        const wfx = Webflow.require('ix3');
+        if (wfx && typeof wfx.emit === 'function') {
+          wfx.emit('pp-dropdown-hide');
+          return;
+        }
+      } catch (err) {
+        // ignore ix3 errors, continue to fallback
+      }
+    }
+
+    // 3) Last-resort fallback: hide any .pp-grid visually (non-destructive)
+    const anyGrid = document.querySelector('.pp-grid');
+    if (anyGrid) {
+      anyGrid.style.display = 'none';
+    }
+  } catch (err) {
+    console.warn('hidePPDropdown error', err);
+  }
+}
   // ── STATE TRACKERS ──
   window.lobbyInvOpen = false; 
   window.isGameInvAnimating = false;
 
   // ── BARA FÖR LOBBYN: Animationer ──
   function openLobbyInventory(overlay) {
+    // Close any open profile-pic dropdowns first, so inventory opens in a clean state
+    hidePPDropdown();
       window.lobbyInvOpen = true;
       overlay.style.transition = 'none';
       overlay.style.opacity = '0';
@@ -203,17 +246,12 @@ function updateAuthUI(user) {
 
     // ── PP-GRID PRIORITY CHECK: if the picker grid is open, ESC only closes that ──
     if (key === 'escape') {
-    const openGrid = Array.from(document.querySelectorAll('.pp-grid')).find(el => {
-        const style = window.getComputedStyle(el);
-        return style.display !== 'none' && el.offsetParent !== null;
-    });
     if (openGrid) {
-        e.preventDefault();
-        e.stopPropagation();
-        const closer = openGrid.closest('.pp-dropdown').querySelector('.pp-dropdown-closer');
-        if (closer) closer.click();
-        return;
-    }
+    e.preventDefault();
+    e.stopPropagation();
+    hidePPDropdown();
+    return;
+}
 }
 
     // VIKTIG ÄNDRING: Släpp igenom ESC-knappen även om användaren står inuti textfältet!
