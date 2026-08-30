@@ -1185,38 +1185,60 @@ runOnReady(() => {
   });
 });
 
+// Wire up visual level rows inside a dropdown so clicking a row sets the start button level/href
 runOnReady(() => {
-  const levelRows = document.querySelectorAll('.game-level');
-  if (!levelRows || levelRows.length === 0) return;
+  // container selector for your start-page dropdown
+  const dropdownContainers = document.querySelectorAll('.dropdown-gamestart');
+  if (!dropdownContainers || dropdownContainers.length === 0) return;
 
-  const startBtn = document.querySelector('.game-start-btn');
-  if (!startBtn) return;
+  dropdownContainers.forEach(container => {
+    // find the Start button on the page (first match)
+    const startBtn = document.querySelector('.game-start-btn');
+    if (!startBtn) return;
 
-  levelRows.forEach(row => {
-    row.addEventListener('click', (e) => {
-      e.preventDefault();
-      const level = row.dataset.level ? parseInt(row.dataset.level, 10) : null;
-      const href = row.dataset.href || row.getAttribute('href') || null;
+    // find all level rows inside this container (supports <a>, <div>, etc.)
+    const levelRows = container.querySelectorAll('.game-level');
+    if (!levelRows || levelRows.length === 0) return;
 
-      if (level && !isNaN(level)) {
-        startBtn.dataset.level = String(level);
-      } else {
-        delete startBtn.dataset.level;
-      }
+    levelRows.forEach(row => {
+      row.addEventListener('click', (e) => {
+        e.preventDefault(); // we handle navigation via the Start button
 
-      if (href) {
-        startBtn.setAttribute('href', href);
-      } else if (level) {
-        // infer topic from page slug if needed
-        const pageMatch = (window.location.pathname || '').match(/\/?([a-z]+)-start/i);
-        const topic = pageMatch ? pageMatch[1] : null;
-        if (topic) startBtn.setAttribute('href', `/${topic}-game-${level}`);
-      }
+        // Read attributes from the clicked row
+        const levelAttr = row.dataset.level;
+        const hrefAttr = row.dataset.href || row.getAttribute('href') || null;
 
-      // visual selection class (optional)
-      levelRows.forEach(r => r.classList.remove('is-selected'));
-      row.classList.add('is-selected');
-    }, { passive: true });
+        // Normalize level
+        const level = levelAttr ? parseInt(levelAttr, 10) : (hrefAttr ? (hrefAttr.match(/-game-(\d+)/i) || [])[1] : null);
+
+        // If we have a level, set it on the Start button dataset (so start handler uses it)
+        if (level && !isNaN(level)) {
+          startBtn.dataset.level = String(level);
+        } else {
+          // remove dataset if invalid
+          delete startBtn.dataset.level;
+        }
+
+        // If row provided an explicit href, set it on the Start button.
+        // Otherwise try to infer from page slug (topic-start -> topic)
+        if (hrefAttr) {
+          startBtn.setAttribute('href', hrefAttr);
+        } else if (level && !isNaN(level)) {
+          // attempt to infer topic from page path or currentSlug
+          const topicMatch = (window.location.pathname || '').match(/\/?([a-z]+)-start/i) || (typeof currentSlug !== 'undefined' && currentSlug.match(/^([a-z]+)-start$/));
+          const topic = (topicMatch && topicMatch[1]) ? topicMatch[1] : null;
+          if (topic) startBtn.setAttribute('href', `/${topic}-game-${level}`);
+        }
+
+        // Visual selection: mark this row as selected
+        levelRows.forEach(r => r.classList.remove('is-selected'));
+        row.classList.add('is-selected');
+
+        // Optional: if you want the start button to auto-navigate immediately when selecting a row,
+        // you can trigger startBtn.click() here (uncomment to enable).
+        // startBtn.click();
+      }, { passive: true });
+    });
   });
 });
 
