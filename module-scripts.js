@@ -1327,8 +1327,8 @@ function setupGameFinishListener() {
       }
       gameSubmitInProgress = false; 
     }
-  });
-}
+  };
+
 setupGameFinishListener();
 
 // ── GAME-START INFO PANEL ──────────────────────────────────────
