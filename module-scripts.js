@@ -1259,7 +1259,7 @@ function setupGameFinishListener() {
   finishBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    }, { passive: false });
+    
 
     // <-- ADDED 2: Hard stop if a submission is already running, otherwise lock it
     if (gameSubmitInProgress) return; 
@@ -1328,6 +1328,8 @@ function setupGameFinishListener() {
       gameSubmitInProgress = false; 
     }
   };
+}, { passive: false });
+
 
 setupGameFinishListener();
 
