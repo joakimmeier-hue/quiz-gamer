@@ -1080,7 +1080,16 @@ let currentGameSessionId = null;
   const topic = gameMatch[1];
   const level = parseInt(gameMatch[2], 10);
 
-  // Wait for auth before starting the session (currentUser may not be set yet on fresh load)
+  // If the start page already created the session, use it (one-time)
+  const persistedSession = sessionStorage.getItem('currentGameSessionId');
+  if (persistedSession) {
+    currentGameSessionId = persistedSession;
+    sessionStorage.removeItem('currentGameSessionId'); // optional: don't reuse it later
+    console.log("Using sessionId from start button:", currentGameSessionId);
+    return;
+  }
+
+  // Fallback: original behavior — start session once auth is available
   const tryStart = async () => {
     if (!currentUser) {
       setTimeout(tryStart, 200);
@@ -1096,6 +1105,121 @@ let currentGameSessionId = null;
   };
   tryStart();
 })();
+
+// runOnReady helper (define once in the file; omit if already present)
+function runOnReady(fn) {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', fn, { once: true });
+  } else {
+    fn();
+  }
+}
+
+runOnReady(() => {
+  // Attach start-button behavior for any .game-start-btn on the page
+  const startButtons = document.querySelectorAll('.game-start-btn');
+  if (!startButtons || startButtons.length === 0) return;
+
+  startButtons.forEach(startBtn => {
+    let startInProgress = false;
+
+    startBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (startInProgress) return;
+      startInProgress = true;
+      startBtn.style.pointerEvents = 'none';
+
+      // Derive topic+level: prefer explicit data attrs, then level selector, then href, then page slug, then fallback level=1
+      let topic = startBtn.dataset.topic || null;
+      let level = startBtn.dataset.level ? parseInt(startBtn.dataset.level, 10) : null;
+
+      // 1) If there's a level control on the page, prefer that value (useful for a dropdown)
+      if ((!level || isNaN(level)) && typeof document !== 'undefined') {
+        const levelEl = document.getElementById('start-level'); // <select id="start-level">...
+        if (levelEl) {
+          const lv = parseInt(levelEl.value, 10);
+          if (!isNaN(lv)) level = lv;
+        }
+      }
+
+      // 2) Try to parse the button href (e.g. /gma-game-1)
+      if (!topic || !level) {
+        const href = startBtn.getAttribute('href') || startBtn.dataset.href || window.location.pathname;
+        const match = (href || '').match(/\/?([a-z]+)-game-(\d+)/i);
+        if (match) {
+          topic = topic || match[1].toLowerCase();
+          level = level || parseInt(match[2], 10);
+        }
+      }
+
+      // 3) Fallback: derive topic from the page slug (e.g. gma-start)
+      if (!topic && typeof currentSlug !== 'undefined') {
+        const pageMatch = currentSlug.match(/^([a-z]+)-start$/);
+        if (pageMatch) topic = pageMatch[1];
+      }
+
+      // 4) Final fallback: default level = 1
+      if (!level || isNaN(level)) level = 1;
+
+      // Debug helper (optional) - uncomment while testing
+      // console.log('Start click:', { topic, level, href: startBtn.getAttribute('href') });
+
+      try {
+        // call the cloud function via the client wrapper startGameFn (already defined in your module)
+        const result = await startGameFn({ topic, level });
+        const sessionId = result?.data?.sessionId;
+        if (sessionId) {
+          sessionStorage.setItem('currentGameSessionId', sessionId);
+        }
+
+        const targetHref = startBtn.getAttribute('href') || `/${topic}-game-${level}`;
+        setTimeout(() => window.location.href = targetHref, 80);
+      } catch (err) {
+        console.error("Failed to start game session:", err?.message || err);
+        startBtn.style.pointerEvents = 'auto';
+        startInProgress = false;
+      }
+    }, { passive: true });
+  });
+});
+
+runOnReady(() => {
+  const levelRows = document.querySelectorAll('.game-level');
+  if (!levelRows || levelRows.length === 0) return;
+
+  const startBtn = document.querySelector('.game-start-btn');
+  if (!startBtn) return;
+
+  levelRows.forEach(row => {
+    row.addEventListener('click', (e) => {
+      e.preventDefault();
+      const level = row.dataset.level ? parseInt(row.dataset.level, 10) : null;
+      const href = row.dataset.href || row.getAttribute('href') || null;
+
+      if (level && !isNaN(level)) {
+        startBtn.dataset.level = String(level);
+      } else {
+        delete startBtn.dataset.level;
+      }
+
+      if (href) {
+        startBtn.setAttribute('href', href);
+      } else if (level) {
+        // infer topic from page slug if needed
+        const pageMatch = (window.location.pathname || '').match(/\/?([a-z]+)-start/i);
+        const topic = pageMatch ? pageMatch[1] : null;
+        if (topic) startBtn.setAttribute('href', `/${topic}-game-${level}`);
+      }
+
+      // visual selection class (optional)
+      levelRows.forEach(r => r.classList.remove('is-selected'));
+      row.classList.add('is-selected');
+    }, { passive: true });
+  });
+});
+
 
 function setupGameFinishListener() {
   const finishBtn = document.getElementById('finish-btn');

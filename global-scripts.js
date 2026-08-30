@@ -1019,6 +1019,7 @@ if (customElements.get('lottie-player')) {
         }
     });
 }
+
 // Stäng flik för terms and privacy
 document.addEventListener("click", (e) => {
   // Leta efter klick på din komboklass (eller något inuti den)
