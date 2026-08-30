@@ -428,7 +428,7 @@ function initAudio() {
                 toggleBtn.classList.add('is-visible');
             }, 50);
         }
-      // DET ENDA KLICK-EVENTET FÖR TOGGLE-KNAPPEN
+// DET ENDA KLICK-EVENTET FÖR TOGGLE-KNAPPEN
 toggleBtn.addEventListener('click', (e) => {
     e.preventDefault();
     
