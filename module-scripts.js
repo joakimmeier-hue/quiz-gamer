@@ -1327,8 +1327,8 @@ function setupGameFinishListener() {
       }
       gameSubmitInProgress = false; 
     }
-  };
-}, { passive: false });
+  });
+}
 
 
 setupGameFinishListener();
