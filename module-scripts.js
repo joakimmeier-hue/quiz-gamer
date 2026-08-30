@@ -36,6 +36,21 @@
   const userScoreEl = document.getElementById('user-total-score');
   const userRankEl = document.getElementById('user-rank');
 
+// Ensure currentSlug exists for routing (must be defined before routeGuard runs)
+if (typeof currentSlug === 'undefined') {
+  let derived = (window.location.pathname || '/').replace(/^\/+|\/+$/g, '');
+  if (!derived) {
+    // default for root
+    derived = 'lobby';
+  } else {
+    // take the last path segment and strip .html if present
+    derived = derived.split('/').pop().replace(/\.html$/i, '');
+  }
+  // expose as globals so existing code that uses `currentSlug` works
+  window.currentSlug = derived;
+  currentSlug = derived;
+}
+
 function updateAuthUI(user) {
     if (user) {
       // ANVÄNDARE ÄR INLOGGAD
@@ -604,59 +619,51 @@ async function loadUserData(uid) {
     }
   }
 
-  // ── FIREBASE AUTH OBSERVER ──
-  onAuthStateChanged(auth, (user) => {
-    currentUser = user;
-    updateAuthUI(user);
-    if (user) {
-      loadUserData(user.uid);
-    }
-    routeGuard(!!user); // NEW
-  });
-
-// ── INCOMPLETE ACCOUNT RECOVERY ──
+  // ── FIREBASE AUTH OBSERVER ── & ── INCOMPLETE ACCOUNT RECOVERY ──
 onAuthStateChanged(auth, async (user) => {
-    currentUser = user;
-    updateAuthUI(user);
-    
-    if (user) {
-        try {
-            const userDocRef = doc(db, "users", user.uid);
-            const userDoc = await getDoc(userDocRef);
-            
-            // CASE 1: First-time user (new to Firestore)
-            if (!userDoc.exists()) {
-                console.log("🔴 NEW USER - Showing create profile");
-                showCreateProfile();
-                return;
-            }
-            
-            // CASE 2: User exists but is INCOMPLETE (missing username OR profile pic)
-            const userData = userDoc.data();
-            const hasUsername = userData.username && userData.username.trim() !== "";
-            const hasProfilePic = userData.profilePicUrl && userData.profilePicUrl !== "";
-            
-            if (!hasUsername || !hasProfilePic) {
-                console.log("🟡 INCOMPLETE PROFILE - Missing username or profile picture. Forcing create profile...");
-                showCreateProfile();
-                return;
-            }
-            
-            // CASE 3: User is complete ✅
-            console.log("✅ COMPLETE USER - Loading data");
-            loadUserData(user.uid);
-            
-        } catch (firestoreError) {
-            console.warn("Firestore error:", firestoreError.message);
-            // Fallback: show create profile to be safe
-            showCreateProfile();
-        }
+  currentUser = user;
+  updateAuthUI(user);
+
+  if (!user) {
+    // Not signed in
+    routeGuard(false);
+    return;
+  }
+
+  // Signed in — ensure Firestore user doc exists and is complete
+  try {
+    const userDocRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
+
+    if (!userDoc.exists()) {
+      console.log("🔴 NEW USER - Showing create profile");
+      showCreateProfile();
+      routeGuard(false);
+      return;
     }
-    
-    routeGuard(!!user);
+
+    const userData = userDoc.data();
+    const hasUsername = userData.username && userData.username.trim() !== "";
+    const hasProfilePic = userData.profilePicUrl && userData.profilePicUrl !== "";
+
+    if (!hasUsername || !hasProfilePic) {
+      console.log("🟡 INCOMPLETE PROFILE - Forcing create profile");
+      showCreateProfile();
+      routeGuard(false);
+      return;
+    }
+
+    // User is complete
+    loadUserData(user.uid);
+    routeGuard(true);
+  } catch (err) {
+    console.warn("Firestore error:", err.message || err);
+    showCreateProfile();
+    routeGuard(false);
+  }
 });
 
-/* // ── ROUTE GUARD SYSTEM ──────────────────────────────────────────────
+// ── ROUTE GUARD SYSTEM ──────────────────────────────────────────────
 let routeGuardHasRun = false;
 
 function routeGuard(isLoggedIn) {
@@ -691,7 +698,7 @@ function routeGuard(isLoggedIn) {
         }
     }
 }
- */
+
 
 // ==========================================
 // ── 1. DELAD KOMPONENT FÖR TEXTFÄLT ──
@@ -1116,73 +1123,72 @@ function runOnReady(fn) {
 }
 
 runOnReady(() => {
-  // Attach start-button behavior for any .game-start-btn on the page
-  const startButtons = document.querySelectorAll('.game-start-btn');
-  if (!startButtons || startButtons.length === 0) return;
+// Attach start-button behavior for any .game-start-btn on the page
+const startButtons = document.querySelectorAll('.game-start-btn');
+if (!startButtons || startButtons.length === 0) return;
 
-  startButtons.forEach(startBtn => {
-    let startInProgress = false;
+startButtons.forEach(startBtn => {
+  let startInProgress = false;
 
-    startBtn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+  startBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-      if (startInProgress) return;
-      startInProgress = true;
-      startBtn.style.pointerEvents = 'none';
+    if (startInProgress) return;
+    startInProgress = true;
+    startBtn.style.pointerEvents = 'none';
 
-      // Derive topic+level: prefer explicit data attrs, then level selector, then href, then page slug, then fallback level=1
-      let topic = startBtn.dataset.topic || null;
-      let level = startBtn.dataset.level ? parseInt(startBtn.dataset.level, 10) : null;
+    // Derive topic+level: prefer explicit data attrs, then level selector, then href, then page slug, then fallback level=1
+    let topic = startBtn.dataset.topic || null;
+    let level = startBtn.dataset.level ? parseInt(startBtn.dataset.level, 10) : null;
 
-      // 1) If there's a level control on the page, prefer that value (useful for a dropdown)
-      if ((!level || isNaN(level)) && typeof document !== 'undefined') {
-        const levelEl = document.getElementById('start-level'); // <select id="start-level">...
-        if (levelEl) {
-          const lv = parseInt(levelEl.value, 10);
-          if (!isNaN(lv)) level = lv;
-        }
+    // 1) If there's a level control on the page, prefer that value (useful for a dropdown)
+    if ((!level || isNaN(level)) && typeof document !== 'undefined') {
+      const levelEl = document.getElementById('start-level');
+      if (levelEl) {
+        const lv = parseInt(levelEl.value, 10);
+        if (!isNaN(lv)) level = lv;
+      }
+    }
+
+    // 2) Try to parse the button href (e.g. /gma-game-1)
+    if (!topic || !level) {
+      const href = startBtn.getAttribute('href') || startBtn.dataset.href || window.location.pathname;
+      const match = (href || '').match(/\/?([a-z]+)-game-(\d+)/i);
+      if (match) {
+        topic = topic || match[1].toLowerCase();
+        level = level || parseInt(match[2], 10);
+      }
+    }
+
+    // 3) Fallback: derive topic from the page slug (e.g. gma-start)
+    if (!topic && typeof currentSlug !== 'undefined') {
+      const pageMatch = currentSlug.match(/^([a-z]+)-start$/);
+      if (pageMatch) topic = pageMatch[1];
+    }
+
+    // 4) Final fallback: default level = 1
+    if (!level || isNaN(level)) level = 1;
+
+    try {
+      const result = await startGameFn({ topic, level });
+      const sessionId = result?.data?.sessionId;
+      if (sessionId) {
+        sessionStorage.setItem('currentGameSessionId', sessionId);
       }
 
-      // 2) Try to parse the button href (e.g. /gma-game-1)
-      if (!topic || !level) {
-        const href = startBtn.getAttribute('href') || startBtn.dataset.href || window.location.pathname;
-        const match = (href || '').match(/\/?([a-z]+)-game-(\d+)/i);
-        if (match) {
-          topic = topic || match[1].toLowerCase();
-          level = level || parseInt(match[2], 10);
-        }
-      }
+      // record where we came from so routeGuard accepts the navigation
+      sessionStorage.setItem('navFrom', `${topic}-start`);
 
-      // 3) Fallback: derive topic from the page slug (e.g. gma-start)
-      if (!topic && typeof currentSlug !== 'undefined') {
-        const pageMatch = currentSlug.match(/^([a-z]+)-start$/);
-        if (pageMatch) topic = pageMatch[1];
-      }
-
-      // 4) Final fallback: default level = 1
-      if (!level || isNaN(level)) level = 1;
-
-      // Debug helper (optional) - uncomment while testing
-      // console.log('Start click:', { topic, level, href: startBtn.getAttribute('href') });
-
-      try {
-        // call the cloud function via the client wrapper startGameFn (already defined in your module)
-        const result = await startGameFn({ topic, level });
-        const sessionId = result?.data?.sessionId;
-        if (sessionId) {
-          sessionStorage.setItem('currentGameSessionId', sessionId);
-        }
-
-        const targetHref = startBtn.getAttribute('href') || `/${topic}-game-${level}`;
-        setTimeout(() => window.location.href = targetHref, 80);
-      } catch (err) {
-        console.error("Failed to start game session:", err?.message || err);
-        startBtn.style.pointerEvents = 'auto';
-        startInProgress = false;
-      }
-    }, { passive: true });
-  });
+      const targetHref = startBtn.getAttribute('href') || `/${topic}-game-${level}`;
+      setTimeout(() => window.location.href = targetHref, 150);
+    } catch (err) {
+      console.error("Failed to start game session:", err?.message || err);
+      startBtn.style.pointerEvents = 'auto';
+      startInProgress = false;
+    }
+  }, { passive: false });
+});
 });
 
 // Wire up visual level rows inside a dropdown so clicking a row sets the start button level/href
@@ -1237,7 +1243,7 @@ runOnReady(() => {
         // Optional: if you want the start button to auto-navigate immediately when selecting a row,
         // you can trigger startBtn.click() here (uncomment to enable).
         // startBtn.click();
-      }, { passive: true });
+      }, { passive: false });
     });
   });
 });
@@ -1253,6 +1259,7 @@ function setupGameFinishListener() {
   finishBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     e.stopPropagation();
+    }, { passive: false });
 
     // <-- ADDED 2: Hard stop if a submission is already running, otherwise lock it
     if (gameSubmitInProgress) return; 
