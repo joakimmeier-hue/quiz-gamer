@@ -467,11 +467,23 @@ window.addEventListener('pageshow', () => {
   
 window.addEventListener('DOMContentLoaded', initAudio);
 // Skottsäker bfcache-fix för BACK/FORWARD-knapparna!
+// ── BACK BUTTON: Skip intro on return to lobby ────────────────────
 window.addEventListener('pageshow', (event) => {
     // Tvinga variabeln till false och rensa gamla klasser DIREKT för att döda dubbelklick-buggen
     applyMuteState(false);
     
-    // Hantera tider när man navigerar runt (länk eller backa)
+    // Only handle intro skip on lobby
+    const isLobby = currentTopicId === 'lobby';
+    const navEntry = performance.getEntriesByType("navigation")[0];
+    const isBack = (navEntry && navEntry.type === "back_forward") || event.persisted;
+    
+    if (isLobby && isBack && sessionStorage.getItem('skipIntro') === 'true') {
+        // Intro overlay is already hidden by the skipIntro flag
+        sessionStorage.removeItem('skipIntro'); // Clear it so it doesn't re-fire
+        return; // Skip audio timing logic below
+    }
+    
+    // Hantera tider när man navigerar runt (länk eller backa) — ONLY for non-lobby or when NOT skipping
     if (currentTopicId === 'lobby' || currentTopicId === 'uc') {
         const baseStart = currentConfig.startTime || 19.482;
         
@@ -491,6 +503,7 @@ window.addEventListener('pageshow', (event) => {
         window.startMusic(true);
     }
 });
+
 // Spara tid när man lämnar en undersida
 window.addEventListener('beforeunload', () => {
     if (!audio.paused && currentTopicId !== 'lobby' && currentTopicId !== 'uc') {
