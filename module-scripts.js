@@ -1134,8 +1134,8 @@ startButtons.forEach(startBtn => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (startInProgress) return;
-    startInProgress = true;
+    if (startBtn.dataset.inProgress === 'true') return;
+    startBtn.dataset.inProgress = 'true';
     startBtn.style.pointerEvents = 'none';
 
     // Derive topic+level: prefer explicit data attrs, then level selector, then href, then page slug, then fallback level=1
@@ -1182,21 +1182,20 @@ startButtons.forEach(startBtn => {
 
       const targetHref = startBtn.getAttribute('href') || `/${topic}-game-${level}`;
       setTimeout(() => window.location.href = targetHref, 150);
-    } catch (err) {
+      } catch (err) {
       console.error("Failed to start game session:", err?.message || err);
       startBtn.style.pointerEvents = 'auto';
-      startInProgress = false;
-    }
+      delete startBtn.dataset.inProgress; // <--- reset dataset flag on failure
+      }
   }, { passive: false });
 });
 // ── ADD PAGESHOW LISTENER HERE -- start btn works when go back  ─────────────────────────────────
-  window.addEventListener('pageshow', () => {
-    // Re-enable pointer events on all start buttons if restored from cache/back-button
+    window.addEventListener('pageshow', () => {
     startButtons.forEach(startBtn => {
-      startBtn.style.pointerEvents = 'auto';
+    startBtn.style.pointerEvents = 'auto';
+    delete startBtn.dataset.inProgress; // <--- unlocks the button for re-clicking
     });
 
-    // Clear lingering session data from the previous/aborted run
     sessionStorage.removeItem('currentGameSessionId');
   });
 });
