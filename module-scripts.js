@@ -1194,7 +1194,7 @@ startButtons.forEach(startBtn => {
 // Wire up visual level rows inside a dropdown so clicking a row sets the start button level/href
 runOnReady(() => {
   // container selector for your start-page dropdown
-  const dropdownContainers = document.querySelectorAll('.dropdown-gamestart');
+  const dropdownContainers = document.querySelectorAll('.dropdown-gamelevel');
   if (!dropdownContainers || dropdownContainers.length === 0) return;
 
   dropdownContainers.forEach(container => {

@@ -838,7 +838,9 @@ const HOVER_SCALE_CLASSES = [
     'cp-submit-btn',
     'profile-pic-option',
     'current-profile-pic',
-    'login-modal-btn'
+    'login-modal-btn',
+    'dropdown-toggle-lvl',
+    'game-level'
 ];
 
 // Klasser som ska skalas upp till 1.08 vid hover (subtil effekt)
@@ -864,7 +866,8 @@ const PRESS_SCALE_CLASSES = [
     'button.i-lobby-back',
     'cp-submit-btn',
     'current-profile-pic',
-    'login-modal-btn'
+    'login-modal-btn',
+    'game-level'
 ];
 
 const supportsRealHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
