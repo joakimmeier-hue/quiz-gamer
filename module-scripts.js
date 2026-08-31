@@ -1189,6 +1189,16 @@ startButtons.forEach(startBtn => {
     }
   }, { passive: false });
 });
+// ── ADD PAGESHOW LISTENER HERE -- start btn works when go back  ─────────────────────────────────
+  window.addEventListener('pageshow', () => {
+    // Re-enable pointer events on all start buttons if restored from cache/back-button
+    startButtons.forEach(startBtn => {
+      startBtn.style.pointerEvents = 'auto';
+    });
+
+    // Clear lingering session data from the previous/aborted run
+    sessionStorage.removeItem('currentGameSessionId');
+  });
 });
 
 // Wire up visual level rows inside a dropdown so clicking a row sets the start button level/href
