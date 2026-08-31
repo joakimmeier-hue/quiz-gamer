@@ -869,7 +869,8 @@ const PRESS_SCALE_CLASSES = [
     'cp-submit-btn',
     'current-profile-pic',
     'login-modal-btn',
-    'game-level'
+    'game-level',
+    'gamelvltitlewrap'
 ];
 
 const supportsRealHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
