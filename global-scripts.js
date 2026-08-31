@@ -820,7 +820,7 @@ window.addEventListener('keydown', function(e) {
 const HOVER_SCALE_CLASSES = [
     'cp-exit',
     'games-link-block',
-    'q-logo',
+    'link-to-lobby',
     'burger-links',
     'fcp-link',
     'fat-cat-logo',
@@ -852,7 +852,7 @@ const HOVER_SCALE_CLASSES_SM = [
 const PRESS_SCALE_CLASSES = [
     'cp-exit',
     'games-link-block',
-    'q-logo',
+    'link-to-lobby',
     'burger-links',
     'submit-button',
     'button',
