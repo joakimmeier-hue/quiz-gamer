@@ -839,7 +839,7 @@ const HOVER_SCALE_CLASSES = [
     'profile-pic-option',
     'current-profile-pic',
     'login-modal-btn',
-    'dropdown-gamelevel',
+    'dropdown-toggle-lvl',
     'game-level'
 ];
 
