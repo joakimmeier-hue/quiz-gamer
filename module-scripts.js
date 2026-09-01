@@ -1103,10 +1103,12 @@ let currentGameSessionId = null;
       return;
     }
     try {
+      console.time('startGame');
       const result = await startGameFn({ topic, level });
+      console.timeEnd('startGame'); // logs "startGame: XXXms" to console
       currentGameSessionId = result.data.sessionId;
       console.log("Game session started:", currentGameSessionId);
-      console.time('startGame')
+      console.timeEnd('startGame'); // still end it even on failure, or the label leaks
     } catch (err) {
       console.error("Failed to start game session:", err.message);
     }
