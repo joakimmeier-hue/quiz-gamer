@@ -1106,6 +1106,7 @@ let currentGameSessionId = null;
       const result = await startGameFn({ topic, level });
       currentGameSessionId = result.data.sessionId;
       console.log("Game session started:", currentGameSessionId);
+      console.time('startGame')
     } catch (err) {
       console.error("Failed to start game session:", err.message);
     }
