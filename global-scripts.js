@@ -283,6 +283,7 @@ const TOPICS = {
 };
 function getTopicFromUrl(url) {
     const lowerUrl = url.toLowerCase();
+    if (lowerUrl.includes('science')) return 'science';
     if (lowerUrl.includes('gma')) return 'gma';
     if (lowerUrl.includes('cars')) return 'cars';
     if (lowerUrl.includes('history')) return 'history';
@@ -754,7 +755,7 @@ window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false
                     }, 1345); 
                 }, 800);
             } else {
-                const waitTime = isSlowFinish ? 2000 : 1000;
+                const waitTime = isSlowFinish ? 2000 : 1000; //set 1000 to 800 as well?
                 setTimeout(() => {
                     window.location.href = url;
                 }, waitTime); 
