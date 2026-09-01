@@ -1,5 +1,3 @@
-// global-scripts
-
 // Robust smooth scroll to element id (cancelable)
 function smoothScrollToId(targetId, opts = {}) {
   const duration = opts.duration ?? 1000;
@@ -78,6 +76,148 @@ function smoothScrollToId(targetId, opts = {}) {
     });
   });
 })();
+
+// ────────────────── GAME-START PAGES ──────────────────
+// 1 BLUR TOP OF PAGE - WITH CLONE
+  document.addEventListener('DOMContentLoaded', () => {
+  const scrollSource = document.querySelector('.mask-middle');
+  const scrollSlave = document.querySelector('.mask-top');
+
+  if (!scrollSource || !scrollSlave) {
+    console.warn('scroll sync: elements not found', scrollSource, scrollSlave);
+    return;
+  }
+
+  function syncSlave() {
+    scrollSlave.scrollTop = scrollSource.scrollTop;
+  }
+
+  scrollSource.addEventListener('scroll', () => {
+    requestAnimationFrame(syncSlave);
+  }, { passive: true });
+});
+
+  document.addEventListener('DOMContentLoaded', () => {
+  const real = document.querySelector('.game-v');
+  const dummySlot = document.querySelector('.game-v-dummy');
+  if (real && dummySlot) {
+    const clone = real.cloneNode(true);
+
+    // Kill all ids (avoid duplicate-id issues)
+    clone.removeAttribute('id');
+    clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+
+    // Kill all interactivity visually
+    clone.style.pointerEvents = 'none';
+    clone.querySelectorAll('*').forEach(el => el.style.pointerEvents = 'none');
+
+    // Strip behavioral classes your JS hooks into, so observers/handlers skip it entirely
+    const behavioralClasses = ['game-info', 'dropdown-gamelevel', 'arrow-anchor-wrapper', 'game-start-btn', 'hover-scale', 'js-press-scale', 'game-level'];
+    behavioralClasses.forEach(cls => {
+      clone.classList.remove(cls);
+      clone.querySelectorAll('.' + cls).forEach(el => el.classList.remove(cls));
+    });
+
+    dummySlot.appendChild(clone);
+  }
+});
+
+
+// 3 COMPONENT .dropdown-gamelevel
+  document.addEventListener('DOMContentLoaded', () => {
+  const dropdownToggle = document.querySelector('.dropdown-toggle-lvl');
+  const dropdownList = document.querySelector('.dropdown-list-2');
+  const gamelvlBtn = document.querySelector('.gamelvl-btn');
+  const levelRows = document.querySelectorAll('.game-level');
+  const startBtn = document.querySelector('.game-start-btn');
+  if (!dropdownToggle || !dropdownList || !gamelvlBtn) return;
+
+  const toggleDropdown = (show) => {
+  const shouldOpen = show !== undefined ? show : !dropdownList.classList.contains('is-open');
+  if (shouldOpen) {
+    dropdownList.style.display = 'flex';
+    requestAnimationFrame(() => dropdownList.classList.add('is-open'));
+  } else {
+    dropdownList.classList.remove('is-open');
+    dropdownList.addEventListener('transitionend', function handler() {
+      dropdownList.style.display = 'none';
+      dropdownList.removeEventListener('transitionend', handler);
+    }, { once: true });
+  }
+};
+
+  dropdownToggle.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleDropdown();
+  });
+
+  levelRows.forEach((row) => {
+    row.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      gamelvlBtn.innerHTML = row.innerHTML;
+	  gamelvlBtn.classList.add(...row.classList); // adds row's classes alongside gamelvlBtn's existing ones
+
+      const selectedText = row.textContent.trim();
+      const levelMatch = selectedText.match(/\d+/);
+      const selectedLevel = levelMatch ? levelMatch[0] : '1';
+
+      if (startBtn) {
+        startBtn.dataset.level = selectedLevel;
+        const currentHref = startBtn.getAttribute('href') || '';
+        if (currentHref) {
+          startBtn.setAttribute('href', currentHref.replace(/level=\d+/, `level=${selectedLevel}`));
+        }
+      }
+
+      toggleDropdown(false);
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!dropdownToggle.contains(e.target) && !dropdownList.contains(e.target)) {
+      toggleDropdown(false);
+    }
+  });
+});
+
+// COMPONENT game-start-btn
+// SCROLL: game-start-btn visibility + arrow hide/show
+document.addEventListener('DOMContentLoaded', () => {
+  const scrollContainer = document.querySelector('.mask-middle');
+  const targetBtns = document.querySelectorAll('.game-start-btn');
+  const arrowWrapper = document.querySelector('.arrow-anchor-wrapper');
+  if (!scrollContainer || targetBtns.length === 0) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        const btnInside = entry.target.querySelector('.game-start-btn');
+        if (!btnInside) return;
+
+        if (entry.isIntersecting) {
+          btnInside.classList.add('is-visible');
+          if (arrowWrapper) arrowWrapper.classList.add('is-hidden');
+        } else {
+          btnInside.classList.remove('is-visible');
+          if (arrowWrapper) arrowWrapper.classList.remove('is-hidden');
+        }
+      });
+    },
+    {
+      root: scrollContainer,
+      threshold: 1,
+      rootMargin: "0px 0px -24% 0px" // shrinks trigger zone from the bottom
+    }
+  );
+
+  targetBtns.forEach((btn) => {
+    const parentRow = btn.closest('.row');
+    if (parentRow) observer.observe(parentRow);
+  });
+});
+
 
 /* // --- HINDRA CTRL + SCROLL ZOOM ---
 window.addEventListener('wheel', function(e) {
