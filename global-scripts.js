@@ -244,6 +244,12 @@ const TOPICS = {
         startTime: 0,
         fadeColor: '#ffffff'
     },
+    science: {
+        url: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69b08a22396c27a611026d0c_The%20end%20of%20tyreen%20remix.mp3', 
+        volume: 0.6,
+        startTime: 0,
+        fadeColor: '#000000'
+    },
     cars: {
         url: '', 
         volume: 0.6,
@@ -755,7 +761,7 @@ window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false
                     }, 1345); 
                 }, 800);
             } else {
-                const waitTime = isSlowFinish ? 2000 : 1000; //set 1000 to 800 as well?
+                const waitTime = isSlowFinish ? 2500 : 800; //set 1000 to 800 as well?
                 setTimeout(() => {
                     window.location.href = url;
                 }, waitTime); 
