@@ -75,7 +75,7 @@ function smoothScrollToId(targetId, opts = {}) {
       const id = this.getAttribute('data-scroll-to');
       if (!id) return;
       smoothScrollToId(id, { duration: 900, topOffsetPercent: window.innerWidth < 600 ? 0.12 : 0.20 });
-    }, { passive: true });
+    });
   });
 })();
 
