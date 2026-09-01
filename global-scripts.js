@@ -79,15 +79,16 @@ function smoothScrollToId(targetId, opts = {}) {
   });
 })();
 
-// --- HINDRA CTRL + SCROLL ZOOM ---
+/* // --- HINDRA CTRL + SCROLL ZOOM ---
 window.addEventListener('wheel', function(e) {
   if (e.ctrlKey) { e.preventDefault(); }
 }, { passive: true });
+
 // Auto scroll to top
 if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
 window.addEventListener('load', function() {
   window.scrollTo(0, 0);
-});
+}); */
   
 // ── LADDA LOTTIE-SPELAREN ─────────────────────────────────────────────
 if (!document.querySelector('script[src*="lottie-player"]')) {
