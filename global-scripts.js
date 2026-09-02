@@ -1,56 +1,94 @@
 // Robust smooth scroll to element id (cancelable)
+// Finds the nearest scrollable ancestor, or null if the page itself scrolls
+function getScrollParent(el) {
+  let node = el.parentElement;
+  while (node && node !== document.body) {
+    const style = window.getComputedStyle(node);
+    const overflowY = style.overflowY;
+    if ((overflowY === 'auto' || overflowY === 'scroll') && node.scrollHeight > node.clientHeight) {
+      return node;
+    }
+    node = node.parentElement;
+  }
+  return null; // no scrollable ancestor found -> use window
+}
+
 function smoothScrollToId(targetId, opts = {}) {
   const duration = opts.duration ?? 1000;
   const topOffsetPercent = opts.topOffsetPercent ?? (window.innerWidth < 600 ? 0.12 : 0.2);
-
   const target = document.getElementById(targetId);
   if (!target) return Promise.resolve(false);
 
-  const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-  const elementTop = target.getBoundingClientRect().top + window.scrollY;
-  const targetPos = Math.max(0, Math.round(elementTop - viewportHeight * topOffsetPercent));
+  // explicit container wins; otherwise auto-detect; otherwise fall back to window
+  const container = opts.container instanceof Element
+    ? opts.container
+    : (opts.containerSelector ? document.querySelector(opts.containerSelector) : null)
+      || getScrollParent(target);
 
-  let start = window.scrollY;
+  const isWindow = !container;
+  const scroller = {
+    get pos() {
+      return isWindow ? window.scrollY : container.scrollTop;
+    },
+    set pos(v) {
+      if (isWindow) window.scrollTo(0, v);
+      else container.scrollTop = v;
+    },
+    get viewportHeight() {
+      return isWindow
+        ? (window.visualViewport ? window.visualViewport.height : window.innerHeight)
+        : container.clientHeight;
+    },
+    addEvt(type, fn, opts2) {
+      (isWindow ? window : container).addEventListener(type, fn, opts2);
+    },
+    removeEvt(type, fn) {
+      (isWindow ? window : container).removeEventListener(type, fn);
+    }
+  };
+
+  const targetRect = target.getBoundingClientRect();
+  const baseRect = isWindow ? { top: 0 } : container.getBoundingClientRect();
+  const elementTop = targetRect.top - baseRect.top + scroller.pos;
+  const targetPos = Math.max(0, Math.round(elementTop - scroller.viewportHeight * topOffsetPercent));
+
+  let start = scroller.pos;
   const distance = targetPos - start;
   let startTime = null;
   let rafId = null;
   let canceled = false;
 
   const cancelOnUser = () => { canceled = true; cleanup(); };
-  window.addEventListener('wheel', cancelOnUser, { passive: true, once: true });
-  window.addEventListener('touchstart', cancelOnUser, { passive: true, once: true });
+  scroller.addEvt('wheel', cancelOnUser, { passive: true, once: true });
+  scroller.addEvt('touchstart', cancelOnUser, { passive: true, once: true });
   window.addEventListener('keydown', cancelOnUser, { once: true });
 
   function easeInOut(t) {
     return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
   }
-
   function step(ts) {
     if (canceled) return;
     if (!startTime) startTime = ts;
     const progress = Math.min((ts - startTime) / duration, 1);
-    const pos = Math.round(start + distance * easeInOut(progress));
-    window.scrollTo(0, pos);
+    scroller.pos = Math.round(start + distance * easeInOut(progress));
     if (progress < 1) {
       rafId = requestAnimationFrame(step);
     } else {
       cleanup();
     }
   }
-
   function cleanup() {
     if (rafId) cancelAnimationFrame(rafId);
     try {
-      window.removeEventListener('wheel', cancelOnUser);
-      window.removeEventListener('touchstart', cancelOnUser);
+      scroller.removeEvt('wheel', cancelOnUser);
+      scroller.removeEvt('touchstart', cancelOnUser);
       window.removeEventListener('keydown', cancelOnUser);
     } catch (e) {}
   }
-
   return new Promise((resolve) => {
     rafId = requestAnimationFrame(step);
     const finishCheck = setInterval(() => {
-      if (canceled || window.scrollY === targetPos) {
+      if (canceled || scroller.pos === targetPos) {
         clearInterval(finishCheck);
         cleanup();
         resolve(!canceled);
@@ -59,20 +97,22 @@ function smoothScrollToId(targetId, opts = {}) {
   });
 }
 
-// Attach smooth scroll to elements with data-scroll-to (run once on load/DOMContentLoaded)
+// Attach handlers — unchanged, just stop passing a hardcoded containerSelector
 (function attachDataScrollHandlers() {
   const triggers = document.querySelectorAll('[data-scroll-to]');
   triggers.forEach(trigger => {
     trigger.addEventListener('click', function (e) {
       e.preventDefault();
-
-      // ignore clicks when element visually hidden/disabled
       const cs = window.getComputedStyle(this);
       if (cs.pointerEvents === 'none' || parseFloat(cs.opacity) === 0) return;
-
       const id = this.getAttribute('data-scroll-to');
       if (!id) return;
-      smoothScrollToId(id, { duration: 900, topOffsetPercent: window.innerWidth < 600 ? 0.12 : 0.20 });
+      smoothScrollToId(id, {
+        duration: 900,
+        topOffsetPercent: window.innerWidth < 600 ? 0.12 : 0.20
+        // no containerSelector needed — auto-detects .mask-middle here,
+        // falls back to window on normal pages
+      });
     });
   });
 })();
