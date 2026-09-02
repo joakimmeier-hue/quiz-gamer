@@ -267,71 +267,97 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// 4 ARROW ANCHOR
+// 4 ARROW ANCHOR — exact SVG bezier curve replay
 document.addEventListener('DOMContentLoaded', () => {
   const arrowWrapper = document.querySelector('.arrow-anchor-wrapper');
   if (!arrowWrapper) return;
 
-  // --- 1. PAGE LOAD DELAY & START ANIMATION ---
-  setTimeout(() => {
-    arrowWrapper.classList.add('is-loaded');
-    startArrowAnimation(arrowWrapper);
-  }, 3200);
+  // Your exact Webflow IX3 bezier path, parsed into segments.
+  // Each segment: [P0, C1, C2, P1] as {x, y} points, taken directly from the path data.
+  const rawPath = "M0,161 C14,160 30,-31 47,71 C64,173 65,101 70,24 C76,-114 75,-10 84,-1 C92,4 105,-5 120,10 C135,25 136,159 160,160";
 
-  // --- 2. CUSTOM CURVE ANIMATION LOOP ---
+  function parseBezierPath(d) {
+    const nums = d.match(/-?\d*\.?\d+/g).map(Number);
+    const points = [];
+    for (let i = 0; i < nums.length; i += 2) {
+      points.push({ x: nums[i], y: nums[i + 1] });
+    }
+    // points[0] is M (start). Then every 3 points after that = one C segment (C1, C2, end)
+    const segments = [];
+    let prev = points[0];
+    for (let i = 1; i < points.length; i += 3) {
+      segments.push({
+        p0: prev,
+        c1: points[i],
+        c2: points[i + 1],
+        p1: points[i + 2],
+      });
+      prev = points[i + 2];
+    }
+    return segments;
+  }
+
+  const segments = parseBezierPath(rawPath);
+  const totalDuration = segments[segments.length - 1].p1.x; // 160 -> total "time" units in the path
+  const startY = segments[0].p0.y; // baseline Y (161)
+
+  // Cubic bezier evaluation at parameter u (0-1) for a single axis
+  function cubicAt(u, p0, c1, c2, p1) {
+    const mu = 1 - u;
+    return (
+      mu * mu * mu * p0 +
+      3 * mu * mu * u * c1 +
+      3 * mu * u * u * c2 +
+      u * u * u * p1
+    );
+  }
+
+  // Given target X (time), find u along the correct segment via binary search on X,
+  // then return that segment's Y at that u.
+  function evaluateY(targetX) {
+    for (const seg of segments) {
+      if (targetX >= seg.p0.x && targetX <= seg.p1.x) {
+        // binary search for u where cubicAt(u, x-coords) == targetX
+        let lo = 0, hi = 1, u = 0.5;
+        for (let iter = 0; iter < 20; iter++) {
+          u = (lo + hi) / 2;
+          const x = cubicAt(u, seg.p0.x, seg.c1.x, seg.c2.x, seg.p1.x);
+          if (x < targetX) lo = u; else hi = u;
+        }
+        return cubicAt(u, seg.p0.y, seg.c1.y, seg.c2.y, seg.p1.y);
+      }
+    }
+    return segments[segments.length - 1].p1.y;
+  }
+
   function startArrowAnimation(element) {
-    const duration = 1870; // 1.87 seconds in milliseconds
+    const duration = 1870; // ms, your original loop duration
     let startTime = null;
 
-    // Pre-sampled points from your exact SVG bezier curve (Normalized X: 0-1, Y: translated to 0% - 60%)
-    // This maps your hand-drawn peaks, valleys, and overshoots precisely.
-    const curvePoints = [
-      { t: 0.00, y: 0   },
-      { t: 0.10, y: 15  },
-      { t: 0.20, y: 60  }, // The big drop to 60%
-      { t: 0.35, y: -25 }, // The spring upward overshoot
-      { t: 0.50, y: 10  }, // Secondary dip
-      { t: 0.65, y: 25  }, // Secondary rise
-      { t: 0.80, y: 50  }, // Small settle
-      { t: 1.00, y: 0   }  // Reset for infinite loop
-    ];
-
     function animate(currentTime) {
-      // If the arrow is hidden by the scroll observer, pause the math calculation to save CPU
       if (element.classList.contains('is-hidden')) {
         startTime = null;
         requestAnimationFrame(animate);
         return;
       }
-
       if (!startTime) startTime = currentTime;
       const elapsed = currentTime - startTime;
-      const progress = (elapsed % duration) / duration; // Loops infinitely from 0 to 1
+      const progress = (elapsed % duration) / duration; // 0 to 1, loops
 
-      // Find the two curve points we are currently between and interpolate (lerp)
-      let p1 = curvePoints[0];
-      let p2 = curvePoints[1];
-      
-      for (let i = 0; i < curvePoints.length - 1; i++) {
-        if (progress >= curvePoints[i].t && progress <= curvePoints[i+1].t) {
-          p1 = curvePoints[i];
-          p2 = curvePoints[i+1];
-          break;
-        }
-      }
+      const targetX = progress * totalDuration; // map progress to the path's own time units
+      const y = evaluateY(targetX);
+      const offsetPercent = y - startY; // relative to baseline, so it starts at 0
 
-      // Calculate local progress between the two points
-      const localProgress = (progress - p1.t) / (p2.t - p1.t);
-      const currentY = p1.y + (p2.y - p1.y) * localProgress;
-
-      // Apply transform directly to the GPU
-      element.style.transform = `translateY(${currentY}%)`;
-
+      element.style.transform = `translateY(${offsetPercent}%)`;
       requestAnimationFrame(animate);
     }
-
     requestAnimationFrame(animate);
   }
+
+  setTimeout(() => {
+    arrowWrapper.classList.add('is-loaded');
+    startArrowAnimation(arrowWrapper);
+  }, 3200);
 });
 
 /* // --- HINDRA CTRL + SCROLL ZOOM ---

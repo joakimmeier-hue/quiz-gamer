@@ -336,22 +336,17 @@ a.button-link:hover {
 }
 
 /* ────────────────── GAME START PAGES ──────────────────
-  /* ARROW SCROLL */
-/* ARROW BASE STATE */
+/* ARROW SCROLL ANCHOR */
 .arrow-anchor-wrapper {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1);
   will-change: opacity, transform;
 }
-
-/* FADED IN */
 .arrow-anchor-wrapper.is-loaded {
   opacity: 1;
   pointer-events: auto;
 }
-
-/* HIDDEN ON SCROLL */
 .arrow-anchor-wrapper.is-hidden {
   opacity: 0 !important;
   pointer-events: none !important;
