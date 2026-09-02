@@ -137,24 +137,25 @@ function smoothScrollToId(targetId, opts = {}) {
   }, { passive: true });
 });
 
-  document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
   const real = document.querySelector('.mask-middle .game-v');
   const dummySlot = document.querySelector('.mask-top .game-v-clone');
+
   if (real && dummySlot) {
     const clone = real.cloneNode(true);
 
-    // Kill all ids (avoid duplicate-id issues)
+    // Strip IDs to avoid duplicates
     clone.removeAttribute('id');
     clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
 
-     // Force correct link color — UA default can leak through in clone context
+    // Force link colors inside clone
     clone.querySelectorAll('a').forEach(el => {
       el.style.color = 'white';
     });
 
-    // Strip behavioral classes your JS hooks into, so observers/handlers skip it entirely
-    const behavioralClasses = ['game-info', 'dropdown-gamelevel', 'arrow-anchor-wrapper', 'game-start-btn', 'hover-scale', 'js-press-scale', 'game-level'];
-    behavioralClasses.forEach(cls => {
+    // Strip ONLY behavioral utility classes that trigger JS logic or animations
+    const interactiveClasses = ['hover-scale', 'js-press-scale'];
+    interactiveClasses.forEach(cls => {
       clone.classList.remove(cls);
       clone.querySelectorAll('.' + cls).forEach(el => el.classList.remove(cls));
     });
@@ -162,7 +163,6 @@ function smoothScrollToId(targetId, opts = {}) {
     dummySlot.appendChild(clone);
   }
 });
-
 
 // 2 COMPONENT .dropdown-gamelevel
   document.addEventListener('DOMContentLoaded', () => {
