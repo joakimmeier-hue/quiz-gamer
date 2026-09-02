@@ -226,15 +226,21 @@ document.addEventListener('DOMContentLoaded', () => {
 // 3 COMPONENT game-start-btn
 // SCROLL: game-start-btn visibility + arrow hide/show
 document.addEventListener('DOMContentLoaded', () => {
+  // This will be null on the GMA page, which is perfectly fine
   const scrollContainer = document.querySelector('.mask-middle');
-  const targetBtns = document.querySelectorAll('.mask-middle .game-start-btn', '.game-start-btn-gma');
+  
+  // FIX: Combined into a single string
+  const targetBtns = document.querySelectorAll('.mask-middle .game-start-btn, .game-start-btn-gma');
   const arrowWrapper = document.querySelector('.arrow-anchor-wrapper');
-  if (!scrollContainer || targetBtns.length === 0) return;
+  
+  // FIX: Don't abort if scrollContainer is missing, only if no buttons are found!
+  if (targetBtns.length === 0) return;
 
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
-        const btnInside = entry.target.querySelector('.game-start-btn', '.game-start-btn-gma');
+        // FIX: Combined into a single string
+        const btnInside = entry.target.querySelector('.game-start-btn, .game-start-btn-gma');
         if (!btnInside) return;
 
         if (entry.isIntersecting) {
@@ -247,6 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     },
     {
+      // If scrollContainer is null (GMA page), it automatically defaults to the main browser viewport
       root: scrollContainer,
       threshold: 1,
       rootMargin: "0px 0px -24% 0px" // shrinks trigger zone from the bottom
@@ -254,7 +261,8 @@ document.addEventListener('DOMContentLoaded', () => {
   );
 
   targetBtns.forEach((btn) => {
-    const parentRow = btn.closest('.row-gamestart', '.row-2');
+    // FIX: Combined into a single string
+    const parentRow = btn.closest('.row-gamestart, .row-2');
     if (parentRow) observer.observe(parentRow);
   });
 });
