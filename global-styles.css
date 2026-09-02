@@ -76,15 +76,18 @@ input, textarea, button, .w-button, #submit-btn-vanilla {
   text-rendering: optimizeLegibility;
 }
 
-/* Göm scrollbar för både clipping och games-grid-clip */
+/* Hide scrollbar for some classes */
 .clipping, 
-.games-grid-clip {
+.games-grid-clip,
+.mask-middle
+ {
   -ms-overflow-style: none;  /* IE/Edge */
   scrollbar-width: none;     /* Firefox */
 }
 
 .clipping::-webkit-scrollbar, 
-.games-grid-clip::-webkit-scrollbar { 
+.games-grid-clip::-webkit-scrollbar,
+.mask-middle::-webkit-scrollbar { 
   display: none;             /* Chrome/Safari */
 }
 
