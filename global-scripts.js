@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
   const scrollContainer = document.querySelector('.mask-middle');
   const targetBtns = document.querySelectorAll('.mask-middle .game-start-btn');
-  const arrowWrapper = document.querySelector('.mask-middle .arrow-anchor-wrapper');
+  const arrowWrapper = document.querySelector('.arrow-anchor-wrapper');
   if (!scrollContainer || targetBtns.length === 0) return;
 
   const observer = new IntersectionObserver(
