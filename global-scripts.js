@@ -267,6 +267,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// 4 ARROW ANCHOR
+document.addEventListener('DOMContentLoaded', () => {
+  const arrowWrapper = document.querySelector('.arrow-anchor-wrapper');
+  
+  // If the arrow exists on this page, wait 3.2 seconds then show it
+  if (arrowWrapper) {
+    setTimeout(() => {
+      arrowWrapper.classList.add('is-loaded');
+    }, 3200);
+  }
+});
 
 /* // --- HINDRA CTRL + SCROLL ZOOM ---
 window.addEventListener('wheel', function(e) {

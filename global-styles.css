@@ -342,23 +342,72 @@ a.button-link:hover {
     transition: opacity 0.3s ease; 
     will-change: opacity;
   }
-
   /* Arrow Hidden State */
   .arrow-anchor-wrapper.is-hidden {
     opacity: 0 !important;
     pointer-events: none !important; /* Prevents invisible arrow from blocking clicks */
   }
 
+/* ARROW BOUNCE */
+/* 1. Base State (Hidden at page load) */
+.arrow-anchor-wrapper {
+  opacity: 0;
+  pointer-events: none;
+  /* Ease out (power 1 out) for the opacity fade */
+  transition: opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: opacity, transform;
+}
+/* 2. Loaded State (Fades in and starts infinite bounce) */
+.arrow-anchor-wrapper.is-loaded {
+  opacity: 1;
+  pointer-events: auto;
+  /* 1.87s duration, infinite loop */
+  animation: arrow-custom-bounce 1.87s infinite;
+}
+/* 3. Hidden State (From your scroll script - overrides everything else) */
+.arrow-anchor-wrapper.is-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+/* 4. The Custom Bounce Keyframes (Replicating your SVG curve) */
+@keyframes arrow-custom-bounce {
+  0% { transform: translateY(0%); }
+    /* The big drop to 60% */
+  20% { 
+    transform: translateY(60%); 
+    animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000); 
+  }
+    /* Spring back up */
+  40% { 
+    transform: translateY(0%); 
+    animation-timing-function: cubic-bezier(0.755, 0.050, 0.855, 0.060); 
+  }
+    /* Smaller secondary bounce */
+  60% { 
+    transform: translateY(25%); 
+    animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000); 
+  }
+    /* Spring back up */
+  80% { 
+    transform: translateY(0%); 
+    animation-timing-function: cubic-bezier(0.755, 0.050, 0.855, 0.060); 
+  }
+    /* Tiny final settlement */
+  90% { 
+    transform: translateY(5%); 
+    animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000); 
+  }
+    100% { transform: translateY(0%); }
+}
+
 /* COMPONENT .dropdown-gamelevel */
   .dropdown-gamelevel {
   opacity: 0;
   animation: fadeInDropdown 0.18s 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
-
 @keyframes fadeInDropdown {
   to { opacity: 1; }
 }
-  
 /* Base state of the dropdown list: hidden & translated up */
 .dropdown-list-2 {
   display: none;
@@ -367,7 +416,6 @@ a.button-link:hover {
   transition: opacity 0.18s cubic-bezier(0.25, 1, 0.5, 1),
               transform 0.18s cubic-bezier(0.25, 1, 0.5, 1);
 }
-
 .dropdown-list-2.is-open {
   display: flex !important;
   opacity: 1;
@@ -382,11 +430,9 @@ a.button-link:hover {
     pointer-events: none;
     transition: opacity 0.31s cubic-bezier(0.25, 1, 0.5, 1), 
                 transform 0.31s cubic-bezier(0.25, 1, 0.5, 1);
-    			
     transition-delay: 0.13s;
     will-change: opacity, transform;
   }
-
   /* Active visible state */
   .game-start-btn.is-visible { 
     opacity: 1 !important;
