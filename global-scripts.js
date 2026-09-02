@@ -139,7 +139,7 @@ function smoothScrollToId(targetId, opts = {}) {
 
   document.addEventListener('DOMContentLoaded', () => {
   const real = document.querySelector('.game-v');
-  const dummySlot = document.querySelector('.game-v-dummy');
+  const dummySlot = document.querySelector('.game-v-clone');
   if (real && dummySlot) {
     const clone = real.cloneNode(true);
 
