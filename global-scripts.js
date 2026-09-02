@@ -31,7 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const parentRow = btn.closest('.row');
     if (parentRow) observer.observe(parentRow);
   });
-});// Robust smooth scroll to element id (cancelable)
+});
+
+// Robust smooth scroll to element id (cancelable)
 // Finds the nearest scrollable ancestor, or null if the page itself scrolls
 function getScrollParent(el) {
   let node = el.parentElement;
@@ -203,13 +205,13 @@ function smoothScrollToId(targetId, opts = {}) {
 });
 
 
-// 3 COMPONENT .dropdown-gamelevel
+// 2 COMPONENT .dropdown-gamelevel
   document.addEventListener('DOMContentLoaded', () => {
-  const dropdownToggle = document.querySelector('.dropdown-toggle-lvl');
-  const dropdownList = document.querySelector('.dropdown-list-2');
-  const gamelvlBtn = document.querySelector('.gamelvl-btn');
-  const levelRows = document.querySelectorAll('.game-level');
-  const startBtn = document.querySelector('.game-start-btn');
+  const dropdownToggle = document.querySelector('.mask-middle .dropdown-toggle-lvl');
+  const dropdownList = document.querySelector('.mask-middle .dropdown-list-2');
+  const gamelvlBtn = document.querySelector('.mask-middle .gamelvl-btn');
+  const levelRows = document.querySelectorAll('.mask-middle .game-level');
+  const startBtn = document.querySelector('.mask-middle .game-start-btn');
   if (!dropdownToggle || !dropdownList || !gamelvlBtn) return;
 
   const toggleDropdown = (show) => {
@@ -262,11 +264,11 @@ function smoothScrollToId(targetId, opts = {}) {
   });
 });
 
-// COMPONENT game-start-btn
+// 3 COMPONENT game-start-btn
 // SCROLL: game-start-btn visibility + arrow hide/show
 document.addEventListener('DOMContentLoaded', () => {
   const scrollContainer = document.querySelector('.mask-middle');
-  const targetBtns = document.querySelectorAll('.game-start-btn');
+  const targetBtns = document.querySelectorAll('.mask-middle .game-start-btn');
   const arrowWrapper = document.querySelector('.arrow-anchor-wrapper');
   if (!scrollContainer || targetBtns.length === 0) return;
 
