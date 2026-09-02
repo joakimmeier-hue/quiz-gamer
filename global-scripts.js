@@ -1,38 +1,3 @@
-// COMPONENT game-start-btn
-// SCROLL: game-start-btn visibility + arrow hide/show
-document.addEventListener('DOMContentLoaded', () => {
-  const scrollContainer = document.querySelector('.mask-middle');
-  const targetBtns = document.querySelectorAll('.mask-middle .game-start-btn'); // scope to real container only
-  const arrowWrapper = document.querySelector('.arrow-anchor-wrapper');
-  if (!scrollContainer || targetBtns.length === 0) return;
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        const btnInside = entry.target.querySelector('.game-start-btn');
-        if (!btnInside) return;
-        if (entry.isIntersecting) {
-          btnInside.classList.add('is-visible');
-          if (arrowWrapper) arrowWrapper.classList.add('is-hidden');
-        } else {
-          btnInside.classList.remove('is-visible');
-          if (arrowWrapper) arrowWrapper.classList.remove('is-hidden');
-        }
-      });
-    },
-    {
-      root: scrollContainer,
-      threshold: 1,
-      rootMargin: "0px 0px -24% 0px"
-    }
-  );
-
-  targetBtns.forEach((btn) => {
-    const parentRow = btn.closest('.row');
-    if (parentRow) observer.observe(parentRow);
-  });
-});
-
 // Robust smooth scroll to element id (cancelable)
 // Finds the nearest scrollable ancestor, or null if the page itself scrolls
 function getScrollParent(el) {
@@ -295,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
   );
 
   targetBtns.forEach((btn) => {
-    const parentRow = btn.closest('.row');
+    const parentRow = btn.closest('row-gamestart');
     if (parentRow) observer.observe(parentRow);
   });
 });
