@@ -186,6 +186,11 @@ function smoothScrollToId(targetId, opts = {}) {
     el.style.pointerEvents = 'none';
     });
 
+    // Force correct link color — UA default can leak through in clone context
+    clone.querySelectorAll('a').forEach(el => {
+      el.style.color = 'white';
+    });
+
     // Strip behavioral classes your JS hooks into, so observers/handlers skip it entirely
     const behavioralClasses = ['game-info', 'dropdown-gamelevel', 'arrow-anchor-wrapper', 'game-start-btn', 'hover-scale', 'js-press-scale', 'game-level'];
     behavioralClasses.forEach(cls => {
