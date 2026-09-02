@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// 4 ARROW ANCHOR — exact SVG bezier curve replay
+// 4 ARROW ANCHOR BOUNCE— exact SVG bezier curve replay
 document.addEventListener('DOMContentLoaded', () => {
   const arrowWrapper = document.querySelector('.arrow-anchor-wrapper');
   if (!arrowWrapper) return;
@@ -331,28 +331,32 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function startArrowAnimation(element) {
-    const duration = 1870; // ms, your original loop duration
-    let startTime = null;
+  const duration = 1870;
+  let startTime = null;
 
-    function animate(currentTime) {
-      if (element.classList.contains('is-hidden')) {
-        startTime = null;
-        requestAnimationFrame(animate);
-        return;
-      }
-      if (!startTime) startTime = currentTime;
-      const elapsed = currentTime - startTime;
-      const progress = (elapsed % duration) / duration; // 0 to 1, loops
+  // Tweak these two to taste:
+  const DIRECTION = -1;   // 1 = as-parsed, -1 = reversed
+  const SCALE = 0.5;      // 1 = full movement, 0.5 = half, etc.
 
-      const targetX = progress * totalDuration; // map progress to the path's own time units
-      const y = evaluateY(targetX);
-      const offsetPercent = y - startY; // relative to baseline, so it starts at 0
-
-      element.style.transform = `translateY(${offsetPercent}%)`;
+  function animate(currentTime) {
+    if (element.classList.contains('is-hidden')) {
+      startTime = null;
       requestAnimationFrame(animate);
+      return;
     }
+    if (!startTime) startTime = currentTime;
+    const elapsed = currentTime - startTime;
+    const progress = (elapsed % duration) / duration;
+
+    const targetX = progress * totalDuration;
+    const y = evaluateY(targetX);
+    const offsetPercent = (y - startY) * DIRECTION * SCALE;
+
+    element.style.transform = `translateY(${offsetPercent}%)`;
     requestAnimationFrame(animate);
   }
+  requestAnimationFrame(animate);
+}
 
   setTimeout(() => {
     arrowWrapper.classList.add('is-loaded');
