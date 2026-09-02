@@ -227,14 +227,14 @@ document.addEventListener('DOMContentLoaded', () => {
 // SCROLL: game-start-btn visibility + arrow hide/show
 document.addEventListener('DOMContentLoaded', () => {
   const scrollContainer = document.querySelector('.mask-middle');
-  const targetBtns = document.querySelectorAll('.mask-middle .game-start-btn');
+  const targetBtns = document.querySelectorAll('.mask-middle .game-start-btn', '.game-start-btn-gma');
   const arrowWrapper = document.querySelector('.arrow-anchor-wrapper');
   if (!scrollContainer || targetBtns.length === 0) return;
 
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
-        const btnInside = entry.target.querySelector('.game-start-btn');
+        const btnInside = entry.target.querySelector('.game-start-btn', '.game-start-btn-gma');
         if (!btnInside) return;
 
         if (entry.isIntersecting) {
@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
   );
 
   targetBtns.forEach((btn) => {
-    const parentRow = btn.closest('.row-gamestart');
+    const parentRow = btn.closest('.row-gamestart', '.row-2');
     if (parentRow) observer.observe(parentRow);
   });
 });
