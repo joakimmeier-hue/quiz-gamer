@@ -371,33 +371,37 @@ a.button-link:hover {
 }
 /* 4. The Custom Bounce Keyframes (Replicating your SVG curve) */
 @keyframes arrow-custom-bounce {
-  0% { transform: translateY(0%); }
-    /* The big drop to 60% */
-  20% { 
-    transform: translateY(60%); 
-    animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000); 
-  }
-    /* Spring back up */
-  40% { 
+  0% { 
     transform: translateY(0%); 
-    animation-timing-function: cubic-bezier(0.755, 0.050, 0.855, 0.060); 
+    animation-timing-function: cubic-bezier(0.14, 0.99, 0.30, -0.31); 
   }
-    /* Smaller secondary bounce */
+  15% { 
+    transform: translateY(26%); 
+    animation-timing-function: cubic-bezier(0.47, 1.73, 0.65, 1.01); 
+  }
+  30% { 
+    transform: translateY(65%); 
+    animation-timing-function: cubic-bezier(0.70, 0.24, 0.76, -1.14); 
+  }
+  45% { 
+    transform: translateY(-40%); 
+    animation-timing-function: cubic-bezier(0.75, -0.10, 0.84, -0.01); 
+  }
   60% { 
-    transform: translateY(25%); 
-    animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000); 
+    transform: translateY(15%); 
+    animation-timing-function: cubic-bezier(0.92, 1.04, 1.05, 0.95); 
   }
-    /* Spring back up */
-  80% { 
-    transform: translateY(0%); 
-    animation-timing-function: cubic-bezier(0.755, 0.050, 0.855, 0.060); 
+  75% { 
+    transform: translateY(35%); 
+    animation-timing-function: cubic-bezier(1.20, 1.10, 1.35, 1.59); 
   }
-    /* Tiny final settlement */
   90% { 
-    transform: translateY(5%); 
-    animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000); 
+    transform: translateY(58%); 
+    animation-timing-function: cubic-bezier(1.36, 1.59, 1.60, 1.60); 
   }
-    100% { transform: translateY(0%); }
+  100% { 
+    transform: translateY(60%); 
+  }
 }
 
 /* COMPONENT .dropdown-gamelevel */
