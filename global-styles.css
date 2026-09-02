@@ -337,71 +337,24 @@ a.button-link:hover {
 
 /* ────────────────── GAME START PAGES ──────────────────
   /* ARROW SCROLL */
-  /* Arrow Base State (Assumes it is visible by default in Webflow) */
-  .arrow-anchor-wrapper {
-    transition: opacity 0.3s ease; 
-    will-change: opacity;
-  }
-  /* Arrow Hidden State */
-  .arrow-anchor-wrapper.is-hidden {
-    opacity: 0 !important;
-    pointer-events: none !important; /* Prevents invisible arrow from blocking clicks */
-  }
-
-/* ARROW BOUNCE */
-/* 1. Base State (Hidden at page load) */
+/* ARROW BASE STATE */
 .arrow-anchor-wrapper {
   opacity: 0;
   pointer-events: none;
-  /* Ease out (power 1 out) for the opacity fade */
   transition: opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1);
   will-change: opacity, transform;
 }
-/* 2. Loaded State (Fades in and starts infinite bounce) */
+
+/* FADED IN */
 .arrow-anchor-wrapper.is-loaded {
   opacity: 1;
   pointer-events: auto;
-  /* 1.87s duration, infinite loop */
-  animation: arrow-custom-bounce 1.87s infinite;
 }
-/* 3. Hidden State (From your scroll script - overrides everything else) */
+
+/* HIDDEN ON SCROLL */
 .arrow-anchor-wrapper.is-hidden {
   opacity: 0 !important;
   pointer-events: none !important;
-}
-/* 4. The Custom Bounce Keyframes (Replicating your SVG curve) */
-@keyframes arrow-custom-bounce {
-  0% { 
-    transform: translateY(0%); 
-    animation-timing-function: cubic-bezier(0.14, 0.99, 0.30, -0.31); 
-  }
-  15% { 
-    transform: translateY(26%); 
-    animation-timing-function: cubic-bezier(0.47, 1.73, 0.65, 1.01); 
-  }
-  30% { 
-    transform: translateY(65%); 
-    animation-timing-function: cubic-bezier(0.70, 0.24, 0.76, -1.14); 
-  }
-  45% { 
-    transform: translateY(-40%); 
-    animation-timing-function: cubic-bezier(0.75, -0.10, 0.84, -0.01); 
-  }
-  60% { 
-    transform: translateY(15%); 
-    animation-timing-function: cubic-bezier(0.92, 1.04, 1.05, 0.95); 
-  }
-  75% { 
-    transform: translateY(35%); 
-    animation-timing-function: cubic-bezier(1.20, 1.10, 1.35, 1.59); 
-  }
-  90% { 
-    transform: translateY(58%); 
-    animation-timing-function: cubic-bezier(1.36, 1.59, 1.60, 1.60); 
-  }
-  100% { 
-    transform: translateY(60%); 
-  }
 }
 
 /* COMPONENT .dropdown-gamelevel */

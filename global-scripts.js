@@ -270,12 +270,67 @@ document.addEventListener('DOMContentLoaded', () => {
 // 4 ARROW ANCHOR
 document.addEventListener('DOMContentLoaded', () => {
   const arrowWrapper = document.querySelector('.arrow-anchor-wrapper');
-  
-  // If the arrow exists on this page, wait 3.2 seconds then show it
-  if (arrowWrapper) {
-    setTimeout(() => {
-      arrowWrapper.classList.add('is-loaded');
-    }, 3200);
+  if (!arrowWrapper) return;
+
+  // --- 1. PAGE LOAD DELAY & START ANIMATION ---
+  setTimeout(() => {
+    arrowWrapper.classList.add('is-loaded');
+    startArrowAnimation(arrowWrapper);
+  }, 3200);
+
+  // --- 2. CUSTOM CURVE ANIMATION LOOP ---
+  function startArrowAnimation(element) {
+    const duration = 1870; // 1.87 seconds in milliseconds
+    let startTime = null;
+
+    // Pre-sampled points from your exact SVG bezier curve (Normalized X: 0-1, Y: translated to 0% - 60%)
+    // This maps your hand-drawn peaks, valleys, and overshoots precisely.
+    const curvePoints = [
+      { t: 0.00, y: 0   },
+      { t: 0.10, y: 15  },
+      { t: 0.20, y: 60  }, // The big drop to 60%
+      { t: 0.35, y: -25 }, // The spring upward overshoot
+      { t: 0.50, y: 10  }, // Secondary dip
+      { t: 0.65, y: 25  }, // Secondary rise
+      { t: 0.80, y: 50  }, // Small settle
+      { t: 1.00, y: 0   }  // Reset for infinite loop
+    ];
+
+    function animate(currentTime) {
+      // If the arrow is hidden by the scroll observer, pause the math calculation to save CPU
+      if (element.classList.contains('is-hidden')) {
+        startTime = null;
+        requestAnimationFrame(animate);
+        return;
+      }
+
+      if (!startTime) startTime = currentTime;
+      const elapsed = currentTime - startTime;
+      const progress = (elapsed % duration) / duration; // Loops infinitely from 0 to 1
+
+      // Find the two curve points we are currently between and interpolate (lerp)
+      let p1 = curvePoints[0];
+      let p2 = curvePoints[1];
+      
+      for (let i = 0; i < curvePoints.length - 1; i++) {
+        if (progress >= curvePoints[i].t && progress <= curvePoints[i+1].t) {
+          p1 = curvePoints[i];
+          p2 = curvePoints[i+1];
+          break;
+        }
+      }
+
+      // Calculate local progress between the two points
+      const localProgress = (progress - p1.t) / (p2.t - p1.t);
+      const currentY = p1.y + (p2.y - p1.y) * localProgress;
+
+      // Apply transform directly to the GPU
+      element.style.transform = `translateY(${currentY}%)`;
+
+      requestAnimationFrame(animate);
+    }
+
+    requestAnimationFrame(animate);
   }
 });
 
