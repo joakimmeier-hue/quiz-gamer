@@ -260,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
   );
 
   targetBtns.forEach((btn) => {
-    const parentRow = btn.closest('row-gamestart');
+    const parentRow = btn.closest('.row-gamestart');
     if (parentRow) observer.observe(parentRow);
   });
 });
