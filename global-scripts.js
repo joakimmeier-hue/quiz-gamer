@@ -138,8 +138,8 @@ function smoothScrollToId(targetId, opts = {}) {
 });
 
   document.addEventListener('DOMContentLoaded', () => {
-  const real = document.querySelector('.game-v');
-  const dummySlot = document.querySelector('.game-v-clone');
+  const real = document.querySelector('.mask-middle .game-v');
+  const dummySlot = document.querySelector('.mask-top .game-v-clone');
   if (real && dummySlot) {
     const clone = real.cloneNode(true);
 
@@ -147,13 +147,7 @@ function smoothScrollToId(targetId, opts = {}) {
     clone.removeAttribute('id');
     clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
 
-    // Kill all interactivity visually
-    clone.style.pointerEvents = 'none';
-    clone.querySelectorAll('a, button, [class*="btn"], [class*="dropdown"]').forEach(el => {
-    el.style.pointerEvents = 'none';
-    });
-
-    // Force correct link color — UA default can leak through in clone context
+     // Force correct link color — UA default can leak through in clone context
     clone.querySelectorAll('a').forEach(el => {
       el.style.color = 'white';
     });
