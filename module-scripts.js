@@ -1187,7 +1187,7 @@ startButtons.forEach(startBtn => {
       setTimeout(() => window.location.href = targetHref, 150);
       } catch (err) {
       console.error("Failed to start game session:", err?.message || err);
-      startBtn.style.pointerEvents = 'auto';
+      startBtn.style.pointerEvents = '';
       delete startBtn.dataset.inProgress; // <--- reset dataset flag on failure
       }
   }, { passive: false });
@@ -1195,7 +1195,7 @@ startButtons.forEach(startBtn => {
 // ── ADD PAGESHOW LISTENER HERE -- start btn works when go back  ─────────────────────────────────
     window.addEventListener('pageshow', () => {
     startButtons.forEach(startBtn => {
-    startBtn.style.pointerEvents = 'auto';
+    startBtn.style.pointerEvents = '';
     delete startBtn.dataset.inProgress; // <--- unlocks the button for re-clicking
     });
 
