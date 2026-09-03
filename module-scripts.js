@@ -186,7 +186,7 @@ function updateAuthUI(user) {
     return el && window.getComputedStyle(el).display !== 'none';
   }
 
-// Robust close for the profile-pic dropdown / pp-grid
+/* // Robust close for the profile-pic dropdown / pp-grid
 function hidePPDropdown() {
   try {
     // 1) Find any visible pp-grid using bounding rect (works inside overlays)
@@ -218,13 +218,13 @@ function hidePPDropdown() {
       console.warn('hidePPDropdown: ix3 emit failed', err);
     }
 
-    /* // 3) Last-resort fallback: hide any .pp-grid element (non-destructive)
+    // 3) Last-resort fallback: hide any .pp-grid element (non-destructive)
     const anyGrid = document.querySelector('.pp-grid');
-    if (anyGrid) anyGrid.style.display = 'none'; */
+    if (anyGrid) anyGrid.style.display = 'none';
   } catch (err) {
     console.warn('hidePPDropdown error', err);
   }
-}
+} */
 
 // ── STATE TRACKERS ──
   window.lobbyInvOpen = false; 
