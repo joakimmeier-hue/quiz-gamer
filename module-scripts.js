@@ -189,27 +189,70 @@ function updateAuthUI(user) {
 // Robust close for the profile-pic dropdown / pp-grid
 function hidePPDropdown() {
   try {
-    // 1) Find any visible pp-grid using bounding rect (works inside overlays)
+    console.log('hidePPDropdown called', new Date().toISOString());
+
+    // Prevent re-entrancy across the page
+    if (window.__ppDropdownClosing) {
+      console.log('hidePPDropdown: skipped (global guard active)');
+      return;
+    }
+    window.__ppDropdownClosing = true;
+
+    // Find any visible pp-grid
     const openGrid = Array.from(document.querySelectorAll('.pp-grid')).find(el => {
       const style = window.getComputedStyle(el);
       const rect = el.getBoundingClientRect();
       return style.display !== 'none' && (rect.width > 0 || rect.height > 0);
     });
+
+    // Determine dropdown node (for per-element guard & transitionend)
+    const dropdown = openGrid ? openGrid.closest('.pp-dropdown') : document.querySelector('.pp-dropdown');
+
+    // Per-element guard: if dropdown already has dataset flag, skip
+    if (dropdown && dropdown.dataset.ppClosing === 'true') {
+      console.log('hidePPDropdown: dropdown already closing, skipping closer/emits');
+      // ensure global guard clears eventually
+      setTimeout(() => { window.__ppDropdownClosing = false; }, 300);
+      return;
+    }
+    if (dropdown) dropdown.dataset.ppClosing = 'true';
+
+    const clearGuards = () => {
+      window.__ppDropdownClosing = false;
+      if (dropdown) delete dropdown.dataset.ppClosing;
+      console.log('hidePPDropdown: cleared guards', new Date().toISOString());
+    };
+
+    // listen for transitionend on the pp-grid (if present) to clear state
     if (openGrid) {
-      const dropdown = openGrid.closest('.pp-dropdown');
-      const closer = dropdown?.querySelector('.pp-dropdown-closer');
-      if (closer) {
-        // native closer exists → click it (triggers Webflow component interactions)
+      const onEnd = (e) => {
+        // optional: check propertyName if you only expect opacity/transform transitions
+        openGrid.removeEventListener('transitionend', onEnd);
+        clearGuards();
+      };
+      openGrid.addEventListener('transitionend', onEnd, { once: true });
+      // safety: clear guards if transitionend never fired
+      setTimeout(clearGuards, 900);
+    } else {
+      setTimeout(clearGuards, 300);
+    }
+
+    // 1) Try native closer click (let Webflow handle the rest)
+    if (openGrid && dropdown) {
+      const closer = dropdown.querySelector('.pp-dropdown-closer');
+      if (closer && window.getComputedStyle(closer).display !== 'none') {
+        console.log('hidePPDropdown: clicking native closer');
         closer.click();
         return;
       }
     }
 
-    // 2) Try Webflow ix3 custom event (pp-dropdown-hide) if available
+    // 2) Try Webflow ix3 custom event (pp-dropdown-hide)
     try {
       if (window.Webflow && typeof Webflow.require === 'function') {
         const wfx = Webflow.require('ix3');
         if (wfx && typeof wfx.emit === 'function') {
+          console.log('hidePPDropdown: emitting ix3 event pp-dropdown-hide');
           wfx.emit('pp-dropdown-hide');
           return;
         }
@@ -218,11 +261,17 @@ function hidePPDropdown() {
       console.warn('hidePPDropdown: ix3 emit failed', err);
     }
 
-    // 3) Last-resort fallback: hide any .pp-grid element (non-destructive)
+    // 3) Last-resort fallback
     const anyGrid = document.querySelector('.pp-grid');
-    if (anyGrid) anyGrid.style.display = 'none';
+    if (anyGrid) {
+      console.log('hidePPDropdown: fallback hide via style.display = none');
+      anyGrid.style.display = 'none';
+    }
   } catch (err) {
     console.warn('hidePPDropdown error', err);
+    // ensure guard reset on error
+    window.__ppDropdownClosing = false;
+    try { const dropdown = document.querySelector('.pp-dropdown'); if (dropdown) delete dropdown.dataset.ppClosing; } catch(e){}
   }
 }
 
