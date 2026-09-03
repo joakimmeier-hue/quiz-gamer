@@ -186,7 +186,7 @@ function updateAuthUI(user) {
     return el && window.getComputedStyle(el).display !== 'none';
   }
 
-/* // Robust close for the profile-pic dropdown / pp-grid
+// Robust close for the profile-pic dropdown / pp-grid
 function hidePPDropdown() {
   try {
     // 1) Find any visible pp-grid using bounding rect (works inside overlays)
@@ -225,7 +225,7 @@ function hidePPDropdown() {
     console.warn('hidePPDropdown error', err);
   }
 }
- */
+
 // ── STATE TRACKERS ──
   window.lobbyInvOpen = false; 
   window.isGameInvAnimating = false;
@@ -259,7 +259,7 @@ document.addEventListener('keydown', (e) => {
 
   const key = (e.key || '').toLowerCase();
 
-  // --- 1) PP-GRID PRIORITY: ESC should close any open pp-grid first ---
+  /* // --- 1) PP-GRID PRIORITY: ESC should close any open pp-grid first ---
   if (key === 'escape') {
     const openGrid = Array.from(document.querySelectorAll('.pp-grid')).find(el => {
       const style = window.getComputedStyle(el);
@@ -271,7 +271,7 @@ document.addEventListener('keydown', (e) => {
       e.stopPropagation();
       hidePPDropdown();
       return; // stop further handling — pp-grid closed
-    }
+    } */
   }
 
   // Allow ESC to operate even if user is typing
