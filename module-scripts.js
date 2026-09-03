@@ -189,9 +189,10 @@ function updateAuthUI(user) {
 // Robust close for the profile-pic dropdown / pp-grid
 function hidePPDropdown() {
   try {
-    console.log('hidePPDropdown called', new Date().toISOString());
-
-    // Prevent re-entrancy across the page
+    
+    const callerStack = (new Error()).stack;
+    console.log('hidePPDropdown called', new Date().toISOString(), '\ncaller stack:\n', callerStack);
+        // Prevent re-entrancy across the page
     if (window.__ppDropdownClosing) {
       console.log('hidePPDropdown: skipped (global guard active)');
       return;
@@ -526,6 +527,15 @@ const option = e.target.closest('.profile-pic-option');
 if (option && !isGameSide) {
   const selectedSrc = option.src;
   const currentAvatars = document.querySelectorAll('.current-profile-pic');
+
+  if (window.__syntheticClickRunning) {
+  console.log('pp-option: ignoring click because synthetic click is running');
+  return;
+}
+if (event && (event._synthetic || event.isTrusted === false)) {
+  console.log('pp-option: ignoring synthetic/untrusted event', event);
+  return;
+}
 
   if (selectedSrc && currentAvatars.length > 0) {
     // Uppdatera ALLA profilbilder i UI direkt (Lobby, dropdown, etc.)

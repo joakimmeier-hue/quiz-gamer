@@ -993,20 +993,46 @@ setInterval(() => {
 // ── AUTO-FOCUS & SCROLL-TOP FÖR OVERLAYS (STABIL VERSION) ──────────────────
 (function() {
   const isOverlayOpen = {}; // Spårning för att undvika "dubbelkörning"
+
   function fakeClick() {
     const x = window.innerWidth / 2;
     const y = window.innerHeight / 2;
     const el = document.elementFromPoint(x, y);
+
+    console.log('fakeClick: center element', el ? el.tagName + ' ' + (el.className || '') : null);
+    const skipReasonEl = el ? el.closest('.pp-dropdown, .i-closer-game, .button.i-lobby-back, .profile-pic-option, .pp-grid-wrapper') : null;
+    console.log('fakeClick: closest skip element:', skipReasonEl);
+
     if (!el) return;
+
     // Hoppa över om det landar på pp-dropdown eller dess close-triggers
     // (annars stänger detta dropdownen ~150ms efter att den öppnats)
-    if (el.closest('.pp-dropdown, .i-closer-game, .button.i-lobby-back, .profile-pic-option, .pp-grid-wrapper')) return;
+    if (skipReasonEl) {
+      console.log('fakeClick: skipping because center element matches skip selector');
+      return;
+    }
+
+    // Mark that a synthetic-click sequence is running so real handlers can ignore it
+    window.__syntheticClickRunning = true;
+
     ['mousedown', 'mouseup', 'click'].forEach(type => {
       const evt = new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y });
       evt._synthetic = true;
-      el.dispatchEvent(evt);
+      try {
+        el.dispatchEvent(evt);
+        console.log('fakeClick: dispatched', type, 'to', el);
+      } catch (err) {
+        console.warn('fakeClick: dispatch error', err);
+      }
     });
+
+    // Clear the flag after a short delay (handlers should check this flag)
+    setTimeout(() => {
+      window.__syntheticClickRunning = false;
+      console.log('fakeClick: synthetic flag cleared');
+    }, 80);
   }
+
   // Lista över dina overlays (lägg till dina exakta klassnamn här)
   const targets = ['.rules-overlay', '.inventory-overlay', '.leaderboard-overlay', '.about-overlay'];
   targets.forEach(selector => {
@@ -1020,7 +1046,7 @@ setInterval(() => {
           // 1. Scrolla slidern till toppen
           const scrollEl = document.getElementById('i-slider');
           if (scrollEl) {
-            scrollEl.scrollTop = 0; 
+            scrollEl.scrollTop = 0;
           }
           // 2. Fokus-klick (med en liten fördröjning för att vara säker)
           setTimeout(fakeClick, 150);
@@ -1031,6 +1057,7 @@ setInterval(() => {
     });
   });
 })();
+
 // ── MULTI-BUTTON KEY LISTENERS (ESC/ENTER) ────────────────────────────
 document.addEventListener('keydown', function(e) {
     const triggerKeys = ["Escape", "Enter"];
