@@ -205,7 +205,7 @@ function hidePPDropdown() {
       }
     }
 
-    // 2) Try Webflow ix3 custom event (pp-dropdown-hide) if available
+    /* // 2) Try Webflow ix3 custom event (pp-dropdown-hide) if available
     try {
       if (window.Webflow && typeof Webflow.require === 'function') {
         const wfx = Webflow.require('ix3');
@@ -216,7 +216,7 @@ function hidePPDropdown() {
       }
     } catch (err) {
       console.warn('hidePPDropdown: ix3 emit failed', err);
-    }
+    } */
 
     // 3) Last-resort fallback: hide any .pp-grid element (non-destructive)
     const anyGrid = document.querySelector('.pp-grid');
@@ -259,7 +259,7 @@ document.addEventListener('keydown', (e) => {
 
   const key = (e.key || '').toLowerCase();
 
-  /* // --- 1) PP-GRID PRIORITY: ESC should close any open pp-grid first ---
+  // --- 1) PP-GRID PRIORITY: ESC should close any open pp-grid first ---
   if (key === 'escape') {
     const openGrid = Array.from(document.querySelectorAll('.pp-grid')).find(el => {
       const style = window.getComputedStyle(el);
@@ -271,7 +271,7 @@ document.addEventListener('keydown', (e) => {
       e.stopPropagation();
       hidePPDropdown();
       return; // stop further handling — pp-grid closed
-    } */
+    }
   }
 
   // Allow ESC to operate even if user is typing
