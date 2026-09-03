@@ -186,7 +186,7 @@ function updateAuthUI(user) {
     return el && window.getComputedStyle(el).display !== 'none';
   }
 
-/* // Robust close for the profile-pic dropdown / pp-grid
+// Robust close for the profile-pic dropdown / pp-grid
 function hidePPDropdown() {
   try {
     // 1) Find any visible pp-grid using bounding rect (works inside overlays)
@@ -224,7 +224,7 @@ function hidePPDropdown() {
   } catch (err) {
     console.warn('hidePPDropdown error', err);
   }
-} */
+}
 
 // ── STATE TRACKERS ──
   window.lobbyInvOpen = false; 
