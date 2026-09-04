@@ -408,19 +408,19 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
   // ────────────────── GAME RUNNING ──────────────────
-  // Banner-responsive
+  // 1 Banner-responsive
   document.addEventListener("DOMContentLoaded", function() {
   const banner = document.querySelector('.banner-responsive');
   if(!banner) return;
 
   // 1. Variabler för skroll (Scrub)
   let lastScrollY = window.scrollY;
-  let baseY = 0; // Skrollens position (0 till -29)
+  let baseY = 0; // Skrollens position (0 till -n)
   
   // 2. Variabler för Ambient Animation
   const ambientDelayMs = 1500; // Väntar 2 sekunder (2000ms)
   const cycleDurationMs = 3000; // En full loop upp och ner tar 4 sekunder (4000ms)
-  const ambientAmplitude = 2; // Rör sig max 2%
+  const ambientAmplitude = 7; // Rör sig max 2%
   const startTime = performance.now() + ambientDelayMs;
 
   // Lyssna på skroll-hjulet och räkna ut "Base Y"
@@ -432,11 +432,11 @@ document.addEventListener('DOMContentLoaded', () => {
           baseY = 0;
       } else {
           let scrubDistance = window.innerHeight * 0.20; 
-          let percentPerPixel = 29 / scrubDistance; 
+          let percentPerPixel = 77 / scrubDistance; 
             baseY -= (scrollDelta * percentPerPixel);
           
-          // Kläm fast skrollet mellan -29% och 0%
-          if (baseY < -29) baseY = -29;
+          // Kläm fast skrollet mellan -n% och 0%
+          if (baseY < -77) baseY = -77;
           if (baseY > 0) baseY = 0;
       }
       lastScrollY = currentScrollY;
@@ -465,7 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
   requestAnimationFrame(renderLoop);
 });
 
-// TIMER DISPLAY
+// 2 TIMER DISPLAY
 var Webflow = window.Webflow || [];
 Webflow.push(function() {
  if (!document.getElementById('timer-display')) return; // not a game page, skip entirely
@@ -519,7 +519,7 @@ Webflow.push(function() {
     }, 1000);
   }, 4400); // ÄNDRA HÄR: Tiden då siffrorna ska starta
 
-  // LYSSNA PÅ FINISH-KNAPPEN (Dödar och klonar Lottien)
+// 3 LYSSNA PÅ FINISH-KNAPPEN (Dödar och klonar Lottien)
   function setupFinishListener() {
     const finishBtn = document.getElementById('finish-btn');
     
@@ -552,7 +552,7 @@ Webflow.push(function() {
   setupFinishListener();
 });
 
-// GAME ALTERNATIVE-ROW
+// 4 GAME ALTERNATIVE-ROW
 document.addEventListener("DOMContentLoaded", function() {
   const scrollDuration = 400; 
   const topOffsetPercent = window.innerWidth < 600 ? 0.16 : 0.20;
