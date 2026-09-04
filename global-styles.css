@@ -247,7 +247,7 @@ body .games-grid-clip.is-skewed {
 /* Mus: skalar NER istället - klassisk "button press"-känsla. Justera värdet efter smak */
 .js-press-scale.is-pressed-down {
   scale: 1; /* Behåll storleken */
-  filter: invert(1) brightness(1);
+  filter: invert(1) brightness(0.4);
 }
 /* ── SCROLL-PULSE SYSTEM ── */
 .button-wrapper .button,
