@@ -1187,6 +1187,7 @@ const PRESS_SCALE_CLASSES = [
     'logout-btn',
     'button.i-lobby-back',
     'cp-submit-btn',
+    'profile-pic-option',
     'current-profile-pic',
     'login-modal-btn',
     'dropdown-toggle-lvl',
