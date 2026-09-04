@@ -232,13 +232,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (targetBtns.length === 0) return;
 
-  // Function to show active button & hide arrow
-  function forceShowButtons() {
-    targetBtns.forEach((btn) => btn.classList.add('is-visible'));
+  function showButton(btnInside) {
+    if (btnInside) btnInside.classList.add('is-visible');
     if (arrowWrapper) arrowWrapper.classList.add('is-hidden');
   }
 
-  // --- 1. EXISTING INTERSECTION OBSERVER ---
+  function hideButton(btnInside) {
+    if (btnInside) btnInside.classList.remove('is-visible');
+    if (arrowWrapper) arrowWrapper.classList.remove('is-hidden');
+  }
+
+  // --- 1. INTERSECTION OBSERVER ---
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -246,21 +250,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!btnInside) return;
 
         if (entry.isIntersecting) {
-          btnInside.classList.add('is-visible');
-          if (arrowWrapper) arrowWrapper.classList.add('is-hidden');
+          showButton(btnInside);
         } else {
-          // Only remove if not at the absolute bottom
+          // If we scroll back up, IMMEDIATELY allow the reverse animation to happen
           if (!isAtBottom()) {
-            btnInside.classList.remove('is-visible');
-            if (arrowWrapper) arrowWrapper.classList.remove('is-hidden');
+            hideButton(btnInside);
           }
         }
       });
     },
     {
       root: scrollContainer,
-      threshold: 1,
-      rootMargin: "0px 0px -24% 0px"
+      threshold: 0.1, // Lower threshold so it reacts smoothly the moment it enters/exits view
+      rootMargin: "0px 0px -15% 0px"
     }
   );
 
@@ -269,24 +271,42 @@ document.addEventListener('DOMContentLoaded', () => {
     if (parentRow) observer.observe(parentRow);
   });
 
-  // --- 2. BOTTOM SCROLL GUARANTEE SAFETY NET ---
+  // --- 2. DYNAMIC BOTTOM SAFETY NET ---
   function isAtBottom() {
     if (scrollContainer) {
-      // For Science page (.mask-middle overflow)
-      const threshold = 10; // 10px buffer room for fractional pixel scaling
-      return scrollContainer.scrollHeight - scrollContainer.scrollTop <= scrollContainer.clientHeight + threshold;
+      return scrollContainer.scrollHeight - scrollContainer.scrollTop <= scrollContainer.clientHeight + 5;
     } else {
-      // For GMA page (Main Window viewport)
-      const threshold = 10;
-      return window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - threshold;
+      return window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 5;
     }
   }
 
   const scrollTarget = scrollContainer || window;
+  let lastScrollPos = 0;
+
   scrollTarget.addEventListener('scroll', () => {
-    if (isAtBottom()) {
-      forceShowButtons();
+    const currentScrollPos = scrollContainer ? scrollContainer.scrollTop : window.scrollY;
+    const scrollingUp = currentScrollPos < lastScrollPos;
+
+    if (isAtBottom() && !scrollingUp) {
+      // Only force show when arriving at the bottom scrolling down
+      targetBtns.forEach((btn) => showButton(btn));
+    } else if (scrollingUp && !isAtBottom()) {
+      // The moment user scrolls UP and leaves the bottom, let observer take over naturally
+      targetBtns.forEach((btn) => {
+        const parentRow = btn.closest('.row-gamestart, .row-2');
+        if (parentRow) {
+          const rect = parentRow.getBoundingClientRect();
+          const containerRect = scrollContainer ? scrollContainer.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
+          
+          // If the row is no longer in the trigger zone, hide button & bring back arrow
+          if (rect.top > containerRect.bottom || rect.bottom < containerRect.top) {
+            hideButton(btn);
+          }
+        }
+      });
     }
+
+    lastScrollPos = currentScrollPos;
   }, { passive: true });
 });
 
