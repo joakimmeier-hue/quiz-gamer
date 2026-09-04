@@ -340,6 +340,74 @@ document.addEventListener('DOMContentLoaded', () => {
     return segments;
   }
 
+  // ────────────────── GAME RUNNING ──────────────────
+document.addEventListener("DOMContentLoaded", function() {
+  const banner = document.querySelector('.banner-responsive');
+  if(!banner) return;
+
+  // 1. Variabler för skroll (Scrub)
+  let lastScrollY = window.scrollY;
+  let baseY = 0; // Skrollens position (0 till -29)
+  
+  // 2. Variabler för Ambient Animation
+  const ambientDelayMs = 1500; // Väntar 2 sekunder (2000ms)
+  const cycleDurationMs = 3000; // En full loop upp och ner tar 4 sekunder (4000ms)
+  const ambientAmplitude = 2; // Rör sig max 2%
+  const startTime = performance.now() + ambientDelayMs;
+
+  // Lyssna på skroll-hjulet och räkna ut "Base Y"
+  window.addEventListener('scroll', () => {
+      let currentScrollY = window.scrollY;
+      let scrollDelta = currentScrollY - lastScrollY;
+      
+      if (currentScrollY <= 0) {
+          baseY = 0;
+      } else {
+          let scrubDistance = window.innerHeight * 0.20; 
+          let percentPerPixel = 29 / scrubDistance; 
+          
+          baseY -= (scrollDelta * percentPerPixel);
+          
+          // Kläm fast skrollet mellan -29% och 0%
+          if (baseY < -29) baseY = -29;
+          if (baseY > 0) baseY = 0;
+      }
+      lastScrollY = currentScrollY;
+  });
+
+  // Själva "Motorn" som uppdaterar skärmen (Render Loop)
+  function renderLoop(currentTime) {
+      let ambientY = 0;
+
+      // Kolla om 2 sekunder har gått
+      if (currentTime > startTime) {
+          // Räkna ut var i loopen vi är
+          let elapsed = currentTime - startTime;
+          let cycleProgress = (elapsed % cycleDurationMs) / cycleDurationMs;
+          
+          // Matematisk formel för att skapa en mjuk "Ease In Out" (Cosinus-våg)
+          let waveFactor = (1 - Math.cos(cycleProgress * Math.PI * 2)) / 2;
+          
+          // Omvandlar vågen till ett värde mellan 0 och -2%
+          ambientY = waveFactor * -ambientAmplitude; 
+      }
+
+      // Slå ihop skrollets position med den flytande animationen
+      let totalY = baseY + ambientY;
+      
+      // Applicera på bannern
+      banner.style.transform = `translateY(${totalY}%)`;
+
+      // Be webbläsaren köra loopen igen inför nästa bildruta
+      requestAnimationFrame(renderLoop);
+  }
+
+  // Starta motorn!
+  requestAnimationFrame(renderLoop);
+});
+
+
+
   const segments = parseBezierPath(rawPath);
   const totalDuration = segments[segments.length - 1].p1.x; // 160 -> total "time" units in the path
   const startY = segments[0].p0.y; // baseline Y (161)
@@ -1557,7 +1625,7 @@ document.addEventListener("DOMContentLoaded", function() {
         clearTimeout(currentQuestionWrapper.scrollTimeout);
       }
 
-      const currentTableRow = this.closest('.gma-game-row-1');
+      const currentTableRow = this.closest('.game-row-1');
       if (!currentTableRow) return;
       
       const nextTableRow = currentTableRow.nextElementSibling;
