@@ -340,74 +340,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return segments;
   }
 
-  // ────────────────── GAME RUNNING ──────────────────
-document.addEventListener("DOMContentLoaded", function() {
-  const banner = document.querySelector('.banner-responsive');
-  if(!banner) return;
-
-  // 1. Variabler för skroll (Scrub)
-  let lastScrollY = window.scrollY;
-  let baseY = 0; // Skrollens position (0 till -29)
-  
-  // 2. Variabler för Ambient Animation
-  const ambientDelayMs = 1500; // Väntar 2 sekunder (2000ms)
-  const cycleDurationMs = 3000; // En full loop upp och ner tar 4 sekunder (4000ms)
-  const ambientAmplitude = 2; // Rör sig max 2%
-  const startTime = performance.now() + ambientDelayMs;
-
-  // Lyssna på skroll-hjulet och räkna ut "Base Y"
-  window.addEventListener('scroll', () => {
-      let currentScrollY = window.scrollY;
-      let scrollDelta = currentScrollY - lastScrollY;
-      
-      if (currentScrollY <= 0) {
-          baseY = 0;
-      } else {
-          let scrubDistance = window.innerHeight * 0.20; 
-          let percentPerPixel = 29 / scrubDistance; 
-          
-          baseY -= (scrollDelta * percentPerPixel);
-          
-          // Kläm fast skrollet mellan -29% och 0%
-          if (baseY < -29) baseY = -29;
-          if (baseY > 0) baseY = 0;
-      }
-      lastScrollY = currentScrollY;
-  });
-
-  // Själva "Motorn" som uppdaterar skärmen (Render Loop)
-  function renderLoop(currentTime) {
-      let ambientY = 0;
-
-      // Kolla om 2 sekunder har gått
-      if (currentTime > startTime) {
-          // Räkna ut var i loopen vi är
-          let elapsed = currentTime - startTime;
-          let cycleProgress = (elapsed % cycleDurationMs) / cycleDurationMs;
-          
-          // Matematisk formel för att skapa en mjuk "Ease In Out" (Cosinus-våg)
-          let waveFactor = (1 - Math.cos(cycleProgress * Math.PI * 2)) / 2;
-          
-          // Omvandlar vågen till ett värde mellan 0 och -2%
-          ambientY = waveFactor * -ambientAmplitude; 
-      }
-
-      // Slå ihop skrollets position med den flytande animationen
-      let totalY = baseY + ambientY;
-      
-      // Applicera på bannern
-      banner.style.transform = `translateY(${totalY}%)`;
-
-      // Be webbläsaren köra loopen igen inför nästa bildruta
-      requestAnimationFrame(renderLoop);
-  }
-
-  // Starta motorn!
-  requestAnimationFrame(renderLoop);
-});
-
-
-
   const segments = parseBezierPath(rawPath);
   const totalDuration = segments[segments.length - 1].p1.x; // 160 -> total "time" units in the path
   const startY = segments[0].p0.y; // baseline Y (161)
@@ -474,6 +406,227 @@ document.addEventListener("DOMContentLoaded", function() {
     startArrowAnimation(arrowWrapper);
   }, 3200);
 });
+
+  // ────────────────── GAME RUNNING ──────────────────
+  // Banner-responsive
+  document.addEventListener("DOMContentLoaded", function() {
+  const banner = document.querySelector('.banner-responsive');
+  if(!banner) return;
+
+  // 1. Variabler för skroll (Scrub)
+  let lastScrollY = window.scrollY;
+  let baseY = 0; // Skrollens position (0 till -29)
+  
+  // 2. Variabler för Ambient Animation
+  const ambientDelayMs = 1500; // Väntar 2 sekunder (2000ms)
+  const cycleDurationMs = 3000; // En full loop upp och ner tar 4 sekunder (4000ms)
+  const ambientAmplitude = 2; // Rör sig max 2%
+  const startTime = performance.now() + ambientDelayMs;
+
+  // Lyssna på skroll-hjulet och räkna ut "Base Y"
+  window.addEventListener('scroll', () => {
+      let currentScrollY = window.scrollY;
+      let scrollDelta = currentScrollY - lastScrollY;
+      
+      if (currentScrollY <= 0) {
+          baseY = 0;
+      } else {
+          let scrubDistance = window.innerHeight * 0.20; 
+          let percentPerPixel = 29 / scrubDistance; 
+            baseY -= (scrollDelta * percentPerPixel);
+          
+          // Kläm fast skrollet mellan -29% och 0%
+          if (baseY < -29) baseY = -29;
+          if (baseY > 0) baseY = 0;
+      }
+      lastScrollY = currentScrollY;
+  });
+  // Själva "Motorn" som uppdaterar skärmen (Render Loop)
+  function renderLoop(currentTime) {
+      let ambientY = 0;
+      // Kolla om 2 sekunder har gått
+      if (currentTime > startTime) {
+          // Räkna ut var i loopen vi är
+          let elapsed = currentTime - startTime;
+          let cycleProgress = (elapsed % cycleDurationMs) / cycleDurationMs;
+                    // Matematisk formel för att skapa en mjuk "Ease In Out" (Cosinus-våg)
+          let waveFactor = (1 - Math.cos(cycleProgress * Math.PI * 2)) / 2;
+                    // Omvandlar vågen till ett värde mellan 0 och -2%
+          ambientY = waveFactor * -ambientAmplitude; 
+      }
+      // Slå ihop skrollets position med den flytande animationen
+      let totalY = baseY + ambientY;
+            // Applicera på bannern
+      banner.style.transform = `translateY(${totalY}%)`;
+      // Be webbläsaren köra loopen igen inför nästa bildruta
+      requestAnimationFrame(renderLoop);
+  }
+  // Starta motorn!
+  requestAnimationFrame(renderLoop);
+});
+
+// TIMER DISPLAY
+var Webflow = window.Webflow || [];
+Webflow.push(function() {
+ if (!document.getElementById('timer-display')) return; // not a game page, skip entirely
+  let totalSeconds = 0;
+  let timerInterval = null;
+  window.FinalTimeStr = "00:00"; 
+  window.FinalTimeSecs = 0;      
+  window.TimerRunning = false;
+
+  // 0. Rita 00:00 direkt, oavsett när räkningen faktiskt startar
+  const displayElInit = document.getElementById('timer-display');
+  if (displayElInit) {
+    displayElInit.innerText = "00:00";
+  }
+
+  // 1. Starta lottie animationen (Tjuvstartar före siffrorna)
+  setTimeout(function() {
+    // Förhindra start om man på något sjukt sätt redan klickat Finish
+    if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
+    // Starta Lottie via Webflows Custom Event
+    const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
+    if (wfIx) {
+        wfIx.emit("start-stopwatch"); 
+        console.log("Lottie tjuvstartad!");
+    }
+  }, 2000);
+
+  // 2. Starta siffror i timern
+  setTimeout(function() {
+    if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
+    window.TimerRunning = true;
+    console.log("Siffrorna börjar rulla!");
+    // Starta uppräkningen
+    timerInterval = setInterval(function() {
+      totalSeconds++;
+      
+      let minutes = Math.floor(totalSeconds / 60);
+      let seconds = totalSeconds % 60;
+      let minStr = String(minutes).padStart(2, '0');
+      let secStr = String(seconds).padStart(2, '0');
+      
+      const displayEl = document.getElementById('timer-display');
+      if (displayEl) {
+        displayEl.innerText = minStr + ':' + secStr;
+      }
+      // Maxgräns (nöd-stopp) simulerar ett klick på Finish
+      if (minutes >= 99 && seconds >= 59) {
+        const finishBtn = document.getElementById('finish-btn');
+        if(finishBtn) finishBtn.click(); 
+      }
+    }, 1000);
+  }, 4400); // ÄNDRA HÄR: Tiden då siffrorna ska starta
+
+  // LYSSNA PÅ FINISH-KNAPPEN (Dödar och klonar Lottien)
+  function setupFinishListener() {
+    const finishBtn = document.getElementById('finish-btn');
+    
+    if (finishBtn) {
+      finishBtn.addEventListener('click', function() {
+        // 1. Stoppa sifferräknaren
+        clearInterval(timerInterval);
+        window.TimerRunning = false; 
+        // 2. DEN AUTOMATISKA KLONEN (Dödar Webflows kontroll)
+        const lottieContainer = document.getElementById('stopwatch-lottie');
+        if (lottieContainer) {
+          const frozenSVG = lottieContainer.innerHTML;
+          const frozenDiv = document.createElement('div');
+          frozenDiv.className = lottieContainer.className; // Behåller din styling
+          frozenDiv.innerHTML = frozenSVG;
+          
+          lottieContainer.parentNode.replaceChild(frozenDiv, lottieContainer);
+          console.log("Lottien mördades och ersattes med en fryst klon!");
+        }
+        // 3. Spara sluttiden
+        const finalDisplay = document.getElementById('timer-display');
+        if (finalDisplay) window.FinalTimeStr = finalDisplay.innerText;
+        window.FinalTimeSecs = totalSeconds;
+        console.log("Avslutad! Sluttid:", window.FinalTimeStr);
+      });
+    } else {
+      setTimeout(setupFinishListener, 200);
+    }
+  }
+  setupFinishListener();
+});
+
+// GAME ALTERNATIVE-ROW
+document.addEventListener("DOMContentLoaded", function() {
+  const scrollDuration = 400; 
+  const topOffsetPercent = window.innerWidth < 600 ? 0.16 : 0.20;
+  const animationDelay = 450;  // Väntar tills keyframe-animationen är klar
+
+  const alternativeRows = document.querySelectorAll('.alternative-row');
+
+  // ── LOCK: no answers selectable for the first 2s after page load ──
+  alternativeRows.forEach(row => {
+    row.style.pointerEvents = 'none';
+  });
+  setTimeout(() => {
+    alternativeRows.forEach(row => {
+      row.style.pointerEvents = 'auto';
+    });
+  }, 2000);
+
+  alternativeRows.forEach(row => {
+    // VIKTIGT: Vi lyssnar på 'mousedown' precis som ditt SFX-script! 
+    // Då sker båda exakt samtidigt.
+    row.addEventListener('mousedown', function(e) {
+      const currentQuestionWrapper = this.closest('.question-wrapper');
+      if (!currentQuestionWrapper) return;
+
+      // 1. Nollställ ALLA checkboxar
+      const allCheckboxesInQuestion = currentQuestionWrapper.querySelectorAll('.checkbox');
+      allCheckboxesInQuestion.forEach(cb => {
+        cb.classList.remove('is-active');
+      });
+      // 2. Aktivera den klickade
+      const clickedCheckbox = this.querySelector('.checkbox');
+      if (clickedCheckbox) {
+        // Eftersom vi bytt till @keyframes behöver vi reflow-tricket.
+        void clickedCheckbox.offsetWidth; 
+        clickedCheckbox.classList.add('is-active');
+      }
+      // 3. Debounce Scroll (Väntar på att animationen gör klart sitt)
+      if (currentQuestionWrapper.scrollTimeout) {
+        clearTimeout(currentQuestionWrapper.scrollTimeout);
+      }
+      const currentTableRow = this.closest('.game-row-1');
+      if (!currentTableRow) return;
+      
+      const nextTableRow = currentTableRow.nextElementSibling;
+      
+      if (nextTableRow) {
+        currentQuestionWrapper.scrollTimeout = setTimeout(() => {
+          const start = window.scrollY;
+          const end = nextTableRow.getBoundingClientRect().top + window.scrollY - (window.innerHeight * topOffsetPercent);
+          const distance = end - start;
+          let startTime = null;
+
+          function easeInOut(t) { 
+            return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; 
+          }
+          function smoothScrollStep(timestamp) {
+            if (!startTime) startTime = timestamp;
+            const progress = Math.min((timestamp - startTime) / scrollDuration, 1);
+            window.scrollTo(0, start + distance * easeInOut(progress));
+            
+            if (progress < 1) {
+              requestAnimationFrame(smoothScrollStep);
+            }
+          }
+
+          requestAnimationFrame(smoothScrollStep);
+        }, animationDelay);
+      }
+    });
+  });
+});
+
+
+
 
 /* // --- HINDRA CTRL + SCROLL ZOOM ---
 window.addEventListener('wheel', function(e) {
@@ -1494,171 +1647,7 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// TIMER DISPLAY
-var Webflow = window.Webflow || [];
-Webflow.push(function() {
- if (!document.getElementById('timer-display')) return; // not a game page, skip entirely
-  let totalSeconds = 0;
-  let timerInterval = null;
-  window.FinalTimeStr = "00:00"; 
-  window.FinalTimeSecs = 0;      
-  window.TimerRunning = false;
 
-  // 0. Rita 00:00 direkt, oavsett när räkningen faktiskt startar
-  const displayElInit = document.getElementById('timer-display');
-  if (displayElInit) {
-    displayElInit.innerText = "00:00";
-  }
-
-  // 1. Starta lottie animationen (Tjuvstartar före siffrorna)
-  setTimeout(function() {
-    // Förhindra start om man på något sjukt sätt redan klickat Finish
-    if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
-    // Starta Lottie via Webflows Custom Event
-    const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
-    if (wfIx) {
-        wfIx.emit("start-stopwatch"); 
-        console.log("Lottie tjuvstartad!");
-    }
-  }, 2000);
-
-  // 2. Starta siffror i timern
-  setTimeout(function() {
-    if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
-    window.TimerRunning = true;
-    console.log("Siffrorna börjar rulla!");
-    // Starta uppräkningen
-    timerInterval = setInterval(function() {
-      totalSeconds++;
-      
-      let minutes = Math.floor(totalSeconds / 60);
-      let seconds = totalSeconds % 60;
-      let minStr = String(minutes).padStart(2, '0');
-      let secStr = String(seconds).padStart(2, '0');
-      
-      const displayEl = document.getElementById('timer-display');
-      if (displayEl) {
-        displayEl.innerText = minStr + ':' + secStr;
-      }
-      // Maxgräns (nöd-stopp) simulerar ett klick på Finish
-      if (minutes >= 99 && seconds >= 59) {
-        const finishBtn = document.getElementById('finish-btn');
-        if(finishBtn) finishBtn.click(); 
-      }
-    }, 1000);
-  }, 4400); // ÄNDRA HÄR: Tiden då siffrorna ska starta
-
-  // LYSSNA PÅ FINISH-KNAPPEN (Dödar och klonar Lottien)
-  function setupFinishListener() {
-    const finishBtn = document.getElementById('finish-btn');
-    
-    if (finishBtn) {
-      finishBtn.addEventListener('click', function() {
-        // 1. Stoppa sifferräknaren
-        clearInterval(timerInterval);
-        window.TimerRunning = false; 
-        // 2. DEN AUTOMATISKA KLONEN (Dödar Webflows kontroll)
-        const lottieContainer = document.getElementById('stopwatch-lottie');
-        if (lottieContainer) {
-          const frozenSVG = lottieContainer.innerHTML;
-          const frozenDiv = document.createElement('div');
-          frozenDiv.className = lottieContainer.className; // Behåller din styling
-          frozenDiv.innerHTML = frozenSVG;
-          
-          lottieContainer.parentNode.replaceChild(frozenDiv, lottieContainer);
-          console.log("Lottien mördades och ersattes med en fryst klon!");
-        }
-        // 3. Spara sluttiden
-        const finalDisplay = document.getElementById('timer-display');
-        if (finalDisplay) window.FinalTimeStr = finalDisplay.innerText;
-        window.FinalTimeSecs = totalSeconds;
-        console.log("Avslutad! Sluttid:", window.FinalTimeStr);
-      });
-    } else {
-      setTimeout(setupFinishListener, 200);
-    }
-  }
-  setupFinishListener();
-});
-
-// GAME ALTERNATIVE-ROW
-document.addEventListener("DOMContentLoaded", function() {
-  const scrollDuration = 400; 
-  const topOffsetPercent = window.innerWidth < 600 ? 0.16 : 0.20;
-  const animationDelay = 450;  // Väntar tills keyframe-animationen är klar
-
-  const alternativeRows = document.querySelectorAll('.alternative-row');
-
-  // ── LOCK: no answers selectable for the first 2s after page load ──
-  alternativeRows.forEach(row => {
-    row.style.pointerEvents = 'none';
-  });
-  setTimeout(() => {
-    alternativeRows.forEach(row => {
-      row.style.pointerEvents = 'auto';
-    });
-  }, 2000);
-
-  alternativeRows.forEach(row => {
-    // VIKTIGT: Vi lyssnar på 'mousedown' precis som ditt SFX-script! 
-    // Då sker båda exakt samtidigt.
-    row.addEventListener('mousedown', function(e) {
-      const currentQuestionWrapper = this.closest('.question-wrapper');
-      if (!currentQuestionWrapper) return;
-
-      // 1. Nollställ ALLA checkboxar
-      const allCheckboxesInQuestion = currentQuestionWrapper.querySelectorAll('.checkbox');
-      allCheckboxesInQuestion.forEach(cb => {
-        cb.classList.remove('is-active');
-      });
-
-      // 2. Aktivera den klickade
-      const clickedCheckbox = this.querySelector('.checkbox');
-      if (clickedCheckbox) {
-        // Eftersom vi bytt till @keyframes behöver vi reflow-tricket.
-        void clickedCheckbox.offsetWidth; 
-        clickedCheckbox.classList.add('is-active');
-      }
-
-      // 3. Debounce Scroll (Väntar på att animationen gör klart sitt)
-      if (currentQuestionWrapper.scrollTimeout) {
-        clearTimeout(currentQuestionWrapper.scrollTimeout);
-      }
-
-      const currentTableRow = this.closest('.game-row-1');
-      if (!currentTableRow) return;
-      
-      const nextTableRow = currentTableRow.nextElementSibling;
-      
-      if (nextTableRow) {
-        currentQuestionWrapper.scrollTimeout = setTimeout(() => {
-          const start = window.scrollY;
-          const end = nextTableRow.getBoundingClientRect().top + window.scrollY - (window.innerHeight * topOffsetPercent);
-          const distance = end - start;
-          let startTime = null;
-
-          function easeInOut(t) { 
-            return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; 
-          }
-
-          function smoothScrollStep(timestamp) {
-            if (!startTime) startTime = timestamp;
-            const progress = Math.min((timestamp - startTime) / scrollDuration, 1);
-            
-            window.scrollTo(0, start + distance * easeInOut(progress));
-            
-            if (progress < 1) {
-              requestAnimationFrame(smoothScrollStep);
-            }
-          }
-
-          requestAnimationFrame(smoothScrollStep);
-
-        }, animationDelay);
-      }
-    });
-  });
-});
 // ── SCORE PAGE: DISPLAY RESULTS ─────────────────────────────────
 var Webflow = window.Webflow || [];
 Webflow.push(function() {
