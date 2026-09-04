@@ -238,16 +238,26 @@ body .games-grid-clip.is-skewed {
  
 /* ── PRESS-SCALE / "BLOW UP" SYSTEM (ersätter click-scale-interactions) ── */
 .js-press-scale {
-  transition: scale 0.11s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* ≈ Power1 Out */
+  transition: filter 0.1s ease, box-shadow 0.1s ease, scale 0.11s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 /* Touch/penna: skalar UPP (blow up), som tidigare */
 .js-press-scale.is-pressed-up {
   scale: 1.3;
 }
-/* Mus: skalar NER istället - klassisk "button press"-känsla. Justera värdet efter smak */
 .js-press-scale.is-pressed-down {
-  scale: 1; /* Behåll storleken */
+  scale: 1;
   filter: invert(0.5) brightness(0.4);
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.5);
+  animation: glowPulse 0.1s ease-in-out infinite alternate;
+}
+
+@keyframes glowPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 18px rgba(255, 255, 255, 0.6);
+  }
 }
 /* ── SCROLL-PULSE SYSTEM ── */
 .button-wrapper .button,
