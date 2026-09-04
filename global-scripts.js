@@ -138,7 +138,7 @@ function smoothScrollToId(targetId, opts = {}) {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-  const real = document.querySelector('.mask-middle .game-v');
+  const real = document.querySelector('.mask-middle .vertical-center');
   const dummySlot = document.querySelector('.mask-top .game-v-clone');
 
   if (real && dummySlot) {
