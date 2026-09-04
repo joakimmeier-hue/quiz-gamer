@@ -226,20 +226,22 @@ document.addEventListener('DOMContentLoaded', () => {
 // 3 COMPONENT game-start-btn
 // SCROLL: game-start-btn visibility + arrow hide/show
 document.addEventListener('DOMContentLoaded', () => {
-  // This will be null on the GMA page, which is perfectly fine
   const scrollContainer = document.querySelector('.mask-middle');
-  
-  // FIX: Combined into a single string
   const targetBtns = document.querySelectorAll('.mask-middle .game-start-btn, .game-start-btn-gma');
   const arrowWrapper = document.querySelector('.arrow-anchor-wrapper');
-  
-  // FIX: Don't abort if scrollContainer is missing, only if no buttons are found!
+
   if (targetBtns.length === 0) return;
 
+  // Function to show active button & hide arrow
+  function forceShowButtons() {
+    targetBtns.forEach((btn) => btn.classList.add('is-visible'));
+    if (arrowWrapper) arrowWrapper.classList.add('is-hidden');
+  }
+
+  // --- 1. EXISTING INTERSECTION OBSERVER ---
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
-        // FIX: Combined into a single string
         const btnInside = entry.target.querySelector('.game-start-btn, .game-start-btn-gma');
         if (!btnInside) return;
 
@@ -247,24 +249,45 @@ document.addEventListener('DOMContentLoaded', () => {
           btnInside.classList.add('is-visible');
           if (arrowWrapper) arrowWrapper.classList.add('is-hidden');
         } else {
-          btnInside.classList.remove('is-visible');
-          if (arrowWrapper) arrowWrapper.classList.remove('is-hidden');
+          // Only remove if not at the absolute bottom
+          if (!isAtBottom()) {
+            btnInside.classList.remove('is-visible');
+            if (arrowWrapper) arrowWrapper.classList.remove('is-hidden');
+          }
         }
       });
     },
     {
-      // If scrollContainer is null (GMA page), it automatically defaults to the main browser viewport
       root: scrollContainer,
       threshold: 1,
-      rootMargin: "0px 0px -14% 0px" // shrinks trigger zone from the bottom
+      rootMargin: "0px 0px -24% 0px"
     }
   );
 
   targetBtns.forEach((btn) => {
-    // FIX: Combined into a single string
     const parentRow = btn.closest('.row-gamestart, .row-2');
     if (parentRow) observer.observe(parentRow);
   });
+
+  // --- 2. BOTTOM SCROLL GUARANTEE SAFETY NET ---
+  function isAtBottom() {
+    if (scrollContainer) {
+      // For Science page (.mask-middle overflow)
+      const threshold = 10; // 10px buffer room for fractional pixel scaling
+      return scrollContainer.scrollHeight - scrollContainer.scrollTop <= scrollContainer.clientHeight + threshold;
+    } else {
+      // For GMA page (Main Window viewport)
+      const threshold = 10;
+      return window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - threshold;
+    }
+  }
+
+  const scrollTarget = scrollContainer || window;
+  scrollTarget.addEventListener('scroll', () => {
+    if (isAtBottom()) {
+      forceShowButtons();
+    }
+  }, { passive: true });
 });
 
 // 4 ARROW ANCHOR BOUNCE— exact SVG bezier curve replay
