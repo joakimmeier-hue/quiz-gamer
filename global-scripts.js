@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // If scrollContainer is null (GMA page), it automatically defaults to the main browser viewport
       root: scrollContainer,
       threshold: 1,
-      rootMargin: "0px 0px -24% 0px" // shrinks trigger zone from the bottom
+      rootMargin: "0px 0px -14% 0px" // shrinks trigger zone from the bottom
     }
   );
 
