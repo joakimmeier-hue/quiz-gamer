@@ -248,7 +248,7 @@ function hidePPDropdown() {
       }
     }
 
-   /*  // 2) Try Webflow ix3 custom event (pp-dropdown-hide)
+    // 2) Try Webflow ix3 custom event (pp-dropdown-hide)
     try {
       if (window.Webflow && typeof Webflow.require === 'function') {
         const wfx = Webflow.require('ix3');
@@ -260,7 +260,7 @@ function hidePPDropdown() {
       }
     } catch (err) {
       console.warn('hidePPDropdown: ix3 emit failed', err);
-    } */
+    }
 
     // 3) Last-resort fallback
     const anyGrid = document.querySelector('.pp-grid');
