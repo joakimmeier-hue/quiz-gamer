@@ -407,7 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 3200);
 });
 
-  // ────────────────── GAME RUNNING ──────────────────
+// ────────────────── GAME RUNNING ──────────────────
   // 1 Banner-responsive
   document.addEventListener("DOMContentLoaded", function() {
   const banner = document.querySelector('.banner-responsive');
@@ -415,12 +415,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 1. Variabler för skroll (Scrub)
   let lastScrollY = window.scrollY;
-  let baseY = 0; // Skrollens position (0 till -n)
+  let baseY = 0; // Skrollens position (0 till -77)
+  const maxScrub = 77; // Max scrub percentage
   
-  // 2. Variabler för Ambient Animation
-  const ambientDelayMs = 1500; // Väntar 2 sekunder (2000ms)
-  const cycleDurationMs = 3000; // En full loop upp och ner tar 4 sekunder (4000ms)
-  const ambientAmplitude = 7; // Rör sig max 2%
+  // 2. Variabler för Border Fade
+  // Sätt RGB-värdet för din 'grey' färg (t.ex. 128, 128, 128 för grå eller 255, 255, 255 för vit)
+  const borderRGB = '128, 128, 128'; 
+  const startAlpha = 1.0; // Fullt synlig vid scroll 0
+  const endAlpha = 0.0;   // Helt osynlig när den når -77%
+
+  // 3. Variabler för Ambient Animation
+  const ambientDelayMs = 1500;
+  const cycleDurationMs = 3000;
+  const ambientAmplitude = 7;
   const startTime = performance.now() + ambientDelayMs;
 
   // Lyssna på skroll-hjulet och räkna ut "Base Y"
@@ -432,35 +439,40 @@ document.addEventListener('DOMContentLoaded', () => {
           baseY = 0;
       } else {
           let scrubDistance = window.innerHeight * 0.20; 
-          let percentPerPixel = 77 / scrubDistance; 
-            baseY -= (scrollDelta * percentPerPixel);
+          let percentPerPixel = maxScrub / scrubDistance; 
+          baseY -= (scrollDelta * percentPerPixel);
           
-          // Kläm fast skrollet mellan -n% och 0%
-          if (baseY < -77) baseY = -77;
+          // Kläm fast skrollet mellan -maxScrub% och 0%
+          if (baseY < -maxScrub) baseY = -maxScrub;
           if (baseY > 0) baseY = 0;
       }
       lastScrollY = currentScrollY;
   });
+
   // Själva "Motorn" som uppdaterar skärmen (Render Loop)
   function renderLoop(currentTime) {
       let ambientY = 0;
-      // Kolla om 2 sekunder har gått
       if (currentTime > startTime) {
-          // Räkna ut var i loopen vi är
           let elapsed = currentTime - startTime;
           let cycleProgress = (elapsed % cycleDurationMs) / cycleDurationMs;
-                    // Matematisk formel för att skapa en mjuk "Ease In Out" (Cosinus-våg)
           let waveFactor = (1 - Math.cos(cycleProgress * Math.PI * 2)) / 2;
-                    // Omvandlar vågen till ett värde mellan 0 och -2%
           ambientY = waveFactor * -ambientAmplitude; 
       }
-      // Slå ihop skrollets position med den flytande animationen
+
+      // 1. Beräkna Y-position
       let totalY = baseY + ambientY;
-            // Applicera på bannern
       banner.style.transform = `translateY(${totalY}%)`;
-      // Be webbläsaren köra loopen igen inför nästa bildruta
+
+      // 2. Beräkna synkad Border Alpha utifrån skroll-progress (0 till 1)
+      let progress = Math.abs(baseY) / maxScrub; // 0 i toppen, 1 vid full scrub
+      let currentAlpha = startAlpha - (progress * (startAlpha - endAlpha));
+      
+      // Applicera färg och alpha på kanten
+      banner.style.borderColor = `rgba(${borderRGB}, ${currentAlpha})`;
+
       requestAnimationFrame(renderLoop);
   }
+  
   // Starta motorn!
   requestAnimationFrame(renderLoop);
 });
