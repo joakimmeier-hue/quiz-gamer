@@ -675,7 +675,7 @@ const TOPICS = {
         fadeColor: '#ffffff'
     },
     science: {
-        url: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69b08a22396c27a611026d0c_The%20end%20of%20tyreen%20remix.mp3', 
+        url: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a9ca192f2ca5d16042302f8_SunoAI-chrome-lotus-run.mp3', 
         volume: 0.6,
         startTime: 0,
         fadeColor: '#000000'
