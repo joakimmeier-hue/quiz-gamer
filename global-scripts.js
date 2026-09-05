@@ -468,37 +468,46 @@ document.addEventListener('DOMContentLoaded', () => {
 // 2 TIMER DISPLAY
 var Webflow = window.Webflow || [];
 Webflow.push(function() {
- if (!document.getElementById('timer-display')) return; // not a game page, skip entirely
+  if (!document.getElementById('timer-display')) return; // Not a game page, skip entirely
+
   let totalSeconds = 0;
   let timerInterval = null;
   window.FinalTimeStr = "00:00"; 
   window.FinalTimeSecs = 0;      
   window.TimerRunning = false;
 
-  // 0. Rita 00:00 direkt, oavsett när räkningen faktiskt startar
+  // 0. Set initial display
   const displayElInit = document.getElementById('timer-display');
   if (displayElInit) {
     displayElInit.innerText = "00:00";
   }
 
-  // 1. Starta lottie animationen (Tjuvstartar före siffrorna)
-  setTimeout(function() {
-    // Förhindra start om man på något sjukt sätt redan klickat Finish
-    if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
-    // Starta Lottie via Webflows Custom Event
+  // Helper function to safely emit Webflow IX3 / IX2 custom events
+  function emitWebflowEvent(eventName) {
     const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
     if (wfIx) {
-        wfIx.emit("start-stopwatch"); 
-        console.log("Lottie tjuvstartad!");
+      wfIx.emit(eventName);
+      console.log(`Webflow Event Emitted: ${eventName}`);
     }
-  }, 2000);
+  }
 
-  // 2. Starta siffror i timern
+  // 1. Fire "321-go" sequence (0.5s after page load)
+  setTimeout(function() {
+    if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
+    emitWebflowEvent("321-go");
+  }, 500); // Tweak start delay for 321-go here
+
+  // 2. Start Lottie animation ("start-stopwatch")
+  setTimeout(function() {
+    if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
+    emitWebflowEvent("start-stopwatch");
+  }, 2000); // Tweak Lottie start here
+
+  // 3. Start running numbers in the timer
   setTimeout(function() {
     if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
     window.TimerRunning = true;
-    console.log("Siffrorna börjar rulla!");
-    // Starta uppräkningen
+    
     timerInterval = setInterval(function() {
       totalSeconds++;
       
@@ -511,13 +520,13 @@ Webflow.push(function() {
       if (displayEl) {
         displayEl.innerText = minStr + ':' + secStr;
       }
-      // Maxgräns (nöd-stopp) simulerar ett klick på Finish
+
       if (minutes >= 99 && seconds >= 59) {
         const finishBtn = document.getElementById('finish-btn');
-        if(finishBtn) finishBtn.click(); 
+        if (finishBtn) finishBtn.click(); 
       }
     }, 1000);
-  }, 4400); // ÄNDRA HÄR: Tiden då siffrorna ska starta
+  }, 4400); // Numbers start running here
 
 // 3 LYSSNA PÅ FINISH-KNAPPEN (Dödar och klonar Lottien)
   function setupFinishListener() {
