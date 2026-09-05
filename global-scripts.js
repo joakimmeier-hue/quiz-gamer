@@ -538,7 +538,7 @@ Webflow.push(function() {
         if (finishBtn) finishBtn.click(); 
       }
     }, 1000);
-  }, 4400); // Numbers start running here
+  }, 3400); // Numbers start running here
 
 // 3 LYSSNA PÅ FINISH-KNAPPEN (Dödar och klonar Lottien)
   function setupFinishListener() {
