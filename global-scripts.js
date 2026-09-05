@@ -501,7 +501,7 @@ Webflow.push(function() {
   setTimeout(function() {
     if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
     emitWebflowEvent("start-stopwatch");
-  }, 2000); // Tweak Lottie start here
+  }, 2920); // Tweak Lottie start here
 
   // 3. Start running numbers in the timer
   setTimeout(function() {
