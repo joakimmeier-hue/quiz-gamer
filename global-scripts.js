@@ -495,13 +495,13 @@ Webflow.push(function() {
   setTimeout(function() {
     if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
     emitWebflowEvent("321-go");
-  }, 2000); // Tweak start delay for 321-go here
+  }, 1000); // Tweak start delay for 321-go here
 
   // 2. Start Lottie animation ("start-stopwatch")
   setTimeout(function() {
     if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
     emitWebflowEvent("start-stopwatch");
-  }, 2880); // Tweak Lottie start here
+  }, 1800); // Tweak Lottie start here
 
   // 3. Start running numbers in the timer
   setTimeout(function() {
