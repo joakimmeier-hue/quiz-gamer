@@ -495,7 +495,7 @@ Webflow.push(function() {
   setTimeout(function() {
     if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
     emitWebflowEvent("321-go");
-  }, 1500); // Tweak start delay for 321-go here
+  }, 2000); // Tweak start delay for 321-go here
 
   // 2. Start Lottie animation ("start-stopwatch")
   setTimeout(function() {
