@@ -858,7 +858,7 @@ const SFX_VOLUMES = {
 // ── QALT CYCLE CONFIG ──
 let qaltIndex = 0; 
 // Här sparar vi *namnet* på egenskapen (key) istället för url:en
-const qaltKeys = ['qalt5', 'qalt4', 'qalt3', 'qalt2', 'qalt1'];
+const qaltKeys = ['qalt1', 'qalt2', 'qalt3', 'qalt4', 'qalt5'];
 // Sätt igång buffringen för alla ljud i SFX_CONFIG omedelbart
 Object.entries(SFX_CONFIG).forEach(([key, url]) => preloadBuffer(key, url));
 // ── BLIXTSNABB UPPSPELNING ──
