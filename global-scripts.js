@@ -848,11 +848,11 @@ const SFX_VOLUMES = {
     finish: 0.9,
     select: 0.5,
     back: 0.9,
-    qalt1: 0.1,
-    qalt2: 0.1,
-    qalt3: 0.1,
-    qalt4: 0.1,
-    qalt5: 0.1,
+    qalt1: 0.5,
+    qalt2: 0.5,
+    qalt3: 0.5,
+    qalt4: 0.5,
+    qalt5: 0.5,
     deny: 0.9
 };
 // ── QALT CYCLE CONFIG ──
