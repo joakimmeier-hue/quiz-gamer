@@ -836,11 +836,11 @@ const SFX_CONFIG = {
     finish: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a1a2dff7a1f0df596ecc446_bd746b87bc96d389d43e488276181697_finish-magic-1.ogg',
     select: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a1a2dffba03ba59ac3cf57e_fbdab5a348821e99033e07ea1d05fe36_click-btn-select.ogg',
     back: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a1a2dffc231e9d57618b399_5b327d85abc436094132122fc0bebd69_click-btn-back.ogg',
-    qalt: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a271ff59049b7423092e9ba_3f976bf8bfbf666c86a9cfa719202484_qalt-pitch_0.ogg',
-    qaltminus2: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a271ff562a0882a6b43bf28_020c2575bda5261e434cf42ea90c096b_qalt-pitch_-2.ogg',
-    qaltminus4: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a271ff59baf6f8ede5f16a3_a2d58a55af1e1bd75e61bd4389a6b69c_qalt-pitch_-4.ogg',
-    qaltminus6: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a271ff53343fdea7fc74a6a_6d490db071d13a9fe04fa162e0c1164b_qalt-pitch_-6.ogg',
-    qaltminus8: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a271ff549ae2539a25338ee_5a5a5d3ce12941ad67dae44cfc51ddb2_qalt-pitch_-8.ogg',
+    qalt1: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a9ddb46f90085c11e4abbe6_qalt-wave-001.ogg',
+    qalt2: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a9ddb466752a64faa2e9c8a_qalt-wave-002.ogg',
+    qalt3: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a9ddb468b1a0a8fdca1c45c_qalt-wave-003.ogg',
+    qalt4: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a9ddb45dc2eadae3b74007a_qalt-wave-004.ogg',
+    qalt5: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a9ddb458b1a0a8fdca1c43c_qalt-wave-005.ogg',
     deny: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a1af8aa81c60eedf18e0c0f_a7982f0695a5917df328945f1a32c008_deny.ogg'
 };
 // ── SFX VOLYMER (per ljud) ──
@@ -848,17 +848,17 @@ const SFX_VOLUMES = {
     finish: 0.9,
     select: 0.5,
     back: 0.9,
-    qalt: 0.9,
-    qaltminus2: 0.9,
-    qaltminus4: 0.9,
-    qaltminus6: 0.9,
-    qaltminus8: 0.9,
+    qalt1: 1,
+    qalt2: 1,
+    qalt3: 1,
+    qalt4: 1,
+    qalt5: 1,
     deny: 0.9
 };
 // ── QALT CYCLE CONFIG ──
 let qaltIndex = 0; 
 // Här sparar vi *namnet* på egenskapen (key) istället för url:en
-const qaltKeys = ['qaltminus8', 'qaltminus6', 'qaltminus4', 'qaltminus2', 'qalt'];
+const qaltKeys = ['qalt5', 'qalt4', 'qalt3', 'qalt2', 'qalt1'];
 // Sätt igång buffringen för alla ljud i SFX_CONFIG omedelbart
 Object.entries(SFX_CONFIG).forEach(([key, url]) => preloadBuffer(key, url));
 // ── BLIXTSNABB UPPSPELNING ──
