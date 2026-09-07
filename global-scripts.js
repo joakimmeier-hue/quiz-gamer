@@ -540,7 +540,69 @@ Webflow.push(function() {
     }, 1000);
   }, 3400); // Numbers start running here
 
-// 3 LYSSNA PÅ FINISH-KNAPPEN (Dödar och klonar Lottien)
+// 3. FETCH AND SEED QUESTIONS RANDOMLY
+runOnReady(async () => {
+  const cards = document.querySelectorAll('.question-card');
+  if (!cards || cards.length === 0) return;
+
+  // Extract topic and level from URL slug (e.g., "/science-game-1" -> topic: "science", level: 1)
+  const path = window.location.pathname;
+  const match = path.match(/\/([a-z]+)-game-(\d+)/i);
+  
+  const topic = match ? match[1].toLowerCase() : "science";
+  const level = match ? parseInt(match[2], 10) : 1;
+
+  try {
+    // 1. Fetch all matching questions from Firestore
+    const snapshot = await db.collection("questions")
+      .where("topic", "==", topic)
+      .where("level", "==", level)
+      .get();
+
+    if (snapshot.empty) {
+      console.warn(`No questions found in Firestore for topic: ${topic}, level: ${level}`);
+      return;
+    }
+
+    // 2. Shuffle questions randomly and pick up to the number of cards available (10)
+    const shuffledDocs = snapshot.docs
+      .sort(() => 0.5 - Math.random())
+      .slice(0, cards.length);
+
+    // 3. Inject random data into each Webflow card
+    shuffledDocs.forEach((doc, index) => {
+      const data = doc.data();
+      const card = cards[index];
+
+      // Overwrite data-question-id with the exact Firestore doc ID
+      card.setAttribute('data-question-id', doc.id);
+
+      // Inject Question Text
+      const textEl = card.querySelector('.q-text');
+      if (textEl && data.text) {
+        textEl.textContent = data.text;
+      }
+
+      // Inject Alternatives (1 through 4)
+      for (let i = 1; i <= 4; i++) {
+        const row = card.querySelector(`[data-choice="${i}"]`);
+        if (row) {
+          const altTextEl = row.querySelector('.qalt-text');
+          if (altTextEl && data.alternatives && data.alternatives[i]) {
+            altTextEl.textContent = data.alternatives[i];
+            row.style.display = ''; // Ensure row is visible
+          } else {
+            row.style.display = 'none'; // Hide if question has fewer than 4 options
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching/seeding questions:", error);
+  }
+});
+
+// 4 LYSSNA PÅ FINISH-KNAPPEN (Dödar och klonar Lottien)
   function setupFinishListener() {
     const finishBtn = document.getElementById('finish-btn');
     
@@ -573,7 +635,7 @@ Webflow.push(function() {
   setupFinishListener();
 });
 
-// 4 GAME ALTERNATIVE-ROW
+// 5 GAME ALTERNATIVE-ROW - Click animation
 document.addEventListener("DOMContentLoaded", function() {
   const scrollDuration = 400; 
   const topOffsetPercent = window.innerWidth < 600 ? 0.16 : 0.20;
@@ -614,7 +676,7 @@ document.addEventListener("DOMContentLoaded", function() {
       if (currentQuestionWrapper.scrollTimeout) {
         clearTimeout(currentQuestionWrapper.scrollTimeout);
       }
-      const currentTableRow = this.closest('.game-row-1');
+      const currentTableRow = this.closest('.game-row-q');
       if (!currentTableRow) return;
       
       const nextTableRow = currentTableRow.nextElementSibling;
