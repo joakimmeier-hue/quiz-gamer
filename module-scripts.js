@@ -1234,43 +1234,46 @@ document.addEventListener('click', async function(e) {
   const finishBtn = e.target.closest('.finish-btn');
   if (!finishBtn) return;
 
-  e.preventDefault(); // Stop instant navigation
+  e.preventDefault();
 
-  // 1. Change text to "Calculating..." (if it uses nested text elements or text content)
-  const title1 = finishBtn.querySelector('[data-ix-target="title-1"]') || finishBtn.querySelector('div');
-  if (title1) title1.textContent = "Calculating...";
-  finishBtn.style.pointerEvents = 'none'; // Prevent double-clicking
+  // Extract topic & level directly from the page URL
+  const path = window.location.pathname;
+  const match = path.match(/\/([a-z]+)-game-(\d+)/i);
+  const topic = match ? match[1].toLowerCase() : "science";
+  const level = match ? parseInt(match[2], 10) : 1;
+
+  // 1. Update UI text to "Calculating..."
+  const textEl = finishBtn.querySelector('div') || finishBtn;
+  if (textEl) textEl.textContent = "Calculating...";
+  finishBtn.style.pointerEvents = 'none';
 
   try {
-    // 2. Gather user answers (adjust this to match how your game collects answers)
-    const answers = window.collectUserAnswers ? window.collectUserAnswers() : {}; 
+    // 2. Gather user answers from page
+    const answers = window.collectUserAnswers ? window.collectUserAnswers() : {};
 
-    // 3. Call your backend Cloud Function to grade the game
-    const gradeGameFn = httpsCallable(functions, "gradeGame");
-    const response = await gradeGameFn({ 
-      sessionId: window.currentSession || sessionStorage.getItem('activeSessionId'), 
-      answers: answers 
+    // 3. Send topic, level, sessionId, and answers to gradeGame
+    const response = await gradeGameFn({
+      topic: topic,
+      level: level,
+      sessionId: window.currentSession || sessionStorage.getItem('activeSessionId'),
+      answers: answers
     });
 
-    // 4. Save the result package for the Score page to read
+    // 4. Save response for the score card
     sessionStorage.setItem('lastGameResult', JSON.stringify(response.data));
-
-    // 5. Grant the VIP pass for the route guard
     sessionStorage.setItem('scoreAuthorized', 'true');
 
-    // 6. Trigger your custom exit transition with the 2-second slow finish
+    // 5. Exit page transition
     if (window.triggerPageExit) {
       window.triggerPageExit('/score', true, true);
     } else {
-      setTimeout(() => {
-        window.location.href = '/score';
-      }, 2000);
+      setTimeout(() => { window.location.href = '/score'; }, 2000);
     }
 
   } catch (err) {
     console.error("Failed to grade game:", err);
     alert("Error calculating score. Please try again.");
     finishBtn.style.pointerEvents = 'auto';
-    if (title1) title1.textContent = "Finish!";
+    if (textEl) textEl.textContent = "Finish!";
   }
 });
