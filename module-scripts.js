@@ -1118,7 +1118,7 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
 
 
 
-setupGameListener(); // whats this?????????? remove
+
 
 
 
@@ -1165,6 +1165,9 @@ setupGameListener(); // whats this?????????? remove
   };
   tryLoad();
 })();
+
+setupGameListener(); // whats this?????????? remove
+
 
 // ────────────────────────────────────── GAME RUNNING ──────────────────────────────────────
 // 3. FETCH AND SEED QUESTIONS RANDOMLY
