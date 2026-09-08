@@ -1118,9 +1118,6 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
 
 
 
-
-
-
 // ────────────────────────────────────── GAME START ──────────────────────────────────────
 // ── GAME-START INFO PANEL ───
 (function initGameInfoPanel() {
@@ -1245,23 +1242,7 @@ Webflow.push(async function() {
   }
 });
 
-// --- PREPARE FOR GRADING AND SCORE PAGE --- Start a server-side session (store session id for later grading)
-try {
-  const startResp = await startGameFn({ topic, level });
-  const sessionId = startResp?.data?.sessionId;
-  if (sessionId) {
-    window.currentSession = sessionId;
-    sessionStorage.setItem('activeSessionId', sessionId);
-    console.log('Started game session:', sessionId);
-  } else {
-    console.warn('startGame returned no sessionId');
-  }
-} catch (err) {
-  console.warn('Failed to start game session:', err);
-  // Optionally surface user-visible warning here
-}
-
-// --- COLLECT USER ANSWERS: RETURNS ARRAY<{ questionId: string, choice: number | null }>
+// --- COLLECT USER ANSWERS: RETURNS Array<{ questionId: string, choice: number | null }>
 window.collectUserAnswers = function collectUserAnswers() {
   const cards = document.querySelectorAll('.question-card');
   const answers = [];
@@ -1269,13 +1250,13 @@ window.collectUserAnswers = function collectUserAnswers() {
   cards.forEach(card => {
     const qid = card.getAttribute('data-question-id');
     if (!qid) {
-      // If a card doesn't have a question id, still push a placeholder so the array length
-      // matches number of cards (server expects an answer per card).
-      answers.push({ questionId: null, choice: null });
+      // Skip cards that don't have a question id (likely a seeding/navigation problem).
+      // Do NOT push a null ID — server expects valid doc IDs.
+      console.warn('collectUserAnswers: question-card missing data-question-id, skipping', card);
       return;
     }
 
-    // Find the active checkbox inside this card (your code uses .checkbox.is-active)
+    // Find selected checkbox (UI marks selected with .checkbox.is-active)
     const activeCheckbox = card.querySelector('.checkbox.is-active');
     let choice = null;
 
@@ -1287,7 +1268,6 @@ window.collectUserAnswers = function collectUserAnswers() {
       }
     }
 
-    // choice can be null (unanswered); server treats null as incorrect
     answers.push({ questionId: qid, choice: choice });
   });
 
