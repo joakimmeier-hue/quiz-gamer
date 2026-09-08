@@ -541,7 +541,8 @@ Webflow.push(function() {
   }, 3400); // Numbers start running here
 
 // 3. FETCH AND SEED QUESTIONS RANDOMLY
-runOnReady(async () => {
+var Webflow = window.Webflow || [];
+Webflow.push(async function() {
   const cards = document.querySelectorAll('.question-card');
   if (!cards || cards.length === 0) return;
 
@@ -564,7 +565,7 @@ runOnReady(async () => {
       return;
     }
 
-    // 2. Shuffle questions randomly and pick up to the number of cards available (10)
+    // 2. Shuffle questions randomly and pick up to the number of cards available
     const shuffledDocs = snapshot.docs
       .sort(() => 0.5 - Math.random())
       .slice(0, cards.length);
@@ -574,13 +575,13 @@ runOnReady(async () => {
       const data = doc.data();
       const card = cards[index];
 
-      // Auto-set Title Numbering ("Question 1", "Question 2", etc.)
+      // Auto-set Title Numbering
       const titleEl = card.querySelector('.q-title');
       if (titleEl) {
         titleEl.textContent = `Question ${index + 1}`;
       }
 
-      // Overwrite data-question-id with the exact Firestore doc ID
+      // Overwrite data-question-id
       card.setAttribute('data-question-id', doc.id);
 
       // Inject Question Text
@@ -596,9 +597,9 @@ runOnReady(async () => {
           const altTextEl = row.querySelector('.qalt-text');
           if (altTextEl && data.alternatives && data.alternatives[i]) {
             altTextEl.textContent = data.alternatives[i];
-            row.style.display = ''; // Ensure row is visible
+            row.style.display = ''; 
           } else {
-            row.style.display = 'none'; // Hide if question has fewer than 4 options
+            row.style.display = 'none'; 
           }
         }
       }
