@@ -1139,7 +1139,12 @@ window.addEventListener('pageshow', () => {
 // ── GLOBAL EXIT FUNCTION ─────────────────────────────
 window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false) {
     sessionStorage.setItem('navFrom', currentSlug);
-    if (isFinishBtn) sessionStorage.setItem('scoreAuthorized', 'true');
+    
+    // Automatically authorize if it's explicitly flagged or the destination is the score page
+    if (isFinishBtn || (url && url.includes('score'))) {
+        sessionStorage.setItem('scoreAuthorized', 'true');
+    }
+    
     sessionStorage.setItem('skipIntro', 'true');
 
     const targetTopicId = getTopicFromUrl(url);
@@ -1192,7 +1197,7 @@ window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false
                     }, 1345); 
                 }, 800);
             } else {
-                const waitTime = isSlowFinish ? 2000 : 800; //set 1000 to 800 as well?
+                const waitTime = isSlowFinish ? 2000 : 800; 
                 setTimeout(() => {
                     window.location.href = url;
                 }, waitTime); 
@@ -1200,6 +1205,7 @@ window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false
         });
     });
 };
+
 // ── CLICK HANDLER FÖR LÄNKAR ──────────────────────────────────────────
 document.addEventListener('click', function(e) {
     const link = e.target.closest('a');
@@ -1208,16 +1214,13 @@ document.addEventListener('click', function(e) {
     if (!href || href === '#' || href.startsWith('#') || link.classList.contains('is-password') || link.closest('.pp-dropdown, .i-closer-game, .button.i-lobby-back, .games-link-block')) return;
     e.preventDefault();
 
-    /* const isFinishBtn = link.id && link.id.startsWith('finish-btn-'); */
+    // Check if the user is clicking the finish button / navigating to the score page
+    const isHeadingToScore = href.includes('score') || link.classList.contains('finish-btn');
 
     if (link.id === 'boss-level') {
         setTimeout(() => window.triggerPageExit(href, false), 1000);
-    } 
-    /* else if (isFinishBtn) {
-        setTimeout(() => window.triggerPageExit(href, true, true), 200);
-    }  */
-    else {
-        setTimeout(() => window.triggerPageExit(href, false), 200);
+    } else {
+        setTimeout(() => window.triggerPageExit(href, isHeadingToScore, isHeadingToScore), 200);
     }
 });
 

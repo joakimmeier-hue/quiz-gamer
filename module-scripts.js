@@ -1166,7 +1166,7 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
   tryLoad();
 })();
 
-setupGameListener(); // whats this?????????? remove
+/* setupGameListener();  */ // whats this?????????? remove
 
 
 // ────────────────────────────────────── GAME RUNNING ──────────────────────────────────────
