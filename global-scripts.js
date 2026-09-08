@@ -676,7 +676,7 @@ document.addEventListener("DOMContentLoaded", function() {
       if (currentQuestionWrapper.scrollTimeout) {
         clearTimeout(currentQuestionWrapper.scrollTimeout);
       }
-      const currentTableRow = this.closest('.game-row-q');
+      const currentTableRow = this.closest('.question-card');
       if (!currentTableRow) return;
       
       const nextTableRow = currentTableRow.nextElementSibling;
