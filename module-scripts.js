@@ -3,6 +3,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
   import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-functions.js";
+  import { collection, query, where, getDocs } from "firebase/firestore";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAfZQM3H5XAYkEt2ARInoA1Xs-Qd1DXL_s",
@@ -1117,9 +1118,13 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
 }
 
 
-setupGameFinishListener();
 
-// ── GAME-START INFO PANEL ──────────────────────────────────────
+/* setupGameFinishListener(); */ // whats this??????????
+
+
+
+// ────────────────────────────────────── GAME START ──────────────────────────────────────
+// ── GAME-START INFO PANEL ───
 (function initGameInfoPanel() {
   const gameMatch = currentSlug.match(/^([a-z]+)-start$/);
   if (!gameMatch) return; // not a start page
@@ -1161,3 +1166,64 @@ setupGameFinishListener();
   };
   tryLoad();
 })();
+
+// ────────────────────────────────────── GAME RUNNING ──────────────────────────────────────
+// 3. FETCH AND SEED QUESTIONS RANDOMLY
+var Webflow = window.Webflow || [];
+Webflow.push(async function() {
+  const cards = document.querySelectorAll('.question-card');
+  if (!cards || cards.length === 0) return;
+
+  const path = window.location.pathname;
+  const match = path.match(/\/([a-z]+)-game-(\d+)/i);
+  
+  const topic = match ? match[1].toLowerCase() : "science";
+  const level = match ? parseInt(match[2], 10) : 1;
+
+  try {
+    // V9 Modular Query syntax
+    const q = query(
+      collection(db, "questions"), 
+      where("topic", "==", topic), 
+      where("level", "==", level)
+    );
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      console.warn(`No questions found in Firestore for topic: ${topic}, level: ${level}`);
+      return;
+    }
+
+    const shuffledDocs = snapshot.docs
+      .sort(() => 0.5 - Math.random())
+      .slice(0, cards.length);
+
+    shuffledDocs.forEach((docSnap, index) => {
+      const data = docSnap.data();
+      const card = cards[index];
+
+      const titleEl = card.querySelector('.q-title');
+      if (titleEl) titleEl.textContent = `Question ${index + 1}`;
+
+      card.setAttribute('data-question-id', docSnap.id);
+
+      const textEl = card.querySelector('.q-text');
+      if (textEl && data.text) textEl.textContent = data.text;
+
+      for (let i = 1; i <= 4; i++) {
+        const row = card.querySelector(`[data-choice="${i}"]`);
+        if (row) {
+          const altTextEl = row.querySelector('.qalt-text');
+          if (altTextEl && data.alternatives && data.alternatives[i]) {
+            altTextEl.textContent = data.alternatives[i];
+            row.style.display = ''; 
+          } else {
+            row.style.display = 'none'; 
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching/seeding questions:", error);
+  }
+});
