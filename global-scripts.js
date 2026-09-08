@@ -574,6 +574,12 @@ runOnReady(async () => {
       const data = doc.data();
       const card = cards[index];
 
+      // Auto-set Title Numbering ("Question 1", "Question 2", etc.)
+      const titleEl = card.querySelector('.q-title');
+      if (titleEl) {
+        titleEl.textContent = `Question ${index + 1}`;
+      }
+
       // Overwrite data-question-id with the exact Firestore doc ID
       card.setAttribute('data-question-id', doc.id);
 
