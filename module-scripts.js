@@ -1229,6 +1229,55 @@ Webflow.push(async function() {
   }
 });
 
+// --- PREPARE FOR GRADING AND SCORE PAGE --- Start a server-side session (store session id for later grading)
+try {
+  const startResp = await startGameFn({ topic, level });
+  const sessionId = startResp?.data?.sessionId;
+  if (sessionId) {
+    window.currentSession = sessionId;
+    sessionStorage.setItem('activeSessionId', sessionId);
+    console.log('Started game session:', sessionId);
+  } else {
+    console.warn('startGame returned no sessionId');
+  }
+} catch (err) {
+  console.warn('Failed to start game session:', err);
+  // Optionally surface user-visible warning here
+}
+
+// --- COLLECT USER ANSWERS: RETURNS ARRAY<{ questionId: string, choice: number | null }>
+window.collectUserAnswers = function collectUserAnswers() {
+  const cards = document.querySelectorAll('.question-card');
+  const answers = [];
+
+  cards.forEach(card => {
+    const qid = card.getAttribute('data-question-id');
+    if (!qid) {
+      // If a card doesn't have a question id, still push a placeholder so the array length
+      // matches number of cards (server expects an answer per card).
+      answers.push({ questionId: null, choice: null });
+      return;
+    }
+
+    // Find the active checkbox inside this card (your code uses .checkbox.is-active)
+    const activeCheckbox = card.querySelector('.checkbox.is-active');
+    let choice = null;
+
+    if (activeCheckbox) {
+      const row = activeCheckbox.closest('[data-choice]');
+      if (row) {
+        const c = parseInt(row.getAttribute('data-choice'), 10);
+        if (!isNaN(c)) choice = c;
+      }
+    }
+
+    // choice can be null (unanswered); server treats null as incorrect
+    answers.push({ questionId: qid, choice: choice });
+  });
+
+  return answers;
+};
+
 // ── FINISH BUTTON INTERCEPTOR & CALCULATOR ──────────────────────────
 document.addEventListener('click', async function(e) {
   const finishBtn = e.target.closest('.finish-btn');
@@ -1248,16 +1297,33 @@ document.addEventListener('click', async function(e) {
   finishBtn.style.pointerEvents = 'none';
 
   try {
-    // 2. Gather user answers from page
-    const answers = window.collectUserAnswers ? window.collectUserAnswers() : {};
+// 2. Gather user answers from page (with validation)
+  const answers = (typeof window.collectUserAnswers === 'function') ? window.collectUserAnswers() : [];
+  const sessionId = window.currentSession || sessionStorage.getItem('activeSessionId') || null;
 
-    // 3. Send topic, level, sessionId, and answers to gradeGame
+// Client-side validation before calling gradeGame
+  if (!Array.isArray(answers) || answers.length === 0) {
+    console.error('Cannot grade: answers missing or not an array', answers);
+    alert('No answers found. Please answer at least one question before finishing.');
+    if (textEl) textEl.textContent = "Finish!";
+    finishBtn.style.pointerEvents = 'auto';
+    return;
+  }
+  if (typeof sessionId !== 'string' || sessionId.trim() === '') {
+    console.error('Cannot grade: sessionId missing', sessionId);
+    alert('Session id missing — the game was not started properly. Please restart the game.');
+    if (textEl) textEl.textContent = "Finish!";
+    finishBtn.style.pointerEvents = 'auto';
+    return;
+  }
+
+// 3. Send topic, level, sessionId, and answers to gradeGame (validated payload)
     const response = await gradeGameFn({
-      topic: topic,
-      level: level,
-      sessionId: window.currentSession || sessionStorage.getItem('activeSessionId'),
-      answers: answers
-    });
+    topic: topic,
+    level: level,
+    sessionId: sessionId,
+    answers: answers
+  });
 
     // 4. Save response for the score card
     sessionStorage.setItem('lastGameResult', JSON.stringify(response.data));
@@ -1275,5 +1341,64 @@ document.addEventListener('click', async function(e) {
     alert("Error calculating score. Please try again.");
     finishBtn.style.pointerEvents = 'auto';
     if (textEl) textEl.textContent = "Finish!";
+  }
+});
+
+// ──────────── SCORE PAGE: DISPLAY RESULTS ─────────────────────────────────
+var Webflow = window.Webflow || [];
+Webflow.push(function() {
+  const resultDataRaw = sessionStorage.getItem('lastGameResult');
+  if (!resultDataRaw) return; // not arriving from a finished game, skip entirely
+
+  let data;
+  try {
+    data = JSON.parse(resultDataRaw);
+  } catch (err) {
+    console.error("Kunde inte tolka spelresultatet:", err);
+    return;
+  }
+
+  // Topic name
+  const setText = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
+
+  setText('list-game', data.topic.toUpperCase());
+  setText('list-result', `${data.correctCount}/${data.totalQuestions}`);
+  setText('list-time', data.timeStr);
+  setText('list-attempts', data.attemptCount - 1);
+  setText('list-leaderboard', `${data.leaderboardPosition}/100`);
+  setText('list-score', data.finalScore);
+  setText('list-unlimited-score', data.unlimitedScore);
+
+  // Clean up so a page refresh doesn't redisplay stale results
+  sessionStorage.removeItem('lastGameResult');
+
+     // ── LEVEL UP POPUP ──
+  if (data.levelsGained > 0) {
+    const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
+    const levelUpEl = document.querySelector('.level-up');
+
+    if (wfIx && levelUpEl) {
+      let remaining = data.levelsGained;
+
+      const popNext = () => {
+        if (remaining <= 0) return;
+        remaining--;
+        wfIx.emit("lvlup");
+      };
+
+      // Watch for the popup closing (display: none) to chain the next one
+      const observer = new MutationObserver(() => {
+        const isHidden = window.getComputedStyle(levelUpEl).display === 'none';
+        if (isHidden && remaining > 0) {
+          setTimeout(popNext, 500);
+        }
+      });
+      observer.observe(levelUpEl, { attributes: true, attributeFilter: ['style', 'class'] });
+
+      setTimeout(popNext, 13000);
+    }
   }
 });
