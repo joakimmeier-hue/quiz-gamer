@@ -1224,6 +1224,22 @@ Webflow.push(async function() {
         }
       }
     });
+          // --- Start a server-side session (store session id for later grading)
+          try {
+            const startResp = await startGameFn({ topic, level });
+            const sessionId = startResp?.data?.sessionId;
+            if (sessionId) {
+              window.currentSession = sessionId;
+              sessionStorage.setItem('activeSessionId', sessionId);
+              console.log('Started game session:', sessionId);
+            } else {
+              console.warn('startGame returned no sessionId');
+            }
+          } catch (err) {
+            console.warn('Failed to start game session:', err);
+            // optional: show a small UI notice, but don't block the user entirely
+          }
+
   } catch (error) {
     console.error("Error fetching/seeding questions:", error);
   }
