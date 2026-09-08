@@ -1,4 +1,3 @@
-// module-scripts
   import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
@@ -465,7 +464,7 @@ document.addEventListener('keydown', (e) => {
         return;
     }
 
-// -- STÄNG CHANGE USERNAME MODAL (Klick på bakgrunden) --
+    // -- STÄNG CHANGE USERNAME MODAL (Klick på bakgrunden) --
     const changeModalTarget = e.target.closest('.change-username');
     if (changeModalTarget && e.target === changeModalTarget) {
         changeModalTarget.style.transition = 'opacity 200ms ease';
@@ -1227,5 +1226,51 @@ Webflow.push(async function() {
     });
   } catch (error) {
     console.error("Error fetching/seeding questions:", error);
+  }
+});
+
+// ── FINISH BUTTON INTERCEPTOR & CALCULATOR ──────────────────────────
+document.addEventListener('click', async function(e) {
+  const finishBtn = e.target.closest('.finish-btn');
+  if (!finishBtn) return;
+
+  e.preventDefault(); // Stop instant navigation
+
+  // 1. Change text to "Calculating..." (if it uses nested text elements or text content)
+  const title1 = finishBtn.querySelector('[data-ix-target="title-1"]') || finishBtn.querySelector('div');
+  if (title1) title1.textContent = "Calculating...";
+  finishBtn.style.pointerEvents = 'none'; // Prevent double-clicking
+
+  try {
+    // 2. Gather user answers (adjust this to match how your game collects answers)
+    const answers = window.collectUserAnswers ? window.collectUserAnswers() : {}; 
+
+    // 3. Call your backend Cloud Function to grade the game
+    const gradeGameFn = httpsCallable(functions, "gradeGame");
+    const response = await gradeGameFn({ 
+      sessionId: window.currentSession || sessionStorage.getItem('activeSessionId'), 
+      answers: answers 
+    });
+
+    // 4. Save the result package for the Score page to read
+    sessionStorage.setItem('lastGameResult', JSON.stringify(response.data));
+
+    // 5. Grant the VIP pass for the route guard
+    sessionStorage.setItem('scoreAuthorized', 'true');
+
+    // 6. Trigger your custom exit transition with the 2-second slow finish
+    if (window.triggerPageExit) {
+      window.triggerPageExit('/score', true, true);
+    } else {
+      setTimeout(() => {
+        window.location.href = '/score';
+      }, 2000);
+    }
+
+  } catch (err) {
+    console.error("Failed to grade game:", err);
+    alert("Error calculating score. Please try again.");
+    finishBtn.style.pointerEvents = 'auto';
+    if (title1) title1.textContent = "Finish!";
   }
 });

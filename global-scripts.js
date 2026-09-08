@@ -1,4 +1,4 @@
-// Robust smooth scroll to element id (cancelable)
+// ROBUST SMOOTH SCROLL TO ELEMENT ID (cancelable)
 // Finds the nearest scrollable ancestor, or null if the page itself scrolls
 function getScrollParent(el) {
   let node = el.parentElement;
