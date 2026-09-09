@@ -1117,37 +1117,56 @@ document.addEventListener("visibilitychange", function() {
 // ── TRANSITION OVERLAY ────────────────────────────────────────────────
 const overlay = document.createElement('div');
 overlay.id = 'global-transition-overlay';
-const savedRevealDuration = sessionStorage.getItem('revealDuration') || '0.8s';
-overlay.style.cssText = `position:fixed;inset:0;z-index:999999;pointer-events:none;transition:opacity ${savedRevealDuration} ease;opacity:1;display:block;`;
+
+// FIX 1: Check the actual window location, not an undefined 'url' variable
+const isGamePage = window.location.pathname.includes('game');
+
+// FIX 2: Calculate duration dynamically instead of using sessionStorage, 
+// to prevent the timing from applying to the wrong page.
+const revealDuration = isGamePage ? '1.5s' : '0.8s'; 
+
+overlay.style.cssText = `position:fixed;inset:0;z-index:999999;pointer-events:none;transition:opacity ${revealDuration} ease;opacity:1;display:block;`;
+
 const savedColor = sessionStorage.getItem('exitColor');
 const bodyTheme  = document.body.getAttribute('data-theme');
 const initColor  = savedColor || (bodyTheme === 'light' ? '#ffffff' : '#000000');
-const needsExtraLoadTime = url.includes('game'); // for game pages only
-const revealDuration = needsExtraLoadTime ? '1.5s' : '0.8s'; // tune 1.5s to taste
-sessionStorage.setItem('revealDuration', revealDuration);
+
 overlay.style.background = initColor;
 document.body.appendChild(overlay);
 
 window.addEventListener('pageshow', () => {
     sessionStorage.removeItem('exitColor');
-    sessionStorage.removeItem('revealDuration');
-    const isGamePage = window.location.pathname.includes('game');
-    const holdTime = isGamePage ? 100 : 0; //flat ∿100ms hold before load on game pages
+    
+    // 100ms hold on game pages, 0ms on others
+    const holdTime = isGamePage ? 100 : 0; 
+    
     setTimeout(() => {
+        // Trigger the fade animation
         overlay.style.opacity = '0';
         overlay.style.pointerEvents = 'none'; 
         overlay.style.cursor = 'auto';
-        setTimeout(() => { overlay.style.display = 'none'; overlay.innerHTML = ''; }, parseFloat(savedRevealDuration) * 1000 + 50);
+        
+        // Remove from DOM after the transition is fully complete
+        const durationMs = parseFloat(revealDuration) * 1000;
+        setTimeout(() => { 
+            overlay.style.display = 'none'; 
+            overlay.innerHTML = ''; 
+        }, durationMs + 50);
+        
     }, holdTime);
-    const isTopicPage = currentTopicId !== 'lobby';
-    if (isTopicPage && audio.paused) {
-        window.startMusic(false); 
+
+    // Added safety checks for currentTopicId and audio just in case they aren't loaded yet
+    if (typeof currentTopicId !== 'undefined') {
+        const isTopicPage = currentTopicId !== 'lobby';
+        if (isTopicPage && typeof audio !== 'undefined' && audio.paused) {
+            window.startMusic(false); 
+        }
     }
 });
 
 // ── GLOBAL EXIT FUNCTION ─────────────────────────────
 window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false) {
-    sessionStorage.setItem('navFrom', currentSlug);
+    if (typeof currentSlug !== 'undefined') sessionStorage.setItem('navFrom', currentSlug);
     
     // Automatically authorize if it's explicitly flagged or the destination is the score page
     if (isFinishBtn || (url && url.includes('score'))) {
@@ -1156,24 +1175,35 @@ window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false
     
     sessionStorage.setItem('skipIntro', 'true');
 
-    const targetTopicId = getTopicFromUrl(url);
-    const changingTopic = currentTopicId !== targetTopicId;
-    const isLeavingLobby = currentTopicId === 'lobby' && targetTopicId !== 'lobby';
+    // Make sure getTopicFromUrl exists before calling it
+    if (typeof getTopicFromUrl === 'function' && typeof currentTopicId !== 'undefined') {
+        const targetTopicId = getTopicFromUrl(url);
+        const changingTopic = currentTopicId !== targetTopicId;
+        const isLeavingLobby = currentTopicId === 'lobby' && targetTopicId !== 'lobby';
 
-    if (changingTopic) {
-        sessionStorage.setItem('fromTopic', currentTopicId);
-        if (window.fadeOutMusic) window.fadeOutMusic();
+        if (changingTopic) {
+            sessionStorage.setItem('fromTopic', currentTopicId);
+            if (window.fadeOutMusic) window.fadeOutMusic();
+        } else {
+            sessionStorage.removeItem('fromTopic');
+        }
+
+        handleOverlayExit(url, isLeavingLobby, isSlowFinish);
     } else {
-        sessionStorage.removeItem('fromTopic');
+        // Fallback if topic logic fails
+        handleOverlayExit(url, false, isSlowFinish);
     }
+};
 
+// Extracted for cleaner logic
+function handleOverlayExit(url, isLeavingLobby, isSlowFinish) {
     const currentTheme = document.body.getAttribute('data-theme');
     const transitionColor = (currentTheme === 'light' ? '#ffffff' : '#000000');
     sessionStorage.setItem('exitColor', transitionColor);
 
     overlay.style.pointerEvents = 'auto'; 
     overlay.style.cursor = 'default';
-    overlay.style.transition = 'none';
+    overlay.style.transition = 'none'; // Snap to solid color
     overlay.style.background = transitionColor;
     overlay.style.opacity = '0';
     overlay.style.display = 'block';
@@ -1213,7 +1243,7 @@ window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false
             }
         });
     });
-};
+}
 
 // ── CLICK HANDLER FÖR LÄNKAR ──────────────────────────────────────────
 document.addEventListener('click', function(e) {
@@ -1237,6 +1267,7 @@ document.addEventListener('click', function(e) {
 let triggered = false;
 document.addEventListener("keydown", function(e) {
   if (triggered) return;
+  
   // NEW: Block if any modal is open (create-profile, login, etc)
   const blockingModals = [
     '.login-modal-wrapper',
@@ -1250,7 +1281,9 @@ document.addEventListener("keydown", function(e) {
       return; // Exit early - don't trigger intro
     }
   }
+  
   if (document.getElementById('back-overlay')) return; 
+  
   if (e.key === "Enter" || e.key === " ") {
     const welcomeTarget = document.querySelector(".welcome-text-container");
     if (!welcomeTarget) return;
@@ -1264,6 +1297,7 @@ document.addEventListener("keydown", function(e) {
     welcomeTarget.click();
   }
 });
+
 // ── STRÖMSPAR-FUNKTIONER (VIDEO) ──────────────────────────────────────
 const powerSaveVideos = () => {
   const observer = new IntersectionObserver((entries) => {
