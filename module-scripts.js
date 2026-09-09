@@ -1455,5 +1455,5 @@ Webflow.push(function() {
 
   setTimeout(() => {
     showLevelUpPopup();
-  }, 1400); // let Webflow/GSAP finish binding before firing the interaction
+  }, 1600); // let Webflow/GSAP finish binding before firing the interaction
 });
