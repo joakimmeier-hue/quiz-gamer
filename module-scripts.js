@@ -1369,6 +1369,24 @@ document.addEventListener('click', async function(e) {
 // ──────────── SCORE PAGE: DISPLAY RESULTS + LEVEL UP ────────────
 var Webflow = window.Webflow || [];
 let justTriggeredThisLoad = false;
+
+// Shared: figure out which level to show, update the popup text, fire it.
+// Used by all three blocks below so the logic can't drift out of sync.
+function showLevelUpPopup() {
+  const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10);
+  if (remaining <= 0) return;
+  const targetLevel = parseInt(sessionStorage.getItem('pendingLevelUpTarget') || '0', 10);
+  const currentLevelShown = targetLevel - remaining + 1;
+
+  const levelTextEl = document.getElementById('lvlup-level-text'); // see note below
+  if (levelTextEl) {
+    levelTextEl.textContent = `Congratulations, you have reached level ${currentLevelShown}!`;
+  }
+
+  const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
+  if (wfIx) wfIx.emit("lvlup");
+}
+
 Webflow.push(function() {
   const resultDataRaw = sessionStorage.getItem('lastGameResult');
   if (!resultDataRaw) return;
@@ -1390,33 +1408,26 @@ Webflow.push(function() {
   setText('list-leaderboard', `${data.leaderboardPosition}/100`);
   setText('list-score', data.finalScore);
   setText('list-unlimited-score', data.unlimitedScore);
+
   const levelsGained = data.levelsGained;
   sessionStorage.removeItem('lastGameResult');
-  console.log('levelsGained:', levelsGained);
+
   if (levelsGained > 0) {
     sessionStorage.setItem('pendingLevelUps', levelsGained);
+    sessionStorage.setItem('pendingLevelUpTarget', data.newLevel);
     justTriggeredThisLoad = true;
+
     const triggerEl = document.querySelector('.sub-result-2.init-lvlup');
-    const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
     const levelUpEl = document.querySelector('.level-up');
-    console.log('trigger check:', { triggerEl: !!triggerEl, wfIx: !!wfIx, levelUpEl: !!levelUpEl });
-    const showNext = () => {
-      const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10);
-      console.log('showNext firing, remaining:', remaining, 'wfIx:', !!wfIx);
-      if (remaining > 0 && wfIx) wfIx.emit("lvlup");
-    };
-    if (triggerEl && wfIx && levelUpEl) {
-      console.log('observer attached');
+
+    if (triggerEl && levelUpEl) {
       const observer = new MutationObserver(() => {
-        console.log('mutation seen, display now:', window.getComputedStyle(triggerEl).display);
         if (window.getComputedStyle(triggerEl).display === 'none') {
           observer.disconnect();
-          showNext();
+          showLevelUpPopup();
         }
       });
       observer.observe(triggerEl, { attributes: true, attributeFilter: ['style', 'class'] });
-    } else {
-      console.log('observer NOT attached — one of the three above was false');
     }
   }
 });
@@ -1429,20 +1440,23 @@ Webflow.push(function() {
     const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10) - 1;
     if (remaining > 0) {
       sessionStorage.setItem('pendingLevelUps', remaining);
-      const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
-      setTimeout(() => wfIx && wfIx.emit("lvlup"), 500);
+      setTimeout(showLevelUpPopup, 500);
     } else {
       sessionStorage.removeItem('pendingLevelUps');
+      sessionStorage.removeItem('pendingLevelUpTarget');
     }
   });
 });
 
 // ── LEVEL UP: re-show on load if not yet acknowledged ──
 Webflow.push(function() {
-  if (justTriggeredThisLoad) return; // score page already handling it via the observer above
+  console.log('block3 running, justTriggeredThisLoad:', justTriggeredThisLoad);
+  if (justTriggeredThisLoad) return;
   const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10);
+  console.log('block3 remaining:', remaining);
   if (remaining > 0) {
     const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
-    if (wfIx) wfIx.emit("lvlup");
+    console.log('block3 wfIx:', !!wfIx);
+    showLevelUpPopup();
   }
 });
