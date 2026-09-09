@@ -1370,8 +1370,6 @@ document.addEventListener('click', async function(e) {
 var Webflow = window.Webflow || [];
 let justTriggeredThisLoad = false;
 
-// Shared: figure out which level to show, update the popup text, fire it.
-// Used by all three blocks below so the logic can't drift out of sync.
 function showLevelUpPopup() {
   const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10);
   if (remaining <= 0) return;
@@ -1385,6 +1383,17 @@ function showLevelUpPopup() {
 
   const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
   if (wfIx) wfIx.emit("lvlup");
+}
+
+function tryShowLevelUpPopup(attempts = 0, maxAttempts = 8) {
+  showLevelUpPopup();
+  setTimeout(() => {
+    const levelUpEl = document.querySelector('.level-up');
+    const isOpen = levelUpEl && window.getComputedStyle(levelUpEl).display !== 'none';
+    const stillPending = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10) > 0;
+    if (isOpen || !stillPending || attempts >= maxAttempts) return;
+    tryShowLevelUpPopup(attempts + 1, maxAttempts);
+  }, 500);
 }
 
 Webflow.push(function() {
@@ -1424,7 +1433,7 @@ Webflow.push(function() {
       const observer = new MutationObserver(() => {
         if (window.getComputedStyle(triggerEl).display === 'none') {
           observer.disconnect();
-          showLevelUpPopup();
+          tryShowLevelUpPopup();
         }
       });
       observer.observe(triggerEl, { attributes: true, attributeFilter: ['style', 'class'] });
@@ -1432,7 +1441,7 @@ Webflow.push(function() {
   }
 });
 
-// ── LEVEL UP: dismiss handler — must run on every page with the component ──
+// ── LEVEL UP: dismiss handler ──
 Webflow.push(function() {
   const btn = document.getElementById('lvlup-btn');
   if (!btn) return;
@@ -1440,7 +1449,7 @@ Webflow.push(function() {
     const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10) - 1;
     if (remaining > 0) {
       sessionStorage.setItem('pendingLevelUps', remaining);
-      setTimeout(showLevelUpPopup, 500);
+      setTimeout(() => tryShowLevelUpPopup(), 500);
     } else {
       sessionStorage.removeItem('pendingLevelUps');
       sessionStorage.removeItem('pendingLevelUpTarget');
@@ -1452,8 +1461,5 @@ Webflow.push(function() {
 Webflow.push(function() {
   const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10);
   if (justTriggeredThisLoad || remaining <= 0) return;
-
-  setTimeout(() => {
-    showLevelUpPopup();
-  }, 1600); // let Webflow/GSAP finish binding before firing the interaction
+  tryShowLevelUpPopup();
 });
