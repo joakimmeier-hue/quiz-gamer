@@ -1227,17 +1227,25 @@ Webflow.push(async function() {
       if (textEl && data.text) textEl.textContent = data.text;
 
       for (let i = 1; i <= 4; i++) {
-        const row = card.querySelector(`[data-choice="${i}"]`);
-        if (row) {
-          const altTextEl = row.querySelector('.qalt-text');
-          if (altTextEl && data.alternatives && data.alternatives[i]) {
-            altTextEl.textContent = data.alternatives[i];
-            row.style.display = ''; 
-          } else {
-            row.style.display = 'none'; 
-          }
+  const row = card.querySelector(`[data-choice="${i}"]`);
+  
+      if (row) {
+        const altTextEl = row.querySelector('.qalt-text');
+        const rawAlt = data.alternatives ? data.alternatives[i] : null;
+        const altText = typeof rawAlt === 'string' ? rawAlt.trim() : '';
+
+        // Check that text is non-empty and not the placeholder "..."
+        const isValidAlt = altText !== '' && altText !== '...';
+
+        if (isValidAlt) {
+          if (altTextEl) altTextEl.textContent = altText;
+          row.style.display = ''; // Show row wrapper
+        } else {
+          if (altTextEl) altTextEl.textContent = ''; // Clear stale Webflow dummy text
+          row.style.display = 'none'; // Hide row wrapper
         }
       }
+    }
     });
           // --- Start a server-side session (store session id for later grading)
           try {
