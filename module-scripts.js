@@ -1008,7 +1008,8 @@ if (createProfileSubmitBtn && createUsernameInput) {
       createProfileSubmitBtn.style.pointerEvents = 'auto';
     }
   });
-  
+}
+
 // ==========================================
 // ── 3. CHANGE USERNAME LOGIC ──
 // ==========================================
