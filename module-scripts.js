@@ -1360,8 +1360,7 @@ document.addEventListener('click', async function(e) {
 
 // ──────────── SCORE PAGE: DISPLAY RESULTS + LEVEL UP ────────────
 var Webflow = window.Webflow || [];
-let justTriggeredThisLoad = false; // stops block 3 from double-firing on score page itself
-
+let justTriggeredThisLoad = false;
 Webflow.push(function() {
   const resultDataRaw = sessionStorage.getItem('lastGameResult');
   if (!resultDataRaw) return;
@@ -1385,24 +1384,31 @@ Webflow.push(function() {
   setText('list-unlimited-score', data.unlimitedScore);
   const levelsGained = data.levelsGained;
   sessionStorage.removeItem('lastGameResult');
+  console.log('levelsGained:', levelsGained);
   if (levelsGained > 0) {
     sessionStorage.setItem('pendingLevelUps', levelsGained);
-    justTriggeredThisLoad = true; // block 3 below should stand down this load
+    justTriggeredThisLoad = true;
     const triggerEl = document.querySelector('.sub-result-2.init-lvlup');
     const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
     const levelUpEl = document.querySelector('.level-up');
+    console.log('trigger check:', { triggerEl: !!triggerEl, wfIx: !!wfIx, levelUpEl: !!levelUpEl });
     const showNext = () => {
       const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10);
+      console.log('showNext firing, remaining:', remaining, 'wfIx:', !!wfIx);
       if (remaining > 0 && wfIx) wfIx.emit("lvlup");
     };
     if (triggerEl && wfIx && levelUpEl) {
+      console.log('observer attached');
       const observer = new MutationObserver(() => {
+        console.log('mutation seen, display now:', window.getComputedStyle(triggerEl).display);
         if (window.getComputedStyle(triggerEl).display === 'none') {
           observer.disconnect();
           showNext();
         }
       });
       observer.observe(triggerEl, { attributes: true, attributeFilter: ['style', 'class'] });
+    } else {
+      console.log('observer NOT attached — one of the three above was false');
     }
   }
 });
