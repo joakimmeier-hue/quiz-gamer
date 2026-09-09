@@ -930,7 +930,7 @@ if (createProfileSubmitBtn && createUsernameInput) {
   // 1. Koppla fältet till vår nya gemensamma funktion
   setupUsernameInput(createUsernameInput, createProfileSubmitBtn, createDefaultPlaceholder);
 
-  // 2. Klick på Create
+// 2. Klick på Create
   createProfileSubmitBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     
@@ -982,6 +982,11 @@ if (createProfileSubmitBtn && createUsernameInput) {
         profilePicUrl: currentAvatarSrc
       });
 
+      // ── NYTT: Hämta de nyskapade Firestore-värdena till UI direkt ──
+      if (typeof loadUserData === 'function' && currentUser) {
+        await loadUserData(currentUser.uid);
+      }
+
       setTimeout(() => {
         createProfileSubmitBtn.textContent = "Create";
         createProfileSubmitBtn.style.pointerEvents = 'auto';
@@ -1003,8 +1008,7 @@ if (createProfileSubmitBtn && createUsernameInput) {
       createProfileSubmitBtn.style.pointerEvents = 'auto';
     }
   });
-}
-
+  
 // ==========================================
 // ── 3. CHANGE USERNAME LOGIC ──
 // ==========================================
