@@ -1132,7 +1132,7 @@ window.addEventListener('pageshow', () => {
     sessionStorage.removeItem('exitColor');
     sessionStorage.removeItem('revealDuration');
     const isGamePage = window.location.pathname.includes('game');
-    const holdTime = isGamePage ? 0 : 0; //flat ∿100ms hold before load on game pages
+    const holdTime = isGamePage ? 100 : 0; //flat ∿100ms hold before load on game pages
     setTimeout(() => {
         overlay.style.opacity = '0';
         overlay.style.pointerEvents = 'none'; 
