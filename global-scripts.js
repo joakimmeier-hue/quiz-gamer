@@ -1123,7 +1123,7 @@ const isGamePage = window.location.pathname.includes('game');
 
 // FIX 2: Calculate duration dynamically instead of using sessionStorage, 
 // to prevent the timing from applying to the wrong page.
-const revealDuration = isGamePage ? '1.5s' : '0.8s'; 
+const revealDuration = isGamePage ? '1.5s' : '0.8s'; // extra load time on game pages
 
 overlay.style.cssText = `position:fixed;inset:0;z-index:999999;pointer-events:none;transition:opacity ${revealDuration} ease;opacity:1;display:block;`;
 
@@ -1138,7 +1138,7 @@ window.addEventListener('pageshow', () => {
     sessionStorage.removeItem('exitColor');
     
     // 100ms hold on game pages, 0ms on others
-    const holdTime = isGamePage ? 100 : 0; 
+    const holdTime = isGamePage ? 2100 : 0; 
     
     setTimeout(() => {
         // Trigger the fade animation
