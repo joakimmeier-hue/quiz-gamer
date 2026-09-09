@@ -1378,7 +1378,7 @@ function showLevelUpPopup() {
   const targetLevel = parseInt(sessionStorage.getItem('pendingLevelUpTarget') || '0', 10);
   const currentLevelShown = targetLevel - remaining + 1;
 
-  const levelTextEl = document.getElementById('lvlup-text'); // see note below
+  const levelTextEl = document.getElementById('lvlup-text');
   if (levelTextEl) {
     levelTextEl.textContent = `Congratulations, you have reached level ${currentLevelShown}!`;
   }
@@ -1450,13 +1450,10 @@ Webflow.push(function() {
 
 // ── LEVEL UP: re-show on load if not yet acknowledged ──
 Webflow.push(function() {
-  console.log('block3 running, justTriggeredThisLoad:', justTriggeredThisLoad);
-  if (justTriggeredThisLoad) return;
   const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10);
-  console.log('block3 remaining:', remaining);
-  if (remaining > 0) {
-    const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
-    console.log('block3 wfIx:', !!wfIx);
+  if (justTriggeredThisLoad || remaining <= 0) return;
+
+  setTimeout(() => {
     showLevelUpPopup();
-  }
+  }, 400); // let Webflow/GSAP finish binding before firing the interaction
 });
