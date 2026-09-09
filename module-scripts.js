@@ -501,7 +501,7 @@ document.addEventListener('keydown', (e) => {
       return; 
     }
 
-// 3. BYT PROFILBILD (Uppdaterad för att ändra alla instanser av klassen)
+// 3. BYT PROFILBILD (Uppdaterad för att vara kraschsäker)
 const option = e.target.closest('.profile-pic-option');
 if (option && !isGameSide) {
   const selectedSrc = option.src;
@@ -520,13 +520,16 @@ if (option && !isGameSide) {
     // Uppdatera ALLA profilbilder i UI direkt (Lobby, dropdown, etc.)
     currentAvatars.forEach(img => img.src = selectedSrc);
 
-    // FIX: Only save directly to DB if the user has a complete profile.
-    // Otherwise, we just let the UI update, and the Cloud Function will handle the DB write later.
-    const isNewUser = document.querySelector('.create-profile-modal-or-wrapper').style.display !== 'none'; // <-- Adjust this selector to match your "Create Profile" UI state
+    // --- KRASCHSÄKER KONTROLL ---
+    // BYT UT '.put-your-real-class-here' MOT KLASSEN PÅ DIN SKAPA PROFIL-MODAL
+    const profileModal = document.querySelector('.create-profile');
+    
+    // Om modalen finns OCH den är synlig, är det en ny användare. Annars false.
+    const isNewUser = profileModal ? getComputedStyle(profileModal).display !== 'none' : false;
     
     if (!isNewUser) {
       // User is fully registered, safe to update DB directly
-      await saveUserAvatar(selectedSrc);
+      saveUserAvatar(selectedSrc).catch(err => console.error("Unable to save avatar:", err));
     } else {
       // User is in onboarding. Save it to a global variable so your completeProfile function can use it.
       window.selectedOnboardingAvatar = selectedSrc;
@@ -534,7 +537,7 @@ if (option && !isGameSide) {
     }
 
     // Close the pp-dropdown if still open
-    hidePPDropdown();
+    if (typeof hidePPDropdown === 'function') hidePPDropdown();
   }
 
   // Stop further click handling for this event
