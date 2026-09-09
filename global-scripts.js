@@ -1117,19 +1117,28 @@ document.addEventListener("visibilitychange", function() {
 // ── TRANSITION OVERLAY ────────────────────────────────────────────────
 const overlay = document.createElement('div');
 overlay.id = 'global-transition-overlay';
-overlay.style.cssText = "position:fixed;inset:0;z-index:999999;pointer-events:none;transition:opacity 0.8s ease;opacity:1;display:block;";
+const savedRevealDuration = sessionStorage.getItem('revealDuration') || '0.8s';
+overlay.style.cssText = `position:fixed;inset:0;z-index:999999;pointer-events:none;transition:opacity ${savedRevealDuration} ease;opacity:1;display:block;`;
 const savedColor = sessionStorage.getItem('exitColor');
 const bodyTheme  = document.body.getAttribute('data-theme');
 const initColor  = savedColor || (bodyTheme === 'light' ? '#ffffff' : '#000000');
+const needsExtraLoadTime = url.includes('game'); // for game pages only
+const revealDuration = needsExtraLoadTime ? '1.5s' : '0.8s'; // tune 1.5s to taste
+sessionStorage.setItem('revealDuration', revealDuration);
 overlay.style.background = initColor;
 document.body.appendChild(overlay);
 
 window.addEventListener('pageshow', () => {
     sessionStorage.removeItem('exitColor');
-    overlay.style.opacity = '0';
-    overlay.style.pointerEvents = 'none'; 
-    overlay.style.cursor = 'auto';
-    setTimeout(() => { overlay.style.display = 'none'; overlay.innerHTML = ''; }, 850);
+    sessionStorage.removeItem('revealDuration');
+    const isGamePage = window.location.pathname.includes('game');
+    const holdTime = isGamePage ? 100 : 0;
+    setTimeout(() => {
+        overlay.style.opacity = '0';
+        overlay.style.pointerEvents = 'none'; 
+        overlay.style.cursor = 'auto';
+        setTimeout(() => { overlay.style.display = 'none'; overlay.innerHTML = ''; }, parseFloat(savedRevealDuration) * 1000 + 50);
+    }, holdTime);
     const isTopicPage = currentTopicId !== 'lobby';
     if (isTopicPage && audio.paused) {
         window.startMusic(false); 
@@ -1217,7 +1226,7 @@ document.addEventListener('click', function(e) {
     // Check if the user is clicking the finish button / navigating to the score page
     const isHeadingToScore = href.includes('score') || link.classList.contains('finish-btn');
 
-    if (link.id === 'boss-level') {
+    if (link.id === 'boss-level-game-1') {
         setTimeout(() => window.triggerPageExit(href, false), 1000);
     } else {
         setTimeout(() => window.triggerPageExit(href, isHeadingToScore, isHeadingToScore), 200);
