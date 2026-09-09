@@ -1342,6 +1342,8 @@ document.addEventListener('click', async function(e) {
 
 // ──────────── SCORE PAGE: DISPLAY RESULTS + LEVEL UP ────────────
 var Webflow = window.Webflow || [];
+let justTriggeredThisLoad = false; // stops block 3 from double-firing on score page itself
+
 Webflow.push(function() {
   const resultDataRaw = sessionStorage.getItem('lastGameResult');
   if (!resultDataRaw) return;
@@ -1352,7 +1354,6 @@ Webflow.push(function() {
     console.error("Couldn't interpret the game result:", err);
     return;
   }
-
   const setText = (id, value) => {
     const el = document.getElementById(id);
     if (el) el.textContent = value;
@@ -1364,27 +1365,23 @@ Webflow.push(function() {
   setText('list-leaderboard', `${data.leaderboardPosition}/100`);
   setText('list-score', data.finalScore);
   setText('list-unlimited-score', data.unlimitedScore);
-
-  const levelsGained = data.levelsGained; // grab before we delete anything
-  sessionStorage.removeItem('lastGameResult'); // safe now, nothing else needs it
-
+  const levelsGained = data.levelsGained;
+  sessionStorage.removeItem('lastGameResult');
   if (levelsGained > 0) {
     sessionStorage.setItem('pendingLevelUps', levelsGained);
-
+    justTriggeredThisLoad = true; // block 3 below should stand down this load
     const triggerEl = document.querySelector('.sub-result-2.init-lvlup');
     const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
     const levelUpEl = document.querySelector('.level-up');
-
     const showNext = () => {
       const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10);
       if (remaining > 0 && wfIx) wfIx.emit("lvlup");
     };
-
     if (triggerEl && wfIx && levelUpEl) {
       const observer = new MutationObserver(() => {
         if (window.getComputedStyle(triggerEl).display === 'none') {
           observer.disconnect();
-          showNext(); // fires the first popup once the reveal finishes
+          showNext();
         }
       });
       observer.observe(triggerEl, { attributes: true, attributeFilter: ['style', 'class'] });
@@ -1395,8 +1392,7 @@ Webflow.push(function() {
 // ── LEVEL UP: dismiss handler — must run on every page with the component ──
 Webflow.push(function() {
   const btn = document.getElementById('lvlup-btn');
-  if (!btn) return; // page doesn't have the component, nothing to do
-
+  if (!btn) return;
   btn.addEventListener('click', () => {
     const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10) - 1;
     if (remaining > 0) {
@@ -1411,6 +1407,7 @@ Webflow.push(function() {
 
 // ── LEVEL UP: re-show on load if not yet acknowledged ──
 Webflow.push(function() {
+  if (justTriggeredThisLoad) return; // score page already handling it via the observer above
   const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10);
   if (remaining > 0) {
     const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
