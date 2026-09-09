@@ -508,22 +508,32 @@ if (option && !isGameSide) {
   const currentAvatars = document.querySelectorAll('.current-profile-pic');
 
   if (window.__syntheticClickRunning) {
-  console.log('pp-option: ignoring click because synthetic click is running');
-  return;
-}
-if (event && (event._synthetic || event.isTrusted === false)) {
-  console.log('pp-option: ignoring synthetic/untrusted event', event);
-  return;
-}
+    console.log('pp-option: ignoring click because synthetic click is running');
+    return;
+  }
+  if (event && (event._synthetic || event.isTrusted === false)) {
+    console.log('pp-option: ignoring synthetic/untrusted event', event);
+    return;
+  }
 
   if (selectedSrc && currentAvatars.length > 0) {
     // Uppdatera ALLA profilbilder i UI direkt (Lobby, dropdown, etc.)
     currentAvatars.forEach(img => img.src = selectedSrc);
 
-    // Spara valet till Firestore
-    await saveUserAvatar(selectedSrc);
+    // FIX: Only save directly to DB if the user has a complete profile.
+    // Otherwise, we just let the UI update, and the Cloud Function will handle the DB write later.
+    const isNewUser = document.querySelector('.create-profile-modal-or-wrapper').style.display !== 'none'; // <-- Adjust this selector to match your "Create Profile" UI state
+    
+    if (!isNewUser) {
+      // User is fully registered, safe to update DB directly
+      await saveUserAvatar(selectedSrc);
+    } else {
+      // User is in onboarding. Save it to a global variable so your completeProfile function can use it.
+      window.selectedOnboardingAvatar = selectedSrc;
+      console.log("Avatar selected for new profile, waiting for form submit...");
+    }
 
-    // Close the pp-dropdown if still open (robust: closer click → ix3 event → fallback)
+    // Close the pp-dropdown if still open
     hidePPDropdown();
   }
 
