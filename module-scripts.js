@@ -1378,7 +1378,7 @@ function showLevelUpPopup() {
   const targetLevel = parseInt(sessionStorage.getItem('pendingLevelUpTarget') || '0', 10);
   const currentLevelShown = targetLevel - remaining + 1;
 
-  const levelTextEl = document.getElementById('lvlup-level-text'); // see note below
+  const levelTextEl = document.getElementById('lvlup-text'); // see note below
   if (levelTextEl) {
     levelTextEl.textContent = `Congratulations, you have reached level ${currentLevelShown}!`;
   }
