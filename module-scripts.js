@@ -1340,26 +1340,23 @@ document.addEventListener('click', async function(e) {
   }
 });
 
-// ──────────── SCORE PAGE: DISPLAY RESULTS ─────────────────────────────────
+// ──────────── SCORE PAGE: DISPLAY RESULTS + LEVEL UP ────────────
 var Webflow = window.Webflow || [];
 Webflow.push(function() {
   const resultDataRaw = sessionStorage.getItem('lastGameResult');
-  if (!resultDataRaw) return; // not arriving from a finished game, skip entirely
-
+  if (!resultDataRaw) return;
   let data;
   try {
     data = JSON.parse(resultDataRaw);
   } catch (err) {
-    console.error("Kunde inte tolka spelresultatet:", err);
+    console.error("Couldn't interpret the game result:", err);
     return;
   }
 
-  // Topic name
   const setText = (id, value) => {
     const el = document.getElementById(id);
     if (el) el.textContent = value;
   };
-
   setText('list-game', data.topic.toUpperCase());
   setText('list-result', `${data.correctCount}/${data.totalQuestions}`);
   setText('list-time', data.timeStr);
@@ -1368,33 +1365,55 @@ Webflow.push(function() {
   setText('list-score', data.finalScore);
   setText('list-unlimited-score', data.unlimitedScore);
 
-  // Clean up so a page refresh doesn't redisplay stale results
-  sessionStorage.removeItem('lastGameResult');
+  const levelsGained = data.levelsGained; // grab before we delete anything
+  sessionStorage.removeItem('lastGameResult'); // safe now, nothing else needs it
 
-     // ── LEVEL UP POPUP ──
-  if (data.levelsGained > 0) {
+  if (levelsGained > 0) {
+    sessionStorage.setItem('pendingLevelUps', levelsGained);
+
+    const triggerEl = document.querySelector('.sub-result-2.init-lvlup');
     const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
     const levelUpEl = document.querySelector('.level-up');
 
-    if (wfIx && levelUpEl) {
-      let remaining = data.levelsGained;
+    const showNext = () => {
+      const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10);
+      if (remaining > 0 && wfIx) wfIx.emit("lvlup");
+    };
 
-      const popNext = () => {
-        if (remaining <= 0) return;
-        remaining--;
-        wfIx.emit("lvlup");
-      };
-
-      // Watch for the popup closing (display: none) to chain the next one
+    if (triggerEl && wfIx && levelUpEl) {
       const observer = new MutationObserver(() => {
-        const isHidden = window.getComputedStyle(levelUpEl).display === 'none';
-        if (isHidden && remaining > 0) {
-          setTimeout(popNext, 500);
+        if (window.getComputedStyle(triggerEl).display === 'none') {
+          observer.disconnect();
+          showNext(); // fires the first popup once the reveal finishes
         }
       });
-      observer.observe(levelUpEl, { attributes: true, attributeFilter: ['style', 'class'] });
-
-      setTimeout(popNext, 13000);
+      observer.observe(triggerEl, { attributes: true, attributeFilter: ['style', 'class'] });
     }
+  }
+});
+
+// ── LEVEL UP: dismiss handler — must run on every page with the component ──
+Webflow.push(function() {
+  const btn = document.getElementById('lvlup-btn');
+  if (!btn) return; // page doesn't have the component, nothing to do
+
+  btn.addEventListener('click', () => {
+    const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10) - 1;
+    if (remaining > 0) {
+      sessionStorage.setItem('pendingLevelUps', remaining);
+      const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
+      setTimeout(() => wfIx && wfIx.emit("lvlup"), 500);
+    } else {
+      sessionStorage.removeItem('pendingLevelUps');
+    }
+  });
+});
+
+// ── LEVEL UP: re-show on load if not yet acknowledged ──
+Webflow.push(function() {
+  const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10);
+  if (remaining > 0) {
+    const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
+    if (wfIx) wfIx.emit("lvlup");
   }
 });
