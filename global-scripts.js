@@ -1123,7 +1123,7 @@ const isGamePage = window.location.pathname.includes('game');
 
 // FIX 2: Calculate duration dynamically instead of using sessionStorage, 
 // to prevent the timing from applying to the wrong page.
-const revealDuration = isGamePage ? '0.9s' : '0.8s'; // extra load time on game pages
+const revealDuration = isGamePage ? '0.8s' : '0.8s'; // extra load time on game pages
 
 overlay.style.cssText = `position:fixed;inset:0;z-index:999999;pointer-events:none;transition:opacity ${revealDuration} ease;opacity:1;display:block;`;
 
