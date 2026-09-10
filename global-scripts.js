@@ -475,7 +475,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Ensure banner reveals smoothly and isn't dependent on Webflow IX2
   banner.style.transition = 'opacity 0.8s ease';
   banner.style.opacity = '1';
-  
+
   // Starta motorn!
   requestAnimationFrame(renderLoop);
 });
@@ -1140,8 +1140,8 @@ document.body.appendChild(overlay);
 window.addEventListener('pageshow', () => {
     sessionStorage.removeItem('exitColor');
     
-    // 40ms hold on game pages, 0ms on others
-    const holdTime = isGamePage ? 40 : 0; 
+    // xxx ms hold on game pages, 0ms on others
+    const holdTime = isGamePage ? 250 : 0; 
     
     setTimeout(() => {
         // Trigger the fade animation
