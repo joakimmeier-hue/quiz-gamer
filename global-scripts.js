@@ -485,8 +485,8 @@ var Webflow = window.Webflow || [];
 Webflow.push(function() {
   if (!document.getElementById('timer-display')) return; // Not a game page, skip entirely
 
-  window.totalSeconds = 0;
-  window.timerInterval = null;
+  let totalSeconds = 0;
+  let timerInterval = null;
   window.FinalTimeStr = "00:00"; 
   window.FinalTimeSecs = 0;      
   window.TimerRunning = false;
@@ -547,7 +547,7 @@ Webflow.push(function() {
     }, 3400); 
 
   }); // End of corePageReady listener
-});
+
 
 // 4 LYSSNA PÅ FINISH-KNAPPEN (Dödar och klonar Lottien)
   function setupFinishListener() {
@@ -580,6 +580,8 @@ Webflow.push(function() {
     }
   }
   setupFinishListener();
+});
+
 
 // 5 GAME ALTERNATIVE-ROW - Click animation
 document.addEventListener("DOMContentLoaded", function() {
