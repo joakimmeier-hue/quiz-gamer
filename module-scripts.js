@@ -1258,18 +1258,22 @@ Webflow.push(async function() {
             } else {
               console.warn('startGame returned no sessionId');
             }
-            // Fade in each card smoothly once populated
-            cards.forEach(card => {
-            card.style.transition = 'opacity 0.1s ease'; // set transition before changing opacity
-            card.style.opacity = '1';
-          });
+         
           } catch (err) {
-            console.warn('Failed to start game session:', err);
-            // optional: show a small UI notice, but don't block the user entirely
-          }
+        console.warn('Failed to start game session:', err);
+      }
+      // 1. Reveal cards in DOM
+      cards.forEach(card => {
+        card.style.transition = 'opacity 0.1s ease';
+        card.style.opacity = '1';
+      });
+      // 2. Dispatch event right here so overlay script knows rendering is 100% complete
+      document.dispatchEvent(new CustomEvent('questionsLoaded'));
 
   } catch (error) {
     console.error("Error fetching/seeding questions:", error);
+    // Fallback: Dispatch event even if query fails, so overlay doesn't get stuck forever
+      document.dispatchEvent(new CustomEvent('questionsLoaded'));
   }
 });
 

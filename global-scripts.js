@@ -1138,25 +1138,32 @@ overlay.style.background = initColor;
 document.body.appendChild(overlay);
 
 window.addEventListener('pageshow', () => {
-    sessionStorage.removeItem('exitColor');
-    
-    // A time ms hold on game pages, for question cards to fetch from firebase and seed, 0ms on others
-    const holdTime = isGamePage ? 500 : 0; 
-    
+  sessionStorage.removeItem('exitColor');
+
+  const revealOverlay = () => {
+    // Avoid double-triggering if fallback timeout fires after event
+    if (overlay.style.opacity === '0') return;
+
+    overlay.style.opacity = '0';
+    overlay.style.pointerEvents = 'none';
+    overlay.style.cursor = 'auto';
+
+    const durationMs = parseFloat(revealDuration) * 1000;
     setTimeout(() => {
-        // Trigger the fade animation
-        overlay.style.opacity = '0';
-        overlay.style.pointerEvents = 'none'; 
-        overlay.style.cursor = 'auto';
-        
-        // Remove from DOM after the transition is fully complete
-        const durationMs = parseFloat(revealDuration) * 1000;
-        setTimeout(() => { 
-            overlay.style.display = 'none'; 
-            overlay.innerHTML = ''; 
-        }, durationMs + 50);
-        
-    }, holdTime);
+      overlay.style.display = 'none';
+      overlay.innerHTML = '';
+    }, durationMs + 50);
+  };
+
+  if (isGamePage) {
+    // Wait for Firestore seeding to finish before fading out
+    document.addEventListener('questionsLoaded', revealOverlay, { once: true });
+    
+    // Safety fallback: reveal after 2.5s if network fails completely
+    setTimeout(revealOverlay, 2500); 
+  } else {
+    revealOverlay();
+  }
 
     // Added safety checks for currentTopicId and audio just in case they aren't loaded yet
     if (typeof currentTopicId !== 'undefined') {
