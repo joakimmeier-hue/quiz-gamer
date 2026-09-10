@@ -1197,7 +1197,6 @@ Webflow.push(async function() {
   const level = match ? parseInt(match[2], 10) : 1;
 
   try {
-    // V9 Modular Query syntax
     const q = query(
       collection(db, "questions"), 
       where("topic", "==", topic), 
@@ -1205,8 +1204,10 @@ Webflow.push(async function() {
     );
     const snapshot = await getDocs(q);
 
+    // FIX 1: If snapshot is empty, dispatch event so overlay unlocks cleanly
     if (snapshot.empty) {
       console.warn(`No questions found in Firestore for topic: ${topic}, level: ${level}`);
+      document.dispatchEvent(new CustomEvent('questionsLoaded'));
       return;
     }
 
@@ -1214,9 +1215,18 @@ Webflow.push(async function() {
       .sort(() => 0.5 - Math.random())
       .slice(0, cards.length);
 
-    shuffledDocs.forEach((docSnap, index) => {
+    // FIX 2: Loop through ALL DOM cards to either populate or hide excess ones
+    cards.forEach((card, index) => {
+      const docSnap = shuffledDocs[index];
+
+      // If Firestore returned fewer questions than DOM cards, hide the extra cards
+      if (!docSnap) {
+        card.style.display = 'none';
+        return;
+      }
+
+      card.style.display = ''; // Ensure card is visible wrapper
       const data = docSnap.data();
-      const card = cards[index];
 
       const titleEl = card.querySelector('.q-title');
       if (titleEl) titleEl.textContent = `Question ${index + 1}`;
@@ -1227,71 +1237,75 @@ Webflow.push(async function() {
       if (textEl && data.text) textEl.textContent = data.text;
 
       for (let i = 1; i <= 4; i++) {
-  const row = card.querySelector(`[data-choice="${i}"]`);
-  
-      if (row) {
-        const altTextEl = row.querySelector('.qalt-text');
-        const rawAlt = data.alternatives ? data.alternatives[i] : null;
-        const altText = typeof rawAlt === 'string' ? rawAlt.trim() : '';
+        const row = card.querySelector(`[data-choice="${i}"]`);
+        
+        if (row) {
+          const altTextEl = row.querySelector('.qalt-text');
+          const rawAlt = data.alternatives ? data.alternatives[i] : null;
+          const altText = typeof rawAlt === 'string' ? rawAlt.trim() : '';
 
-        // Check that text is non-empty and not the placeholder "..."
-        const isValidAlt = altText !== '' && altText !== '...';
+          const isValidAlt = altText !== '' && altText !== '...';
 
-        if (isValidAlt) {
-          if (altTextEl) altTextEl.textContent = altText;
-          row.style.display = ''; // Show row wrapper
-        } else {
-          if (altTextEl) altTextEl.textContent = ''; // Clear stale Webflow dummy text
-          row.style.display = 'none'; // Hide row wrapper
+          if (isValidAlt) {
+            if (altTextEl) altTextEl.textContent = altText;
+            row.style.display = ''; 
+          } else {
+            if (altTextEl) altTextEl.textContent = ''; 
+            row.style.display = 'none'; 
+          }
         }
       }
-    }
     });
-          // --- Start a server-side session (store session id for later grading)
-          try {
-            const startResp = await startGameFn({ topic, level });
-            const sessionId = startResp?.data?.sessionId;
-            if (sessionId) {
-              window.currentSession = sessionId;
-              sessionStorage.setItem('activeSessionId', sessionId);
-              console.log('Started game session:', sessionId);
-            } else {
-              console.warn('startGame returned no sessionId');
-            }
-         
-          } catch (err) {
-        console.warn('Failed to start game session:', err);
+
+    // --- Start a server-side session (store session id for later grading)
+    try {
+      const startResp = await startGameFn({ topic, level });
+      const sessionId = startResp?.data?.sessionId;
+      if (sessionId) {
+        window.currentSession = sessionId;
+        sessionStorage.setItem('activeSessionId', sessionId);
+        console.log('Started game session:', sessionId);
+      } else {
+        console.warn('startGame returned no sessionId');
       }
-      // 1. Reveal cards in DOM
-      cards.forEach(card => {
+    } catch (err) {
+      console.warn('Failed to start game session:', err);
+    }
+
+    // 1. Reveal populated cards in DOM
+    cards.forEach((card, index) => {
+      // Only animate cards that have actual data
+      if (index < shuffledDocs.length) {
         card.style.transition = 'opacity 0.1s ease';
         card.style.opacity = '1';
-      });
-      // 2. Dispatch event right here so overlay script knows rendering is 100% complete
+
+        // Trigger page reveal once card 2 (index 1) is ready
+        if (index === 1) {
+          document.dispatchEvent(new CustomEvent('questionsLoaded'));
+        }
+      }
+    });
+
+    // FIX 3: Base fallback check on actual returned questions, not DOM card elements
+    if (shuffledDocs.length < 2) {     
       document.dispatchEvent(new CustomEvent('questionsLoaded'));
+    }
 
   } catch (error) {
     console.error("Error fetching/seeding questions:", error);
-    // Fallback: Dispatch event even if query fails, so overlay doesn't get stuck forever
-      document.dispatchEvent(new CustomEvent('questionsLoaded'));
+    document.dispatchEvent(new CustomEvent('questionsLoaded'));
   }
 });
 
-// --- COLLECT USER ANSWERS: RETURNS Array<{ questionId: string, choice: number | null }>
+// --- COLLECT USER ANSWERS
 window.collectUserAnswers = function collectUserAnswers() {
   const cards = document.querySelectorAll('.question-card');
   const answers = [];
 
   cards.forEach(card => {
     const qid = card.getAttribute('data-question-id');
-    if (!qid) {
-      // Skip cards that don't have a question id (likely a seeding/navigation problem).
-      // Do NOT push a null ID — server expects valid doc IDs.
-      console.warn('collectUserAnswers: question-card missing data-question-id, skipping', card);
-      return;
-    }
+    if (!qid) return;
 
-    // Find selected checkbox (UI marks selected with .checkbox.is-active)
     const activeCheckbox = card.querySelector('.checkbox.is-active');
     let choice = null;
 

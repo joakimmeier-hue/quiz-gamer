@@ -506,43 +506,48 @@ Webflow.push(function() {
     }
   }
 
-  // 1. Fire "321-go" sequence (0.5s after page load)
-  setTimeout(function() {
-    if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
-    emitWebflowEvent("321-go");
-  }, 1000); // Tweak start delay for 321-go here
-
-  // 2. Start Lottie animation ("start-stopwatch")
-  setTimeout(function() {
-    if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
-    emitWebflowEvent("start-stopwatch");
-  }, 2100); // Tweak Clock Lottie start here
-
-  // 3. Start running numbers in the timer
-  setTimeout(function() {
-    if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
-    window.TimerRunning = true;
+  // THE MASTER GATEKEEPER: Wait for Firebase cards to load
+  document.addEventListener('corePageReady', () => {
     
-    timerInterval = setInterval(function() {
-      totalSeconds++;
-      
-      let minutes = Math.floor(totalSeconds / 60);
-      let seconds = totalSeconds % 60;
-      let minStr = String(minutes).padStart(2, '0');
-      let secStr = String(seconds).padStart(2, '0');
-      
-      const displayEl = document.getElementById('timer-display');
-      if (displayEl) {
-        displayEl.innerText = minStr + ':' + secStr;
-      }
+    // 1. Fire "321-go" sequence (1000ms after overlay fades)
+    setTimeout(function() {
+      if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
+      emitWebflowEvent("321-go");
+    }, 1000); 
 
-      if (minutes >= 99 && seconds >= 59) {
-        const finishBtn = document.getElementById('finish-btn');
-        if (finishBtn) finishBtn.click(); 
-      }
-    }, 1000);
-  }, 3400); // Numbers start running here
+    // 2. Start Lottie animation ("start-stopwatch")
+    setTimeout(function() {
+      if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
+      emitWebflowEvent("start-stopwatch");
+    }, 2100); 
 
+    // 3. Start running numbers in the timer
+    setTimeout(function() {
+      if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
+      window.TimerRunning = true;
+      
+      timerInterval = setInterval(function() {
+        totalSeconds++;
+        
+        let minutes = Math.floor(totalSeconds / 60);
+        let seconds = totalSeconds % 60;
+        let minStr = String(minutes).padStart(2, '0');
+        let secStr = String(seconds).padStart(2, '0');
+        
+        const displayEl = document.getElementById('timer-display');
+        if (displayEl) {
+          displayEl.innerText = minStr + ':' + secStr;
+        }
+
+        if (minutes >= 99 && seconds >= 59) {
+          const finishBtn = document.getElementById('finish-btn');
+          if (finishBtn) finishBtn.click(); 
+        }
+      }, 1000);
+    }, 3400); 
+
+  }); // End of corePageReady listener
+});
 
 // 4 LYSSNA PÅ FINISH-KNAPPEN (Dödar och klonar Lottien)
   function setupFinishListener() {
@@ -1117,6 +1122,7 @@ document.addEventListener("visibilitychange", function() {
     });
   }
 });
+
 // ── TRANSITION OVERLAY ────────────────────────────────────────────────
 const overlay = document.createElement('div');
 overlay.id = 'global-transition-overlay';
@@ -1140,9 +1146,8 @@ document.body.appendChild(overlay);
 window.addEventListener('pageshow', () => {
   sessionStorage.removeItem('exitColor');
 
-  const revealOverlay = () => {
-    // Avoid double-triggering if fallback timeout fires after event
-    if (overlay.style.opacity === '0') return;
+  const revealOverlayAndStartGame = () => {
+    if (overlay.style.opacity === '0') return; // Prevent double-triggers
 
     overlay.style.opacity = '0';
     overlay.style.pointerEvents = 'none';
@@ -1153,25 +1158,24 @@ window.addEventListener('pageshow', () => {
       overlay.style.display = 'none';
       overlay.innerHTML = '';
     }, durationMs + 50);
-  };
+    // 2. KICK OFF THE REST OF THE PAGE HERE!
+    document.dispatchEvent(new CustomEvent('corePageReady'));
 
-  if (isGamePage) {
-    // Wait for Firestore seeding to finish before fading out
-    document.addEventListener('questionsLoaded', revealOverlay, { once: true });
-    
-    // Safety fallback: reveal after 2.5s if network fails completely
-    setTimeout(revealOverlay, 2500); 
-  } else {
-    revealOverlay();
-  }
-
-    // Added safety checks for currentTopicId and audio just in case they aren't loaded yet
-    if (typeof currentTopicId !== 'undefined') {
-        const isTopicPage = currentTopicId !== 'lobby';
+        // MOVED HERE: Check music only AFTER the game is actually starting    if (typeof currentTopicId !== 'undefined') {
+        if (typeof currentTopicId !== 'undefined') {
+          const isTopicPage = currentTopicId !== 'lobby';
         if (isTopicPage && typeof audio !== 'undefined' && audio.paused) {
             window.startMusic(false); 
         }
     }
+  };
+  
+  if (isGamePage) {
+    document.addEventListener('questionsLoaded', revealOverlayAndStartGame, { once: true });
+    setTimeout(revealOverlayAndStartGame, 2500); // 2.5s safety net
+  } else {
+    revealOverlayAndStartGame();
+  }
 });
 
 // ── GLOBAL EXIT FUNCTION ─────────────────────────────
