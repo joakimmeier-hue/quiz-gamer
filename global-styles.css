@@ -10,6 +10,14 @@
   --grey: #464443;
   --dark-grey: #181717;
 }
+
+/* Avoid FOUC */
+.question-card, 
+.banner-responsive {
+  opacity: 0;
+}
+
+.banner-responsive
 /* Tvingar bort de blå linjerna på sidorna i Webflow-formulär */
   .w-input:focus, 
   .w-input[data-name]:focus,

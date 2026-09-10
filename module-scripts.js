@@ -1258,6 +1258,11 @@ Webflow.push(async function() {
             } else {
               console.warn('startGame returned no sessionId');
             }
+            // Fade in each card smoothly once populated
+            cards.forEach(card => {
+            card.style.transition = 'opacity 0.1s ease'; // set transition before changing opacity
+            card.style.opacity = '1';
+          });
           } catch (err) {
             console.warn('Failed to start game session:', err);
             // optional: show a small UI notice, but don't block the user entirely
