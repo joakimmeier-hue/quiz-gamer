@@ -118,13 +118,19 @@ function smoothScrollToId(targetId, opts = {}) {
 })();
 
 // ─────────────  DEDICATED UI REVEAL LISTENER FOR FOUC ELEMENTS ─────────────
-document.addEventListener('corePageReady', () => {
-  const elementsToReveal = document.querySelectorAll('.bg-video-glitch'); // Add elements here that need anti FOUC-care
-  
-  elementsToReveal.forEach(el => {
+// Function to reveal all anti-FOUC elements on the page
+function revealFoucElements() {
+  const elements = document.querySelectorAll('.fouc-reveal');
+  elements.forEach(el => {
     el.style.opacity = '1';
   });
-});
+}
+// 1. Primary Trigger: Reveal when corePageReady fires
+document.addEventListener('corePageReady', revealFoucElements);
+// 2. Global Safety Net: Force reveal after 3.5 seconds if corePageReady hung or failed
+setTimeout(() => {
+  revealFoucElements();
+}, 3500);
 
 
 // ────────────────── GAME-START PAGES ──────────────────

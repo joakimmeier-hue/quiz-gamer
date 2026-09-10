@@ -11,17 +11,11 @@
   --dark-grey: #181717;
 }
 
-/* Avoid FOUC: Hide before page JS resolves */
-.bg-video-glitch,
-.question-card,
-.banner-responsive {
+/* —————————Universal anti-FOUC class ———————— */
+.fouc-reveal {
   opacity: 0;
-  transition: opacity 0.2s ease; /* Pre-configure smooth fade */
+  transition: opacity 0.3s ease;
 }
-
-
-
-
 
 /* Tvingar bort de blå linjerna på sidorna i Webflow-formulär */
   .w-input:focus, 
@@ -138,7 +132,7 @@ body .games-grid-clip.is-skewed {
   transition: -webkit-mask-image 400ms ease, mask-image 400ms ease;
 }
 
-/* ── LJUDKNAPP (Containern) ── */
+/* ── LJUDKNAPP (Containern) ─── */
 #toggle-audio {
   position: relative; 
   display: flex !important;
