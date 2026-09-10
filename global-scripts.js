@@ -1141,7 +1141,7 @@ window.addEventListener('pageshow', () => {
     sessionStorage.removeItem('exitColor');
     
     // xxx ms hold on game pages, 0ms on others
-    const holdTime = isGamePage ? 250 : 0; 
+    const holdTime = isGamePage ? 1000 : 0; 
     
     setTimeout(() => {
         // Trigger the fade animation
