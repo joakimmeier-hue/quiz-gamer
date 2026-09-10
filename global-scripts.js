@@ -472,6 +472,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       requestAnimationFrame(renderLoop);
   }
+  // Ensure banner reveals smoothly and isn't dependent on Webflow IX2
+  banner.style.transition = 'opacity 0.8s ease';
+  banner.style.opacity = '1';
   
   // Starta motorn!
   requestAnimationFrame(renderLoop);

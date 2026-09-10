@@ -17,7 +17,6 @@
   opacity: 0;
 }
 
-.banner-responsive
 /* Tvingar bort de blå linjerna på sidorna i Webflow-formulär */
   .w-input:focus, 
   .w-input[data-name]:focus,
