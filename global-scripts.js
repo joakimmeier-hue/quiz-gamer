@@ -1140,8 +1140,8 @@ document.body.appendChild(overlay);
 window.addEventListener('pageshow', () => {
     sessionStorage.removeItem('exitColor');
     
-    // xxx ms hold on game pages, 0ms on others
-    const holdTime = isGamePage ? 1000 : 0; 
+    // A time ms hold on game pages, for question cards to fetch from firebase and seed, 0ms on others
+    const holdTime = isGamePage ? 500 : 0; 
     
     setTimeout(() => {
         // Trigger the fade animation
