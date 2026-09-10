@@ -117,6 +117,16 @@ function smoothScrollToId(targetId, opts = {}) {
   });
 })();
 
+// ─────────────  DEDICATED UI REVEAL LISTENER FOR FOUC ELEMENTS ─────────────
+document.addEventListener('corePageReady', () => {
+  const elementsToReveal = document.querySelectorAll('.bg-video-glitch'); // Add elements here that need anti FOUC-care
+  
+  elementsToReveal.forEach(el => {
+    el.style.opacity = '1';
+  });
+});
+
+
 // ────────────────── GAME-START PAGES ──────────────────
 // 1 BLUR TOP OF PAGE - WITH CLONE
   document.addEventListener('DOMContentLoaded', () => {
@@ -472,8 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       requestAnimationFrame(renderLoop);
   }
-  // Ensure banner reveals smoothly and isn't dependent on Webflow IX2
-  banner.style.transition = 'opacity 0.8s ease';
+  // Ensure banner reveals smoothly and isn't dependent on Webflow IX2. Anti-FOUC
   banner.style.opacity = '1';
 
   // Starta motorn!
