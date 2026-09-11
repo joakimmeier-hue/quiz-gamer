@@ -1520,7 +1520,7 @@ Webflow.push(function() {
 
 // ── LEVEL UP: dismiss handler ──
 Webflow.push(function() {
-  const btn = document.getElementById('lvlup-btn');
+  const btn = document.querySelector('.level-up .button.2');
   if (!btn) return;
   btn.addEventListener('click', () => {
     const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10) - 1;
