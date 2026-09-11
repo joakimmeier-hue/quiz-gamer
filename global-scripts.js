@@ -139,7 +139,7 @@ function revealFoucElements() {
   // Last Global Safety Net: Force reveal after 3.5 seconds if corePageReady hung or failed
   setTimeout(() => {
     revealFoucElements();
-  }, 3500);
+  }, 7500);
 });
 
 
