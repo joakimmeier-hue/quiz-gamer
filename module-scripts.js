@@ -143,7 +143,8 @@ async function handleLogin(provider) {
       const pendingCred = OAuthProvider.credentialFromError(error);
 
       if (email && pendingCred) {
-        alert(`Account collision!\n\nEmail ${email} is already registered.\n\nPlease sign in with your original method (Google) to verify ownership. We will then link your accounts automatically.`);
+        // Removed the alert() here so the browser doesn't break the click context!
+        console.log(`Collision detected for ${email}. Auto-launching Google verification...`);
 
         try {
           // 1. Sign in with original provider (Google)
@@ -155,7 +156,6 @@ async function handleLogin(provider) {
           alert("Success! Your accounts are merged. You can now log in with either method.");
           hideLoginModal();
 
-          // RESTORED: Trigger the pending action after a successful merge
           if (typeof window.resolvePendingAction === 'function') {
               window.resolvePendingAction();
           }
@@ -163,11 +163,12 @@ async function handleLogin(provider) {
         } catch (mergeError) {
           console.error("Detailed merge error:", mergeError);
           if (mergeError.code !== 'auth/popup-closed-by-user') {
-             // NOW SHOWS THE EXACT ERROR REASON
              alert("Account linking failed: " + mergeError.message);
           }
         }
-      } else {
+      }
+      
+      else {
          alert("Could not extract linking data. Please log in with your original method.");
       }
     } else if (error.code !== 'auth/popup-closed-by-user') {
