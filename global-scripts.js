@@ -538,13 +538,13 @@ Webflow.push(function() {
     setTimeout(function() {
       if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
       emitWebflowEvent("321-go");
-    }, 1500); 
+    }, 1300); 
 
     // 2. Start Lottie animation ("start-stopwatch")
     setTimeout(function() {
       if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
       emitWebflowEvent("start-stopwatch");
-    }, 2600); 
+    }, 2400); 
 
     // 3. Start running numbers in the timer
     setTimeout(function() {
