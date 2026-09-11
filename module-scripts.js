@@ -118,7 +118,7 @@ function hideLoginModal() {
   }
 }
 
-// ── LOGIN HANDLER (With Auto-Merge) ──
+// ── LOGIN HANDLER (With Auto-Merge & Routing) ──
 async function handleLogin(provider) {
   if (isAuthenticating) return;
   isAuthenticating = true;
@@ -126,35 +126,49 @@ async function handleLogin(provider) {
   try {
     const result = await signInWithPopup(auth, provider);
     hideLoginModal();
+    
+    // RESTORED: Continue to the action the user clicked before logging in
+    if (typeof window.resolvePendingAction === 'function') {
+        window.resolvePendingAction();
+    }
+    
   } catch (error) {
-    console.error("Login error:", error);
+    console.error("Full Login error object:", error);
 
     // If an account already exists with this email...
     if (error.code === 'auth/account-exists-with-different-credential') {
       const email = error.customData?.email;
       
-      // Extract the pending Microsoft credential that failed
-      const pendingCred = OAuthProvider.credentialFromError(error) || GoogleAuthProvider.credentialFromError(error);
+      // Extract the pending Microsoft credential
+      const pendingCred = OAuthProvider.credentialFromError(error);
 
       if (email && pendingCred) {
-        alert(`Security Check: The email ${email} is already registered.\n\nClick OK and sign in with your ORIGINAL method (Google) to verify your identity. We will link your accounts automatically!`);
+        alert(`Account collision!\n\nEmail ${email} is already registered.\n\nPlease sign in with your original method (Google) to verify ownership. We will then link your accounts automatically.`);
 
         try {
-          // Ask them to sign in with Google to prove ownership
+          // 1. Sign in with original provider (Google)
           const verifyResult = await signInWithPopup(auth, googleProvider);
           
-          // MAGIC HAPPENS HERE: Merge the pending Microsoft login into the verified Google account
+          // 2. Merge the Microsoft credential into the Google account
           await linkWithCredential(verifyResult.user, pendingCred);
           
-          alert("Success! Your Microsoft and Google accounts are now merged into one profile.");
+          alert("Success! Your accounts are merged. You can now log in with either method.");
           hideLoginModal();
+
+          // RESTORED: Trigger the pending action after a successful merge
+          if (typeof window.resolvePendingAction === 'function') {
+              window.resolvePendingAction();
+          }
+          
         } catch (mergeError) {
-          console.error("Merge error:", mergeError);
-          // If they cancel the Google popup during the merge
+          console.error("Detailed merge error:", mergeError);
           if (mergeError.code !== 'auth/popup-closed-by-user') {
-             alert("Account linking failed. Please try again.");
+             // NOW SHOWS THE EXACT ERROR REASON
+             alert("Account linking failed: " + mergeError.message);
           }
         }
+      } else {
+         alert("Could not extract linking data. Please log in with your original method.");
       }
     } else if (error.code !== 'auth/popup-closed-by-user') {
       alert("Login failed: " + error.message);
