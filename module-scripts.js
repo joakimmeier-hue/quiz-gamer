@@ -118,7 +118,7 @@ function hideLoginModal() {
   }
 }
 
-// ── LOGIN HANDLER (With Auto-Merge & Routing) ──
+// ── LOGIN HANDLER (Popup-Blocker Safe) ──
 async function handleLogin(provider) {
   if (isAuthenticating) return;
   isAuthenticating = true;
@@ -127,48 +127,71 @@ async function handleLogin(provider) {
     const result = await signInWithPopup(auth, provider);
     hideLoginModal();
     
-    // RESTORED: Continue to the action the user clicked before logging in
+    // Continue to the action the user clicked before logging in
     if (typeof window.resolvePendingAction === 'function') {
         window.resolvePendingAction();
     }
     
   } catch (error) {
-    console.error("Full Login error object:", error);
+    console.error("Login error object:", error);
 
-    // If an account already exists with this email...
+    // ── COLLISION DETECTED ──
     if (error.code === 'auth/account-exists-with-different-credential') {
       const email = error.customData?.email;
-      
-      // Extract the pending Microsoft credential
-      const pendingCred = OAuthProvider.credentialFromError(error);
+      const pendingCred = OAuthProvider.credentialFromError(error) || GoogleAuthProvider.credentialFromError(error);
 
       if (email && pendingCred) {
-        // Removed the alert() here so the browser doesn't break the click context!
-        console.log(`Collision detected for ${email}. Auto-launching Google verification...`);
+        
+        // 1. Create a dynamic overlay to get a FRESH user click (bypasses popup blockers)
+        const mergeDiv = document.createElement('div');
+        mergeDiv.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; z-index:99999; font-family:sans-serif; backdrop-filter: blur(4px);';
+        
+        mergeDiv.innerHTML = `
+          <div style="background:#1a1a1a; padding:40px; border-radius:12px; text-align:center; max-width:400px; color:white; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <h3 style="margin-top:0; font-size:20px;">Account Already Exists</h3>
+            <p style="color:#aaa; line-height:1.5;">The email <b>${email}</b> is already registered with another provider.</p>
+            <p style="color:#aaa; line-height:1.5; margin-bottom: 25px;">Please verify your identity with Google to link your accounts.</p>
+            <button id="merge-google-btn" style="background:white; color:black; padding:12px 24px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; width:100%; font-size: 16px;">
+              Verify with Google
+            </button>
+            <button id="cancel-merge-btn" style="background:transparent; color:#888; padding:12px; border:none; cursor:pointer; margin-top:10px; width:100%;">
+              Cancel
+            </button>
+          </div>
+        `;
+        document.body.appendChild(mergeDiv);
 
-        try {
-          // 1. Sign in with original provider (Google)
-          const verifyResult = await signInWithPopup(auth, googleProvider);
+        // 2. Wait for the user to click (This gives us popup permission!)
+        document.getElementById('merge-google-btn').addEventListener('click', async () => {
+          // Change button text to show it's loading
+          document.getElementById('merge-google-btn').innerText = "Verifying...";
           
-          // 2. Merge the Microsoft credential into the Google account
-          await linkWithCredential(verifyResult.user, pendingCred);
-          
-          alert("Success! Your accounts are merged. You can now log in with either method.");
-          hideLoginModal();
+          try {
+            const verifyResult = await signInWithPopup(auth, googleProvider);
+            await linkWithCredential(verifyResult.user, pendingCred);
+            
+            document.body.removeChild(mergeDiv);
+            hideLoginModal();
+            
+            if (typeof window.resolvePendingAction === 'function') {
+                window.resolvePendingAction();
+            }
+          } catch (mergeError) {
+            console.error("Merge error:", mergeError);
+            if (mergeError.code !== 'auth/popup-closed-by-user') {
+               alert("Account linking failed: " + mergeError.message);
+            }
+            // Reset button if they closed the popup
+            document.getElementById('merge-google-btn').innerText = "Verify with Google";
+          }
+        });
 
-          if (typeof window.resolvePendingAction === 'function') {
-              window.resolvePendingAction();
-          }
-          
-        } catch (mergeError) {
-          console.error("Detailed merge error:", mergeError);
-          if (mergeError.code !== 'auth/popup-closed-by-user') {
-             alert("Account linking failed: " + mergeError.message);
-          }
-        }
-      }
-      
-      else {
+        // 3. Handle Cancel
+        document.getElementById('cancel-merge-btn').addEventListener('click', () => {
+          document.body.removeChild(mergeDiv);
+        });
+
+      } else {
          alert("Could not extract linking data. Please log in with your original method.");
       }
     } else if (error.code !== 'auth/popup-closed-by-user') {
