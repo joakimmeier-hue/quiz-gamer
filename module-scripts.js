@@ -1,39 +1,61 @@
-  import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-  import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-functions.js";
-  
-  const firebaseConfig = {
-    apiKey: "AIzaSyAfZQM3H5XAYkEt2ARInoA1Xs-Qd1DXL_s",
-    authDomain: "auth.quizgamer.se",
-    projectId: "quizgamer-web-app",
-    storageBucket: "quizgamer-web-app.firebasestorage.app",
-    messagingSenderId: "229730753032",
-    appId: "1:229730753032:web:723d0c4334058a47084fbd",
-    measurementId: "G-TNBLZFSFG6"
-  };
-  
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-  const functions = getFunctions(app);
-  const completeProfileFn = httpsCallable(functions, "completeProfile");
-  const changeUsernameFn = httpsCallable(functions, "changeUsername");
-  const startGameFn = httpsCallable(functions, "startGame");
-  const gradeGameFn = httpsCallable(functions, "gradeGame");
+import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import { 
+  getAuth, 
+  GoogleAuthProvider, 
+  OAuthProvider,
+  signInWithPopup, 
+  sendSignInLinkToEmail,
+  isSignInWithEmailLink,
+  signInWithEmailLink,
+  fetchSignInMethodsForEmail,
+  linkWithCredential,
+  onAuthStateChanged, 
+  signOut
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { 
+  getFunctions, 
+  httpsCallable 
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-functions.js";
 
-  const googleProvider = new GoogleAuthProvider();
-  googleProvider.setCustomParameters({ prompt: 'select_account' });
-  let currentUser = null;
-  let pendingAction = null; 
-  let isAuthenticating = false; // NYTT: skydd mot dubbla samtidiga inloggningsförsök
-  // DOM Elements
-  const loginModal = document.getElementById('login-modal');
-  const googleLoginBtn = document.getElementById('google-login-btn');
-  const userDisplayName = document.getElementById('user-display-name');
-  const userLevelEl = document.getElementById('user-level');
-  const userScoreEl = document.getElementById('user-total-score');
-  const userRankEl = document.getElementById('user-rank');
+const firebaseConfig = {
+  apiKey: "AIzaSyAfZQM3H5XAYkEt2ARInoA1Xs-Qd1DXL_s",
+  authDomain: "auth.quizgamer.se",
+  projectId: "quizgamer-web-app",
+  storageBucket: "quizgamer-web-app.firebasestorage.app",
+  messagingSenderId: "229730753032",
+  appId: "1:229730753032:web:723d0c4334058a47084fbd",
+  measurementId: "G-TNBLZFSFG6"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const functions = getFunctions(app);
+const completeProfileFn = httpsCallable(functions, "completeProfile");
+const changeUsernameFn = httpsCallable(functions, "changeUsername");
+const startGameFn = httpsCallable(functions, "startGame");
+const gradeGameFn = httpsCallable(functions, "gradeGame");
+
+// ── SETUP PROVIDERS ──
+const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+const microsoftProvider = new OAuthProvider('microsoft.com');
+microsoftProvider.setCustomParameters({ prompt: 'select_account' });
+
+let currentUser = null;
+let pendingAction = null; 
+let isAuthenticating = false; // NYTT: skydd mot dubbla samtidiga inloggningsförsök
+
+// ── DOM ELEMENTS ──
+const loginModal = document.getElementById('login-modal');
+const googleLoginBtn = document.getElementById('google-login-btn');
+const microsoftLoginBtn = document.getElementById('microsoft-login-btn'); // Fixed variable name
+const userDisplayName = document.getElementById('user-display-name');
+const userLevelEl = document.getElementById('user-level');
+const userScoreEl = document.getElementById('user-total-score');
+const userRankEl = document.getElementById('user-rank');
 
 // Ensure currentSlug exists for routing (must be defined before routeGuard runs)
 if (typeof currentSlug === 'undefined') {
@@ -51,50 +73,82 @@ if (typeof currentSlug === 'undefined') {
 }
 
 function updateAuthUI(user) {
-    if (user) {
-      // ANVÄNDARE ÄR INLOGGAD
-      document.body.classList.add("user-logged-in");
-      if (userDisplayName) userDisplayName.textContent = user.displayName || user.email;
-      
-    } else {
-      // ANVÄNDARE ÄR UTLOGGAD
-      document.body.classList.remove("user-logged-in");
-      
-      // Stäng inventoryt omedelbart om det råkar vara öppet när man loggar ut
-      const overlay = document.querySelector('.inventory-overlay');
-      if (overlay && window.lobbyInvOpen) {
-          closeLobbyInventory(overlay);
-      }
+  if (user) {
+    // ANVÄNDARE ÄR INLOGGAD
+    document.body.classList.add("user-logged-in");
+    if (userDisplayName) userDisplayName.textContent = user.displayName || user.email;
+    
+  } else {
+    // ANVÄNDARE ÄR UTLOGGAD
+    document.body.classList.remove("user-logged-in");
+    
+    // Stäng inventoryt omedelbart om det råkar vara öppet när man loggar ut
+    const overlay = document.querySelector('.inventory-overlay');
+    if (overlay && window.lobbyInvOpen) {
+        closeLobbyInventory(overlay);
     }
   }
-    function showLoginModal() {
-    if (currentUser) return; // NYTT: redan inloggad - visa aldrig login-modalen igen
-    if (loginModal) {
-      loginModal.style.display = 'flex';
-      loginModal.style.opacity = '0';
-      loginModal.style.transition = 'opacity 250ms ease-out';
-      
+}
+
+function showLoginModal() {
+  if (currentUser) return; // NYTT: redan inloggad - visa aldrig login-modalen igen
+  if (loginModal) {
+    loginModal.style.display = 'flex';
+    loginModal.style.opacity = '0';
+    loginModal.style.transition = 'opacity 250ms ease-out';
+    
+    requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          loginModal.style.opacity = '1';
-        });
+        loginModal.style.opacity = '1';
       });
-    }
+    });
   }
-  function hideLoginModal() {
-    if (loginModal) {
-      loginModal.style.transition = 'opacity 250ms ease-out';
-      loginModal.style.opacity = '0';
-      
-      setTimeout(() => {
-        if (loginModal.style.opacity === '0') {
-          loginModal.style.display = 'none';
-        }
-      }, 250);
-    }
+}
+
+function hideLoginModal() {
+  if (loginModal) {
+    loginModal.style.transition = 'opacity 250ms ease-out';
+    loginModal.style.opacity = '0';
+    
+    setTimeout(() => {
+      if (loginModal.style.opacity === '0') {
+        loginModal.style.display = 'none';
+      }
+    }, 250);
   }
+}
+
+// ── LOGIN HANDLER (Connects Buttons to Firebase) ──
+async function handleLogin(provider) {
+  if (isAuthenticating) return;
+  isAuthenticating = true;
+  
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    hideLoginModal();
+    // Your existing checkProfile logic would trigger automatically via onAuthStateChanged
+  } catch (error) {
+    console.error("Login error:", error);
+    if (error.code === 'auth/account-exists-with-different-credential') {
+      alert("An account already exists with the same email. Please sign in using your original method (e.g., Google).");
+    }
+  } finally {
+    isAuthenticating = false;
+  }
+}
+
+// ── ATTACH EVENT LISTENERS ──
+if (googleLoginBtn) {
+  googleLoginBtn.addEventListener('click', () => handleLogin(googleProvider));
+}
+if (microsoftLoginBtn) {
+  microsoftLoginBtn.addEventListener('click', () => handleLogin(microsoftProvider));
+}
+
+
 // ── CREATE PROFILE (First-time users) ──
-  function showCreateProfile() {
+function showCreateProfile() {
   const createProfileEl = document.getElementById('create-profile') || document.querySelector('.create-profile');
   if (createProfileEl) {
     createProfileEl.style.display = 'flex';
@@ -121,38 +175,38 @@ function updateAuthUI(user) {
   }
 }
 
-  function hideCreateProfile() {
-    const createProfileEl = document.getElementById('create-profile') || document.querySelector('.create-profile');
-    if (createProfileEl) {
-      createProfileEl.style.transition = 'opacity 250ms ease-out';
-      createProfileEl.style.opacity = '0';
-      
-      setTimeout(() => {
-        if (createProfileEl.style.opacity === '0') {
-          createProfileEl.style.display = 'none';
-           // NYTT: Återställ fältet till placeholder för nästa användare
-          if (typeof createUsernameInput !== 'undefined' && createUsernameInput) {
-              createUsernameInput.textContent = createDefaultPlaceholder;
-              createUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
-          }
-          if (typeof createProfileSubmitBtn !== 'undefined' && createProfileSubmitBtn) {
-              createProfileSubmitBtn.classList.remove('is-active');
-              createProfileSubmitBtn.style.pointerEvents = 'none';
-          }
-          if (typeof errorMsgEl !== 'undefined' && errorMsgEl) {
-              errorMsgEl.style.display = 'none';
-              errorMsgEl.innerHTML = "";
-          }
+function hideCreateProfile() {
+  const createProfileEl = document.getElementById('create-profile') || document.querySelector('.create-profile');
+  if (createProfileEl) {
+    createProfileEl.style.transition = 'opacity 250ms ease-out';
+    createProfileEl.style.opacity = '0';
+    
+    setTimeout(() => {
+      if (createProfileEl.style.opacity === '0') {
+        createProfileEl.style.display = 'none';
+          // NYTT: Återställ fältet till placeholder för nästa användare
+        if (typeof createUsernameInput !== 'undefined' && createUsernameInput) {
+            createUsernameInput.textContent = createDefaultPlaceholder;
+            createUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
         }
-      }, 250);
-    }
+        if (typeof createProfileSubmitBtn !== 'undefined' && createProfileSubmitBtn) {
+            createProfileSubmitBtn.classList.remove('is-active');
+            createProfileSubmitBtn.style.pointerEvents = 'none';
+        }
+        if (typeof errorMsgEl !== 'undefined' && errorMsgEl) {
+            errorMsgEl.style.display = 'none';
+            errorMsgEl.innerHTML = "";
+        }
+      }
+    }, 250);
   }
-  
-  // Görs tillgänglig globalt så att create-profile-flödets "klar/spara"-knapp
-  // (var den nu ligger) kan anropa hideCreateProfile() + resolvePendingAction()
-  // när användaren är klar med sin profil.
-  window.hideCreateProfile = hideCreateProfile;
-  window.resolvePendingAction = resolvePendingAction;
+}
+ 
+// Görs tillgänglig globalt så att create-profile-flödets "klar/spara"-knapp
+// (var den nu ligger) kan anropa hideCreateProfile() + resolvePendingAction()
+// när användaren är klar med sin profil.
+window.hideCreateProfile = hideCreateProfile;
+window.resolvePendingAction = resolvePendingAction;
 
   // ── LÖS DET SOM ANVÄNDAREN FÖRSÖKTE GÖRA INNAN INLOGGNING KRÄVDES ──
  function resolvePendingAction() {
