@@ -118,20 +118,46 @@ function hideLoginModal() {
   }
 }
 
-// ── LOGIN HANDLER (Connects Buttons to Firebase) ──
+// ── LOGIN HANDLER (With Auto-Merge) ──
 async function handleLogin(provider) {
   if (isAuthenticating) return;
   isAuthenticating = true;
   
   try {
     const result = await signInWithPopup(auth, provider);
-    const user = result.user;
     hideLoginModal();
-    // Your existing checkProfile logic would trigger automatically via onAuthStateChanged
   } catch (error) {
     console.error("Login error:", error);
+
+    // If an account already exists with this email...
     if (error.code === 'auth/account-exists-with-different-credential') {
-      alert("An account already exists with the same email. Please sign in using your original method (e.g., Google).");
+      const email = error.customData?.email;
+      
+      // Extract the pending Microsoft credential that failed
+      const pendingCred = OAuthProvider.credentialFromError(error) || GoogleAuthProvider.credentialFromError(error);
+
+      if (email && pendingCred) {
+        alert(`Security Check: The email ${email} is already registered.\n\nClick OK and sign in with your ORIGINAL method (Google) to verify your identity. We will link your accounts automatically!`);
+
+        try {
+          // Ask them to sign in with Google to prove ownership
+          const verifyResult = await signInWithPopup(auth, googleProvider);
+          
+          // MAGIC HAPPENS HERE: Merge the pending Microsoft login into the verified Google account
+          await linkWithCredential(verifyResult.user, pendingCred);
+          
+          alert("Success! Your Microsoft and Google accounts are now merged into one profile.");
+          hideLoginModal();
+        } catch (mergeError) {
+          console.error("Merge error:", mergeError);
+          // If they cancel the Google popup during the merge
+          if (mergeError.code !== 'auth/popup-closed-by-user') {
+             alert("Account linking failed. Please try again.");
+          }
+        }
+      }
+    } else if (error.code !== 'auth/popup-closed-by-user') {
+      alert("Login failed: " + error.message);
     }
   } finally {
     isAuthenticating = false;
