@@ -125,12 +125,22 @@ function revealFoucElements() {
     el.style.opacity = '1';
   });
 }
-// 1. Primary Trigger: Reveal when corePageReady fires
-document.addEventListener('corePageReady', revealFoucElements);
-// 2. Global Safety Net: Force reveal after 3.5 seconds if corePageReady hung or failed
-setTimeout(() => {
-  revealFoucElements();
-}, 3500);
+  // 1. Primary Trigger: Reveal when corePageReady fires
+  document.addEventListener('corePageReady', revealFoucElements);
+
+  // Ensure corePageReady ALWAYS fires, even on non-game pages
+  document.addEventListener('DOMContentLoaded', () => {
+  const isGamePage = document.querySelector('.question-card') || document.getElementById('timer-display');
+  // If there are no game components on this page, release corePageReady immediately
+  if (!isGamePage) {
+    document.dispatchEvent(new CustomEvent('corePageReady'));
+  }
+
+  // Last Global Safety Net: Force reveal after 3.5 seconds if corePageReady hung or failed
+  setTimeout(() => {
+    revealFoucElements();
+  }, 3500);
+});
 
 
 // ────────────────── GAME-START PAGES ──────────────────
