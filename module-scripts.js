@@ -152,11 +152,11 @@ if (error.code === 'auth/account-exists-with-different-credential') {
         <p style="margin-bottom:1rem; font-size: 0.9rem; line-height: 1.4;">The email <b>${email}</b> is already registered with another provider.</p>
         <p style="margin-bottom: 2rem; font-size: 0.9rem; line-height: 1.4;">Please verify your identity with Google to link your accounts.</p>
         
-        <button id="merge-google-btn" style="background:white; color:var(--dark-grey); padding:0.8rem 1rem; border:none; cursor:pointer; width:13rem; font-family: inherit; font-size: 1rem; font-weight: bold;">
+        <button id="merge-google-btn" class="merge-google-btn" style="background:white; color:var(--dark-grey); padding:0.8rem 1rem; border:none; cursor:pointer; width:13rem; font-family: inherit; font-size: 1rem; font-weight: bold;">
           Verify with Google
         </button>
         
-        <button id="cancel-merge-btn" style="background:transparent; color:#fff; padding:0.8rem; border:none; cursor:pointer; margin-top:0.8rem; width:100%; font-family: inherit; font-size: 0.9rem;">
+        <button id="cancel-merge-btn" class="cancel-merge-btn" style="background:transparent; color:#fff; padding:0.8rem; border:none; cursor:pointer; margin-top:0.8rem; width:100%; font-family: inherit; font-size: 0.9rem;">
           Cancel
         </button>
       </div>
