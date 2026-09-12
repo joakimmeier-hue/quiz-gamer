@@ -821,6 +821,7 @@ onAuthStateChanged(auth, async (user) => {
     showCreateProfile();
     routeGuard(false);
   }
+});
 
 // ── ROUTE GUARD SYSTEM ──────────────────────────────────────────────
 let routeGuardHasRun = false;
