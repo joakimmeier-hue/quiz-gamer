@@ -517,51 +517,32 @@ document.addEventListener('keydown', (e) => {
   }
 }, true);
 
- // ── GOOGLE LOGIN ──
- if (googleLoginBtn) {
-   googleLoginBtn.addEventListener('click', async (e) => {
-     e.preventDefault();
-     if (isAuthenticating) return; // Skydd mot dubbla samtidiga inloggningsförsök
-     isAuthenticating = true;
-     
-     try {
-       console.log("Initierar Google Sign-In Popup...");
-       const result = await signInWithPopup(auth, googleProvider);
-       currentUser = result.user; 
-       console.log("Inloggning lyckades för:", currentUser.displayName);
-       
-       hideLoginModal(); 
+// ── GOOGLE LOGIN ──
+if (googleLoginBtn) {
+  googleLoginBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (isAuthenticating) return; // Skydd mot dubbla samtidiga inloggningsförsök
+    isAuthenticating = true;
+    
+    try {
+      console.log("Initierar Google Sign-In Popup...");
+      const result = await signInWithPopup(auth, googleProvider);
+      currentUser = result.user; 
+      console.log("Inloggning lyckades för:", currentUser.displayName);
+      
+      hideLoginModal(); 
 
-       // Skapa en säkerhetsspärr för Firestore-läsningen
-       let isFirstTime = false;
-       try {
-         const userDocRef = doc(db, "users", currentUser.uid);
-         const userDoc = await getDoc(userDocRef);
-         if (!userDoc.exists()) {
-           isFirstTime = true;
-         }
-       } catch (firestoreError) {
-         console.warn("Kunde inte läsa från Firestore (kolla regler/molnstatus):", firestoreError.message);
-         // FALLBACK: Om databasen nekar oss, blocka inte spelaren. Kör vidare!
-       }
+      // 🛑 DELETED the manual Firestore check and if/else block here!
+      // onAuthStateChanged will instantly detect the login and perfectly route 
+      // the user to showCreateProfile() OR resolvePendingAction().
 
-       if (isFirstTime) {
-         console.log("Ny spelare upptäckt. Visar profilskaparen...");
-         setTimeout(() => {
-             showCreateProfile();
-         }, 350);
-       } else {
-         console.log("Återkommande spelare. Verkställer sparad handling...");
-         resolvePendingAction();
-       }
-
-     } catch (error) {
-       console.error("Inloggning avbruten eller misslyckades helt:", error.message);
-     } finally {
-       isAuthenticating = false; 
-     }
-   });
- }
+    } catch (error) {
+      console.error("Inloggning avbruten eller misslyckades helt:", error.message);
+    } finally {
+      isAuthenticating = false; 
+    }
+  });
+}
 
   // ── GLOBAL KLICKLYSSNARE ──
   document.addEventListener('click', async (e) => {
@@ -800,16 +781,17 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  // Signed in — ensure Firestore user doc exists and is complete
+// Signed in — ensure Firestore user doc exists and is complete
   try {
     const userDocRef = doc(db, "users", user.uid);
     const userDoc = await getDoc(userDocRef);
 
     if (!userDoc.exists()) {
       console.log("🔴 NEW USER - Showing create profile");
+      hideLoginModal(); // Make sure the login modal closes!
       showCreateProfile();
       routeGuard(false);
-      return;
+      return; // <-- Stops here! Pending action waits until they hit "Save".
     }
 
     const userData = userDoc.data();
@@ -818,20 +800,27 @@ onAuthStateChanged(auth, async (user) => {
 
     if (!hasUsername || !hasProfilePic) {
       console.log("🟡 INCOMPLETE PROFILE - Forcing create profile");
+      hideLoginModal();
       showCreateProfile();
       routeGuard(false);
-      return;
+      return; // <-- Stops here!
     }
 
     // User is complete
+    hideLoginModal();
     loadUserData(user.uid);
     routeGuard(true);
+    
+    // ✅ EXISTING USER: Safe to resolve their pending action!
+    if (typeof window.resolvePendingAction === 'function') {
+      window.resolvePendingAction();
+    }
+    
   } catch (err) {
     console.warn("Firestore error:", err.message || err);
     showCreateProfile();
     routeGuard(false);
   }
-});
 
 // ── ROUTE GUARD SYSTEM ──────────────────────────────────────────────
 let routeGuardHasRun = false;
