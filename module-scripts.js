@@ -135,56 +135,57 @@ async function handleLogin(provider) {
   } catch (error) {
     console.error("Login error object:", error);
 
-    // ── COLLISION DETECTED ──
-    if (error.code === 'auth/account-exists-with-different-credential') {
-      const email = error.customData?.email;
-      const pendingCred = OAuthProvider.credentialFromError(error) || GoogleAuthProvider.credentialFromError(error);
+// ── COLLISION DETECTED ──
+if (error.code === 'auth/account-exists-with-different-credential') {
+  const email = error.customData?.email;
+  const pendingCred = OAuthProvider.credentialFromError(error) || GoogleAuthProvider.credentialFromError(error);
 
-      if (email && pendingCred) {
+  if (email && pendingCred) {
+    
+    // 1. Create a dynamic overlay to get a FRESH user click (bypasses popup blockers)
+    const mergeDiv = document.createElement('div');
+    mergeDiv.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; z-index:99999; font-family:"itc bauhaus", sans-serif; backdrop-filter: blur(4px);';
+    
+    mergeDiv.innerHTML = `
+      <div style="padding: 2rem 4rem; text-align:center; max-width:25rem; color:white; border-right: var(--stroke) solid var(--grey-stroke); border-left: var(--stroke) solid var(--grey-stroke);">
+        <h3 style="margin-top:0; margin-bottom: 1rem; font-size: 1.3rem;">Account Already Exists</h3>
+        <p style="margin-bottom:1rem; font-size: 0.9rem; line-height: 1.4;">The email <b>${email}</b> is already registered with another provider.</p>
+        <p style="margin-bottom: 2rem; font-size: 0.9rem; line-height: 1.4;">Please verify your identity with Google to link your accounts.</p>
         
-            // 1. Create a dynamic overlay to get a FRESH user click (bypasses popup blockers)
+        <button id="merge-google-btn" style="background:white; color:var(--dark-grey); padding:0.8rem 1rem; border:none; cursor:pointer; width:13rem; font-family: inherit; font-size: 1rem; font-weight: bold;">
+          Verify with Google
+        </button>
         
-        const mergeDiv = document.createElement('div');
-        mergeDiv.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; z-index:99999; font-family: itc bauhaus; backdrop-filter: blur(4px);';
-        
-        mergeDiv.innerHTML = `
-            <div style="padding: 2rem 4rem; text-align:center; max-width:25rem; color:white; border-right: var(--stroke) solid var(--grey-stroke); border-left: var(--stroke) solid var(--grey-stroke);">
-              <h3 style="margin-top:0; margin-bottom: 1rem;">Account Already Exists</h3>
-              <p style="margin-bottom:1rem;">The email <b>${email}</b> is already registered with another provider.</p>
-              <p style=" margin-bottom: 2rem;">Please verify your identity with Google to link your accounts.</p>
-              <button id="merge-google-btn" style="background:white; color:var(--dark-grey); padding:0.8rem 1rem; border:none; cursor:pointer; width:13rem;"> <h5>Verify with Google</h5>
-              </button>
-              <button id="cancel-merge-btn" style="background:transparent; color:#fff; padding:0.8rem; border:none; cursor:pointer; margin-top:0.8rem; width:100%;">
-                Cancel
-              </button>
-            </div>
-          `;
-        document.body.appendChild(mergeDiv);
+        <button id="cancel-merge-btn" style="background:transparent; color:#fff; padding:0.8rem; border:none; cursor:pointer; margin-top:0.8rem; width:100%; font-family: inherit; font-size: 0.9rem;">
+          Cancel
+        </button>
+      </div>
+    `;
+    document.body.appendChild(mergeDiv);
 
-        // 2. Wait for the user to click (This gives us popup permission!)
-        document.getElementById('merge-google-btn').addEventListener('click', async () => {
-          // Change button text to show it's loading
-          document.getElementById('merge-google-btn').innerText = "Verifying...";
-          
-          try {
-            const verifyResult = await signInWithPopup(auth, googleProvider);
-            await linkWithCredential(verifyResult.user, pendingCred);
-            
-            document.body.removeChild(mergeDiv);
-            hideLoginModal();
-            
-            if (typeof window.resolvePendingAction === 'function') {
-                window.resolvePendingAction();
-            }
-          } catch (mergeError) {
-            console.error("Merge error:", mergeError);
-            if (mergeError.code !== 'auth/popup-closed-by-user') {
-               alert("Account linking failed: " + mergeError.message);
-            }
-            // Reset button if they closed the popup
-            document.getElementById('merge-google-btn').innerText = "Verify with Google";
-          }
-        });
+    // 2. Handle Google Verification Click
+    document.getElementById('merge-google-btn').addEventListener('click', async () => {
+      document.getElementById('merge-google-btn').innerText = "Verifying...";
+      
+      try {
+        const verifyResult = await signInWithPopup(auth, googleProvider);
+        await linkWithCredential(verifyResult.user, pendingCred);
+        
+        document.body.removeChild(mergeDiv);
+        hideLoginModal();
+        
+        if (typeof window.resolvePendingAction === 'function') {
+            window.resolvePendingAction();
+        }
+      } catch (mergeError) {
+        console.error("Merge error:", mergeError);
+        if (mergeError.code !== 'auth/popup-closed-by-user') {
+           alert("Account linking failed: " + mergeError.message);
+        }
+        // Resets plain text directly—no lost tags!
+        document.getElementById('merge-google-btn').innerText = "Verify with Google";
+      }
+    });
 
         // 3. Handle Cancel
         document.getElementById('cancel-merge-btn').addEventListener('click', () => {

@@ -1543,6 +1543,14 @@ const HOVER_SCALE_CLASSES_SM = [
     'wtc-wrapper'
 ];
 
+// Merge account modal special. Style transitions directly on the element
+const googleBtn = document.getElementById('merge-google-btn, cancel-merge-btn');
+googleBtn.style.transition = 'transform 0.13s ease';
+
+googleBtn.onmouseenter = () => googleBtn.style.transform = 'scale(1.13)';
+googleBtn.onmouseleave = () => googleBtn.style.transform = 'scale(1)';
+
+
 // Klasser som ska ändra scale vid press (pointerdown -> pointerup)
 const PRESS_SCALE_CLASSES = [
     'cp-exit',
