@@ -273,33 +273,42 @@ function hideCreateProfile() {
 window.hideCreateProfile = hideCreateProfile;
 window.resolvePendingAction = resolvePendingAction;
 
-  // ── LÖS DET SOM ANVÄNDAREN FÖRSÖKTE GÖRA INNAN INLOGGNING KRÄVDES ──
- function resolvePendingAction() {
-   console.log("resolvePendingAction() utlöst. Aktiv handling:", pendingAction);
-   if (!pendingAction) {
-     console.log("Ingen handling låg i kö.");
-     return;
-   }
+// ── LÖS DET SOM ANVÄNDAREN FÖRSÖKTE GÖRA INNAN INLOGGNING KRÄVDES ──
+function resolvePendingAction() {
+  console.log("resolvePendingAction() utlöst. Aktiv handling:", pendingAction);
+  if (!pendingAction) {
+    console.log("Ingen handling låg i kö.");
+    return;
+  }
 
-   if (pendingAction === 'INVENTORY') { 
-     const overlay = document.querySelector('.inventory-overlay');
-     console.log("Försöker öppna inventory-overlay:", overlay);
-     if (overlay && !window.lobbyInvOpen) {
-       openLobbyInventory(overlay);
-     }
-   } else {
-     // pendingAction är en URL (spel-länk)
-     console.log("Navigerar vidare till spel-länk:", pendingAction);
-     if (typeof window.triggerPageExit === 'function') {
-       window.triggerPageExit(pendingAction, false);
-     } else {
-       window.location.href = pendingAction;
-     }
-   }
+  if (pendingAction === 'INVENTORY') { 
+    const overlay = document.querySelector('.inventory-overlay');
+    console.log("Försöker öppna inventory-overlay:", overlay);
+    if (overlay && !window.lobbyInvOpen) {
+      openLobbyInventory(overlay);
+    }
+  } else {
+    // pendingAction är en URL (spel-länk)
+    console.log("Navigerar vidare till spel-länk:", pendingAction);
 
-   pendingAction = null;
- }
-  // ── HJÄLPFUNKTION: Kollar om en knapp faktiskt syns ──
+    // Klistra in detta: Sätt rätt navFrom i sessionStorage så Route Guarden godkänner spelet direkt
+    const gameMatch = pendingAction.match(/([a-z]+)-game-\d+/);
+    if (gameMatch) {
+      const theme = gameMatch[1];
+      sessionStorage.setItem('navFrom', `${theme}-start`);
+    }
+
+    if (typeof window.triggerPageExit === 'function') {
+      window.triggerPageExit(pendingAction, false);
+    } else {
+      window.location.href = pendingAction;
+    }
+  }
+
+  pendingAction = null;
+}
+
+// ── HJÄLPFUNKTION: Kollar om en knapp faktiskt syns ──
   function isVisible(el) {
     return el && window.getComputedStyle(el).display !== 'none';
   }
