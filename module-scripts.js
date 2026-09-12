@@ -142,23 +142,23 @@ async function handleLogin(provider) {
 
       if (email && pendingCred) {
         
-        // 1. Create a dynamic overlay to get a FRESH user click (bypasses popup blockers)
+          // 1. Create a dynamic overlay to get a FRESH user click (bypasses popup blockers)
+        
         const mergeDiv = document.createElement('div');
         mergeDiv.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; z-index:99999; font-family:sans-serif; backdrop-filter: blur(4px);';
         
         mergeDiv.innerHTML = `
-          <div style="background:#1a1a1a; padding:40px; border-radius:12px; text-align:center; max-width:400px; color:white; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-            <h3 style="margin-top:0; font-size:20px;">Account Already Exists</h3>
-            <p style="color:#aaa; line-height:1.5;">The email <b>${email}</b> is already registered with another provider.</p>
-            <p style="color:#aaa; line-height:1.5; margin-bottom: 25px;">Please verify your identity with Google to link your accounts.</p>
-            <button id="merge-google-btn" style="background:white; color:black; padding:12px 24px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; width:100%; font-size: 16px;">
-              Verify with Google
-            </button>
-            <button id="cancel-merge-btn" style="background:transparent; color:#888; padding:12px; border:none; cursor:pointer; margin-top:10px; width:100%;">
-              Cancel
-            </button>
-          </div>
-        `;
+            <div style="padding: 4rem; text-align:center; max-width:25rem; color:white; border-right: var(--stroke) solid var(--grey-stroke); border-left: var(--stroke) solid var(--grey-stroke);">
+              <h3 style="margin-top:0; margin-bottom: 1rem;">Account Already Exists</h3>
+              <p style="margin-bottom:1rem;">The email <b>${email}</b> is already registered with another provider.</p>
+              <p style=" margin-bottom: 2rem;">Please verify your identity with Google to link your accounts.</p>
+              <button id="merge-google-btn" style="background:white; color:var(--dark-grey); padding:0.8rem 1rem; border:none; cursor:pointer; width:13rem;"> <h5>Verify with Google</h5>
+              </button>
+              <button id="cancel-merge-btn" style="background:transparent; color:#fff; padding:0.8rem; border:none; cursor:pointer; margin-top:0.8rem; width:100%;">
+                Cancel
+              </button>
+            </div>
+          `;
         document.body.appendChild(mergeDiv);
 
         // 2. Wait for the user to click (This gives us popup permission!)
