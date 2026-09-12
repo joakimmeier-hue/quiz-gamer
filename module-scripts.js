@@ -142,13 +142,13 @@ async function handleLogin(provider) {
 
       if (email && pendingCred) {
         
-          // 1. Create a dynamic overlay to get a FRESH user click (bypasses popup blockers)
+            // 1. Create a dynamic overlay to get a FRESH user click (bypasses popup blockers)
         
         const mergeDiv = document.createElement('div');
-        mergeDiv.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; z-index:99999; font-family:sans-serif; backdrop-filter: blur(4px);';
+        mergeDiv.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; z-index:99999; font-family: itc bauhaus; backdrop-filter: blur(4px);';
         
         mergeDiv.innerHTML = `
-            <div style="padding: 4rem; text-align:center; max-width:25rem; color:white; border-right: var(--stroke) solid var(--grey-stroke); border-left: var(--stroke) solid var(--grey-stroke);">
+            <div style="padding: 2rem 4rem; text-align:center; max-width:25rem; color:white; border-right: var(--stroke) solid var(--grey-stroke); border-left: var(--stroke) solid var(--grey-stroke);">
               <h3 style="margin-top:0; margin-bottom: 1rem;">Account Already Exists</h3>
               <p style="margin-bottom:1rem;">The email <b>${email}</b> is already registered with another provider.</p>
               <p style=" margin-bottom: 2rem;">Please verify your identity with Google to link your accounts.</p>
