@@ -1027,13 +1027,13 @@ function initAudio() {
                 welcomeTarget.addEventListener('click', () => {
                     setTimeout(() => {
                         toggleBtn.classList.add('is-visible');
-                    }, 7260);
+                    }, 6800);
                 });
             } else {
                 // Fallback om välkomsttexten inte hittas
                 setTimeout(() => {
                     toggleBtn.classList.add('is-visible');
-                }, 7260);
+                }, 6800);
             }
         } else {
             // En fördröjning på 50ms så att webbläsaren hinner starta opacity-transitionen på undersidor!
