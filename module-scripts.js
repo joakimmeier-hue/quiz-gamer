@@ -246,7 +246,11 @@ function hideCreateProfile() {
     setTimeout(() => {
       if (createProfileEl.style.opacity === '0') {
         createProfileEl.style.display = 'none';
-          // NYTT: Återställ fältet till placeholder för nästa användare
+
+        // 🆕 RESET the global avatar so next user gets default
+        window.selectedOnboardingAvatar = null;
+
+       // Återställ fältet till placeholder för nästa användare
         if (typeof createUsernameInput !== 'undefined' && createUsernameInput) {
             createUsernameInput.textContent = createDefaultPlaceholder;
             createUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
