@@ -398,7 +398,7 @@ if (typeof loadUserData === 'function' && currentUser) {
       await loadUserData(currentUser.uid);
     }
 
-    setTimeout(() => {
+    setTimeout(async () => {
       createProfileSubmitBtn.textContent = "Create";
   createProfileSubmitBtn.style.pointerEvents = 'auto';
   
@@ -416,7 +416,7 @@ if (typeof loadUserData === 'function' && currentUser) {
   if (typeof hideCreateProfile === 'function') hideCreateProfile();
   // ✅ NOW safe to resolve — profile definitely exists in Firestore
   if (typeof resolvePendingAction === 'function') resolvePendingAction();
-}, 700);
+  }, 700);
     
     } catch (error) {
       console.error("Gick inte att spara profilen:", error.message);
