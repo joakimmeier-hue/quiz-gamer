@@ -780,27 +780,26 @@ async function loadUserData(uid) {
   }
 
   // ── FIREBASE AUTH OBSERVER ── & ── INCOMPLETE ACCOUNT RECOVERY ──
+// ── UPDATE onAuthStateChanged to RESOLVE when profile is complete ──
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   updateAuthUI(user);
 
   if (!user) {
-    // Not signed in
     routeGuard(false);
     return;
   }
 
-// Signed in — ensure Firestore user doc exists and is complete
   try {
     const userDocRef = doc(db, "users", user.uid);
     const userDoc = await getDoc(userDocRef);
 
     if (!userDoc.exists()) {
       console.log("🔴 NEW USER - Showing create profile");
-      hideLoginModal(); // Make sure the login modal closes!
+      hideLoginModal();
       showCreateProfile();
       routeGuard(false);
-      return; // <-- Stops here! Pending action waits until they hit "Save".
+      return;
     }
 
     const userData = userDoc.data();
@@ -812,15 +811,21 @@ onAuthStateChanged(auth, async (user) => {
       hideLoginModal();
       showCreateProfile();
       routeGuard(false);
-      return; // <-- Stops here!
+      return;
     }
 
-    // User is complete
+    // ✅ User is complete!
     hideLoginModal();
     loadUserData(user.uid);
     routeGuard(true);
     
-    // ✅ EXISTING USER: Safe to resolve their pending action!
+    // ✅ RESOLVE the pending action gate if waiting
+    if (profileCompleteResolver) {
+      profileCompleteResolver();
+      profileCompleteResolver = null;
+    }
+
+    // Existing user: safe to resolve their pending action immediately
     if (typeof window.resolvePendingAction === 'function') {
       window.resolvePendingAction();
     }
@@ -1049,14 +1054,18 @@ if (createProfileSubmitBtn && createUsernameInput) {
   setupUsernameInput(createUsernameInput, createProfileSubmitBtn, createDefaultPlaceholder);
 
 // 2. Klick på Create
-  createProfileSubmitBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-    
-    if (errorMsgEl) {
-        errorMsgEl.style.display = 'none';
-        errorMsgEl.innerHTML = "";
-    }
-    let errors = [];
+// ── GATE for waiting on profile completion ──
+let profileCompleteResolver = null;
+
+// ── UPDATE THE CREATE PROFILE SUBMIT HANDLER ──
+createProfileSubmitBtn.addEventListener('click', async (e) => {
+  e.preventDefault();
+  
+  if (errorMsgEl) {
+    errorMsgEl.style.display = 'none';
+    errorMsgEl.innerHTML = "";
+  }
+  let errors = [];
 
     // NEW: Safety check - ensure user is authenticated
     if (!currentUser || !currentUser.uid) {
@@ -1091,31 +1100,40 @@ if (createProfileSubmitBtn && createUsernameInput) {
     }
 
     // -- ALLT GODKÄNT - SPARA (server-side via Cloud Function) --
-    try {
-      createProfileSubmitBtn.textContent = "Saving...";
-      createProfileSubmitBtn.style.pointerEvents = 'none';
+try {
+    createProfileSubmitBtn.textContent = "Saving...";
+    createProfileSubmitBtn.style.pointerEvents = 'none';
 
-      const result = await completeProfileFn({
-        username: rawName,
-        profilePicUrl: currentAvatarSrc
+    const result = await completeProfileFn({
+      username: rawName,
+      profilePicUrl: currentAvatarSrc
+    });
+
+    // ── NYTT: DON'T call resolvePendingAction yet! ──
+    // Instead, set a promise that onAuthStateChanged will resolve
+    if (!profileCompleteResolver) {
+      await new Promise(resolve => {
+        profileCompleteResolver = resolve;
       });
+    }
 
-      // ── NYTT: Hämta de nyskapade Firestore-värdena till UI direkt ──
-      if (typeof loadUserData === 'function' && currentUser) {
-        await loadUserData(currentUser.uid);
-      }
+    // Update UI after profile is confirmed complete
+    if (typeof loadUserData === 'function' && currentUser) {
+      await loadUserData(currentUser.uid);
+    }
 
-      setTimeout(() => {
-        createProfileSubmitBtn.textContent = "Create";
-        createProfileSubmitBtn.style.pointerEvents = 'auto';
-        const savedName = result.data.username;
-        const uiNameElements = document.querySelectorAll('.player-info.username');
-        uiNameElements.forEach(el => el.textContent = savedName);
-        if (typeof userDisplayName !== 'undefined' && userDisplayName) userDisplayName.textContent = savedName;
-        if (typeof hideCreateProfile === 'function') hideCreateProfile();
-        if (typeof resolvePendingAction === 'function') resolvePendingAction();
-      }, 700);
-
+    setTimeout(() => {
+      createProfileSubmitBtn.textContent = "Create";
+      createProfileSubmitBtn.style.pointerEvents = 'auto';
+      const savedName = result.data.username;
+      const uiNameElements = document.querySelectorAll('.player-info.username');
+      uiNameElements.forEach(el => el.textContent = savedName);
+      if (typeof userDisplayName !== 'undefined' && userDisplayName) userDisplayName.textContent = savedName;
+      if (typeof hideCreateProfile === 'function') hideCreateProfile();
+      // ✅ NOW safe to resolve — profile definitely exists in Firestore
+      if (typeof resolvePendingAction === 'function') resolvePendingAction();
+    }, 700);
+    
     } catch (error) {
       console.error("Gick inte att spara profilen:", error.message);
       if (errorMsgEl) {
