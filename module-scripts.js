@@ -88,7 +88,7 @@ function updateAuthUI(user) {
     const defaultAvatar = "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a43d799e6705e122388ffdc_ppic0.svg";
     const currentAvatars = document.querySelectorAll('.current-profile-pic');
     currentAvatars.forEach(img => img.src = defaultAvatar);
-    
+
     // Stäng inventoryt omedelbart om det råkar vara öppet när man loggar ut
     const overlay = document.querySelector('.inventory-overlay');
     if (overlay && window.lobbyInvOpen) {
@@ -400,15 +400,23 @@ if (typeof loadUserData === 'function' && currentUser) {
 
     setTimeout(() => {
       createProfileSubmitBtn.textContent = "Create";
-      createProfileSubmitBtn.style.pointerEvents = 'auto';
-      const savedName = result.data.username;
-      const uiNameElements = document.querySelectorAll('.player-info.username');
-      uiNameElements.forEach(el => el.textContent = savedName);
-      if (typeof userDisplayName !== 'undefined' && userDisplayName) userDisplayName.textContent = savedName;
-      if (typeof hideCreateProfile === 'function') hideCreateProfile();
-      // ✅ NOW safe to resolve — profile definitely exists in Firestore
-      if (typeof resolvePendingAction === 'function') resolvePendingAction();
-    }, 700);
+  createProfileSubmitBtn.style.pointerEvents = 'auto';
+  
+  const savedName = result.data.username;
+  const uiNameElements = document.querySelectorAll('.player-info.username');
+  uiNameElements.forEach(el => el.textContent = savedName);
+  if (typeof userDisplayName !== 'undefined' && userDisplayName) userDisplayName.textContent = savedName;
+  
+  // 🆕 Save avatar to Firestore BEFORE closing the modal
+  if (typeof saveUserAvatar === 'function') {
+    const currentAvatarSrc = document.querySelector('.current-profile-pic')?.src || "";
+    await saveUserAvatar(currentAvatarSrc);
+  }
+  
+  if (typeof hideCreateProfile === 'function') hideCreateProfile();
+  // ✅ NOW safe to resolve — profile definitely exists in Firestore
+  if (typeof resolvePendingAction === 'function') resolvePendingAction();
+}, 700);
     
     } catch (error) {
       console.error("Gick inte att spara profilen:", error.message);
