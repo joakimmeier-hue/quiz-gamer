@@ -84,6 +84,11 @@ function updateAuthUI(user) {
     // ANVÄNDARE ÄR UTLOGGAD
     document.body.classList.remove("user-logged-in");
     
+    // 🆕 Reset avatar on logout
+    const defaultAvatar = "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a43d799e6705e122388ffdc_ppic0.svg";
+    const currentAvatars = document.querySelectorAll('.current-profile-pic');
+    currentAvatars.forEach(img => img.src = defaultAvatar);
+    
     // Stäng inventoryt omedelbart om det råkar vara öppet när man loggar ut
     const overlay = document.querySelector('.inventory-overlay');
     if (overlay && window.lobbyInvOpen) {
@@ -250,6 +255,10 @@ function hideCreateProfile() {
 
         // 🆕 RESET the global avatar so next user gets default
         window.selectedOnboardingAvatar = null;
+         // 🆕 RESET ALL AVATAR IMAGES IN DOM back to default
+        const defaultAvatar = "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a43d799e6705e122388ffdc_ppic0.svg";
+        const currentAvatars = document.querySelectorAll('.current-profile-pic');
+        currentAvatars.forEach(img => img.src = defaultAvatar);
 
        // Återställ fältet till placeholder för nästa användare
         if (typeof createUsernameInput !== 'undefined' && createUsernameInput) {
