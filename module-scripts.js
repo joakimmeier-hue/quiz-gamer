@@ -374,7 +374,7 @@ try {
 console.log("Cloud function succeeded. Waiting for Firestore sync...");
 
 // Wait a bit for Firestore to sync, then manually check
-await new Promise(resolve => setTimeout(resolve, 1000));
+await new Promise(resolve => setTimeout(resolve, 100));
 
 // Force a Firestore read to ensure data is there
 const freshUserDoc = await getDoc(doc(db, "users", currentUser.uid));
