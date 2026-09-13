@@ -47,6 +47,8 @@ microsoftProvider.setCustomParameters({ prompt: 'select_account' });
 let currentUser = null;
 let pendingAction = null; 
 let isAuthenticating = false; // NYTT: skydd mot dubbla samtidiga inloggningsförsök
+let profileCompleteResolver = null;
+
 
 // ── DOM ELEMENTS ──
 const loginModal = document.getElementById('login-modal');
@@ -299,8 +301,6 @@ if (typeof createUsernameInput !== 'undefined' && createUsernameInput) {
     if (document.activeElement !== createUsernameInput) focusContentEditableAtEnd(createUsernameInput);
   });
 }
-
-let profileCompleteResolver = null; //loose?
 
 
 if (createProfileSubmitBtn && createUsernameInput) {
