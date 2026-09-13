@@ -126,12 +126,7 @@ async function handleLogin(provider) {
   try {
     const result = await signInWithPopup(auth, provider);
     hideLoginModal();
-    
-    // Continue to the action the user clicked before logging in
-    if (typeof window.resolvePendingAction === 'function') {
-        window.resolvePendingAction();
-    }
-    
+        
   } catch (error) {
     console.error("Login error object:", error);
 
@@ -304,6 +299,10 @@ if (typeof createUsernameInput !== 'undefined' && createUsernameInput) {
     if (document.activeElement !== createUsernameInput) focusContentEditableAtEnd(createUsernameInput);
   });
 }
+
+let profileCompleteResolver = null; //loose?
+
+
 if (createProfileSubmitBtn && createUsernameInput) {
   
   // 1. Koppla fältet till vår nya gemensamma funktion
@@ -311,7 +310,6 @@ if (createProfileSubmitBtn && createUsernameInput) {
 
 // 2. Klick på Create
 // ── GATE for waiting on profile completion ──
-let profileCompleteResolver = null;
 
 // ── UPDATE THE CREATE PROFILE SUBMIT HANDLER ──
 createProfileSubmitBtn.addEventListener('click', async (e) => {
