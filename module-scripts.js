@@ -370,13 +370,19 @@ try {
   });
   console.log("DEBUG: completeProfileFn returned:", result);
 
-    // ── NYTT: DON'T call resolvePendingAction yet! ──
-    // Instead, set a promise that onAuthStateChanged will resolve
-    if (!profileCompleteResolver) {
-      await new Promise(resolve => {
-        profileCompleteResolver = resolve;
-      });
-    }
+    // After Cloud Function returns successfully
+console.log("Cloud function succeeded. Waiting for Firestore sync...");
+
+// Wait a bit for Firestore to sync, then manually check
+await new Promise(resolve => setTimeout(resolve, 1000));
+
+// Force a Firestore read to ensure data is there
+const freshUserDoc = await getDoc(doc(db, "users", currentUser.uid));
+console.log("Fresh user doc exists:", freshUserDoc.exists());
+
+if (typeof loadUserData === 'function' && currentUser) {
+  await loadUserData(currentUser.uid);
+}
 
     // Update UI after profile is confirmed complete
     if (typeof loadUserData === 'function' && currentUser) {
