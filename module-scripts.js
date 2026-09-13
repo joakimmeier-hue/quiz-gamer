@@ -93,6 +93,7 @@ function updateAuthUI(user) {
 }
 
 function showLoginModal() {
+  window.selectedOnboardingAvatar = null;  // 🆕 Reset avatar
   if (currentUser) return; // NYTT: redan inloggad - visa aldrig login-modalen igen
   if (loginModal) {
     loginModal.style.display = 'flex';
