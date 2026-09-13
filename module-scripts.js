@@ -273,6 +273,258 @@ function hideCreateProfile() {
 window.hideCreateProfile = hideCreateProfile;
 window.resolvePendingAction = resolvePendingAction;
 
+// ==========================================
+// ── 2. CREATE PROFILE LOGIC ──
+// ==========================================
+const createProfileSubmitBtn = document.getElementById('cp-create-btn'); 
+const createUsernameInput = document.getElementById('cp-username-input'); 
+const errorMsgEl = document.getElementById('cp-error-msg');
+const createDefaultPlaceholder = "Mr Smart";
+// Make sure the create input is focusable (fallback if Webflow didn't add tabindex)
+if (typeof createUsernameInput !== 'undefined' && createUsernameInput && !createUsernameInput.hasAttribute('tabindex')) {
+  createUsernameInput.setAttribute('tabindex', '0');
+}
+
+// Ensure single-tap focus on mobile/desktop: only focus when the user actually taps/clicks.
+// We add touchstart and mousedown handlers which call the same focus helper used elsewhere.
+if (typeof createUsernameInput !== 'undefined' && createUsernameInput) {
+  const cpUserFirstInteraction = (e) => {
+    // If already focused, do nothing
+    if (document.activeElement === createUsernameInput) return;
+    // Focus and place caret at end (also clears placeholder if matches)
+    focusContentEditableAtEnd(createUsernameInput);
+    // Let the browser continue; do NOT preventDefault here — we want normal input behavior afterwards.
+  };
+
+  // touchstart ensures immediate focus on mobile; mousedown helps desktop first-click cases.
+  createUsernameInput.addEventListener('touchstart', cpUserFirstInteraction, { passive: true });
+  createUsernameInput.addEventListener('mousedown', cpUserFirstInteraction);
+  // as a fallback, ensure click also focuses if nothing else did
+  createUsernameInput.addEventListener('click', (e) => {
+    if (document.activeElement !== createUsernameInput) focusContentEditableAtEnd(createUsernameInput);
+  });
+}
+if (createProfileSubmitBtn && createUsernameInput) {
+  
+  // 1. Koppla fältet till vår nya gemensamma funktion
+  setupUsernameInput(createUsernameInput, createProfileSubmitBtn, createDefaultPlaceholder);
+
+// 2. Klick på Create
+// ── GATE for waiting on profile completion ──
+let profileCompleteResolver = null;
+
+// ── UPDATE THE CREATE PROFILE SUBMIT HANDLER ──
+createProfileSubmitBtn.addEventListener('click', async (e) => {
+  e.preventDefault();
+  
+  if (errorMsgEl) {
+    errorMsgEl.style.display = 'none';
+    errorMsgEl.innerHTML = "";
+  }
+  let errors = [];
+
+    // NEW: Safety check - ensure user is authenticated
+    if (!currentUser || !currentUser.uid) {
+        console.error("❌ User not authenticated!");
+        if (errorMsgEl) {
+            errorMsgEl.innerHTML = "■ Authentication error. Please log in again.";
+            errorMsgEl.style.display = 'block';
+        }
+        return;
+    }
+
+    // -- PROFILBILDS-KOLL --
+    const currentAvatarSrc = document.querySelector('.current-profile-pic')?.src || "";
+    const defaultAvatarUrl = "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a43d799e6705e122388ffdc_ppic0.svg";
+    if (currentAvatarSrc.includes("ppic0.svg") || currentAvatarSrc === defaultAvatarUrl || currentAvatarSrc === "") {
+        errors.push("Please select a profile picture");
+    }
+
+    let rawName = (createUsernameInput.textContent || "").replace(/\u00A0/g, ' ').trim();
+    if (rawName === createDefaultPlaceholder) rawName = "";
+    
+    // -- KÖR DELAD VALIDERING --
+    errors = errors.concat(validateUsernameRules(rawName));
+
+    // -- VISA FELMEDDELANDEN (client-side instant feedback) --
+    if (errors.length > 0) {
+       if (errorMsgEl) {
+         errorMsgEl.innerHTML = "■ " + errors.join("<br>■ ");
+         errorMsgEl.style.display = 'block';
+       }
+       return; 
+    }
+
+    // -- ALLT GODKÄNT - SPARA (server-side via Cloud Function) --
+try {
+    createProfileSubmitBtn.textContent = "Saving...";
+    createProfileSubmitBtn.style.pointerEvents = 'none';
+
+    const result = await completeProfileFn({
+      username: rawName,
+      profilePicUrl: currentAvatarSrc
+    });
+
+    // ── NYTT: DON'T call resolvePendingAction yet! ──
+    // Instead, set a promise that onAuthStateChanged will resolve
+    if (!profileCompleteResolver) {
+      await new Promise(resolve => {
+        profileCompleteResolver = resolve;
+      });
+    }
+
+    // Update UI after profile is confirmed complete
+    if (typeof loadUserData === 'function' && currentUser) {
+      await loadUserData(currentUser.uid);
+    }
+
+    setTimeout(() => {
+      createProfileSubmitBtn.textContent = "Create";
+      createProfileSubmitBtn.style.pointerEvents = 'auto';
+      const savedName = result.data.username;
+      const uiNameElements = document.querySelectorAll('.player-info.username');
+      uiNameElements.forEach(el => el.textContent = savedName);
+      if (typeof userDisplayName !== 'undefined' && userDisplayName) userDisplayName.textContent = savedName;
+      if (typeof hideCreateProfile === 'function') hideCreateProfile();
+      // ✅ NOW safe to resolve — profile definitely exists in Firestore
+      if (typeof resolvePendingAction === 'function') resolvePendingAction();
+    }, 700);
+    
+    } catch (error) {
+      console.error("Gick inte att spara profilen:", error.message);
+      if (errorMsgEl) {
+         errorMsgEl.innerHTML = "■ " + (error.message || "Database error. Please try again.");
+         errorMsgEl.style.display = 'block';
+      }
+      createProfileSubmitBtn.textContent = "Create";
+      createProfileSubmitBtn.style.pointerEvents = 'auto';
+    }
+  });
+}
+
+// ==========================================
+// ── 3. CHANGE USERNAME LOGIC ──
+// ==========================================
+const changeProfileSubmitBtn = document.getElementById('cp-change-btn'); 
+const changeUsernameInput = document.getElementById('change-username-input'); 
+// Ensure changeUsernameInput exists and is focusable if needed
+if (changeUsernameInput) {
+  if (!changeUsernameInput.hasAttribute('tabindex')) {
+    changeUsernameInput.setAttribute('tabindex', '0');
+  }
+
+  const chUserFirstInteraction = (e) => {
+    // If the field is locked (contenteditable false) or explicitly flagged as locked, do nothing.
+    if (changeUsernameInput.getAttribute('contenteditable') === 'false' || changeUsernameInput.dataset.locked === 'true') return;
+    // If already focused, nothing to do
+    if (document.activeElement === changeUsernameInput) return;
+    // Otherwise focus & place caret
+    focusContentEditableAtEnd(changeUsernameInput);
+  };
+
+  changeUsernameInput.addEventListener('touchstart', chUserFirstInteraction, { passive: true });
+  changeUsernameInput.addEventListener('mousedown', chUserFirstInteraction);
+  changeUsernameInput.addEventListener('click', (e) => {
+    if (changeUsernameInput.getAttribute('contenteditable') === 'false' || changeUsernameInput.dataset.locked === 'true') return;
+    if (document.activeElement !== changeUsernameInput) focusContentEditableAtEnd(changeUsernameInput);
+  });
+}
+
+const changeErrorMsgEl = document.getElementById('cp-error-msg-change');
+const changeInfoText = document.getElementById('cp-change-info'); 
+const changeDefaultPlaceholder = "New username";
+
+function lockOutNameChangeUI() {
+    if (changeUsernameInput) {
+        // Make non-editable and non-interactive
+        changeUsernameInput.setAttribute('contenteditable', 'false');
+        changeUsernameInput.style.pointerEvents = 'none';
+        changeUsernameInput.textContent = changeDefaultPlaceholder;
+        changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
+
+        // Ensure it cannot be focused (remove tabindex), blur if focused,
+        // and mark it so handlers can quickly short-circuit.
+        try {
+          changeUsernameInput.blur();
+        } catch (err) { /* ignore */ }
+        changeUsernameInput.removeAttribute('tabindex');
+        changeUsernameInput.dataset.locked = 'true';
+    }
+    if (changeInfoText) {
+        changeInfoText.textContent = "Username already changed once, sorry!";
+    }
+    if (changeProfileSubmitBtn) {
+        changeProfileSubmitBtn.textContent = "Change";
+        changeProfileSubmitBtn.classList.remove('is-active');
+        changeProfileSubmitBtn.style.pointerEvents = 'none';
+    }
+}
+
+if (changeProfileSubmitBtn && changeUsernameInput) {
+  
+  // 1. Koppla fältet till vår nya gemensamma funktion (samma som för Create!)
+  setupUsernameInput(changeUsernameInput, changeProfileSubmitBtn, changeDefaultPlaceholder);
+
+  // 2. Klick på Change
+  changeProfileSubmitBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    
+    if (changeErrorMsgEl) {
+        changeErrorMsgEl.style.display = 'none';
+        changeErrorMsgEl.innerHTML = "";
+    }
+
+    let rawName = (changeUsernameInput.textContent || "").replace(/\u00A0/g, ' ').trim();
+    if (rawName === changeDefaultPlaceholder) rawName = "";
+    
+    // -- KÖR DELAD VALIDERING (client-side instant feedback) --
+    let errors = validateUsernameRules(rawName);
+
+    // -- VISA FELMEDDELANDEN --
+    if (errors.length > 0) {
+       if (changeErrorMsgEl) {
+         changeErrorMsgEl.innerHTML = "■ " + errors.join("<br>■ ");
+         changeErrorMsgEl.style.display = 'block';
+       }
+       return; 
+    }
+
+    // -- ALLT GODKÄNT - SPARA (server-side via Cloud Function) --
+    try {
+      changeProfileSubmitBtn.textContent = "Saving...";
+      changeProfileSubmitBtn.style.pointerEvents = 'none';
+
+      const result = await changeUsernameFn({ username: rawName });
+
+      lockOutNameChangeUI();
+
+      setTimeout(() => {
+        const changeModal = document.querySelector('.change-username');
+        if (changeModal) {
+            changeModal.style.transition = 'opacity 200ms ease';
+            changeModal.style.opacity = '0';
+            setTimeout(() => {
+                changeModal.style.display = 'none';
+            }, 200);
+        }
+        const savedName = result.data.username;
+        const uiNameElements = document.querySelectorAll('.player-info.username');
+        uiNameElements.forEach(el => el.textContent = savedName);
+        if (typeof userDisplayName !== 'undefined' && userDisplayName) userDisplayName.textContent = savedName;
+      }, 1000);
+
+    } catch (error) {
+      console.error("Gick inte att spara nya namnet:", error.message);
+      if (changeErrorMsgEl) {
+         changeErrorMsgEl.innerHTML = "■ " + (error.message || "Database error. Please try again.");
+         changeErrorMsgEl.style.display = 'block';
+      }
+      changeProfileSubmitBtn.textContent = "Change";
+      changeProfileSubmitBtn.style.pointerEvents = 'auto';
+    }
+  });
+}
+
 // ── LÖS DET SOM ANVÄNDAREN FÖRSÖKTE GÖRA INNAN INLOGGNING KRÄVDES ──
 function resolvePendingAction() {
   console.log("resolvePendingAction() utlöst. Aktiv handling:", pendingAction);
@@ -873,7 +1125,6 @@ function routeGuard(isLoggedIn) {
     }
 }
 
-
 // ==========================================
 // ── 1. DELAD KOMPONENT FÖR TEXTFÄLT ──
 // ==========================================
@@ -1016,261 +1267,6 @@ function validateUsernameRules(rawName) {
     }
     return errors;
 }
-
-// ==========================================
-// ── 2. CREATE PROFILE LOGIC ──
-// ==========================================
-const createProfileSubmitBtn = document.getElementById('cp-create-btn'); 
-const createUsernameInput = document.getElementById('cp-username-input'); 
-const errorMsgEl = document.getElementById('cp-error-msg');
-const createDefaultPlaceholder = "Mr Smart";
-// Make sure the create input is focusable (fallback if Webflow didn't add tabindex)
-if (typeof createUsernameInput !== 'undefined' && createUsernameInput && !createUsernameInput.hasAttribute('tabindex')) {
-  createUsernameInput.setAttribute('tabindex', '0');
-}
-
-// Ensure single-tap focus on mobile/desktop: only focus when the user actually taps/clicks.
-// We add touchstart and mousedown handlers which call the same focus helper used elsewhere.
-if (typeof createUsernameInput !== 'undefined' && createUsernameInput) {
-  const cpUserFirstInteraction = (e) => {
-    // If already focused, do nothing
-    if (document.activeElement === createUsernameInput) return;
-    // Focus and place caret at end (also clears placeholder if matches)
-    focusContentEditableAtEnd(createUsernameInput);
-    // Let the browser continue; do NOT preventDefault here — we want normal input behavior afterwards.
-  };
-
-  // touchstart ensures immediate focus on mobile; mousedown helps desktop first-click cases.
-  createUsernameInput.addEventListener('touchstart', cpUserFirstInteraction, { passive: true });
-  createUsernameInput.addEventListener('mousedown', cpUserFirstInteraction);
-  // as a fallback, ensure click also focuses if nothing else did
-  createUsernameInput.addEventListener('click', (e) => {
-    if (document.activeElement !== createUsernameInput) focusContentEditableAtEnd(createUsernameInput);
-  });
-}
-if (createProfileSubmitBtn && createUsernameInput) {
-  
-  // 1. Koppla fältet till vår nya gemensamma funktion
-  setupUsernameInput(createUsernameInput, createProfileSubmitBtn, createDefaultPlaceholder);
-
-// 2. Klick på Create
-// ── GATE for waiting on profile completion ──
-let profileCompleteResolver = null;
-
-// ── UPDATE THE CREATE PROFILE SUBMIT HANDLER ──
-createProfileSubmitBtn.addEventListener('click', async (e) => {
-  e.preventDefault();
-  
-  if (errorMsgEl) {
-    errorMsgEl.style.display = 'none';
-    errorMsgEl.innerHTML = "";
-  }
-  let errors = [];
-
-    // NEW: Safety check - ensure user is authenticated
-    if (!currentUser || !currentUser.uid) {
-        console.error("❌ User not authenticated!");
-        if (errorMsgEl) {
-            errorMsgEl.innerHTML = "■ Authentication error. Please log in again.";
-            errorMsgEl.style.display = 'block';
-        }
-        return;
-    }
-
-    // -- PROFILBILDS-KOLL --
-    const currentAvatarSrc = document.querySelector('.current-profile-pic')?.src || "";
-    const defaultAvatarUrl = "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a43d799e6705e122388ffdc_ppic0.svg";
-    if (currentAvatarSrc.includes("ppic0.svg") || currentAvatarSrc === defaultAvatarUrl || currentAvatarSrc === "") {
-        errors.push("Please select a profile picture");
-    }
-
-    let rawName = (createUsernameInput.textContent || "").replace(/\u00A0/g, ' ').trim();
-    if (rawName === createDefaultPlaceholder) rawName = "";
-    
-    // -- KÖR DELAD VALIDERING --
-    errors = errors.concat(validateUsernameRules(rawName));
-
-    // -- VISA FELMEDDELANDEN (client-side instant feedback) --
-    if (errors.length > 0) {
-       if (errorMsgEl) {
-         errorMsgEl.innerHTML = "■ " + errors.join("<br>■ ");
-         errorMsgEl.style.display = 'block';
-       }
-       return; 
-    }
-
-    // -- ALLT GODKÄNT - SPARA (server-side via Cloud Function) --
-try {
-    createProfileSubmitBtn.textContent = "Saving...";
-    createProfileSubmitBtn.style.pointerEvents = 'none';
-
-    const result = await completeProfileFn({
-      username: rawName,
-      profilePicUrl: currentAvatarSrc
-    });
-
-    // ── NYTT: DON'T call resolvePendingAction yet! ──
-    // Instead, set a promise that onAuthStateChanged will resolve
-    if (!profileCompleteResolver) {
-      await new Promise(resolve => {
-        profileCompleteResolver = resolve;
-      });
-    }
-
-    // Update UI after profile is confirmed complete
-    if (typeof loadUserData === 'function' && currentUser) {
-      await loadUserData(currentUser.uid);
-    }
-
-    setTimeout(() => {
-      createProfileSubmitBtn.textContent = "Create";
-      createProfileSubmitBtn.style.pointerEvents = 'auto';
-      const savedName = result.data.username;
-      const uiNameElements = document.querySelectorAll('.player-info.username');
-      uiNameElements.forEach(el => el.textContent = savedName);
-      if (typeof userDisplayName !== 'undefined' && userDisplayName) userDisplayName.textContent = savedName;
-      if (typeof hideCreateProfile === 'function') hideCreateProfile();
-      // ✅ NOW safe to resolve — profile definitely exists in Firestore
-      if (typeof resolvePendingAction === 'function') resolvePendingAction();
-    }, 700);
-    
-    } catch (error) {
-      console.error("Gick inte att spara profilen:", error.message);
-      if (errorMsgEl) {
-         errorMsgEl.innerHTML = "■ " + (error.message || "Database error. Please try again.");
-         errorMsgEl.style.display = 'block';
-      }
-      createProfileSubmitBtn.textContent = "Create";
-      createProfileSubmitBtn.style.pointerEvents = 'auto';
-    }
-  });
-}
-
-// ==========================================
-// ── 3. CHANGE USERNAME LOGIC ──
-// ==========================================
-const changeProfileSubmitBtn = document.getElementById('cp-change-btn'); 
-const changeUsernameInput = document.getElementById('change-username-input'); 
-// Ensure changeUsernameInput exists and is focusable if needed
-if (changeUsernameInput) {
-  if (!changeUsernameInput.hasAttribute('tabindex')) {
-    changeUsernameInput.setAttribute('tabindex', '0');
-  }
-
-  const chUserFirstInteraction = (e) => {
-    // If the field is locked (contenteditable false) or explicitly flagged as locked, do nothing.
-    if (changeUsernameInput.getAttribute('contenteditable') === 'false' || changeUsernameInput.dataset.locked === 'true') return;
-    // If already focused, nothing to do
-    if (document.activeElement === changeUsernameInput) return;
-    // Otherwise focus & place caret
-    focusContentEditableAtEnd(changeUsernameInput);
-  };
-
-  changeUsernameInput.addEventListener('touchstart', chUserFirstInteraction, { passive: true });
-  changeUsernameInput.addEventListener('mousedown', chUserFirstInteraction);
-  changeUsernameInput.addEventListener('click', (e) => {
-    if (changeUsernameInput.getAttribute('contenteditable') === 'false' || changeUsernameInput.dataset.locked === 'true') return;
-    if (document.activeElement !== changeUsernameInput) focusContentEditableAtEnd(changeUsernameInput);
-  });
-}
-
-const changeErrorMsgEl = document.getElementById('cp-error-msg-change');
-const changeInfoText = document.getElementById('cp-change-info'); 
-const changeDefaultPlaceholder = "New username";
-
-function lockOutNameChangeUI() {
-    if (changeUsernameInput) {
-        // Make non-editable and non-interactive
-        changeUsernameInput.setAttribute('contenteditable', 'false');
-        changeUsernameInput.style.pointerEvents = 'none';
-        changeUsernameInput.textContent = changeDefaultPlaceholder;
-        changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
-
-        // Ensure it cannot be focused (remove tabindex), blur if focused,
-        // and mark it so handlers can quickly short-circuit.
-        try {
-          changeUsernameInput.blur();
-        } catch (err) { /* ignore */ }
-        changeUsernameInput.removeAttribute('tabindex');
-        changeUsernameInput.dataset.locked = 'true';
-    }
-    if (changeInfoText) {
-        changeInfoText.textContent = "Username already changed once, sorry!";
-    }
-    if (changeProfileSubmitBtn) {
-        changeProfileSubmitBtn.textContent = "Change";
-        changeProfileSubmitBtn.classList.remove('is-active');
-        changeProfileSubmitBtn.style.pointerEvents = 'none';
-    }
-}
-
-if (changeProfileSubmitBtn && changeUsernameInput) {
-  
-  // 1. Koppla fältet till vår nya gemensamma funktion (samma som för Create!)
-  setupUsernameInput(changeUsernameInput, changeProfileSubmitBtn, changeDefaultPlaceholder);
-
-  // 2. Klick på Change
-  changeProfileSubmitBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-    
-    if (changeErrorMsgEl) {
-        changeErrorMsgEl.style.display = 'none';
-        changeErrorMsgEl.innerHTML = "";
-    }
-
-    let rawName = (changeUsernameInput.textContent || "").replace(/\u00A0/g, ' ').trim();
-    if (rawName === changeDefaultPlaceholder) rawName = "";
-    
-    // -- KÖR DELAD VALIDERING (client-side instant feedback) --
-    let errors = validateUsernameRules(rawName);
-
-    // -- VISA FELMEDDELANDEN --
-    if (errors.length > 0) {
-       if (changeErrorMsgEl) {
-         changeErrorMsgEl.innerHTML = "■ " + errors.join("<br>■ ");
-         changeErrorMsgEl.style.display = 'block';
-       }
-       return; 
-    }
-
-    // -- ALLT GODKÄNT - SPARA (server-side via Cloud Function) --
-    try {
-      changeProfileSubmitBtn.textContent = "Saving...";
-      changeProfileSubmitBtn.style.pointerEvents = 'none';
-
-      const result = await changeUsernameFn({ username: rawName });
-
-      lockOutNameChangeUI();
-
-      setTimeout(() => {
-        const changeModal = document.querySelector('.change-username');
-        if (changeModal) {
-            changeModal.style.transition = 'opacity 200ms ease';
-            changeModal.style.opacity = '0';
-            setTimeout(() => {
-                changeModal.style.display = 'none';
-            }, 200);
-        }
-        const savedName = result.data.username;
-        const uiNameElements = document.querySelectorAll('.player-info.username');
-        uiNameElements.forEach(el => el.textContent = savedName);
-        if (typeof userDisplayName !== 'undefined' && userDisplayName) userDisplayName.textContent = savedName;
-      }, 1000);
-
-    } catch (error) {
-      console.error("Gick inte att spara nya namnet:", error.message);
-      if (changeErrorMsgEl) {
-         changeErrorMsgEl.innerHTML = "■ " + (error.message || "Database error. Please try again.");
-         changeErrorMsgEl.style.display = 'block';
-      }
-      changeProfileSubmitBtn.textContent = "Change";
-      changeProfileSubmitBtn.style.pointerEvents = 'auto';
-    }
-  });
-}
-
-
-
 
 // ────────────────────────────────────── GAME START ──────────────────────────────────────
 // ── GAME-START INFO PANEL ───
