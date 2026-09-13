@@ -359,13 +359,15 @@ createProfileSubmitBtn.addEventListener('click', async (e) => {
 
     // -- ALLT GODKÄNT - SPARA (server-side via Cloud Function) --
 try {
-    createProfileSubmitBtn.textContent = "Saving...";
-    createProfileSubmitBtn.style.pointerEvents = 'none';
+  createProfileSubmitBtn.textContent = "Saving...";
+  createProfileSubmitBtn.style.pointerEvents = 'none';
 
-    const result = await completeProfileFn({
-      username: rawName,
-      profilePicUrl: currentAvatarSrc
-    });
+  console.log("DEBUG: About to call completeProfileFn with:", { username: rawName, profilePicUrl: currentAvatarSrc });
+  const result = await completeProfileFn({
+    username: rawName,
+    profilePicUrl: currentAvatarSrc
+  });
+  console.log("DEBUG: completeProfileFn returned:", result);
 
     // ── NYTT: DON'T call resolvePendingAction yet! ──
     // Instead, set a promise that onAuthStateChanged will resolve
