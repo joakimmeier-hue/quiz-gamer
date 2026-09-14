@@ -189,18 +189,16 @@ function validateEmailAuthInputs() {
   const email = emailAuthEmail.value.trim();
   const password = emailAuthPassword.value;
 
-  // Checks for standard email format (@ and .) + password length >= 6
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isPasswordValid = password.length >= 6;
+  const isValid = isEmailValid && isPasswordValid;
 
-  if (isEmailValid && isPasswordValid) {
-    emailAuthSubmit.classList.remove('is-disabled');
-  } else {
-    emailAuthSubmit.classList.add('is-disabled');
-  }
+  // Sync state with your working .is-active CSS rule
+  emailAuthSubmit.classList.toggle('is-active', isValid);
+  emailAuthSubmit.style.pointerEvents = isValid ? 'auto' : 'none';
 }
 
-// Live validation as the user types or browser autofills
+// Attach listeners for live typing
 emailAuthEmail.addEventListener('input', validateEmailAuthInputs);
 emailAuthPassword.addEventListener('input', validateEmailAuthInputs);
 
@@ -210,10 +208,13 @@ function showEmailAuthModal() {
   emailAuthEmail.value = '';
   emailAuthPassword.value = '';
   emailAuthError.style.display = 'none';
-    // Lock submit button on open until inputs are valid
-  emailAuthSubmit.classList.add('is-disabled');
-    emailAuthModal.style.display = 'flex';
-  // Auto-focus email input so the user can start typing immediately
+
+  // Validate immediately to lock the submit button on modal open
+  validateEmailAuthInputs();
+
+  emailAuthModal.style.display = 'flex';
+
+  // Auto-focus email input so the user can start typing right away
   requestAnimationFrame(() => {
     emailAuthEmail.focus();
   });
