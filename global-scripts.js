@@ -1537,7 +1537,8 @@ const HOVER_SCALE_CLASSES = [
     'merge-google-btn',
     'cancel-merge-btn',
     'eam-submit-btn',
-    'email-auth-toggle-link'
+    'email-auth-toggle-link',
+    'eam-cancel-btn'
 ];
 
 // Klasser som ska skalas upp till 1.08 vid hover (subtil effekt)
@@ -1571,7 +1572,8 @@ const PRESS_SCALE_CLASSES = [
     'gamelvl-btn',
     'merge-google-btn',
     'cancel-merge-btn',
-    'eam-submit-btn'
+    'eam-submit-btn',
+    'eam-cancel-btn'
 ];
 
 const supportsRealHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
