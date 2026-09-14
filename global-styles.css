@@ -13,11 +13,12 @@
 
 /* ———————————— EMAIL AUTH MODAL POPUP ——————————————————————————— */
 /* Fix Webflow default text color on form buttons */
-#email-auth-submit,
+
+/* #email-auth-submit,
 #email-auth-cancel-btn {
   color: #ffffff !important;
   text-decoration: none;
-}
+} */
 
 /* Cancel Button - Always fully active */
 #email-auth-cancel-btn {
@@ -46,11 +47,14 @@
 
 
  /* Base typing state + Autofill state combined */
-.email-auth-modal input {
+
+/* .email-auth-modal input {
     color: #000000 !important;
     -webkit-text-fill-color: #000000 !important;
   /* background-color: #ebeae9 !important; */
-}
+/*} 
+
+*/
 
 /* Chrome/Safari autofill override */
 .email-auth-modal input:-webkit-autofill,
