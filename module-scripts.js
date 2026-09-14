@@ -5,9 +5,12 @@ import {
   GoogleAuthProvider, 
   OAuthProvider,
   signInWithPopup, 
-  sendSignInLinkToEmail,
+  // Delete these 3:
+  /* sendSignInLinkToEmail,
   isSignInWithEmailLink,
-  signInWithEmailLink,
+  signInWithEmailLink, */
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   fetchSignInMethodsForEmail,
   linkWithCredential,
   onAuthStateChanged, 
@@ -125,6 +128,100 @@ function hideLoginModal() {
     }, 250);
   }
 }
+
+// ———————————— MAIL AUTH MODAL POPUP ———————————————————————————
+const emailAuthModal = document.getElementById('email-auth-modal');
+const emailAuthEmail = document.getElementById('email-auth-email');
+const emailAuthPassword = document.getElementById('email-auth-password');
+const emailAuthSubmit = document.getElementById('email-auth-submit');
+const emailAuthTitle = document.getElementById('email-auth-title');
+const emailAuthToggleText = document.getElementById('email-auth-toggle-text');
+const emailAuthToggleLink = document.getElementById('email-auth-toggle-link');
+const emailAuthCancelBtn = document.getElementById('email-auth-cancel-btn');
+const emailAuthError = document.getElementById('email-auth-error');
+
+let emailAuthMode = 'signin'; // or 'create'
+
+function showEmailAuthModal() {
+  emailAuthMode = 'signin';
+  updateEmailAuthUI();
+  emailAuthEmail.value = '';
+  emailAuthPassword.value = '';
+  emailAuthError.style.display = 'none';
+  emailAuthModal.style.display = 'flex';
+}
+
+function updateEmailAuthUI() {
+  if (emailAuthMode === 'signin') {
+    emailAuthTitle.textContent = 'Sign in with Email';
+    emailAuthSubmit.textContent = 'Sign In';
+    emailAuthToggleText.textContent = 'New here?';
+    emailAuthToggleLink.textContent = 'Create an account';
+  } else {
+    emailAuthTitle.textContent = 'Create your account';
+    emailAuthSubmit.textContent = 'Create Account';
+    emailAuthToggleText.textContent = 'Already have an account?';
+    emailAuthToggleLink.textContent = 'Sign in instead';
+  }
+}
+
+document.getElementById('email-login-btn')?.addEventListener('click', showEmailAuthModal);
+
+emailAuthToggleLink.addEventListener('click', (e) => {
+  e.preventDefault();
+  emailAuthMode = emailAuthMode === 'signin' ? 'create' : 'signin';
+  updateEmailAuthUI();
+  emailAuthError.style.display = 'none';
+});
+
+emailAuthCancelBtn.addEventListener('click', () => {
+  emailAuthModal.style.display = 'none';
+});
+
+emailAuthSubmit.addEventListener('click', async () => {
+  const email = emailAuthEmail.value.trim();
+  const password = emailAuthPassword.value;
+  emailAuthError.style.display = 'none';
+
+  if (!email || !password) {
+    emailAuthError.textContent = 'Please fill in both fields.';
+    emailAuthError.style.display = 'block';
+    return;
+  }
+
+  emailAuthSubmit.textContent = emailAuthMode === 'signin' ? 'Signing in...' : 'Creating...';
+  emailAuthSubmit.style.pointerEvents = 'none';
+
+  try {
+    if (emailAuthMode === 'signin') {
+      await signInWithEmailAndPassword(auth, email, password);
+    } else {
+      await createUserWithEmailAndPassword(auth, email, password);
+    }
+    emailAuthModal.style.display = 'none';
+    hideLoginModal();
+    // onAuthStateChanged fires automatically from here, same as your Google/MS flow —
+    // it'll route to showCreateProfile() or resolvePendingAction() exactly as before
+
+  } catch (error) {
+    console.error("Email auth error:", error);
+    if (error.code === 'auth/email-already-in-use') {
+      emailAuthError.textContent = 'This email already has an account. Try continuing with Google or Microsoft instead.';
+    } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+      emailAuthError.textContent = 'Incorrect email or password.';
+    } else if (error.code === 'auth/weak-password') {
+      emailAuthError.textContent = 'Password must be at least 6 characters.';
+    } else if (error.code === 'auth/invalid-email') {
+      emailAuthError.textContent = 'Please enter a valid email address.';
+    } else {
+      emailAuthError.textContent = 'Something went wrong. Please try again.';
+    }
+    emailAuthError.style.display = 'block';
+    emailAuthSubmit.textContent = emailAuthMode === 'signin' ? 'Sign In' : 'Create Account';
+    emailAuthSubmit.style.pointerEvents = 'auto';
+  }
+});
+
 
 // ── LOGIN HANDLER (Popup-Blocker Safe) ──
 async function handleLogin(provider) {
