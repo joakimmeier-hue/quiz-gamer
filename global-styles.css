@@ -49,8 +49,6 @@
   -webkit-text-fill-color: #ffffff !important;
   text-decoration: none;
 }
-
-
 /* Chrome/Safari autofill override */
 .email-auth-modal input:-webkit-autofill,
 .email-auth-modal input:-webkit-autofill:hover, 
@@ -60,7 +58,7 @@
   transition: background-color 5000s ease-in-out 0s;
 }
 
-/* —————————Universal anti-FOUC class ———————— */
+/* ————————— UNIVERSAL ANTI-FOUC CLASS ———————— */
 .fouc-reveal {
   opacity: 0;
   transition: opacity 0.3s ease;
