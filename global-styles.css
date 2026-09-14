@@ -16,25 +16,25 @@
 
 /* Cancel Button - Always fully active */
 #email-auth-cancel-btn {
-  opacity: 1 !important;
+ /*  opacity: 1 !important;
   pointer-events: auto !important;
-  cursor: pointer;
+  cursor: pointer; */
 }
 /* Submit Button Disabled State */
 #email-auth-submit.is-disabled {
-  opacity: 0.4 !important;
+  /* opacity: 0.4 !important; */
   pointer-events: none !important;
-  cursor: not-allowed;
+  /* cursor: not-allowed;
   filter: grayscale(80%);
-  transition: opacity 200ms ease, filter 200ms ease;
+  transition: opacity 200ms ease, filter 200ms ease; */
 }
 /* Submit Button Active State */
 #email-auth-submit {
-  opacity: 1 !important;
-  pointer-events: auto !important;
+   pointer-events: auto !important;
+ /* opacity: 1 !important;
   cursor: pointer;
   filter: grayscale(0%);
-  transition: opacity 200ms ease, filter 200ms ease;
+  transition: opacity 200ms ease, filter 200ms ease; */
 }
 /* 1. Target ONLY actual text/password typing fields (excludes submit inputs) */
 .email-auth-modal input[type="email"],
