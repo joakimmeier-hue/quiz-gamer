@@ -53,18 +53,19 @@
   text-decoration: none;
 }
  */
-/* 1. Unfilled Placeholder Text (Grey) */
+/* 1. Placeholder Text (Grey) */
 #email-auth-email::placeholder,
 #email-auth-password::placeholder {
   color: #9b9b9b !important;
-  opacity: 1 !important; /* Forces Safari/Firefox to respect the exact grey color */
+  -webkit-text-fill-color: #9b9b9b !important; /* Forces Webkit to use grey for the placeholder */
+  opacity: 1 !important; 
 }
 
 /* 2. Actual User Typed Text (Black) */
 #email-auth-email,
 #email-auth-password {
   color: #000000 !important;
-  -webkit-text-fill-color: #000000 !important; /* Overrides Webkit/iOS browser defaults */
+  -webkit-text-fill-color: #000000 !important; 
   background-color: #ffffff !important;
 }
 
