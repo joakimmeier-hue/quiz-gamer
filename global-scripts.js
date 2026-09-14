@@ -1494,7 +1494,7 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('keydown', function(e) {
     if (e.key !== 'Tab') return;
           
-    if (e.target.closest('.form-block-contact')) {
+    if (e.target.closest('.form-block-contact, .email-auth-modal')) {
             return; // innuti, gör inget, låt Tab bete sig normalt
         }
         e.preventDefault(); // utanför formuläret: blockera Tab helt
