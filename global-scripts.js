@@ -1529,13 +1529,14 @@ const HOVER_SCALE_CLASSES = [
     'logout-btn',
     'button.i-lobby-back',
     'cp-submit-btn',
-    'merge-google-btn',
-    'cancel-merge-btn',
     'profile-pic-option',
     'current-profile-pic',
     'login-modal-btn',
     'game-level',
-    'gamelvl-btn'
+    'gamelvl-btn',
+    'merge-google-btn',
+    'cancel-merge-btn',
+    'eam-submit-btn'
 ];
 
 // Klasser som ska skalas upp till 1.08 vid hover (subtil effekt)
@@ -1561,14 +1562,15 @@ const PRESS_SCALE_CLASSES = [
     'logout-btn',
     'button.i-lobby-back',
     'cp-submit-btn',
-    'merge-google-btn',
-    'cancel-merge-btn',
     'profile-pic-option',
     'current-profile-pic',
     'login-modal-btn',
     'dropdown-toggle-lvl',
     'game-level',
-    'gamelvl-btn'
+    'gamelvl-btn',
+    'merge-google-btn',
+    'cancel-merge-btn',
+    'eam-submit-btn'
 ];
 
 const supportsRealHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
