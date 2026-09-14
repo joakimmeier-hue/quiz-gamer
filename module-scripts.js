@@ -382,9 +382,6 @@ try {
     // After Cloud Function returns successfully
 console.log("Cloud function succeeded. Waiting for Firestore sync...");
 
-// Wait a bit for Firestore to sync, then manually check
-await new Promise(resolve => setTimeout(resolve, 100));
-
 // Force a Firestore read to ensure data is there
 const freshUserDoc = await getDoc(doc(db, "users", currentUser.uid));
 console.log("Fresh user doc exists:", freshUserDoc.exists());
@@ -398,8 +395,7 @@ if (typeof loadUserData === 'function' && currentUser) {
       await loadUserData(currentUser.uid);
     }
 
-    setTimeout(async () => {
-      createProfileSubmitBtn.textContent = "Create";
+  createProfileSubmitBtn.textContent = "Create";
   createProfileSubmitBtn.style.pointerEvents = 'auto';
   
   const savedName = result.data.username;
@@ -412,7 +408,6 @@ if (typeof loadUserData === 'function' && currentUser) {
     const currentAvatarSrc = document.querySelector('.current-profile-pic')?.src || "";
     await saveUserAvatar(currentAvatarSrc);
     console.log("Avatar saved to Firestore, waiting before reload...");
-    await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms for Firestore sync
   }
   
  // NOW load fresh data from Firestore
@@ -424,7 +419,6 @@ if (typeof loadUserData === 'function' && currentUser) {
   if (typeof hideCreateProfile === 'function') hideCreateProfile();
   // ✅ NOW safe to resolve — profile definitely exists in Firestore
   if (typeof resolvePendingAction === 'function') resolvePendingAction();
-  }, 700);
     
     } catch (error) {
       console.error("Gick inte att spara profilen:", error.message);
@@ -999,21 +993,22 @@ async function loadUserData(uid) {
    const currentAvatars = document.querySelectorAll('.current-profile-pic');
    const defaultAvatar = "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a43d799e6705e122388ffdc_ppic0.svg";
    
+   // 🆕 Paint instantly from cache, before the network call even starts
+  const cached = localStorage.getItem('cachedAvatar_' + uid);
+  if (cached && currentAvatars.length > 0) {
+    currentAvatars.forEach(img => img.src = cached);
+  }
+
    try {
-     const userDocRef = doc(db, "users", uid);
-     const userDoc = await getDoc(userDocRef);
-     
-     if (userDoc.exists()) {
-       const data = userDoc.data();
-       
-       // 1. HANTERA PROFILBILD FÖR EXISTERANDE ANVÄNDARE
-       if (currentAvatars.length > 0) {
-         if (data.profilePicUrl) {
-           currentAvatars.forEach(img => img.src = data.profilePicUrl);
-         } else {
-           currentAvatars.forEach(img => img.src = defaultAvatar);
-         }
-       }
+    const userDocRef = doc(db, "users", uid);
+    const userDoc = await getDoc(userDocRef);
+    if (userDoc.exists()) {
+      const data = userDoc.data();
+      if (currentAvatars.length > 0) {
+        const finalSrc = data.profilePicUrl || defaultAvatar;
+        currentAvatars.forEach(img => img.src = finalSrc);
+        if (data.profilePicUrl) localStorage.setItem('cachedAvatar_' + uid, data.profilePicUrl); // keep cache fresh
+        }
        
        // Uppdatera resten av UI med sparad data
        if (userLevelEl) userLevelEl.textContent = "Level " + (data.level || 1);
@@ -1032,7 +1027,7 @@ async function loadUserData(uid) {
            lockOutNameChangeUI(); // Låser UI:t (funktionen skapar vi längre ner)
        }
 
-     } else {
+    } else {
       // 2. HELT NY SPELARE
       if (currentAvatars.length > 0) {
       currentAvatars.forEach(img => img.src = defaultAvatar);
@@ -1053,19 +1048,16 @@ async function loadUserData(uid) {
 
 // SPARA PROFILBILD
   async function saveUserAvatar(avatarUrl) {
-    if (!currentUser) return;
-    try {
-      const userDocRef = doc(db, "users", currentUser.uid);
-      await setDoc(userDocRef, { 
-        profilePicUrl: avatarUrl,
-        updatedAt: new Date()
-      }, { merge: true });
-      
-      console.log("Profile picture successfully saved!");
-    } catch (error) {
-      console.error("Failed to save profile picture to database:", error);
-    }
+  if (!currentUser) return;
+  try {
+    const userDocRef = doc(db, "users", currentUser.uid);
+    await setDoc(userDocRef, { profilePicUrl: avatarUrl, updatedAt: new Date() }, { merge: true });
+    localStorage.setItem('cachedAvatar_' + currentUser.uid, avatarUrl); // 🆕
+    console.log("Profile picture successfully saved!");
+  } catch (error) {
+    console.error("Failed to save profile picture to database:", error);
   }
+}
 
   // ── FIREBASE AUTH OBSERVER ── & ── INCOMPLETE ACCOUNT RECOVERY ──
 // ── UPDATE onAuthStateChanged to RESOLVE when profile is complete ──
