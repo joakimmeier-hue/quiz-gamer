@@ -16,16 +16,16 @@
 
 /* Submit Button Disabled State */
 #email-auth-submit.is-disabled {
-  /*pointer-events: none !important;
-  opacity: 0.4 !important; 
+  pointer-events: none !important;
+  /*opacity: 0.4 !important; 
   cursor: not-allowed;
   filter: grayscale(80%);
   transition: opacity 200ms ease, filter 200ms ease; */
 }
 /* Submit Button Active State */
 #email-auth-submit {
-   /*pointer-events: auto !important;
-  opacity: 1 !important;
+   pointer-events: auto !important;
+  /*opacity: 1 !important;
   cursor: pointer;
   filter: grayscale(0%);
   transition: opacity 200ms ease, filter 200ms ease; */
