@@ -165,6 +165,12 @@ if (error.code === 'auth/account-exists-with-different-credential') {
       </div>
     `;
     document.body.appendChild(mergeDiv);
+    document.body.appendChild(mergeDiv);
+
+// 🆕 These buttons didn't exist when initHoverScale/initPressScale ran at page load —
+// re-run them now, scoped to just these two classes
+initHoverScale(['merge-google-btn', 'cancel-merge-btn'], 'js-hover-scale');
+initPressScale(['merge-google-btn', 'cancel-merge-btn'], 'js-press-scale');
 
     // 2. Handle Google Verification Click
     document.getElementById('merge-google-btn').addEventListener('click', async () => {
