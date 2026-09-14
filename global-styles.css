@@ -44,12 +44,13 @@
   transition: opacity 200ms ease, filter 200ms ease;
 }
 
-/* Base typing state + Autofill state combined */
-.email-auth-modal input {
-  /* color: #000000 !important; */
-  -webkit-text-fill-color: #000000 !important;
-  /* background-color: #ebeae9 !important; */
-}
+
+ /* Base typing state + Autofill state combined */
+/* .email-auth-modal input {
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+  background-color: #ebeae9 !important;
+} */
 
 /* Chrome/Safari autofill override */
 .email-auth-modal input:-webkit-autofill,
