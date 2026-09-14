@@ -140,12 +140,15 @@ window.addEventListener('keydown', function(e) {
 
   const isInsideModal = e.target.closest('#email-auth-modal');
 
-  // 1. Handle submission on Enter key press inside input fields
-  if (e.key === 'Enter' && isInsideModal) {
-    e.preventDefault();
-    document.getElementById('email-auth-submit')?.click();
-    return;
+  // Inside the keyboard listener:
+if (e.key === 'Enter' && isInsideModal) {
+  e.preventDefault();
+  // Only click if submit button is NOT disabled
+  if (!emailAuthSubmit.classList.contains('is-disabled')) {
+    emailAuthSubmit.click();
   }
+  return;
+}
 
   // 2. Close modal on Escape key press
   if (e.key === 'Escape') {
@@ -181,13 +184,35 @@ const emailAuthError = document.getElementById('email-auth-error');
 
 let emailAuthMode = 'signin'; // or 'create'
 
+// ── EMAIL AUTH VALIDATION LOGIC ──
+function validateEmailAuthInputs() {
+  const email = emailAuthEmail.value.trim();
+  const password = emailAuthPassword.value;
+
+  // Checks for standard email format (@ and .) + password length >= 6
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isPasswordValid = password.length >= 6;
+
+  if (isEmailValid && isPasswordValid) {
+    emailAuthSubmit.classList.remove('is-disabled');
+  } else {
+    emailAuthSubmit.classList.add('is-disabled');
+  }
+}
+
+// Live validation as the user types or browser autofills
+emailAuthEmail.addEventListener('input', validateEmailAuthInputs);
+emailAuthPassword.addEventListener('input', validateEmailAuthInputs);
+
 function showEmailAuthModal() {
   emailAuthMode = 'signin';
   updateEmailAuthUI();
   emailAuthEmail.value = '';
   emailAuthPassword.value = '';
   emailAuthError.style.display = 'none';
-  emailAuthModal.style.display = 'flex';
+    // Lock submit button on open until inputs are valid
+  emailAuthSubmit.classList.add('is-disabled');
+    emailAuthModal.style.display = 'flex';
   // Auto-focus email input so the user can start typing immediately
   requestAnimationFrame(() => {
     emailAuthEmail.focus();
