@@ -47,7 +47,6 @@
 /* Base typing state + Autofill state combined */
 .email-auth-modal input {
   /* color: #000000 !important; */
-
   -webkit-text-fill-color: #000000 !important;
   /* background-color: #ebeae9 !important; */
 }
