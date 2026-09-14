@@ -302,7 +302,6 @@ a.button-link:hover {
     background-color: var(--gold-dark, #47391c);
     transition: background-color 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955),
                 color 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955),
-                scale 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955);
 }
 .cp-submit-btn.is-active, .eam-submit-btn.is-active {
     color: var(--white-1, #ffffff);
