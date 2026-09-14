@@ -132,6 +132,7 @@ function hideLoginModal() {
 // ── ISOLATE EMAIL AUTH MODAL FROM GLOBAL SHORTCUTS (.email-auth-modal) ──
 window.addEventListener('keydown', function(e) {
   const modal = document.getElementById('email-auth-modal');
+  const emailAuthSubmit = document.getElementById('email-auth-submit');
   
   // Check if modal exists and is currently displayed
   if (!modal || modal.style.display === 'none' || getComputedStyle(modal).display === 'none') {
@@ -140,19 +141,22 @@ window.addEventListener('keydown', function(e) {
 
   const isInsideModal = e.target.closest('#email-auth-modal');
 
-  // Inside the keyboard listener:
-if (e.key === 'Enter' && isInsideModal) {
-  e.preventDefault();
-  // Only click if submit button is NOT disabled
-  if (!emailAuthSubmit.classList.contains('is-disabled')) {
-    emailAuthSubmit.click();
+  // 1. Completely hijack the Enter key
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    e.stopPropagation(); // CRITICAL: Completely kills the event so it never reaches the game
+
+    // Only click if submit button has your valid 'is-active' class
+    if (emailAuthSubmit && emailAuthSubmit.classList.contains('is-active')) {
+      emailAuthSubmit.click();
+    }
+    return;
   }
-  return;
-}
 
   // 2. Close modal on Escape key press
   if (e.key === 'Escape') {
     e.preventDefault();
+    e.stopPropagation(); // Kill the event here too just in case
     document.getElementById('email-auth-cancel-btn')?.click();
     return;
   }
