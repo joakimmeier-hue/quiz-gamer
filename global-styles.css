@@ -54,7 +54,7 @@
 }
 
 /* 2. Force White Text on Submit & Cancel Buttons (overrides webkit fill) */
-#email-auth-submit,
+/* #email-auth-submit, */
 #email-auth-cancel-btn {
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
