@@ -14,7 +14,6 @@
 /* ———————————— EMAIL AUTH MODAL POPUP ——————————————————————————— */
 /* Fix Webflow default text color on form buttons */
 
-
 /* #email-auth-submit.is-disabled {
   pointer-events: none !important;
   opacity: 0.4 !important; 
@@ -31,21 +30,11 @@
 }
  */
 
-.eam-submit-btn {
-    color: var(--grey-text, #9b9b9b);
-    background-color: var(--gold-dark, #47391c);
-    transition: background-color 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955),
-                color 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955),
-}
-.eam-submit-btn.is-active {
-    color: var(--white-1, #ffffff);
-    background-color: var(--gold, #947434);
-} 
-
 /* 1. Target ONLY actual text/password typing fields (excludes submit inputs) */
-/* .email-auth-modal input[type="email"],
-.email-auth-modal input[type="password"],
-.email-auth-modal input[type="text"] {
+/*  
+  .email-auth-modal input[type="email"],
+  .email-auth-modal input[type="password"],
+  .email-auth-modal input[type="text"] {
   color: #000000 !important;
   -webkit-text-fill-color: #000000 !important;
 }
@@ -64,7 +53,31 @@
   text-decoration: none;
 }
  */
+/* 1. Unfilled Placeholder Text (Grey) */
+#email-auth-email::placeholder,
+#email-auth-password::placeholder {
+  color: #9b9b9b !important;
+  opacity: 1 !important; /* Forces Safari/Firefox to respect the exact grey color */
+}
 
+/* 2. Actual User Typed Text (Black) */
+#email-auth-email,
+#email-auth-password {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important; /* Overrides Webkit/iOS browser defaults */
+  background-color: #ffffff !important;
+}
+
+.eam-submit-btn {
+    color: var(--grey-text, #9b9b9b);
+    background-color: var(--gold-dark, #47391c);
+    transition: background-color 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955),
+                color 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955),
+}
+.eam-submit-btn.is-active {
+    color: var(--white-1, #ffffff);
+    background-color: var(--gold, #947434);
+} 
 
 /* ————————— UNIVERSAL ANTI-FOUC CLASS ———————— */
 .fouc-reveal {
