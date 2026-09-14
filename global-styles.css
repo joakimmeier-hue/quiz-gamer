@@ -16,8 +16,8 @@
 .email-auth-modal input:-webkit-autofill:hover, 
 .email-auth-modal input:-webkit-autofill:focus,
 .email-auth-modal input:-webkit-autofill-previewed {
-  -webkit-text-fill-color: #ffffff !important;
-  -webkit-box-shadow: 0 0 0px 1000px #2b2b2b inset !important;
+  -webkit-text-fill-color: #000000 !important;
+  -webkit-box-shadow: 0 0 0px 1000px #3b3b3a inset !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 
