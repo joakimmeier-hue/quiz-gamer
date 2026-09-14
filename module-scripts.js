@@ -253,12 +253,11 @@ function hideCreateProfile() {
       if (createProfileEl.style.opacity === '0') {
         createProfileEl.style.display = 'none';
 
-        // 🆕 RESET the global avatar so next user gets default
         window.selectedOnboardingAvatar = null;
-         // 🆕 RESET ALL AVATAR IMAGES IN DOM back to default
         const defaultAvatar = "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a43d799e6705e122388ffdc_ppic0.svg";
-        const currentAvatars = document.querySelectorAll('.current-profile-pic');
-        currentAvatars.forEach(img => img.src = defaultAvatar);
+        // 🔧 scoped to the modal only — not the whole page
+        const modalAvatars = createProfileEl.querySelectorAll('.current-profile-pic');
+        modalAvatars.forEach(img => img.src = defaultAvatar);
 
        // Återställ fältet till placeholder för nästa användare
         if (typeof createUsernameInput !== 'undefined' && createUsernameInput) {
