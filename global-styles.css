@@ -13,17 +13,17 @@
 
 /* Base typing state + Autofill state combined */
 .email-auth-modal input {
-  color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important;
-  background-color: #3b3b3a !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  background-color: #f0efef !important;
 }
 
 /* Chrome/Safari autofill override */
 .email-auth-modal input:-webkit-autofill,
 .email-auth-modal input:-webkit-autofill:hover, 
 .email-auth-modal input:-webkit-autofill:focus {
-  -webkit-text-fill-color: #ffffff !important;
-  -webkit-box-shadow: 0 0 0px 1000px #3b3b3a inset !important;
+  -webkit-text-fill-color: #000000 !important;
+  -webkit-box-shadow: 0 0 0px 1000px #858382 inset !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 
