@@ -11,13 +11,19 @@
   --dark-grey: #181717;
 }
 
-/* Direct targeting for autofilled email and password inputs */
+/* Base typing state + Autofill state combined */
+.email-auth-modal input {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background-color: #3b3b3a !important;
+}
+
+/* Chrome/Safari autofill override */
 .email-auth-modal input:-webkit-autofill,
 .email-auth-modal input:-webkit-autofill:hover, 
-.email-auth-modal input:-webkit-autofill:focus
- {
-  -webkit-text-fill-color: #d45757 !important;
-  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+.email-auth-modal input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #ffffff !important;
+  -webkit-box-shadow: 0 0 0px 1000px #3b3b3a inset !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 
