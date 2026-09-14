@@ -1536,7 +1536,8 @@ const HOVER_SCALE_CLASSES = [
     'gamelvl-btn',
     'merge-google-btn',
     'cancel-merge-btn',
-    'eam-submit-btn'
+    'eam-submit-btn',
+    'email-auth-toggle-link'
 ];
 
 // Klasser som ska skalas upp till 1.08 vid hover (subtil effekt)
