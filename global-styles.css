@@ -11,12 +11,16 @@
   --dark-grey: #181717;
 }
 
-/* SUGGESTION AND AUTOFILL TEXT- Only targets inputs located inside .email-auth-modal */
-.email-auth-modal input:-webkit-autofill,
-.email-auth-modal input:-webkit-autofill:hover, 
-.email-auth-modal input:-webkit-autofill:focus,
-.email-auth-modal input:-webkit-autofill-previewed {
-  -webkit-text-fill-color: #000000 !important;
+/* Targets inputs inside .email-auth-modal OR .email-auth-password */
+.email-auth-email input:-webkit-autofill,
+.email-auth-password input:-webkit-autofill,
+.email-auth-email input:-webkit-autofill:hover, 
+.email-auth-password input:-webkit-autofill:hover,
+.email-auth-email input:-webkit-autofill:focus,
+.email-auth-password input:-webkit-autofill:focus,
+.email-auth-email input:-webkit-autofill-previewed,
+.email-auth-password input:-webkit-autofill-previewed {
+  -webkit-text-fill-color: #ffffff !important;
   -webkit-box-shadow: 0 0 0px 1000px #3b3b3a inset !important;
   transition: background-color 5000s ease-in-out 0s;
 }
