@@ -168,7 +168,7 @@ window.addEventListener('keydown', function(e) {
   e.stopPropagation();
 }, true); // 'true' = Capture phase (intercepts keys before any other listeners)
 
-// ———————————— MAIL AUTH MODAL POPUP ———————————————————————————
+// ———————————— EMAIL AUTH MODAL POPUP ———————————————————————————
 const emailAuthModal = document.getElementById('email-auth-modal');
 const emailAuthEmail = document.getElementById('email-auth-email');
 const emailAuthPassword = document.getElementById('email-auth-password');
