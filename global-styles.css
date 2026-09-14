@@ -14,24 +14,18 @@
 /* ———————————— EMAIL AUTH MODAL POPUP ——————————————————————————— */
 /* Fix Webflow default text color on form buttons */
 
-/* Cancel Button - Always fully active */
-#email-auth-cancel-btn {
- /*  opacity: 1 !important;
-  pointer-events: auto !important;
-  cursor: pointer; */
-}
 /* Submit Button Disabled State */
 #email-auth-submit.is-disabled {
-  /* opacity: 0.4 !important; */
-  pointer-events: none !important;
-  /* cursor: not-allowed;
+  /*pointer-events: none !important;
+  opacity: 0.4 !important; 
+  cursor: not-allowed;
   filter: grayscale(80%);
   transition: opacity 200ms ease, filter 200ms ease; */
 }
 /* Submit Button Active State */
 #email-auth-submit {
-   pointer-events: auto !important;
- /* opacity: 1 !important;
+   /*pointer-events: auto !important;
+  opacity: 1 !important;
   cursor: pointer;
   filter: grayscale(0%);
   transition: opacity 200ms ease, filter 200ms ease; */
@@ -53,7 +47,7 @@
   transition: background-color 5000s ease-in-out 0s;
 }
 
-/* 2. Force White Text on Submit & Cancel Buttons (overrides webkit fill) */
+/* 2. Force White Text on Cancel Buttons (overrides webkit fill) */
 /* #email-auth-submit, */
 #email-auth-cancel-btn {
   color: #ffffff !important;
