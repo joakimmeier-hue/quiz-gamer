@@ -143,6 +143,7 @@ const emailAuthError = document.getElementById('email-auth-error');
 let emailAuthMode = 'signin'; // or 'create'
 
 function showEmailAuthModal() {
+  console.log("email btn clicked")
   emailAuthMode = 'signin';
   updateEmailAuthUI();
   emailAuthEmail.value = '';
