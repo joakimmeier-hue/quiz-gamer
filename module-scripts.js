@@ -129,6 +129,45 @@ function hideLoginModal() {
   }
 }
 
+// ── ISOLATE EMAIL AUTH MODAL FROM GLOBAL SHORTCUTS (.email-auth-modal) ──
+window.addEventListener('keydown', function(e) {
+  const modal = document.getElementById('email-auth-modal');
+  
+  // Check if modal exists and is currently displayed
+  if (!modal || modal.style.display === 'none' || getComputedStyle(modal).display === 'none') {
+    return; // Modal closed: do nothing, let all other page shortcuts run normal
+  }
+
+  const isInsideModal = e.target.closest('#email-auth-modal');
+
+  // 1. Handle submission on Enter key press inside input fields
+  if (e.key === 'Enter' && isInsideModal) {
+    e.preventDefault();
+    document.getElementById('email-auth-submit')?.click();
+    return;
+  }
+
+  // 2. Close modal on Escape key press
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    document.getElementById('email-auth-cancel-btn')?.click();
+    return;
+  }
+
+  // 3. Allow standard typing keys and Tabbing ONLY inside the modal fields
+  if (isInsideModal) {
+    // Let standard text editing, navigation, and Tab work normally
+    if (e.key === 'Tab' || e.key === 'Backspace' || e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key.length === 1) {
+      e.stopPropagation(); // Stops external game/page shortcuts from capturing keystrokes
+      return;
+    }
+  }
+
+  // 4. Block all other global keys (spacebars, game hotkeys, page scrolling) while modal is open
+  e.preventDefault();
+  e.stopPropagation();
+}, true); // 'true' = Capture phase (intercepts keys before any other listeners)
+
 // ———————————— MAIL AUTH MODAL POPUP ———————————————————————————
 const emailAuthModal = document.getElementById('email-auth-modal');
 const emailAuthEmail = document.getElementById('email-auth-email');
@@ -143,13 +182,16 @@ const emailAuthError = document.getElementById('email-auth-error');
 let emailAuthMode = 'signin'; // or 'create'
 
 function showEmailAuthModal() {
-  console.log("email btn clicked")
   emailAuthMode = 'signin';
   updateEmailAuthUI();
   emailAuthEmail.value = '';
   emailAuthPassword.value = '';
   emailAuthError.style.display = 'none';
   emailAuthModal.style.display = 'flex';
+  // Auto-focus email input so the user can start typing immediately
+  requestAnimationFrame(() => {
+    emailAuthEmail.focus();
+  });
 }
 
 function updateEmailAuthUI() {
