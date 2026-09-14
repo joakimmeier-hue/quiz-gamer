@@ -31,7 +31,7 @@
   transition: opacity 200ms ease, filter 200ms ease; */
 }
 
-.eam-submit-btn {
+/* .eam-submit-btn {
     color: var(--grey-text, #9b9b9b);
     background-color: var(--gold-dark, #47391c);
     transition: background-color 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955),
@@ -40,7 +40,7 @@
 .eam-submit-btn.is-active {
     color: var(--white-1, #ffffff);
     background-color: var(--gold, #947434);
-}
+} */
 
 
 /* 1. Target ONLY actual text/password typing fields (excludes submit inputs) */
