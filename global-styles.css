@@ -20,8 +20,8 @@
 .email-auth-password input:-webkit-autofill:focus,
 .email-auth-email input:-webkit-autofill-previewed,
 .email-auth-password input:-webkit-autofill-previewed {
-  -webkit-text-fill-color: #ffffff !important;
-  -webkit-box-shadow: 0 0 0px 1000px #3b3b3a inset !important;
+  -webkit-text-fill-color: #af1919 !important;
+  -webkit-box-shadow: 0 0 0px 1000px #7ec200 inset !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 
