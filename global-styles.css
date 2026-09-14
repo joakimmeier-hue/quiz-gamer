@@ -11,17 +11,15 @@
   --dark-grey: #181717;
 }
 
-/* Targets inputs inside .email-auth-modal OR .email-auth-password */
-.email-auth-email input:-webkit-autofill,
-.email-auth-password input:-webkit-autofill,
-.email-auth-email input:-webkit-autofill:hover, 
-.email-auth-password input:-webkit-autofill:hover,
-.email-auth-email input:-webkit-autofill:focus,
-.email-auth-password input:-webkit-autofill:focus,
-.email-auth-email input:-webkit-autofill-previewed,
-.email-auth-password input:-webkit-autofill-previewed {
-  -webkit-text-fill-color: #af1919 !important;
-  -webkit-box-shadow: 0 0 0px 1000px #7ec200 inset !important;
+/* Direct targeting for autofilled email and password inputs */
+input.email-auth-email:-webkit-autofill,
+input.email-auth-email:-webkit-autofill:hover, 
+input.email-auth-email:-webkit-autofill:focus,
+input.email-auth-password:-webkit-autofill,
+input.email-auth-password:-webkit-autofill:hover, 
+input.email-auth-password:-webkit-autofill:focus {
+  -webkit-text-fill-color: #ffffff !important;
+  -webkit-box-shadow: 0 0 0px 1000px #3b3b3a inset !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 
