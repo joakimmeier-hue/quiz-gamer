@@ -1513,7 +1513,7 @@ const HOVER_SCALE_CLASSES = [
     'cp-exit',
     'games-link-block',
     'link-to-lobby',
-    
+    'q-logo',
     'burger-links',
     'fcp-link',
     'fat-cat-logo',
