@@ -17,7 +17,7 @@
 .email-auth-modal input:-webkit-autofill:focus
  {
   -webkit-text-fill-color: #000000 !important;
-  -webkit-box-shadow: 0 0 0px 1000px #bbb7b5 inset !important;
+  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 
