@@ -1536,7 +1536,7 @@ const HOVER_SCALE_CLASSES = [
     'gamelvl-btn',
     'merge-google-btn',
     'cancel-merge-btn',
-    /* 'eam-submit-btn', */
+    'eam-submit-btn',
     'email-auth-toggle-link',
     'eam-cancel-btn'
 ];
@@ -1572,7 +1572,7 @@ const PRESS_SCALE_CLASSES = [
     'gamelvl-btn',
     'merge-google-btn',
     'cancel-merge-btn',
-    /* 'eam-submit-btn', */
+    'eam-submit-btn',
     'eam-cancel-btn'
 ];
 
