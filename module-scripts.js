@@ -199,7 +199,9 @@ function validateEmailAuthInputs() {
 
   // Sync state with your working .is-active CSS rule
   emailAuthSubmit.classList.toggle('is-active', isValid);
-  emailAuthSubmit.style.pointerEvents = isValid ? 'auto' : 'none';
+  
+  // Use the native disabled attribute instead of pointer-events
+  emailAuthSubmit.disabled = !isValid; 
 }
 
 // Attach listeners for live typing
@@ -227,12 +229,12 @@ function showEmailAuthModal() {
 function updateEmailAuthUI() {
   if (emailAuthMode === 'signin') {
     emailAuthTitle.textContent = 'Sign in with Email';
-    emailAuthSubmit.textContent = 'Sign In';
+    emailAuthSubmit.value = 'Sign In'; // Use .value for Webflow submit buttons
     emailAuthToggleText.textContent = 'New here?';
     emailAuthToggleLink.textContent = 'Create an account';
   } else {
     emailAuthTitle.textContent = 'Create your account';
-    emailAuthSubmit.textContent = 'Create Account';
+    emailAuthSubmit.value = 'Create Account'; // Use .value for Webflow submit buttons
     emailAuthToggleText.textContent = 'Already have an account?';
     emailAuthToggleLink.textContent = 'Sign in instead';
   }
@@ -251,7 +253,9 @@ emailAuthCancelBtn.addEventListener('click', () => {
   emailAuthModal.style.display = 'none';
 });
 
-emailAuthSubmit.addEventListener('click', async () => {
+emailAuthSubmit.addEventListener('click', async (e) => {
+  e.preventDefault(); // CRITICAL: Stops Webflow's native form submission from reloading the page
+  
   const email = emailAuthEmail.value.trim();
   const password = emailAuthPassword.value;
   emailAuthError.style.display = 'none';
@@ -262,8 +266,8 @@ emailAuthSubmit.addEventListener('click', async () => {
     return;
   }
 
-  emailAuthSubmit.textContent = emailAuthMode === 'signin' ? 'Signing in...' : 'Creating...';
-  emailAuthSubmit.style.pointerEvents = 'none';
+  emailAuthSubmit.value = emailAuthMode === 'signin' ? 'Signing in...' : 'Creating...';
+  emailAuthSubmit.disabled = true; // Lock the button while Firebase processes
 
   try {
     if (emailAuthMode === 'signin') {
@@ -273,8 +277,8 @@ emailAuthSubmit.addEventListener('click', async () => {
     }
     emailAuthModal.style.display = 'none';
     hideLoginModal();
-    // onAuthStateChanged fires automatically from here, same as your Google/MS flow —
-    // it'll route to showCreateProfile() or resolvePendingAction() exactly as before
+    
+    // onAuthStateChanged fires automatically from here...
 
   } catch (error) {
     console.error("Email auth error:", error);
@@ -290,11 +294,12 @@ emailAuthSubmit.addEventListener('click', async () => {
       emailAuthError.textContent = 'Something went wrong. Please try again.';
     }
     emailAuthError.style.display = 'block';
-    emailAuthSubmit.textContent = emailAuthMode === 'signin' ? 'Sign In' : 'Create Account';
-    emailAuthSubmit.style.pointerEvents = 'auto';
+    emailAuthSubmit.value = emailAuthMode === 'signin' ? 'Sign In' : 'Create Account';
+    
+    // Re-enable the button so they can try again
+    emailAuthSubmit.disabled = false; 
   }
 });
-
 
 // ── LOGIN HANDLER (Popup-Blocker Safe) ──
 async function handleLogin(provider) {
