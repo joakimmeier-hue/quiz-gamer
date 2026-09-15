@@ -126,18 +126,20 @@ textarea,
 .w-input,
 .w-select,
 .form-block-contact,
+
 .submit-button {
   user-select: text !important;
   -webkit-user-select: text !important;
-  pointer-events: auto !important;
+  /* pointer-events: auto !important; */
 }
 
-/* Tvinga knappar och inputs att alltid fungera */
+/* Tvinga knappar och inputs att alltid fungera*/
 input, textarea, button, .w-button, #submit-btn-vanilla {
   user-select: text !important;
   -webkit-user-select: text !important;
-  pointer-events: auto !important;
+/*   pointer-events: auto !important; */
 }
+  
 
 /* 1. Avstavning och Mobil-fixar */
 * {
