@@ -264,7 +264,10 @@ emailAuthToggleLink.addEventListener('click', (e) => {
   emailAuthError.style.display = 'none';
 });
 
-emailAuthCancelBtn.addEventListener('click', () => {
+emailAuthCancelBtn.addEventListener('click', function(e) {
+  // 1. This completely stops the browser from trying to submit or validate the form
+  e.preventDefault();
+  
   emailAuthModal.style.display = 'none';
 });
 
