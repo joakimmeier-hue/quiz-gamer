@@ -175,6 +175,21 @@ window.addEventListener('keydown', function(e) {
   e.stopPropagation();
 }, true); // 'true' = Capture phase (intercepts keys before any other listeners)
 
+// ── CLOSE MODAL ON OUTSIDE CLICK ──
+document.getElementById('email-auth-modal')?.addEventListener('click', function(e) {
+  // If the click happened on the modal background, but NOT inside the .cp-container1 box
+  if (!e.target.closest('.cp-container1')) {
+    e.preventDefault(); // Stop any rogue clicks
+    
+    // Trigger the cancel button exactly like the Escape key does
+    const cancelBtn = document.getElementById('email-auth-cancel-btn');
+    if (cancelBtn) {
+      cancelBtn.click();
+    }
+  }
+});
+
+
 // ———————————— EMAIL AUTH MODAL POPUP ———————————————————————————
 const emailAuthModal = document.getElementById('email-auth-modal');
 const emailAuthEmail = document.getElementById('email-auth-email');
