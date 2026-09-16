@@ -942,9 +942,10 @@ window.addEventListener('keydown', (e) => {
         lastActualKeyPressTime = Date.now();
     }
     // Play 'back' sound instantly whenever ESC is pressed to close modals/inventory
-    if (e.key === "Escape") {
+/*     if (e.key === "Escape") {
         playSFX('back');
     }
+ */
 }, true);
 
 function playButtonSoundHandler(e) {
