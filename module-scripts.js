@@ -190,7 +190,7 @@ document.getElementById('email-auth-modal')?.addEventListener('click', function(
 });
 
 
-// ———————————— EMAIL AUTH MODAL POPUP ———————————————————————————
+// ———————————— EMAIL AUTH MODAL POPUP ————————————
 const emailAuthModal = document.getElementById('email-auth-modal');
 const emailAuthEmail = document.getElementById('email-auth-email');
 const emailAuthPassword = document.getElementById('email-auth-password');
@@ -203,128 +203,74 @@ const emailAuthError = document.getElementById('email-auth-error');
 
 let emailAuthMode = 'signin'; // or 'create'
 
-// ── SAFE INITIALIZATION GUARD ──
-if (emailAuthEmail && emailAuthPassword) {
-
-  function validateEmailAuthInputs() {
-    const email = emailAuthEmail.value.trim();
-    const password = emailAuthPassword.value;
-
-    const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    const isPasswordValid = password.length >= 6;
-    const isValid = isEmailValid && isPasswordValid;
-
-    if (emailAuthSubmit) {
-      emailAuthSubmit.classList.toggle('is-active', isValid);
-      emailAuthSubmit.disabled = !isValid; 
-    }
-  }
-
-  // Attach listeners safely
-  emailAuthEmail.addEventListener('input', validateEmailAuthInputs);
-  emailAuthPassword.addEventListener('input', validateEmailAuthInputs);
-}
-
-function showEmailAuthModal() {
-  if (!emailAuthModal) return; // Prevent crashes if called on a page without the modal
-
-  emailAuthMode = 'signin';
-  updateEmailAuthUI();
-
-  if (emailAuthEmail) emailAuthEmail.value = '';
-  if (emailAuthPassword) emailAuthPassword.value = '';
-  if (emailAuthError) emailAuthError.style.display = 'none';
-
-  if (typeof validateEmailAuthInputs === 'function') {
-    validateEmailAuthInputs();
-  }
-
-  emailAuthModal.style.display = 'flex';
-
-  requestAnimationFrame(() => {
-    if (emailAuthEmail) emailAuthEmail.focus();
-  });
-}
-
-function updateEmailAuthUI() {
-  if (!emailAuthTitle || !emailAuthSubmit || !emailAuthToggleText || !emailAuthToggleLink) return;
-
-  if (emailAuthMode === 'signin') {
-    emailAuthTitle.textContent = 'Sign in with Email';
-    emailAuthSubmit.value = 'Sign In';
-    emailAuthToggleText.textContent = 'New here?';
-    emailAuthToggleLink.textContent = 'Create an account';
-  } else {
-    emailAuthTitle.textContent = 'Create your account';
-    emailAuthSubmit.value = 'Create Account';
-    emailAuthToggleText.textContent = 'Already have an account?';
-    emailAuthToggleLink.textContent = 'Sign in instead';
-  }
-}
-
+// Safe modal launcher listener
 document.getElementById('email-login-btn')?.addEventListener('click', showEmailAuthModal);
 
-emailAuthToggleLink.addEventListener('click', (e) => {
-  e.preventDefault();
-  emailAuthMode = emailAuthMode === 'signin' ? 'create' : 'signin';
-  updateEmailAuthUI();
-  emailAuthError.style.display = 'none';
-});
+// ── SAFE MODAL LISTENERS (Only attach if elements exist in DOM) ──
+if (emailAuthModal) {
 
-emailAuthCancelBtn.addEventListener('click', function(e) {
-  // 1. This completely stops the browser from trying to submit or validate the form
-  e.preventDefault();
-  
-  emailAuthModal.style.display = 'none';
-});
+  emailAuthToggleLink?.addEventListener('click', (e) => {
+    e.preventDefault();
+    emailAuthMode = emailAuthMode === 'signin' ? 'create' : 'signin';
+    updateEmailAuthUI();
+    if (emailAuthError) emailAuthError.style.display = 'none';
+  });
 
-emailAuthSubmit.addEventListener('click', async (e) => {
-  e.preventDefault(); // CRITICAL: Stops Webflow's native form submission from reloading the page
-  
-  const email = emailAuthEmail.value.trim();
-  const password = emailAuthPassword.value;
-  emailAuthError.style.display = 'none';
-
-  if (!email || !password) {
-    emailAuthError.textContent = 'Please fill in both fields.';
-    emailAuthError.style.display = 'block';
-    return;
-  }
-
-  emailAuthSubmit.value = emailAuthMode === 'signin' ? 'Signing in...' : 'Creating...';
-  emailAuthSubmit.disabled = true; // Lock the button while Firebase processes
-
-  try {
-    if (emailAuthMode === 'signin') {
-      await signInWithEmailAndPassword(auth, email, password);
-    } else {
-      await createUserWithEmailAndPassword(auth, email, password);
-    }
+  emailAuthCancelBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
     emailAuthModal.style.display = 'none';
-    hideLoginModal();
-    
-    // onAuthStateChanged fires automatically from here...
+  });
 
-  } catch (error) {
-    console.error("Email auth error:", error);
-    if (error.code === 'auth/email-already-in-use') {
-      emailAuthError.textContent = 'This email already has an account. Try continuing with Google or Microsoft instead.';
-    } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
-      emailAuthError.textContent = 'Incorrect email or password.';
-    } else if (error.code === 'auth/weak-password') {
-      emailAuthError.textContent = 'Password must be at least 6 characters.';
-    } else if (error.code === 'auth/invalid-email') {
-      emailAuthError.textContent = 'Please enter a valid email address.';
-    } else {
-      emailAuthError.textContent = 'Something went wrong. Please try again.';
-    }
-    emailAuthError.style.display = 'block';
-    emailAuthSubmit.value = emailAuthMode === 'signin' ? 'Sign In' : 'Create Account';
+  emailAuthSubmit?.addEventListener('click', async (e) => {
+    e.preventDefault();
     
-    // Re-enable the button so they can try again
-    emailAuthSubmit.disabled = false; 
-  }
-});
+    if (!emailAuthEmail || !emailAuthPassword) return;
+
+    const email = emailAuthEmail.value.trim();
+    const password = emailAuthPassword.value;
+    if (emailAuthError) emailAuthError.style.display = 'none';
+
+    if (!email || !password) {
+      if (emailAuthError) {
+        emailAuthError.textContent = 'Please fill in both fields.';
+        emailAuthError.style.display = 'block';
+      }
+      return;
+    }
+
+    emailAuthSubmit.value = emailAuthMode === 'signin' ? 'Signing in...' : 'Creating...';
+    emailAuthSubmit.disabled = true;
+
+    try {
+      if (emailAuthMode === 'signin') {
+        await signInWithEmailAndPassword(auth, email, password);
+      } else {
+        await createUserWithEmailAndPassword(auth, email, password);
+      }
+      emailAuthModal.style.display = 'none';
+      if (typeof hideLoginModal === 'function') hideLoginModal();
+
+    } catch (error) {
+      console.error("Email auth error:", error);
+      if (emailAuthError) {
+        if (error.code === 'auth/email-already-in-use') {
+          emailAuthError.textContent = 'This email already has an account. Try continuing with Google or Microsoft instead.';
+        } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+          emailAuthError.textContent = 'Incorrect email or password.';
+        } else if (error.code === 'auth/weak-password') {
+          emailAuthError.textContent = 'Password must be at least 6 characters.';
+        } else if (error.code === 'auth/invalid-email') {
+          emailAuthError.textContent = 'Please enter a valid email address.';
+        } else {
+          emailAuthError.textContent = 'Something went wrong. Please try again.';
+        }
+        emailAuthError.style.display = 'block';
+      }
+      emailAuthSubmit.value = emailAuthMode === 'signin' ? 'Sign In' : 'Create Account';
+      emailAuthSubmit.disabled = false; 
+    }
+  });
+}
 
 // ── LOGIN HANDLER (Popup-Blocker Safe) ──
 async function handleLogin(provider) {
@@ -333,76 +279,71 @@ async function handleLogin(provider) {
   
   try {
     const result = await signInWithPopup(auth, provider);
-    hideLoginModal();
+    if (typeof hideLoginModal === 'function') hideLoginModal();
         
   } catch (error) {
     console.error("Login error object:", error);
 
-// ── COLLISION DETECTED ──
-if (error.code === 'auth/account-exists-with-different-credential') {
-  const email = error.customData?.email;
-  const pendingCred = OAuthProvider.credentialFromError(error) || GoogleAuthProvider.credentialFromError(error);
+    // ── COLLISION DETECTED ──
+    if (error.code === 'auth/account-exists-with-different-credential') {
+      const email = error.customData?.email;
+      const pendingCred = OAuthProvider.credentialFromError(error) || GoogleAuthProvider.credentialFromError(error);
 
-  if (email && pendingCred) {
-    
-    // 1. Create a dynamic overlay to get a FRESH user click (bypasses popup blockers)
-    const mergeDiv = document.createElement('div');
-    mergeDiv.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; z-index:99999; font-family:"itc bauhaus", sans-serif; backdrop-filter: blur(4px);';
-    
-    mergeDiv.innerHTML = `
-      <div style="padding: 2rem 4rem; text-align:center; max-width:25rem; color:white; border-right: var(--stroke) solid var(--grey-stroke); border-left: var(--stroke) solid var(--grey-stroke);">
-        <h3 style="margin-top:0; margin-bottom: 1rem; font-size: 1.3rem;">Account Already Exists</h3>
-        <p style="margin-bottom:1rem; font-size: 0.9rem; line-height: 1.4;">The email <b>${email}</b> is already registered with another provider.</p>
-        <p style="margin-bottom: 2rem; font-size: 0.9rem; line-height: 1.4;">Please verify your identity with Google to link your accounts.</p>
+      if (email && pendingCred) {
+        const mergeDiv = document.createElement('div');
+        mergeDiv.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; z-index:99999; font-family:"itc bauhaus", sans-serif; backdrop-filter: blur(4px);';
         
-        <button id="merge-google-btn" class="merge-google-btn" style="background:white; color:var(--dark-grey); padding:0.8rem 1rem; border:none; cursor:pointer; width:13rem; font-family: inherit; font-size: 1rem; font-weight: bold;">
-          Verify with Google
-        </button>
-        
-        <button id="cancel-merge-btn" class="cancel-merge-btn" style="background:transparent; color:#fff; padding:0.8rem; border:none; cursor:pointer; margin-top:0.8rem; width:100%; font-family: inherit; font-size: 0.9rem;">
-          Cancel
-        </button>
-      </div>
-    `;
-    document.body.appendChild(mergeDiv);
-    document.body.appendChild(mergeDiv);
+        mergeDiv.innerHTML = `
+          <div style="padding: 2rem 4rem; text-align:center; max-width:25rem; color:white; border-right: var(--stroke) solid var(--grey-stroke); border-left: var(--stroke) solid var(--grey-stroke);">
+            <h3 style="margin-top:0; margin-bottom: 1rem; font-size: 1.3rem;">Account Already Exists</h3>
+            <p style="margin-bottom:1rem; font-size: 0.9rem; line-height: 1.4;">The email <b>${email}</b> is already registered with another provider.</p>
+            <p style="margin-bottom: 2rem; font-size: 0.9rem; line-height: 1.4;">Please verify your identity with Google to link your accounts.</p>
+            
+            <button id="merge-google-btn" class="merge-google-btn" style="background:white; color:var(--dark-grey); padding:0.8rem 1rem; border:none; cursor:pointer; width:13rem; font-family: inherit; font-size: 1rem; font-weight: bold;">
+              Verify with Google
+            </button>
+            
+            <button id="cancel-merge-btn" class="cancel-merge-btn" style="background:transparent; color:#fff; padding:0.8rem; border:none; cursor:pointer; margin-top:0.8rem; width:100%; font-family: inherit; font-size: 0.9rem;">
+              Cancel
+            </button>
+          </div>
+        `;
+        document.body.appendChild(mergeDiv);
 
-// 🆕 These buttons didn't exist when initHoverScale/initPressScale ran at page load —
-// re-run them now, scoped to just these two classes
-initHoverScale(['merge-google-btn', 'cancel-merge-btn'], 'js-hover-scale');
-initPressScale(['merge-google-btn', 'cancel-merge-btn'], 'js-press-scale');
+        if (typeof initHoverScale === 'function') initHoverScale(['merge-google-btn', 'cancel-merge-btn'], 'js-hover-scale');
+        if (typeof initPressScale === 'function') initPressScale(['merge-google-btn', 'cancel-merge-btn'], 'js-press-scale');
 
-    // 2. Handle Google Verification Click
-    document.getElementById('merge-google-btn').addEventListener('click', async () => {
-      document.getElementById('merge-google-btn').innerText = "Verifying...";
-      
-      try {
-        const verifyResult = await signInWithPopup(auth, googleProvider);
-        await linkWithCredential(verifyResult.user, pendingCred);
-        
-        document.body.removeChild(mergeDiv);
-        hideLoginModal();
-        
-        if (typeof window.resolvePendingAction === 'function') {
-            window.resolvePendingAction();
-        }
-      } catch (mergeError) {
-        console.error("Merge error:", mergeError);
-        if (mergeError.code !== 'auth/popup-closed-by-user') {
-           alert("Account linking failed: " + mergeError.message);
-        }
-        // Resets plain text directly—no lost tags!
-        document.getElementById('merge-google-btn').innerText = "Verify with Google";
-      }
-    });
+        // Handle Google Verification Click
+        document.getElementById('merge-google-btn')?.addEventListener('click', async () => {
+          const btn = document.getElementById('merge-google-btn');
+          if (btn) btn.innerText = "Verifying...";
+          
+          try {
+            const verifyResult = await signInWithPopup(auth, googleProvider);
+            await linkWithCredential(verifyResult.user, pendingCred);
+            
+            document.body.removeChild(mergeDiv);
+            if (typeof hideLoginModal === 'function') hideLoginModal();
+            
+            if (typeof window.resolvePendingAction === 'function') {
+              window.resolvePendingAction();
+            }
+          } catch (mergeError) {
+            console.error("Merge error:", mergeError);
+            if (mergeError.code !== 'auth/popup-closed-by-user') {
+              alert("Account linking failed: " + mergeError.message);
+            }
+            if (btn) btn.innerText = "Verify with Google";
+          }
+        });
 
-        // 3. Handle Cancel
-        document.getElementById('cancel-merge-btn').addEventListener('click', () => {
+        // Handle Cancel
+        document.getElementById('cancel-merge-btn')?.addEventListener('click', () => {
           document.body.removeChild(mergeDiv);
         });
 
       } else {
-         alert("Could not extract linking data. Please log in with your original method.");
+        alert("Could not extract linking data. Please log in with your original method.");
       }
     } else if (error.code !== 'auth/popup-closed-by-user') {
       alert("Login failed: " + error.message);
@@ -413,13 +354,12 @@ initPressScale(['merge-google-btn', 'cancel-merge-btn'], 'js-press-scale');
 }
 
 // ── ATTACH EVENT LISTENERS ──
-if (googleLoginBtn) {
+if (typeof googleLoginBtn !== 'undefined' && googleLoginBtn) {
   googleLoginBtn.addEventListener('click', () => handleLogin(googleProvider));
 }
-if (microsoftLoginBtn) {
+if (typeof microsoftLoginBtn !== 'undefined' && microsoftLoginBtn) {
   microsoftLoginBtn.addEventListener('click', () => handleLogin(microsoftProvider));
 }
-
 
 // ── CREATE PROFILE (First-time users) ──
 function showCreateProfile() {
@@ -433,12 +373,9 @@ function showCreateProfile() {
       requestAnimationFrame(() => {
         createProfileEl.style.opacity = '1';
 
-        // Ensure the create input is NOT focused when the modal opens.
-        // This keeps the modal "neutral" until the user actually taps it.
         setTimeout(() => {
           try {
             if (typeof createUsernameInput !== 'undefined' && createUsernameInput) {
-              // blur to guarantee neutral start
               createUsernameInput.blur();
             }
           } catch (err) { /* non-fatal */ }
@@ -448,6 +385,7 @@ function showCreateProfile() {
     });
   }
 }
+
 
 function hideCreateProfile() {
   const createProfileEl = document.getElementById('create-profile') || document.querySelector('.create-profile');
