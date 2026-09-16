@@ -934,33 +934,29 @@ function playSFX(type, vol) {
     }
 }
 
-// Spåra exakt när användaren faktiskt trycker på tangentbordet
+// ── 1. KEYBOARD CONTROLS (Enter, Space, Escape) ──
 let lastActualKeyPressTime = 0;
+
 window.addEventListener('keydown', (e) => {
     if (["Enter", "Escape", " "].includes(e.key)) {
         lastActualKeyPressTime = Date.now();
     }
-}, true);
-// ── POINTER DOWN: Dedicated handler ONLY for .alternative-row ──
-document.addEventListener('pointerdown', (e) => {
-    // Only primary left-click or mobile touch taps (e.button === 0)
-    if (e.button !== 0) return;
 
-    const rowBtn = e.target.closest('.alternative-row');
-    if (rowBtn) {
-        playSFX('qalt');
+    // Play 'back' sound instantly whenever ESC is pressed to close modals/inventory
+    if (e.key === "Escape") {
+        playSFX('back');
     }
-});
+}, true);
 
-// ── POINTER UP: Handles ALL OTHER buttons (skips .alternative-row) ──
-document.addEventListener('pointerup', (e) => {
-    if (e.button !== 0) return;
-
-    const btn = e.target.closest('[class*="play-sfx-"], .profile-pic-option');
+function playButtonSoundHandler(e) {
+    const btn = e.target.closest('[class*="play-sfx-"], .alternative-row, .profile-pic-option');
+    
     if (btn) {
         let type;
         if (btn.classList.contains('profile-pic-option')) {
             type = 'back';
+        } else if (btn.classList.contains('alternative-row')) {
+            type = 'qalt';
         } else {
             const className = Array.from(btn.classList).find(c => c.startsWith('play-sfx-'));
             if (className) {
@@ -969,19 +965,43 @@ document.addEventListener('pointerup', (e) => {
         }
         if (type) playSFX(type);
     }
+}
+
+// ── 2. POINTER DOWN: Triggers INSTANTLY for .alternative-row ──
+document.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return; // Primary click/touch only
+
+    const rowBtn = e.target.closest('.alternative-row');
+    if (rowBtn) {
+        playSFX('qalt');
+    }
 });
 
-// ── CLICK: Handles keyboard navigation (e.g., pressing Enter) ──
+// ── 3. POINTER UP: Handles mouse/touch clicks for profile pics & buttons ──
+document.addEventListener('pointerup', (e) => {
+    if (e.button !== 0) return; // Primary click/touch only
+
+    const btn = e.target.closest('[class*="play-sfx-"], .profile-pic-option');
+    if (btn) {
+        playButtonSoundHandler(e);
+    }
+});
+
+// ── 4. CLICK: Handles Keyboard-triggered clicks (Enter / Space) & Script Clicks ──
 document.addEventListener('click', (e) => {
-    // Cancel real mouse/touch clicks (already handled by pointerdown/pointerup)
-    if (e.isTrusted) return; 
+    // Keyboard clicks (Enter/Space on focused elements) have detail === 0 or pointerType === ""
+    const isKeyboardClick = e.detail === 0 || e.pointerType === "";
 
-    // Cancel fake clicks unless user actually pressed a key recently
-    if (!e.isTrusted && (Date.now() - lastActualKeyPressTime > 100)) return; 
+    if (isKeyboardClick) {
+        playButtonSoundHandler(e);
+        return;
+    }
 
-    playButtonSoundHandler(e);
+    // Handles programmatic script clicks triggered within 100ms of keypress
+    if (!e.isTrusted && (Date.now() - lastActualKeyPressTime < 100)) {
+        playButtonSoundHandler(e);
+    }
 });
-
 
 // ── HUVUDFUNKTION FÖR LJUD-INITIALISERING ──────────────────────
 function initAudio() {
