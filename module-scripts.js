@@ -203,11 +203,65 @@ const emailAuthError = document.getElementById('email-auth-error');
 
 let emailAuthMode = 'signin'; // or 'create'
 
-// Safe modal launcher listener
+// ── 1. HELPER FUNCTIONS (Safe top-level declarations) ──
+function validateEmailAuthInputs() {
+  if (!emailAuthEmail || !emailAuthPassword) return;
+
+  const email = emailAuthEmail.value.trim();
+  const password = emailAuthPassword.value;
+
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isPasswordValid = password.length >= 6;
+  const isValid = isEmailValid && isPasswordValid;
+
+  if (emailAuthSubmit) {
+    emailAuthSubmit.classList.toggle('is-active', isValid);
+    emailAuthSubmit.disabled = !isValid; 
+  }
+}
+
+function updateEmailAuthUI() {
+  if (!emailAuthTitle || !emailAuthSubmit || !emailAuthToggleText || !emailAuthToggleLink) return;
+
+  if (emailAuthMode === 'signin') {
+    emailAuthTitle.textContent = 'Sign in with Email';
+    emailAuthSubmit.value = 'Sign In';
+    emailAuthToggleText.textContent = 'New here?';
+    emailAuthToggleLink.textContent = 'Create an account';
+  } else {
+    emailAuthTitle.textContent = 'Create your account';
+    emailAuthSubmit.value = 'Create Account';
+    emailAuthToggleText.textContent = 'Already have an account?';
+    emailAuthToggleLink.textContent = 'Sign in instead';
+  }
+}
+
+function showEmailAuthModal() {
+  if (!emailAuthModal) return;
+
+  emailAuthMode = 'signin';
+  updateEmailAuthUI();
+
+  if (emailAuthEmail) emailAuthEmail.value = '';
+  if (emailAuthPassword) emailAuthPassword.value = '';
+  if (emailAuthError) emailAuthError.style.display = 'none';
+
+  validateEmailAuthInputs();
+
+  emailAuthModal.style.display = 'flex';
+
+  requestAnimationFrame(() => {
+    if (emailAuthEmail) emailAuthEmail.focus();
+  });
+}
+
+// ── 2. LAUNCHER LISTENER ──
 document.getElementById('email-login-btn')?.addEventListener('click', showEmailAuthModal);
 
-// ── SAFE MODAL LISTENERS (Only attach if elements exist in DOM) ──
+// ── 3. INPUT & MODAL LISTENERS (Safe initialization) ──
 if (emailAuthModal) {
+  emailAuthEmail?.addEventListener('input', validateEmailAuthInputs);
+  emailAuthPassword?.addEventListener('input', validateEmailAuthInputs);
 
   emailAuthToggleLink?.addEventListener('click', (e) => {
     e.preventDefault();
@@ -223,7 +277,6 @@ if (emailAuthModal) {
 
   emailAuthSubmit?.addEventListener('click', async (e) => {
     e.preventDefault();
-    
     if (!emailAuthEmail || !emailAuthPassword) return;
 
     const email = emailAuthEmail.value.trim();
@@ -267,7 +320,7 @@ if (emailAuthModal) {
         emailAuthError.style.display = 'block';
       }
       emailAuthSubmit.value = emailAuthMode === 'signin' ? 'Sign In' : 'Create Account';
-      emailAuthSubmit.disabled = false; 
+      emailAuthSubmit.disabled = false;
     }
   });
 }
