@@ -207,7 +207,7 @@ body .games-grid-clip.is-skewed {
 }
 
 /* ── LJUDKNAPP (Containern) ─── */
-#toggle-audio {
+#toggle-audio-lobby {
   position: relative; 
   display: flex !important;
   justify-content: center;
@@ -221,13 +221,13 @@ body .games-grid-clip.is-skewed {
   pointer-events: none !important;
 }
 
-#toggle-audio.is-visible {
+#toggle-audio-lobby.is-visible {
   opacity: 1 !important;
   pointer-events: auto !important;
 }
 
 /* ── HOVER (Nu använder vi 'scale' egenskapen, inte transform) ── */
-#toggle-audio:hover {
+#toggle-audio-lobby:hover {
   scale: 1.2;
 }
 
@@ -264,7 +264,7 @@ body .games-grid-clip.is-skewed {
 }
 
 /* ── LOGIK ── */
-#toggle-audio:not(.is-muted) .sound-icon-on {
+#toggle-audio-lobby:not(.is-muted) .sound-icon-on {
   opacity: 1 !important;
   pointer-events: auto;
   /* Här kör vi två oberoende animationer. De krockar inte med något annat! */
@@ -273,9 +273,9 @@ body .games-grid-clip.is-skewed {
     iconSwing 4s ease-in-out infinite;
 }
 
-#toggle-audio.is-muted .sound-icon-on { opacity: 0 !important; pointer-events: none; animation: none; }
-#toggle-audio.is-muted .sound-icon-off { opacity: 1 !important; pointer-events: auto; }
-#toggle-audio:not(.is-muted) .sound-icon-off { opacity: 0 !important; pointer-events: none; }
+#toggle-audio-lobby.is-muted .sound-icon-on { opacity: 0 !important; pointer-events: none; animation: none; }
+#toggle-audio-lobby.is-muted .sound-icon-off { opacity: 1 !important; pointer-events: auto; }
+#toggle-audio-lobby:not(.is-muted) .sound-icon-off { opacity: 0 !important; pointer-events: none; }
 
   /* ── NOISE-BILDER (Gör dem osynliga och absolut positionerade) ── */
 .noise-big, 
@@ -293,11 +293,11 @@ body .games-grid-clip.is-skewed {
   100% { opacity: 0; }
 }
 
-#toggle-audio.is-animating .noise-big { 
+#toggle-audio-lobby.is-animating .noise-big { 
   animation: noiseFlash 0.2s ease-in-out 0.1s forwards; 
 }
 
-#toggle-audio.is-animating .noise-small { 
+#toggle-audio-lobby.is-animating .noise-small { 
   animation: noiseFlash 0.2s ease-in-out 0.3s forwards; 
 }
 
