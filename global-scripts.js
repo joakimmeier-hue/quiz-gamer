@@ -941,50 +941,48 @@ window.addEventListener('keydown', (e) => {
         lastActualKeyPressTime = Date.now();
     }
 }, true);
-function playButtonSoundHandler(e) {
-    // Lägg till .profile-pic-option i sökningen här:
-    const btn = e.target.closest('[class*="play-sfx-"], .alternative-row, .profile-pic-option');
-    
+// ── POINTER DOWN: Dedicated handler ONLY for .alternative-row ──
+document.addEventListener('pointerdown', (e) => {
+    // Only primary left-click or mobile touch taps (e.button === 0)
+    if (e.button !== 0) return;
+
+    const rowBtn = e.target.closest('.alternative-row');
+    if (rowBtn) {
+        playSFX('qalt');
+    }
+});
+
+// ── POINTER UP: Handles ALL OTHER buttons (skips .alternative-row) ──
+document.addEventListener('pointerup', (e) => {
+    if (e.button !== 0) return;
+
+    const btn = e.target.closest('[class*="play-sfx-"], .profile-pic-option');
     if (btn) {
         let type;
-        // 1. Kolla om det är ett profilbildsalternativ (Ska ALLTID köra 'back'-ljudet)
         if (btn.classList.contains('profile-pic-option')) {
             type = 'back';
-        } 
-        // 2. Kolla om det är en "alternative-row" (koppla till qalt)
-        else if (btn.classList.contains('alternative-row')) {
-            type = 'qalt';
-        } 
-        // 3. Annars, kolla efter din vanliga play-sfx- klass
-        else {
+        } else {
             const className = Array.from(btn.classList).find(c => c.startsWith('play-sfx-'));
             if (className) {
                 type = className.split('-')[2];
             }
         }
-        // 4. Om vi hittade en typ, spela ljudet
-        if (type) {
-            playSFX(type);
-        }
+        if (type) playSFX(type);
     }
-}
-// 1. POINTER UP: Spelar ljudet vid release (mouse up / touch-up), inte vid nedtryck.
-// Pointer events = mus + touch + penna i ett, ingen separat mobil-hantering behövs.
-document.addEventListener('pointerup', playButtonSoundHandler);
-// 2. CLICK: Tar BARA hand om tangentbords-klick (fejkade klick från dina script)
+});
+
+// ── CLICK: Handles keyboard navigation (e.g., pressing Enter) ──
 document.addEventListener('click', (e) => {
-    // Om det är ett ÄKTA musklick, avbryt! Mousedown ovan har redan spelat ljudet.
-    if (e.isTrusted) {
-        return; 
-    }
-    // Om det är ett FEJKAT klick, men INGEN har rört en tangent nyligen...
-    // Då är det ett spökklick/skip-intro! Avbryt!
-    if (!e.isTrusted && (Date.now() - lastActualKeyPressTime > 100)) {
-        return; 
-    }
-    // Om vi nådde hit: Ett script klickade på knappen, OCH du tryckte precis på Enter. Spela ljud!
+    // Cancel real mouse/touch clicks (already handled by pointerdown/pointerup)
+    if (e.isTrusted) return; 
+
+    // Cancel fake clicks unless user actually pressed a key recently
+    if (!e.isTrusted && (Date.now() - lastActualKeyPressTime > 100)) return; 
+
     playButtonSoundHandler(e);
 });
+
+
 // ── HUVUDFUNKTION FÖR LJUD-INITIALISERING ──────────────────────
 function initAudio() {
     const enterBtn  = document.getElementById('enter-btn-lobby');
@@ -1052,7 +1050,7 @@ function initAudio() {
                 toggleBtn.classList.add('is-visible');
             }, 50);
         }
-// DET ENDA KLICK-EVENTET FÖR TOGGLE-KNAPPEN
+// DET ENDA KLICK-EVENTET FÖR AUDIO TOGGLE LOBBY -KNAPPEN
 toggleBtn.addEventListener('click', (e) => {
     e.preventDefault();
     
