@@ -786,7 +786,7 @@ let isMuted = false;
 // ── FADE LOGIK ────────────────────────────────────────────────────────
 window.forceAudioUnmute = function() {
     if (isMuted) {
-        const toggleBtn = document.getElementById('toggle-audio');
+        const toggleBtn = document.getElementById('toggle-audio-lobby');
         if (toggleBtn) toggleBtn.click(); 
     }
 };
@@ -836,7 +836,7 @@ window.startMusic = function(forceInstant = false) {
 // Rå, central funktion för att tvinga bild och ljud att matcha exakt
 function applyMuteState(muted) {
     isMuted = muted;
-    const toggleBtn = document.getElementById('toggle-audio');
+    const toggleBtn = document.getElementById('toggle-audio-lobby');
     if (toggleBtn) {
         if (muted) {
             toggleBtn.classList.add('is-muted');
@@ -989,7 +989,7 @@ document.addEventListener('click', (e) => {
 function initAudio() {
     const enterBtn  = document.getElementById('enter-btn-lobby');
     const startBtnTopic = document.getElementById('start-btn-' + currentTopicId) || document.getElementById('start-btn-gma');
-    const toggleBtn = document.getElementById('toggle-audio');
+    const toggleBtn = document.getElementById('toggle-audio-lobby');
     
     const fromTopic = sessionStorage.getItem('fromTopic');
     sessionStorage.removeItem('fromTopic');
