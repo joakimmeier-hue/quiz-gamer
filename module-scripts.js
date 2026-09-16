@@ -141,7 +141,7 @@ window.addEventListener('keydown', function(e) {
 
   // GUARD: Prevent crash if e.key is undefined (browser autofill / IME inputs)
   if (!e.key) return;
-  
+
   const isInsideModal = e.target.closest('#email-auth-modal');
 
   // 1. Completely hijack the Enter key
@@ -312,7 +312,7 @@ if (emailAuthModal) {
         if (error.code === 'auth/email-already-in-use') {
           emailAuthError.textContent = 'This email already has an account. Try continuing with Google or Microsoft instead.';
         } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
-          emailAuthError.textContent = 'Incorrect email or password.';
+          emailAuthError.textContent = 'Could not sign in. Check your password, or try continuing with Google or Microsoft if that is how you signed up.';
         } else if (error.code === 'auth/weak-password') {
           emailAuthError.textContent = 'Password must be at least 6 characters.';
         } else if (error.code === 'auth/invalid-email') {
