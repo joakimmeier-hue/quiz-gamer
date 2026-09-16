@@ -203,53 +203,60 @@ const emailAuthError = document.getElementById('email-auth-error');
 
 let emailAuthMode = 'signin'; // or 'create'
 
-// ── EMAIL AUTH VALIDATION LOGIC ──
-function validateEmailAuthInputs() {
-  const email = emailAuthEmail.value.trim();
-  const password = emailAuthPassword.value;
+// ── SAFE INITIALIZATION GUARD ──
+if (emailAuthEmail && emailAuthPassword) {
 
-  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const isPasswordValid = password.length >= 6;
-  const isValid = isEmailValid && isPasswordValid;
+  function validateEmailAuthInputs() {
+    const email = emailAuthEmail.value.trim();
+    const password = emailAuthPassword.value;
 
-  // Sync state with your working .is-active CSS rule
-  emailAuthSubmit.classList.toggle('is-active', isValid);
-  
-  // Use the native disabled attribute instead of pointer-events
-  emailAuthSubmit.disabled = !isValid; 
+    const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const isPasswordValid = password.length >= 6;
+    const isValid = isEmailValid && isPasswordValid;
+
+    if (emailAuthSubmit) {
+      emailAuthSubmit.classList.toggle('is-active', isValid);
+      emailAuthSubmit.disabled = !isValid; 
+    }
+  }
+
+  // Attach listeners safely
+  emailAuthEmail.addEventListener('input', validateEmailAuthInputs);
+  emailAuthPassword.addEventListener('input', validateEmailAuthInputs);
 }
 
-// Attach listeners for live typing
-emailAuthEmail.addEventListener('input', validateEmailAuthInputs);
-emailAuthPassword.addEventListener('input', validateEmailAuthInputs);
-
 function showEmailAuthModal() {
+  if (!emailAuthModal) return; // Prevent crashes if called on a page without the modal
+
   emailAuthMode = 'signin';
   updateEmailAuthUI();
-  emailAuthEmail.value = '';
-  emailAuthPassword.value = '';
-  emailAuthError.style.display = 'none';
 
-  // Validate immediately to lock the submit button on modal open
-  validateEmailAuthInputs();
+  if (emailAuthEmail) emailAuthEmail.value = '';
+  if (emailAuthPassword) emailAuthPassword.value = '';
+  if (emailAuthError) emailAuthError.style.display = 'none';
+
+  if (typeof validateEmailAuthInputs === 'function') {
+    validateEmailAuthInputs();
+  }
 
   emailAuthModal.style.display = 'flex';
 
-  // Auto-focus email input so the user can start typing right away
   requestAnimationFrame(() => {
-    emailAuthEmail.focus();
+    if (emailAuthEmail) emailAuthEmail.focus();
   });
 }
 
 function updateEmailAuthUI() {
+  if (!emailAuthTitle || !emailAuthSubmit || !emailAuthToggleText || !emailAuthToggleLink) return;
+
   if (emailAuthMode === 'signin') {
     emailAuthTitle.textContent = 'Sign in with Email';
-    emailAuthSubmit.value = 'Sign In'; // Use .value for Webflow submit buttons
+    emailAuthSubmit.value = 'Sign In';
     emailAuthToggleText.textContent = 'New here?';
     emailAuthToggleLink.textContent = 'Create an account';
   } else {
     emailAuthTitle.textContent = 'Create your account';
-    emailAuthSubmit.value = 'Create Account'; // Use .value for Webflow submit buttons
+    emailAuthSubmit.value = 'Create Account';
     emailAuthToggleText.textContent = 'Already have an account?';
     emailAuthToggleLink.textContent = 'Sign in instead';
   }
