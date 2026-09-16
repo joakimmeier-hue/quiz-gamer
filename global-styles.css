@@ -67,7 +67,7 @@
   color: #000000 !important;
   -webkit-text-fill-color: #000000 !important; 
   -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
-  transition: background-color 5000s ease-in-out 0s;
+  /* transition: background-color 5000s ease-in-out 0s; */
   background-color: #ffffff !important;
 }
 
