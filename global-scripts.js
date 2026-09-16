@@ -1,3 +1,12 @@
+// PREVENT MIDDLE MOUSE BTN
+// Add this once globally in your app
+document.addEventListener('auxclick', function(e) {
+  // e.button === 1 is Middle Mouse Button
+  if (e.button === 1) {
+    e.preventDefault(); // Prevents links/elements from opening in a new tab/window
+  }
+});
+
 // ROBUST SMOOTH SCROLL TO ELEMENT ID (cancelable)
 // Finds the nearest scrollable ancestor, or null if the page itself scrolls
 function getScrollParent(el) {
@@ -630,6 +639,8 @@ document.addEventListener("DOMContentLoaded", function() {
     // VIKTIGT: Vi lyssnar på 'mousedown' precis som ditt SFX-script! 
     // Då sker båda exakt samtidigt.
     row.addEventListener('mousedown', function(e) {
+      // ONLY respond to primary left-clicks & mobile finger taps (button === 0)
+      if (e.button !== 0) return;
       const currentQuestionWrapper = this.closest('.question-wrapper');
       if (!currentQuestionWrapper) return;
 
