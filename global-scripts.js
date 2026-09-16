@@ -941,7 +941,6 @@ window.addEventListener('keydown', (e) => {
     if (["Enter", "Escape", " "].includes(e.key)) {
         lastActualKeyPressTime = Date.now();
     }
-
     // Play 'back' sound instantly whenever ESC is pressed to close modals/inventory
     if (e.key === "Escape") {
         playSFX('back');
@@ -950,8 +949,7 @@ window.addEventListener('keydown', (e) => {
 
 function playButtonSoundHandler(e) {
     const btn = e.target.closest('[class*="play-sfx-"], .alternative-row, .profile-pic-option');
-    
-    if (btn) {
+        if (btn) {
         let type;
         if (btn.classList.contains('profile-pic-option')) {
             type = 'back';
@@ -966,7 +964,6 @@ function playButtonSoundHandler(e) {
         if (type) playSFX(type);
     }
 }
-
 // ── 2. POINTER DOWN: Triggers INSTANTLY for .alternative-row ──
 document.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return; // Primary click/touch only
@@ -976,7 +973,6 @@ document.addEventListener('pointerdown', (e) => {
         playSFX('qalt');
     }
 });
-
 // ── 3. POINTER UP: Handles mouse/touch clicks for profile pics & buttons ──
 document.addEventListener('pointerup', (e) => {
     if (e.button !== 0) return; // Primary click/touch only
@@ -986,17 +982,14 @@ document.addEventListener('pointerup', (e) => {
         playButtonSoundHandler(e);
     }
 });
-
 // ── 4. CLICK: Handles Keyboard-triggered clicks (Enter / Space) & Script Clicks ──
 document.addEventListener('click', (e) => {
     // Keyboard clicks (Enter/Space on focused elements) have detail === 0 or pointerType === ""
     const isKeyboardClick = e.detail === 0 || e.pointerType === "";
-
     if (isKeyboardClick) {
         playButtonSoundHandler(e);
         return;
     }
-
     // Handles programmatic script clicks triggered within 100ms of keypress
     if (!e.isTrusted && (Date.now() - lastActualKeyPressTime < 100)) {
         playButtonSoundHandler(e);
