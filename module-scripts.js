@@ -139,6 +139,9 @@ window.addEventListener('keydown', function(e) {
     return; // Modal closed: do nothing, let all other page shortcuts run normal
   }
 
+  // GUARD: Prevent crash if e.key is undefined (browser autofill / IME inputs)
+  if (!e.key) return;
+  
   const isInsideModal = e.target.closest('#email-auth-modal');
 
   // 1. Completely hijack the Enter key

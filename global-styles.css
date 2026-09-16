@@ -12,47 +12,6 @@
 }
 
 /* ———————————— EMAIL AUTH MODAL POPUP ——————————————————————————— */
-/* Fix Webflow default text color on form buttons */
-
-/* #email-auth-submit.is-disabled {
-  pointer-events: none !important;
-  opacity: 0.4 !important; 
-  cursor: not-allowed;
-  filter: grayscale(80%);
-  transition: opacity 200ms ease, filter 200ms ease;
-}
-#email-auth-submit {
-   pointer-events: auto !important;
-  opacity: 1 !important;
-  cursor: pointer;
-  filter: grayscale(0%);
-  transition: opacity 200ms ease, filter 200ms ease;
-}
- */
-
-/* 1. Target ONLY actual text/password typing fields (excludes submit inputs) */
-/*  
-  .email-auth-modal input[type="email"],
-  .email-auth-modal input[type="password"],
-  .email-auth-modal input[type="text"] {
-  color: #000000 !important;
-  -webkit-text-fill-color: #000000 !important;
-}
-
-.email-auth-modal input[type="email"]:-webkit-autofill,
-.email-auth-modal input[type="password"]:-webkit-autofill,
-.email-auth-modal input[type="text"]:-webkit-autofill {
-  -webkit-text-fill-color: #000000 !important;
-  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
-  transition: background-color 5000s ease-in-out 0s;
-}
-
-#email-auth-cancel-btn {
-  color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important;
-  text-decoration: none;
-}
- */
 /* 1. Placeholder Text (Grey) */
 #email-auth-email::placeholder,
 #email-auth-password::placeholder {
