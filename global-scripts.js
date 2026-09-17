@@ -985,6 +985,7 @@ document.addEventListener('pointerup', (e) => {
 });
 // ── 4. CLICK: Handles Keyboard-triggered clicks (Enter / Space) & Script Clicks ──
 document.addEventListener('click', (e) => {
+   if (window.isSfxLocked) return;   // ← ny rad
     // Keyboard clicks (Enter/Space on focused elements) have detail === 0 or pointerType === ""
     const isKeyboardClick = e.detail === 0 || e.pointerType === "";
     if (isKeyboardClick) {
@@ -1090,7 +1091,96 @@ toggleBtn.addEventListener('click', (e) => {
 	});
   }
 }
-// ── EVENT LISTENERS (HÄNDELSER) ──────────────────────
+
+
+// SKIP INTRO LOBBY
+(function() {
+  function hideIntro() {
+    const el = document.querySelector('.intro-overlay-grp');
+    if (el) el.style.display = 'none';
+  }
+  function runSkip(isFromBack = false) {
+    sessionStorage.removeItem('skipIntro');
+    hideIntro();
+    let fadeScreen = null;
+    if (!isFromBack) {
+      const savedColor = sessionStorage.getItem('exitColor');
+      const themeColor = document.body.getAttribute('data-theme') === 'light' ? '#ffffff' : '#000000';
+      const bgColor = savedColor || themeColor;
+      fadeScreen = document.createElement('div');
+      fadeScreen.style.cssText = `position:fixed;inset:0;z-index:1000005;background:${bgColor};transition:opacity 0.9s ease;opacity:1;pointer-events:none;`;
+      document.body.appendChild(fadeScreen);
+    }
+      setTimeout(function() {
+      if (window.startMusic) {
+        window.startMusic();
+      }
+      const trigger = document.querySelector('.welcome-text-container');
+      if (trigger) {
+      window.isSfxLocked = true;      // sätt precis innan
+      trigger.click();
+      window.isSfxLocked = false;     // släpp direkt efteråt (synkront, så click-lyssnaren hinner se true)
+  }
+
+      if (window.gsap) gsap.globalTimeline.seek(9999, false);
+      if (fadeScreen) {
+        requestAnimationFrame(() => {
+          fadeScreen.style.opacity = '0';
+        });
+        setTimeout(() => { fadeScreen.remove(); }, 950);
+      }
+    }, 300); 
+  }
+
+  function showBackOverlay() {
+    hideIntro();
+    if (document.getElementById('back-overlay')) return;
+    const themeColor = document.body.getAttribute('data-theme') === 'light' ? '#ffffff' : '#000000';
+    const textColor = document.body.getAttribute('data-theme') === 'light' ? '#000000' : '#ffffff';
+    const overlay = document.createElement('div');
+    overlay.id = 'back-overlay';
+    overlay.style.cssText = `position:fixed;inset:0;z-index:1000000;background:${themeColor};display:flex;align-items:center;justify-content:center;cursor:pointer;transition:opacity 1.0s ease;opacity:1;`;
+    overlay.innerHTML = `<style>@keyframes softBlink {0%,100%{opacity:0;}50%{opacity:1;}}</style>
+      <span style="font-family:'Itc Bauhaus',sans-serif;font-size:1rem;color:${textColor};text-transform:uppercase;letter-spacing:0.08em;animation:softBlink 1.5s ease-in-out infinite;">Click to continue</span>`;
+    
+    const closeOverlay = function(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation(); 
+      }
+      if (document.activeElement && document.activeElement !== document.body) {
+        document.activeElement.blur();
+      }
+      window.removeEventListener('keydown', blockAndClose, true);
+        overlay.style.opacity = '0';
+        setTimeout(function() {
+        overlay.remove();
+        runSkip(true);
+      }, 1000); 
+    };
+    const blockAndClose = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      overlay.click(); 
+    };
+    window.addEventListener('keydown', blockAndClose, { capture: true, once: true });
+    overlay.onclick = closeOverlay;
+    document.body.appendChild(overlay);
+  }
+    if (sessionStorage.getItem('skipIntro') === 'true') {
+    hideIntro();
+    if (document.readyState === 'complete') { runSkip(false); } 
+    else { window.addEventListener('load', function() { runSkip(false); }); }
+  }
+  window.addEventListener('pageshow', function(event) {
+    const navEntry = performance.getEntriesByType('navigation')[0];
+    const isBack = (navEntry && navEntry.type === 'back_forward') || event.persisted;
+    if (isBack) {
+      sessionStorage.removeItem('skipIntro');
+      showBackOverlay();
+    }
+  });
+})();
   
 // ── SFX GRACE PERIOD VID SIDLADDNING & BACKNING ──
 window.addEventListener('pageshow', () => {
