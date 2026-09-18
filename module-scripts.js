@@ -1725,6 +1725,7 @@ document.addEventListener('click', async function(e) {
   }
 });
 
+
 // ──────────── SCORE PAGE: DISPLAY RESULTS + LEVEL UP ────────────
 var Webflow = window.Webflow || [];
 let justTriggeredThisLoad = false;
@@ -1795,7 +1796,7 @@ Webflow.push(function() {
 });
 
 // ------- Score sfx - Flash -----------
-document.addEventListener('DOMContentLoaded', () => {
+/* document.addEventListener('DOMContentLoaded', () => {
   // Config for all timeline-triggered sound effects
   const soundTriggers = [
     {
@@ -1838,7 +1839,7 @@ document.addEventListener('DOMContentLoaded', () => {
     observer.observe(targetEl, { attributes: true });
   });
 });
-
+ */
 // ── LEVEL UP: dismiss handler ──
 Webflow.push(function() {
   const btn = document.querySelector('.level-up .button.lvlup');
