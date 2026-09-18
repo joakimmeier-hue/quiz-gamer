@@ -1418,13 +1418,7 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
     inputEl.addEventListener('input', () => {
     let rawText = inputEl.textContent || "";
 
-    // FIX: iOS Safari race condition — occasionally the very first keystroke
-    // lands INSIDE the placeholder before 'focus' has cleared it (typically
-    // right after the modal's fade-in), producing e.g. "jMr Smart" instead
-    // of clearing to "" first. If that's happened, the text will still
-    // CONTAIN the placeholder as a substring (even though it no longer
-    // EQUALS it, which is why the focus-handler's check missed it).
-    // Strip just the placeholder portion out, keeping whatever was typed.
+    // Select/change username, clear input field
     if (rawText !== defaultPlaceholder && rawText.includes(defaultPlaceholder)) {
         const cleaned = rawText.split(defaultPlaceholder).join('');
         inputEl.textContent = cleaned;
@@ -1548,10 +1542,8 @@ var Webflow = window.Webflow || [];
 Webflow.push(async function() {
   const cards = document.querySelectorAll('.question-card');
   if (!cards || cards.length === 0) return;
-
   const path = window.location.pathname;
   const match = path.match(/\/([a-z]+)-game-(\d+)/i);
-  
   const topic = match ? match[1].toLowerCase() : "science";
   const level = match ? parseInt(match[2], 10) : 1;
 
@@ -1569,7 +1561,6 @@ Webflow.push(async function() {
       document.dispatchEvent(new CustomEvent('questionsLoaded'));
       return;
     }
-
     const shuffledDocs = snapshot.docs
       .sort(() => 0.5 - Math.random())
       .slice(0, cards.length);
@@ -1586,15 +1577,12 @@ Webflow.push(async function() {
 
       card.style.display = ''; // Ensure card is visible wrapper
       const data = docSnap.data();
-
       const titleEl = card.querySelector('.q-title');
       if (titleEl) titleEl.textContent = `Question ${index + 1}`;
-
       card.setAttribute('data-question-id', docSnap.id);
 
       const textEl = card.querySelector('.q-text');
       if (textEl && data.text) textEl.textContent = data.text;
-
       for (let i = 1; i <= 4; i++) {
         const row = card.querySelector(`[data-choice="${i}"]`);
         
@@ -1602,7 +1590,6 @@ Webflow.push(async function() {
           const altTextEl = row.querySelector('.qalt-text');
           const rawAlt = data.alternatives ? data.alternatives[i] : null;
           const altText = typeof rawAlt === 'string' ? rawAlt.trim() : '';
-
           const isValidAlt = altText !== '' && altText !== '...';
 
           if (isValidAlt) {
@@ -1637,19 +1624,16 @@ Webflow.push(async function() {
       if (index < shuffledDocs.length) {
         card.style.transition = 'opacity 0.1s ease';
         card.style.opacity = '1';
-
         // Trigger page reveal once card 2 (index 1) is ready
         if (index === 1) {
           document.dispatchEvent(new CustomEvent('questionsLoaded'));
         }
       }
     });
-
     // FIX 3: Base fallback check on actual returned questions, not DOM card elements
     if (shuffledDocs.length < 2) {     
       document.dispatchEvent(new CustomEvent('questionsLoaded'));
     }
-
   } catch (error) {
     console.error("Error fetching/seeding questions:", error);
     document.dispatchEvent(new CustomEvent('questionsLoaded'));
@@ -1660,14 +1644,11 @@ Webflow.push(async function() {
 window.collectUserAnswers = function collectUserAnswers() {
   const cards = document.querySelectorAll('.question-card');
   const answers = [];
-
   cards.forEach(card => {
     const qid = card.getAttribute('data-question-id');
     if (!qid) return;
-
     const activeCheckbox = card.querySelector('.checkbox.is-active');
     let choice = null;
-
     if (activeCheckbox) {
       const row = activeCheckbox.closest('[data-choice]');
       if (row) {
@@ -1675,10 +1656,8 @@ window.collectUserAnswers = function collectUserAnswers() {
         if (!isNaN(c)) choice = c;
       }
     }
-
     answers.push({ questionId: qid, choice: choice });
   });
-
   return answers;
 };
 
@@ -1686,7 +1665,6 @@ window.collectUserAnswers = function collectUserAnswers() {
 document.addEventListener('click', async function(e) {
   const finishBtn = e.target.closest('.finish-btn');
   if (!finishBtn) return;
-
   e.preventDefault();
 
   // Extract topic & level directly from the page URL
@@ -1739,7 +1717,6 @@ document.addEventListener('click', async function(e) {
     } else {
       setTimeout(() => { window.location.href = '/score'; }, 2000);
     }
-
   } catch (err) {
     console.error("Failed to grade game:", err);
     alert("Error calculating score. Please try again.");
@@ -1751,22 +1728,18 @@ document.addEventListener('click', async function(e) {
 // ──────────── SCORE PAGE: DISPLAY RESULTS + LEVEL UP ────────────
 var Webflow = window.Webflow || [];
 let justTriggeredThisLoad = false;
-
 function showLevelUpPopup() {
   const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10);
   if (remaining <= 0) return;
   const targetLevel = parseInt(sessionStorage.getItem('pendingLevelUpTarget') || '0', 10);
   const currentLevelShown = targetLevel - remaining + 1;
-
   const levelTextEl = document.getElementById('lvlup-text');
   if (levelTextEl) {
     levelTextEl.textContent = `Congratulations, you have reached level ${currentLevelShown}!`;
   }
-
   const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
   if (wfIx) wfIx.emit("lvlup");
 }
-
 function tryShowLevelUpPopup(attempts = 0, maxAttempts = 8) {
   showLevelUpPopup();
   setTimeout(() => {
@@ -1796,10 +1769,9 @@ Webflow.push(function() {
   setText('list-result', `${data.correctCount}/${data.totalQuestions}`);
   setText('list-time', data.timeStr);
   setText('list-attempts', data.attemptCount - 1);
-  setText('list-leaderboard', `${data.leaderboardPosition}/100`);
+  setText('list-leaderboard', `${data.leaderboardPosition}`);
   setText('list-score', data.finalScore);
   setText('list-unlimited-score', data.unlimitedScore);
-
   const levelsGained = data.levelsGained;
   sessionStorage.removeItem('lastGameResult');
 
@@ -1807,7 +1779,6 @@ Webflow.push(function() {
     sessionStorage.setItem('pendingLevelUps', levelsGained);
     sessionStorage.setItem('pendingLevelUpTarget', data.newLevel);
     justTriggeredThisLoad = true;
-
     const triggerEl = document.querySelector('.sub-result-2.init-lvlup');
     const levelUpEl = document.querySelector('.level-up');
 
@@ -1821,6 +1792,51 @@ Webflow.push(function() {
       observer.observe(triggerEl, { attributes: true, attributeFilter: ['style', 'class'] });
     }
   }
+});
+
+// ------- Score sfx - Flash -----------
+document.addEventListener('DOMContentLoaded', () => {
+  // Config for all timeline-triggered sound effects
+  const soundTriggers = [
+    {
+      selector: '.flash',
+      audioId: 'flash-sfx',
+      threshold: 0.9, // Triggers at 90%+ opacity
+      hasFired: false
+    },
+    {
+      selector: '.final-score',
+      audioId: 'score-sfx',
+      threshold: 0.1, // Triggers as soon as it hits 10% opacity
+      hasFired: false
+    }
+  ];
+  soundTriggers.forEach((config) => {
+    const targetEl = document.querySelector(config.selector);
+    const sfx = document.getElementById(config.audioId);
+
+    if (!targetEl || !sfx) return;
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'style') {
+          const opacity = parseFloat(window.getComputedStyle(targetEl).opacity);
+
+          // Fire sound when passing threshold
+          if (opacity >= config.threshold && !config.hasFired) {
+            config.hasFired = true;
+            sfx.currentTime = 0;
+            sfx.play().catch(e => console.log(`Autoplay blocked (${config.audioId}):`, e));
+          } 
+          // Reset trigger flag if element fades back out completely
+          else if (opacity === 0) {
+            config.hasFired = false;
+          }
+        }
+      });
+    });
+
+    observer.observe(targetEl, { attributes: true });
+  });
 });
 
 // ── LEVEL UP: dismiss handler ──
