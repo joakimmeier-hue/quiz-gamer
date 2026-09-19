@@ -1842,7 +1842,8 @@ Webflow.push(function() {
   });
 });
  */
-// ── LEVEL UP: dismiss handler ──
+
+/* // ── LEVEL UP: dismiss handler ──
 Webflow.push(function() {
   const btn = document.querySelector('.level-up .button.lvlup');
   if (!btn) return;
@@ -1863,4 +1864,4 @@ Webflow.push(function() {
   const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10);
   if (justTriggeredThisLoad || remaining <= 0) return;
   tryShowLevelUpPopup();
-});
+}); */
