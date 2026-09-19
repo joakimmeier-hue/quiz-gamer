@@ -638,58 +638,63 @@ document.addEventListener("DOMContentLoaded", function() {
   alternativeRows.forEach(row => {
     // VIKTIGT: Vi lyssnar på 'mousedown' precis som ditt SFX-script! 
     // Då sker båda exakt samtidigt.
-    row.addEventListener('mousedown', function(e) {
-      // ONLY respond to primary left-clicks & mobile finger taps (button === 0)
-      if (e.button !== 0) return;
-      const currentQuestionWrapper = this.closest('.question-wrapper');
-      if (!currentQuestionWrapper) return;
+row.addEventListener('mousedown', function(e) {
+  if (e.button !== 0) return;
+  const currentQuestionWrapper = this.closest('.question-wrapper');
+  if (!currentQuestionWrapper) return;
 
-      // 1. Nollställ ALLA checkboxar
-      const allCheckboxesInQuestion = currentQuestionWrapper.querySelectorAll('.checkbox');
-      allCheckboxesInQuestion.forEach(cb => {
-        cb.classList.remove('is-active');
-      });
-      // 2. Aktivera den klickade
-      const clickedCheckbox = this.querySelector('.checkbox');
-      if (clickedCheckbox) {
-        // Eftersom vi bytt till @keyframes behöver vi reflow-tricket.
-        void clickedCheckbox.offsetWidth; 
-        clickedCheckbox.classList.add('is-active');
-      }
-      // 3. Debounce Scroll (Väntar på att animationen gör klart sitt)
-      if (currentQuestionWrapper.scrollTimeout) {
-        clearTimeout(currentQuestionWrapper.scrollTimeout);
-      }
-      const currentTableRow = this.closest('.question-card');
-      if (!currentTableRow) return;
-      
-      const nextTableRow = currentTableRow.nextElementSibling;
-      
-      if (nextTableRow) {
-        currentQuestionWrapper.scrollTimeout = setTimeout(() => {
-          const start = window.scrollY;
-          const end = nextTableRow.getBoundingClientRect().top + window.scrollY - (window.innerHeight * topOffsetPercent);
-          const distance = end - start;
-          let startTime = null;
+  const clickedCheckbox = this.querySelector('.checkbox');
+  const wasAlreadyActive = clickedCheckbox && clickedCheckbox.classList.contains('is-active');
 
-          function easeInOut(t) { 
-            return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; 
-          }
-          function smoothScrollStep(timestamp) {
-            if (!startTime) startTime = timestamp;
-            const progress = Math.min((timestamp - startTime) / scrollDuration, 1);
-            window.scrollTo(0, start + distance * easeInOut(progress));
-            
-            if (progress < 1) {
-              requestAnimationFrame(smoothScrollStep);
-            }
-          }
-
-          requestAnimationFrame(smoothScrollStep);
-        }, animationDelay);
-      }
-    });
+  // 1. Nollställ ALLA checkboxar
+  const allCheckboxesInQuestion = currentQuestionWrapper.querySelectorAll('.checkbox');
+  allCheckboxesInQuestion.forEach(cb => {
+    cb.classList.remove('is-active');
   });
+
+  // 2. Aktivera den klickade (force reflow so the transition always replays)
+  if (clickedCheckbox) {
+    void clickedCheckbox.offsetWidth;
+    clickedCheckbox.classList.add('is-active');
+  }
+
+  // 3. Skip the scroll-to-next logic entirely if this answer was already selected —
+  //    just replay the graphic, no navigation.
+  if (wasAlreadyActive) return;
+
+  if (currentQuestionWrapper.scrollTimeout) {
+    clearTimeout(currentQuestionWrapper.scrollTimeout);
+  }
+  const currentTableRow = this.closest('.question-card');
+  if (!currentTableRow) return;
+
+  const nextTableRow = currentTableRow.nextElementSibling;
+
+  if (nextTableRow) {
+    currentQuestionWrapper.scrollTimeout = setTimeout(() => {
+      const start = window.scrollY;
+      const end = nextTableRow.getBoundingClientRect().top + window.scrollY - (window.innerHeight * topOffsetPercent);
+      const distance = end - start;
+      let startTime = null;
+
+      function easeInOut(t) {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      }
+      function smoothScrollStep(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const progress = Math.min((timestamp - startTime) / scrollDuration, 1);
+        window.scrollTo(0, start + distance * easeInOut(progress));
+
+        if (progress < 1) {
+          requestAnimationFrame(smoothScrollStep);
+        }
+      }
+
+      requestAnimationFrame(smoothScrollStep);
+    }, animationDelay);
+  }
+});
+});
 });
 
 
