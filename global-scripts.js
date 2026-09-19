@@ -1095,6 +1095,7 @@ toggleBtn.addEventListener('click', (e) => {
 
 // SKIP INTRO LOBBY
 (function() {
+  if (currentSlug !== 'lobby') return; // this whole thing is Lobby-only behavior
   function hideIntro() {
     const el = document.querySelector('.intro-overlay-grp');
     if (el) el.style.display = 'none';
