@@ -1726,7 +1726,7 @@ document.addEventListener('click', async function(e) {
 });
 
 
-// ──────────── SCORE PAGE: DISPLAY RESULTS + LEVEL UP ────────────
+/* // ──────────── SCORE PAGE: DISPLAY RESULTS + LEVEL UP ────────────
 var Webflow = window.Webflow || [];
 let justTriggeredThisLoad = false;
 function showLevelUpPopup() {
@@ -1794,6 +1794,8 @@ Webflow.push(function() {
     }
   }
 });
+ */
+
 
 // ------- Score sfx - Flash -----------
 /* document.addEventListener('DOMContentLoaded', () => {
