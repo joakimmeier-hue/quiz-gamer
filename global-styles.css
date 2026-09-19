@@ -372,6 +372,10 @@ a.button-link:hover {
   opacity: 1;
 }
 
+.checkbox.no-transition::after {
+  transition: none !important;
+}
+
 /* Gör hela raden klickvänlig */
 .alternative-row {
   cursor: pointer;

@@ -652,11 +652,22 @@ row.addEventListener('mousedown', function(e) {
     cb.classList.remove('is-active');
   });
 
-  // 2. Aktivera den klickade (force reflow so the transition always replays)
-  if (clickedCheckbox) {
+ if (clickedCheckbox) {
+  if (wasAlreadyActive) {
+    // Snap instantly to the "off" look (no transition), reflow, then
+    // re-enable the transition and animate back in — otherwise start
+    // and end values are identical and nothing visibly moves.
+    clickedCheckbox.classList.add('no-transition');
+    clickedCheckbox.classList.remove('is-active');
+    void clickedCheckbox.offsetWidth;
+    clickedCheckbox.classList.remove('no-transition');
+    void clickedCheckbox.offsetWidth;
+    clickedCheckbox.classList.add('is-active');
+  } else {
     void clickedCheckbox.offsetWidth;
     clickedCheckbox.classList.add('is-active');
   }
+}
 
   // 3. Skip the scroll-to-next logic entirely if this answer was already selected —
   //    just replay the graphic, no navigation.
