@@ -1726,7 +1726,7 @@ document.addEventListener('click', async function(e) {
 });
 
 
-/* // ──────────── SCORE PAGE: DISPLAY RESULTS + LEVEL UP ────────────
+// ──────────── SCORE PAGE: DISPLAY RESULTS + LEVEL UP ────────────
 var Webflow = window.Webflow || [];
 let justTriggeredThisLoad = false;
 function showLevelUpPopup() {
@@ -1794,11 +1794,11 @@ Webflow.push(function() {
     }
   }
 });
- */
+
 
 
 // ------- Score sfx - Flash -----------
-/* document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
   // Config for all timeline-triggered sound effects
   const soundTriggers = [
     {
@@ -1841,9 +1841,9 @@ Webflow.push(function() {
     observer.observe(targetEl, { attributes: true });
   });
 });
- */
 
-/* // ── LEVEL UP: dismiss handler ──
+
+// ── LEVEL UP: dismiss handler ──
 Webflow.push(function() {
   const btn = document.querySelector('.level-up .button.lvlup');
   if (!btn) return;
@@ -1864,4 +1864,4 @@ Webflow.push(function() {
   const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10);
   if (justTriggeredThisLoad || remaining <= 0) return;
   tryShowLevelUpPopup();
-}); */
+});
