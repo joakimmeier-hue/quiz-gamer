@@ -134,7 +134,7 @@ input, textarea, button, .w-button, #submit-btn-vanilla {
   display: none;             /* Chrome/Safari */
 }
 
-/* Games mask */
+/* Lobby Games mask */
 .games-grid-clip {
   -webkit-mask-image: linear-gradient(
     to bottom,
@@ -152,7 +152,7 @@ input, textarea, button, .w-button, #submit-btn-vanilla {
   );
 }
   
-/* Den nya masken som aktiveras när menyn är öppen */
+/* Lobby. Den nya masken som aktiveras när nav menu är öppen */
 body .games-grid-clip.is-skewed {
   -webkit-mask-image: 
     linear-gradient(50deg, black 30%, transparent 76%),
@@ -168,7 +168,7 @@ body .games-grid-clip.is-skewed {
   transition: -webkit-mask-image 400ms ease, mask-image 400ms ease;
 }
 
-/* ── LJUDKNAPP (Containern) ─── */
+/* ── Lobby Audio toggle ─── */
 #toggle-audio-lobby {
   position: relative; 
   display: flex !important;
@@ -188,44 +188,38 @@ body .games-grid-clip.is-skewed {
   pointer-events: auto !important;
 }
 
-/* ── HOVER (Nu använder vi 'scale' egenskapen, inte transform) ── */
+/* ── Lobby Audio HOVER (Nu använder vi 'scale' egenskapen, inte transform) ── */
 #toggle-audio-lobby:hover {
   scale: 1.2;
 }
-
-/* ── KLICK-ANIMATION (Här kör vi transform, som läggs PÅ TOPPEN) ── */
+/* ── Lobby Audio KLICK-ANIMATION (Här kör vi transform, som läggs PÅ TOPPEN) ── */
 @keyframes clickStretch {
   0% { transform: scale(1); } /* Startar från 1 relativt till hovern */
   50% { transform: scale(1.3, 1); } /* Bred stretch */
   100% { transform: scale(1); }
 }
-
 #toggle-audio.is-clicked {
   /* Här kör vi animationen. Den kommer att "stretchas" utöver din hover-skala */
   animation: clickStretch 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
-
 /* ── IKON-ANIMATION ── */
 /* 1. Puls */
 @keyframes iconPulse {
   0%, 100% { scale: 1; }
   50% { scale: 1.2; }
 }
-
 /* 2. Gung */
 @keyframes iconSwing {
   0%, 100% { rotate: -7deg; }
   50% { rotate: 7deg; }
 }
-
 .sound-icon-on {
   position: absolute;
   /* Vi använder EGENSKAPERNA scale/rotate, inte transform */
   transition: opacity 0.3s ease;
   transform-origin: center center;
 }
-
-/* ── LOGIK ── */
+/* ── Lobby Audio LOGIK ── */
 #toggle-audio-lobby:not(.is-muted) .sound-icon-on {
   opacity: 1 !important;
   pointer-events: auto;
@@ -239,7 +233,7 @@ body .games-grid-clip.is-skewed {
 #toggle-audio-lobby.is-muted .sound-icon-off { opacity: 1 !important; pointer-events: auto; }
 #toggle-audio-lobby:not(.is-muted) .sound-icon-off { opacity: 0 !important; pointer-events: none; }
 
-  /* ── NOISE-BILDER (Gör dem osynliga och absolut positionerade) ── */
+  /* ── Lobby Audio toggle noise effect (Gör dem osynliga och absolut positionerade) ── */
 .noise-big, 
 .noise-small {
   position: absolute;
@@ -247,30 +241,26 @@ body .games-grid-clip.is-skewed {
   pointer-events: none;
   transition: none; /* Vi styr allt via animation */
 }
-
-/* ── ANIMATION FÖR NOISE (Flashar till) ── */
+/* ── Flashar till ── */
 @keyframes noiseFlash {
   0% { opacity: 0; }
   50% { opacity: 1; }
   100% { opacity: 0; }
 }
-
 #toggle-audio-lobby.is-animating .noise-big { 
   animation: noiseFlash 0.2s ease-in-out 0.1s forwards; 
 }
-
 #toggle-audio-lobby.is-animating .noise-small { 
   animation: noiseFlash 0.2s ease-in-out 0.3s forwards; 
 }
 
-/* ── HOVER-SCALE SYSTEM STOR (1.15) ── */
+/* ──────────── HOVER-SCALE SYSTEM STOR (1.15) ──────────────── */
 .js-hover-scale {
   transition: scale 0.1s cubic-bezier(0.455, 0.03, 0.515, 0.955);
 }
 .js-hover-scale.is-hovered {
   scale: 1.15;
 }
-
 /* ── HOVER-SCALE SYSTEM SUBTIL (1.08) ── */
 .js-hover-scale-sm {
   transition: scale 0.1s cubic-bezier(0.455, 0.03, 0.515, 0.955);
@@ -278,8 +268,7 @@ body .games-grid-clip.is-skewed {
 .js-hover-scale-sm.is-hovered {
   scale: 1.08;
 }
- 
-/* ── PRESS-SCALE / "BLOW UP" SYSTEM (ersätter click-scale-interactions) ── */
+ /* ── PRESS-SCALE / "BLOW UP" SYSTEM (ersätter click-scale-interactions) ── */
 .js-press-scale {
   transition: scale 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* ≈ Power1 Out */
 }
@@ -292,6 +281,7 @@ body .games-grid-clip.is-skewed {
   scale: 0.9; /* storleken */
   filter: invert(0.5) brightness(0.7);
 }
+
 /* ── SCROLL-PULSE SYSTEM ── */
 .button-wrapper .button,
 .button-wrapper .button-link {
@@ -312,13 +302,11 @@ body .games-grid-clip.is-skewed {
 .js-press-scale lottie-player {
   pointer-events: none;
 }
-
 a.button-link,
 a.button-link:visited,
 a.button-link:hover {
   color: inherit !important; /* eller din önskade färg */
 }
-
 #cp-username-input {
   white-space: nowrap !important; /* Förhindrar att texten hoppar ner på ny rad */
   overflow: hidden !important;    /* Döljer allt som går utanför bredden */
@@ -348,7 +336,6 @@ a.button-link:hover {
   cursor: pointer;
   overflow: visible; 
 }
-
 /* Den dolda vita boxen i utgångsläget (Inaktiv) */
 .checkbox::after {
   content: "";
@@ -364,23 +351,26 @@ a.button-link:hover {
     height 0.35s cubic-bezier(0.25, 1, 0.5, 1), 
     opacity 0.2s ease;
 }
-
 /* AKTIVT LÄGE: När raden klickas, krymper boxen in i rutan */
 .checkbox.is-active::after {
   width: 0.3rem;  
   height: 0.3rem; 
   opacity: 1;
 }
-
 .checkbox.no-transition::after {
   transition: none !important;
 }
-
 /* Gör hela raden klickvänlig */
 .alternative-row {
   cursor: pointer;
   user-select: none;
 }
+.alternative-row {
+  cursor: pointer;
+  user-select: none;
+  touch-action: none; /* finger landing on a row can't start a page scroll */
+}
+
 
 /* ────────────────── GAME START PAGES ──────────────────
 /* ARROW SCROLL ANCHOR */

@@ -638,8 +638,8 @@ document.addEventListener("DOMContentLoaded", function() {
   alternativeRows.forEach(row => {
     // VIKTIGT: Vi lyssnar på 'mousedown' precis som ditt SFX-script! 
     // Då sker båda exakt samtidigt.
-row.addEventListener('mousedown', function(e) {
-  if (e.button !== 0) return;
+row.addEventListener('pointerdown', function(e) {
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
   const currentQuestionWrapper = this.closest('.question-wrapper');
   if (!currentQuestionWrapper) return;
 
