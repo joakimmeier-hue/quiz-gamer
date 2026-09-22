@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // 4. Check page type and inject the corresponding copy
   if (path.includes("-start")) {
     // --- GAME START PAGE ---
-    document.title = `${topicName} Quiz & Trivia - Quiz Gamer`;
+    document.title = `${topicName} - Quiz Gamer`;
     
     metaDescription.setAttribute(
       "content",
