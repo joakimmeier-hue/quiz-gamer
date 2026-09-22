@@ -507,9 +507,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       requestAnimationFrame(renderLoop);
   }
-  // Ensure banner reveals smoothly and isn't dependent on Webflow IX2. Anti-FOUC
-  banner.style.opacity = '1';
-
   // Starta motorn!
   requestAnimationFrame(renderLoop);
 });
