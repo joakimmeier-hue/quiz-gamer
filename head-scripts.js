@@ -50,8 +50,8 @@ if ('mediaSession' in navigator) {
 })();
 
 // -------- Load Lottie Player library dynamically ---------
-if (!document.querySelector('script[src*="lottie-player"]')) {
+/* if (!document.querySelector('script[src*="lottie-player"]')) {
   const lottieScript = document.createElement('script');
   lottieScript.src = 'https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js';
   document.head.appendChild(lottieScript);
-}
+} */
