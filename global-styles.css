@@ -390,13 +390,13 @@ a.button-link:hover {
 }
 
 /* COMPONENT .dropdown-gamelevel */
-/*   .dropdown-gamelevel {
+  .dropdown-gamelevel {
   opacity: 0;
   animation: fadeInDropdown 0.18s 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 @keyframes fadeInDropdown {
   to { opacity: 1; }
-} */
+}
 /* Base state of the dropdown list: hidden & translated up */
 .dropdown-gamelvl {
   display: nongamelvle;

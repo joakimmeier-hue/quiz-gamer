@@ -129,7 +129,7 @@ function hideLoginModal() {
   }
 }
 
-// ── ISOLATE EMAIL AUTH MODAL FROM GLOBAL SHORTCUTS (.email-auth-modal) ──
+// ── EMAIL AUTH MODAL -- ISOLATE FROM GLOBAL SHORTCUTS (.email-auth-modal) ──
 window.addEventListener('keydown', function(e) {
   const modal = document.getElementById('email-auth-modal');
   const emailAuthSubmit = document.getElementById('email-auth-submit');
@@ -1795,8 +1795,6 @@ Webflow.push(function() {
   }
 });
 
-
-
 // ------- Score sfx - Flash -----------
 document.addEventListener('DOMContentLoaded', () => {
   // Config for all timeline-triggered sound effects
@@ -1841,7 +1839,6 @@ document.addEventListener('DOMContentLoaded', () => {
     observer.observe(targetEl, { attributes: true });
   });
 });
-
 
 // ── LEVEL UP: dismiss handler ──
 Webflow.push(function() {
