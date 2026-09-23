@@ -1294,6 +1294,24 @@ const bodyTheme  = document.body.getAttribute('data-theme');
 const initColor  = savedColor || (bodyTheme === 'light' ? '#ffffff' : '#000000');
 
 overlay.style.background = initColor;
+// NEW: real loading screen — plays once, freezes on last frame,
+// sits there for however long questionsLoaded takes (no timer here)
+if (isGamePage) {
+  overlay.innerHTML = `
+    <style>
+      .transition-lottie { width: 8rem; height: 8rem; }
+      @media (max-width: 991px) { .transition-lottie { width: 7rem; height: 7rem; } }
+    </style>
+    <div style="display:flex; justify-content:center; align-items:center; height:100svh; width:100vw;">
+      <lottie-player 
+        class="transition-lottie"
+        src="https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a159263c0394fc57a0ee84a_loading-game-2.json" 
+        background="transparent" 
+        speed="1" 
+        autoplay>
+      </lottie-player>
+    </div>`;
+}
 document.body.appendChild(overlay);
 
 window.addEventListener('pageshow', () => {
