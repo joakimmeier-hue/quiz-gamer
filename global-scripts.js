@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const dropdownToggle = document.querySelector('.mask-middle .dropdown-toggle-lvl');
   const dropdownList = document.querySelector('.mask-middle .dropdown-gamelvl');
   const gamelvlBtn = document.querySelector('.mask-middle .gamelvl-btn');
-  const levelRows = document.querySelectorAll('.mask-middle .game-level-btn-text');
+  const levelRows = document.querySelectorAll('.mask-middle .game-level-option');
   const startBtn = document.querySelector('.mask-middle .game-start-btn');
   if (!dropdownToggle || !dropdownList || !gamelvlBtn) return;
 
@@ -239,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       gamelvlBtn.innerHTML = row.innerHTML; // replace .gamelvl-btn's content wholesale
 
-      const labelEl = row.querySelector('.game-level-text');
+      const labelEl = row.querySelector('.game-level');
       const selectedText = (labelEl ? labelEl.textContent : row.textContent).trim();
       const levelMatch = selectedText.match(/\d+/);
       const selectedLevel = levelMatch ? levelMatch[0] : '1';
@@ -1679,8 +1679,8 @@ const HOVER_SCALE_CLASSES = [
     'profile-pic-option',
     'current-profile-pic',
     'login-modal-btn',
-    'game-level',
     'gamelvl-btn',
+    'game-level-option', 
     'merge-google-btn',
     'cancel-merge-btn',
     'eam-submit-btn',
@@ -1716,8 +1716,8 @@ const PRESS_SCALE_CLASSES = [
     'current-profile-pic',
     'login-modal-btn',
     'dropdown-toggle-lvl',
-    'game-level',
     'gamelvl-btn',
+    'game-level-option',    
     'merge-google-btn',
     'cancel-merge-btn',
     'eam-submit-btn',
