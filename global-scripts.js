@@ -1685,8 +1685,8 @@ const HOVER_SCALE_CLASSES = [
     'profile-pic-option',
     'current-profile-pic',
     'login-modal-btn',
-    'dropdown-toggle-lvl',
-    'game-level-option', 
+    /* 'dropdown-toggle-lvl',
+    'game-level-option',  */
     'merge-google-btn',
     'cancel-merge-btn',
     'eam-submit-btn',
@@ -1721,8 +1721,8 @@ const PRESS_SCALE_CLASSES = [
     'profile-pic-option',
     'current-profile-pic',
     'login-modal-btn',
-    'dropdown-toggle-lvl',
-    'game-level-option',    
+   /*  'dropdown-toggle-lvl',
+    'game-level-option',  */   
     'merge-google-btn',
     'cancel-merge-btn',
     'eam-submit-btn',
