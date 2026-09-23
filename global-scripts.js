@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
   const dropdownToggle = document.querySelector('.mask-middle .dropdown-toggle-lvl');
   const dropdownList = document.querySelector('.mask-middle .dropdown-gamelvl');
-  let gamelvlBtn = document.querySelector('.mask-middle .gamelvl-btn'); // will get replaced
+  let gamelvlBtn = document.querySelector('.mask-middle .gamelvl-btn');
   const levelRows = document.querySelectorAll('.mask-middle .game-level-option');
   const startBtn = document.querySelector('.mask-middle .game-start-btn');
   if (!dropdownToggle || !dropdownList || !gamelvlBtn) return;
@@ -237,12 +237,17 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       e.stopPropagation();
 
-  /*     const clone = row.cloneNode(true);     // carries .game-level-option's own bg/style
-      gamelvlBtn.replaceWith(clone);          // swaps the WHOLE element, not just contents
-      gamelvlBtn = clone;                     // this is now the toggle's display element
+      const clone = row.cloneNode(true);
+
+      // same sanitizing as your .game-v-clone scroll-blur script
+      clone.removeAttribute('id');
+      clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+
+      gamelvlBtn.replaceWith(clone);
+      gamelvlBtn = clone; // keep the reference current for the next selection
 
       const labelEl = clone.querySelector('.game-level');
-      const selectedText = (labelEl ? labelEl.textContent : clone.textContent).trim(); */
+      const selectedText = (labelEl ? labelEl.textContent : clone.textContent).trim();
       const levelMatch = selectedText.match(/\d+/);
       const selectedLevel = levelMatch ? levelMatch[0] : '1';
 
