@@ -406,6 +406,7 @@ a.button-link:hover {
               transform 0.18s cubic-bezier(0.25, 1, 0.5, 1);
 }
 .dropdown-gamelvl.is-open {
+  display: auto;
   display: flex !important;
   opacity: 1;
   transform: translateY(0%);
