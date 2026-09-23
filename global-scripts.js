@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
   const dropdownToggle = document.querySelector('.mask-middle .dropdown-toggle-lvl');
   const dropdownList = document.querySelector('.mask-middle .dropdown-gamelvl');
-  const gamelvlBtn = document.querySelector('.mask-middle .gamelvl-btn');
+  let gamelvlBtn = document.querySelector('.mask-middle .gamelvl-btn'); // will get replaced
   const levelRows = document.querySelectorAll('.mask-middle .game-level-option');
   const startBtn = document.querySelector('.mask-middle .game-start-btn');
   if (!dropdownToggle || !dropdownList || !gamelvlBtn) return;
@@ -237,10 +237,12 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       e.stopPropagation();
 
-      gamelvlBtn.innerHTML = row.innerHTML; // replace .gamelvl-btn's content wholesale
+      const clone = row.cloneNode(true);     // carries .game-level-option's own bg/style
+      gamelvlBtn.replaceWith(clone);          // swaps the WHOLE element, not just contents
+      gamelvlBtn = clone;                     // this is now the toggle's display element
 
-      const labelEl = row.querySelector('.game-level');
-      const selectedText = (labelEl ? labelEl.textContent : row.textContent).trim();
+      const labelEl = clone.querySelector('.game-level');
+      const selectedText = (labelEl ? labelEl.textContent : clone.textContent).trim();
       const levelMatch = selectedText.match(/\d+/);
       const selectedLevel = levelMatch ? levelMatch[0] : '1';
 
@@ -259,7 +261,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
-
 
 // 3 COMPONENT game-start-btn
 // SCROLL: game-start-btn visibility + arrow hide/show
