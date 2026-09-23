@@ -200,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // 2 COMPONENT .dropdown-gamelevel
-  document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
   const dropdownToggle = document.querySelector('.mask-middle .dropdown-toggle-lvl');
   const dropdownList = document.querySelector('.mask-middle .dropdown-gamelvl');
   const gamelvlBtn = document.querySelector('.mask-middle .gamelvl-btn');
@@ -208,19 +208,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const startBtn = document.querySelector('.mask-middle .game-start-btn');
   if (!dropdownToggle || !dropdownList || !gamelvlBtn) return;
 
+  const slug = (typeof currentSlug !== 'undefined' && currentSlug) || window.location.pathname.split('/').pop();
+  const startMatch = slug.match(/^([a-z]+)-start$/i);
+  const topic = startMatch ? startMatch[1].toLowerCase() : null;
+
+  const gamelvlBtnLabel = gamelvlBtn.querySelector('.gamelvl-btn-text') || gamelvlBtn;
+
   const toggleDropdown = (show) => {
-  const shouldOpen = show !== undefined ? show : !dropdownList.classList.contains('is-open');
-  if (shouldOpen) {
-    dropdownList.style.display = 'flex';
-    requestAnimationFrame(() => dropdownList.classList.add('is-open'));
-  } else {
-    dropdownList.classList.remove('is-open');
-    dropdownList.addEventListener('transitionend', function handler() {
-      dropdownList.style.display = 'none';
-      dropdownList.removeEventListener('transitionend', handler);
-    }, { once: true });
-  }
-};
+    const shouldOpen = show !== undefined ? show : !dropdownList.classList.contains('is-open');
+    if (shouldOpen) {
+      dropdownList.style.display = 'flex';
+      requestAnimationFrame(() => dropdownList.classList.add('is-open'));
+    } else {
+      dropdownList.classList.remove('is-open');
+      dropdownList.addEventListener('transitionend', function handler() {
+        dropdownList.style.display = 'none';
+        dropdownList.removeEventListener('transitionend', handler);
+      }, { once: true });
+    }
+  };
 
   dropdownToggle.addEventListener('click', (e) => {
     e.preventDefault();
@@ -232,19 +238,19 @@ document.addEventListener('DOMContentLoaded', () => {
     row.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      gamelvlBtn.innerHTML = row.innerHTML;
-	  gamelvlBtn.classList.add(...row.classList); // adds row's classes alongside gamelvlBtn's existing ones
+
+      // skip locked levels — adjust selector to whatever your lock icon's class actually is
+      if (row.classList.contains('locked') || row.querySelector('[class*="lock"]')) return;
 
       const selectedText = row.textContent.trim();
       const levelMatch = selectedText.match(/\d+/);
       const selectedLevel = levelMatch ? levelMatch[0] : '1';
 
-      if (startBtn) {
+      gamelvlBtnLabel.textContent = selectedText; // text only, never classList
+
+      if (startBtn && topic) {
         startBtn.dataset.level = selectedLevel;
-        const currentHref = startBtn.getAttribute('href') || '';
-        if (currentHref) {
-          startBtn.setAttribute('href', currentHref.replace(/level=\d+/, `level=${selectedLevel}`));
-        }
+        startBtn.setAttribute('href', `/${topic}-game-${selectedLevel}`);
       }
 
       toggleDropdown(false);
@@ -257,6 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
 
 // 3 COMPONENT game-start-btn
 // SCROLL: game-start-btn visibility + arrow hide/show
