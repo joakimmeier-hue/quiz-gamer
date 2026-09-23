@@ -237,12 +237,12 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       e.stopPropagation();
 
-      const clone = row.cloneNode(true);     // carries .game-level-option's own bg/style
+  /*     const clone = row.cloneNode(true);     // carries .game-level-option's own bg/style
       gamelvlBtn.replaceWith(clone);          // swaps the WHOLE element, not just contents
       gamelvlBtn = clone;                     // this is now the toggle's display element
 
       const labelEl = clone.querySelector('.game-level');
-      const selectedText = (labelEl ? labelEl.textContent : clone.textContent).trim();
+      const selectedText = (labelEl ? labelEl.textContent : clone.textContent).trim(); */
       const levelMatch = selectedText.match(/\d+/);
       const selectedLevel = levelMatch ? levelMatch[0] : '1';
 
