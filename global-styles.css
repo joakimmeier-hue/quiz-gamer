@@ -399,8 +399,8 @@ a.button-link:hover {
 }
 /* Base state of the dropdown list: hidden & translated up */
 .dropdown-gamelvl {
-  display: nongamelvle;
-  opacity: 0.2;
+  display: none;
+  opacity: 0;
   transform: translateY(-100%);
   transition: opacity 0.18s cubic-bezier(0.25, 1, 0.5, 1),
               transform 0.18s cubic-bezier(0.25, 1, 0.5, 1);
