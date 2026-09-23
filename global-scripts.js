@@ -204,10 +204,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const dropdownToggle = document.querySelector('.mask-middle .dropdown-toggle-lvl');
   const dropdownList = document.querySelector('.mask-middle .dropdown-gamelvl');
   const gamelvlBtn = document.querySelector('.mask-middle .gamelvl-btn');
-  const gamelvlTitleWrap = gamelvlBtn?.querySelector('.gamelvltitlewrap');
   const levelRows = document.querySelectorAll('.mask-middle .game-level-btn-text');
   const startBtn = document.querySelector('.mask-middle .game-start-btn');
-  if (!dropdownToggle || !dropdownList || !gamelvlBtn || !gamelvlTitleWrap) return;
+  if (!dropdownToggle || !dropdownList || !gamelvlBtn) return;
 
   const slug = (typeof currentSlug !== 'undefined' && currentSlug) || window.location.pathname.split('/').pop();
   const startMatch = slug.match(/^([a-z]+)-start$/i);
@@ -238,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       e.stopPropagation();
 
-      gamelvlTitleWrap.innerHTML = row.innerHTML; // whole row content, icon + text
+      gamelvlBtn.innerHTML = row.innerHTML; // replace .gamelvl-btn's content wholesale
 
       const labelEl = row.querySelector('.game-level-text');
       const selectedText = (labelEl ? labelEl.textContent : row.textContent).trim();
