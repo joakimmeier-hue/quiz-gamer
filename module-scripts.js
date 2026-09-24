@@ -794,13 +794,13 @@ function resolvePendingAction() {
     return el && window.getComputedStyle(el).display !== 'none';
   }
 
-// Robust close for the profile-pic dropdown / pp-grid (Silent Version)
+// Robust close for the profile-pic dropdown / pp-grid-wrapper (Silent Version)
 function hidePPDropdown() {
   try {
     if (window.__ppDropdownClosing) return;
     window.__ppDropdownClosing = true;
 
-    const openGrid = Array.from(document.querySelectorAll('.pp-grid')).find(el => {
+    const openGrid = Array.from(document.querySelectorAll('.pp-grid-wrapper')).find(el => {
       const style = window.getComputedStyle(el);
       const rect = el.getBoundingClientRect();
       return style.display !== 'none' && (rect.width > 0 || rect.height > 0);
@@ -851,7 +851,7 @@ function hidePPDropdown() {
     } catch (err) {}
 
     // 3) Last-resort fallback
-    const anyGrid = document.querySelector('.pp-grid');
+    const anyGrid = document.querySelector('.pp-grid-wrapper');
     if (anyGrid) {
       anyGrid.style.display = 'none';
     }
@@ -897,9 +897,9 @@ document.addEventListener('keydown', (e) => {
 
   const key = (e.key || '').toLowerCase();
 
-  // --- 1) PP-GRID PRIORITY: ESC should close any open pp-grid first ---
+  // --- 1) PP-GRID-WRAPPER PRIORITY: ESC should close any open pp-grid-wrapper first ---
   if (key === 'escape') {
-    const openGrid = Array.from(document.querySelectorAll('.pp-grid')).find(el => {
+    const openGrid = Array.from(document.querySelectorAll('.pp-grid-wrapper')).find(el => {
       const style = window.getComputedStyle(el);
       const rect = el.getBoundingClientRect();
       return style.display !== 'none' && (rect.width > 0 || rect.height > 0);
@@ -908,7 +908,7 @@ document.addEventListener('keydown', (e) => {
       e.preventDefault();
       e.stopPropagation();
       hidePPDropdown();
-      return; // stop further handling — pp-grid closed
+      return; // stop further handling — pp-grid-wrapper closed
     }
   }
 
