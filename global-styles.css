@@ -398,14 +398,14 @@ a.button-link:hover {
   overflow: hidden;
   max-height: 0;
   opacity: 0;
-  transform: translateY(-30%);
-  transition: max-height 0.2s cubic-bezier(0.25, 1, 0.5, 1),
-              opacity 1.75 0.2s cubic-bezier(0.25, 1, 0.5, 1),
-              transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  transform: translateY(-40%);
+  transition: max-height 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+              opacity 1.75 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+              transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
 .dropdown-gamelvl.is-open {
   overflow: visible;
-  max-height: 35rem; /* comfortably above the real content height */
+  max-height: 20rem; /* comfortably above the real content height */
   max-height: calc-size(auto, size);    /* Chrome/Edge 129+: exact real height, no guessing */
   opacity: 1;
   transform: translateY(0%);
