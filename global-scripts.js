@@ -217,19 +217,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let currentlyShown = null; // the .game-level-option currently sitting in the toggle, if any
 
-  const toggleDropdown = (show) => {
-    const shouldOpen = show !== undefined ? show : !dropdownList.classList.contains('is-open');
-    if (shouldOpen) {
-      dropdownList.style.display = 'flex';
-      requestAnimationFrame(() => dropdownList.classList.add('is-open'));
-    } else {
-      dropdownList.classList.remove('is-open');
-      dropdownList.addEventListener('transitionend', function handler() {
-        dropdownList.style.display = 'none';
-        dropdownList.removeEventListener('transitionend', handler);
-      }, { once: true });
-    }
-  };
+ const toggleDropdown = (show) => {
+  const shouldOpen = show !== undefined ? show : !dropdownList.classList.contains('is-open');
+  dropdownList.classList.toggle('is-open', shouldOpen);
+};
 
   dropdownToggle.addEventListener('click', (e) => {
     e.preventDefault();
@@ -280,6 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
 // 3 COMPONENT game-start-btn
 // SCROLL: game-start-btn visibility + arrow hide/show
 document.addEventListener('DOMContentLoaded', () => {

@@ -11,6 +11,9 @@
   --dark-grey: #181717;
 }
 
+/* Interpolate-size, try to autosize animations, for whole site */
+:root { interpolate-size: allow-keywords; }
+
 /* ———————————— EMAIL AUTH MODAL POPUP ——————————————————————————— */
 /* 1. Placeholder Text (Grey) */
 #email-auth-email::placeholder,
@@ -390,23 +393,19 @@ a.button-link:hover {
 }
 
 /* COMPONENT .dropdown-gamelevel */
-  .dropdown-gamelevel {
-  opacity: 0;
-  animation: fadeInDropdown 0.18s 1.7s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-}
-@keyframes fadeInDropdown {
-  to { opacity: 1; }
-}
-/* Base state of the dropdown list: hidden & translated up */
 .dropdown-gamelvl {
-  display: none;
+  display: flex;   /* no more display:none — max-height handles hiding now */
+  overflow: hidden;
+  max-height: 0;
   opacity: 0;
-  transform: translateY(-100%);
-  transition: opacity 0.18s cubic-bezier(0.25, 1, 0.5, 1),
-              transform 0.18s cubic-bezier(0.25, 1, 0.5, 1);
+  transform: translateY(-30%);
+  transition: max-height 0.2s cubic-bezier(0.25, 1, 0.5, 1),
+              opacity 0.2s cubic-bezier(0.25, 1, 0.5, 1),
+              transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
 .dropdown-gamelvl.is-open {
-  display: flex !important;
+  max-height: 35rem; /* comfortably above the real content height */
+  max-height: calc-size(auto, size);    /* Chrome/Edge 129+: exact real height, no guessing */
   opacity: 1;
   transform: translateY(0%);
 }
