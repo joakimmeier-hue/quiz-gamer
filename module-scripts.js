@@ -602,7 +602,7 @@ if (typeof loadUserData === 'function' && currentUser) {
   uiNameElements.forEach(el => el.textContent = savedName);
   if (typeof userDisplayName !== 'undefined' && userDisplayName) userDisplayName.textContent = savedName;
   
-  // Save avatar to Firestore BEFORE closing the modal
+/*   // Save avatar to Firestore BEFORE closing the modal
   if (typeof saveUserAvatar === 'function') {
     const currentAvatarSrc = document.querySelector('.current-profile-pic')?.src || "";
     await saveUserAvatar(currentAvatarSrc);
@@ -613,7 +613,7 @@ if (typeof loadUserData === 'function' && currentUser) {
   if (typeof loadUserData === 'function' && currentUser) {
     await loadUserData(currentUser.uid);
     console.log("User data reloaded after avatar save");
-  }
+  } */
 
   if (typeof hideCreateProfile === 'function') hideCreateProfile();
   // ✅ NOW safe to resolve — profile definitely exists in Firestore
