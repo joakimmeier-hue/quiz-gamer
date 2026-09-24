@@ -203,14 +203,19 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
   const dropdownToggle = document.querySelector('.mask-middle .dropdown-toggle-lvl');
   const dropdownList = document.querySelector('.mask-middle .dropdown-gamelvl');
-  let gamelvlBtn = document.querySelector('.mask-middle .gamelvl-btn');
-  const levelRows = document.querySelectorAll('.mask-middle .game-level-option');
+  const gamelvlBtn = document.querySelector('.mask-middle .gamelvl-btn');
+  const levelRows = Array.from(document.querySelectorAll('.mask-middle .game-level-option'));
   const startBtn = document.querySelector('.mask-middle .game-start-btn');
-  if (!dropdownToggle || !dropdownList || !gamelvlBtn) return;
+  if (!dropdownToggle || !dropdownList || !gamelvlBtn || !levelRows.length) return;
+
+  // remember each row's original slot so we can put it back when a different one is picked
+  levelRows.forEach(row => { row.__originalNextSibling = row.nextSibling; });
 
   const slug = (typeof currentSlug !== 'undefined' && currentSlug) || window.location.pathname.split('/').pop();
   const startMatch = slug.match(/^([a-z]+)-start$/i);
   const topic = startMatch ? startMatch[1].toLowerCase() : null;
+
+  let currentlyShown = null; // the .game-level-option currently sitting in the toggle, if any
 
   const toggleDropdown = (show) => {
     const shouldOpen = show !== undefined ? show : !dropdownList.classList.contains('is-open');
@@ -237,17 +242,26 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       e.stopPropagation();
 
-      const clone = row.cloneNode(true);
+      if (row.parentElement !== dropdownList) {
+        // this IS the currently-shown option — just reopen the picker, don't re-select
+        toggleDropdown();
+        return;
+      }
 
-      // same sanitizing as your .game-v-clone scroll-blur script
-      clone.removeAttribute('id');
-      clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+      // put the previous selection back where it came from
+      if (currentlyShown) {
+        dropdownList.insertBefore(currentlyShown, currentlyShown.__originalNextSibling);
+      }
 
-      gamelvlBtn.replaceWith(clone);
-      gamelvlBtn = clone; // keep the reference current for the next selection
+      gamelvlBtn.insertAdjacentElement('beforebegin', row); // move the real node
+      gamelvlBtn.style.display = 'none';
+      currentlyShown = row;
 
-      const labelEl = clone.querySelector('.game-level');
-      const selectedText = (labelEl ? labelEl.textContent : clone.textContent).trim();
+      row.style.width = getComputedStyle(dropdownToggle).width;
+      // ^ delete this line once `.dropdown-toggle-lvl { width: 100% }` is set in the Designer
+
+      const labelEl = row.querySelector('.game-level');
+      const selectedText = (labelEl ? labelEl.textContent : row.textContent).trim();
       const levelMatch = selectedText.match(/\d+/);
       const selectedLevel = levelMatch ? levelMatch[0] : '1';
 
@@ -266,7 +280,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
-
 // 3 COMPONENT game-start-btn
 // SCROLL: game-start-btn visibility + arrow hide/show
 document.addEventListener('DOMContentLoaded', () => {
