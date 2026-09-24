@@ -395,7 +395,7 @@ a.button-link:hover {
 /* COMPONENT .dropdown-gamelevel */
 .dropdown-gamelevel {
   opacity: 0;
-  animation: fadeIn 0.18s 1.75s forwards;
+  animation: fadeIn 0.18s 1.65s forwards;
 }
 @keyframes fadeIn {
   to { opacity: 1; }
