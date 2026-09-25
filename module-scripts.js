@@ -1,5 +1,6 @@
 import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-functions.js";
 import { 
   getAuth, 
   GoogleAuthProvider, 
@@ -16,10 +17,6 @@ import {
   onAuthStateChanged, 
   signOut
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-import { 
-  getFunctions, 
-  httpsCallable 
-} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-functions.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAfZQM3H5XAYkEt2ARInoA1Xs-Qd1DXL_s",
@@ -31,10 +28,12 @@ const firebaseConfig = {
   measurementId: "G-TNBLZFSFG6"
 };
 
+// ── INITIALIZE FIREBASE ──
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const functions = getFunctions(app);
+// ── CALLABLE FUNCTIONS ──
 const completeProfileFn = httpsCallable(functions, "completeProfile");
 const changeUsernameFn = httpsCallable(functions, "changeUsername");
 const startGameFn = httpsCallable(functions, "startGame");
@@ -76,6 +75,21 @@ if (typeof currentSlug === 'undefined') {
   window.currentSlug = derived;
   currentSlug = derived;
 }
+
+// Expose callable trigger to global scope
+window.triggerStartGame = async function(topic, tierLevel) {
+  try {
+    const result = await startGameFn({ topic, level: tierLevel });
+    return result.data; // Returns { sessionId }
+  } catch (err) {
+    console.error("Start Game Error:", err);
+    // If client was modified in DevTools and server rejected request, display server message
+    if (typeof showGlobalInfo === 'function') {
+      showGlobalInfo(err.message || "Failed to start game session.");
+    }
+    throw err;
+  }
+};
 
 function updateAuthUI(user) {
   if (user) {
@@ -129,6 +143,7 @@ function hideLoginModal() {
   }
 }
 
+// ———————————————————————— LOGIN. AUTH. MERGE EMAIL ————————————————————————
 // ── EMAIL AUTH MODAL -- ISOLATE FROM GLOBAL SHORTCUTS (.email-auth-modal) ──
 window.addEventListener('keydown', function(e) {
   const modal = document.getElementById('email-auth-modal');
@@ -1258,13 +1273,17 @@ async function loadUserData(uid) {
   }
 }
 
-  // ── FIREBASE AUTH OBSERVER ── & ── INCOMPLETE ACCOUNT RECOVERY ──
+// ── GLOBAL STATE FOR UI SCRIPTS ──
+window.currentUserData = null; // <-- ADDED 1: Initialize global variable
+
+// ── FIREBASE AUTH OBSERVER ── & ── INCOMPLETE ACCOUNT RECOVERY ──
 // ── UPDATE onAuthStateChanged to RESOLVE when profile is complete ──
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   updateAuthUI(user);
 
   if (!user) {
+    window.currentUserData = null; // <-- ADDED 2: Clear data on logout
     routeGuard(false);
     return;
   }
@@ -1282,6 +1301,8 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     const userData = userDoc.data();
+    window.currentUserData = userData; // <-- ADDED 3: Expose data to global scripts
+
     const hasUsername = userData.username && userData.username.trim() !== "";
     const hasProfilePic = userData.profilePicUrl && userData.profilePicUrl !== "";
 

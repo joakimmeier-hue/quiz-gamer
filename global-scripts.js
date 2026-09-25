@@ -152,7 +152,162 @@ function revealFoucElements() {
 });
 
 
+// ── CENTRALIZED POPUP MESSAGE DICTIONARY ──────────────────────────────
+const INFO_MESSAGES = {
+  // Start Page / Tier Selection
+  NO_TIER_SELECTED: "Please select a tier!",
+  LEVEL_TOO_LOW: (reqLvl) => `Progress to level ${reqLvl} to play this tier!`,
+  
+  // Future scenarios can be added here:
+};
+
+// ── REUSABLE GLOBAL INFO HELPER ───────────────────────────────────────
+function showGlobalInfo(text) {
+  const globalInfo = document.querySelector('.global-info');
+  const giText = document.querySelector('.gi-text');
+  if (!globalInfo) return;
+
+  if (giText) giText.textContent = text;
+
+  globalInfo.style.display = 'flex';
+  requestAnimationFrame(() => {
+    globalInfo.style.opacity = '1';
+    globalInfo.style.transition = 'opacity 200ms ease-out';
+  });
+}
+
+function hideGlobalInfo() {
+  const globalInfo = document.querySelector('.global-info');
+  if (!globalInfo) return;
+
+  globalInfo.style.transition = 'opacity 200ms ease-out';
+  globalInfo.style.opacity = '0';
+  setTimeout(() => {
+    globalInfo.style.display = 'none';
+  }, 200);
+}
+
+// Global click handler: backdrop & OK button dismissal
+document.addEventListener('click', (e) => {
+  const globalInfo = document.querySelector('.global-info');
+  if (!globalInfo || globalInfo.style.display === 'none') return;
+
+  // 1. Click outside .container-borders (backdrop)
+  const container = globalInfo.querySelector('.container-borders');
+  if (container && !container.contains(e.target) && globalInfo.contains(e.target)) {
+    hideGlobalInfo();
+    return;
+  }
+
+  // 2. Click OK button inside .global-info
+  if (e.target.closest('.global-info .button')) {
+    e.preventDefault();
+    hideGlobalInfo();
+  }
+});
+
+// ── MULTI-BUTTON KEY LISTENERS (ESC/ENTER) ────────────────────────────
+document.addEventListener('keydown', function(e) {
+  const triggerKeys = ["Escape", "Enter"];
+  if (!triggerKeys.includes(e.key)) return;
+
+  // Includes .global-info alongside other overlays
+  const overlays = document.querySelectorAll('.rules-overlay, .leaderboard-overlay, .about-overlay, .global-info');
+  for (const overlay of overlays) {
+    const style = window.getComputedStyle(overlay);
+    const isOpen = style.display !== 'none' && parseFloat(style.opacity) > 0.9;
+    if (isOpen) {
+      if (e.key === 'Enter' && overlay.classList.contains('about-overlay')) return;
+      e.preventDefault();
+
+      if (overlay.classList.contains('global-info')) {
+        hideGlobalInfo();
+      } else {
+        const btn = overlay.querySelector('.button');
+        if (btn) btn.click();
+      }
+      return;
+    }
+  }
+
+  // Fallback for visible buttons
+  const visibleWrapperBtn = Array.from(
+    document.querySelectorAll('.button-wrapper .button, .button-wrapper .button-link')
+  ).find(el => el.offsetParent !== null);
+
+  if (visibleWrapperBtn) {
+    e.preventDefault();
+    visibleWrapperBtn.click();
+  }
+});
+
 // ────────────────── GAME-START PAGES ──────────────────
+
+// ── TIER LEVEL REQUIREMENTS ──────────────────────────────────────────
+const TIER_REQUIREMENTS = {
+  1: 1,   // Tier 1 -> Player Lvl 1
+  2: 10,  // Tier 2 -> Player Lvl 10
+  3: 20   // Tier 3 -> Player Lvl 20
+};
+
+// ── START BUTTON HANDLER ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const startBtn = document.querySelector('.mask-middle .game-start-btn');
+  if (!startBtn) return;
+
+  startBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // 1. Identify selected tier
+    const activeOption = document.querySelector('.mask-middle .game-level-option.is-selected') 
+                      || document.querySelector('.mask-middle .gamelvl-btn');
+    
+    let selectedTier = null;
+    if (activeOption) {
+      const dataLvl = activeOption.getAttribute('data-level');
+      if (dataLvl) {
+        selectedTier = parseInt(dataLvl, 10);
+      } else {
+        const match = activeOption.textContent.match(/(?:Tier|Level)\s*(\d+)/i);
+        if (match) selectedTier = parseInt(match[1], 10);
+      }
+    }
+
+    // SCENARIO 1: No tier selected
+    if (!selectedTier) {
+      showGlobalInfo(INFO_MESSAGES.NO_TIER_SELECTED);
+      return;
+    }
+
+    // SCENARIO 2: Player level too low (Client-side fast check)
+    const playerLevel = window.currentUserData?.level || 1;
+    const requiredLevel = TIER_REQUIREMENTS[selectedTier] || 1;
+
+    if (playerLevel < requiredLevel) {
+      showGlobalInfo(INFO_MESSAGES.LEVEL_TOO_LOW(requiredLevel));
+      return;
+    }
+
+    // 2. Client checks passed -> Call Backend Function
+    try {
+      // Get current page topic from slug (e.g., "science-start" -> "science")
+      const topicMatch = currentSlug.match(/^([a-z0-9-]+)-start$/i);
+const topic = topicMatch ? topicMatch[1] : "science";
+
+      const session = await window.triggerStartGame(topic, selectedTier);
+      
+      // Store session and navigate to game page
+      sessionStorage.setItem('activeSessionId', session.sessionId);
+      sessionStorage.setItem('navFrom', currentSlug);
+      window.location.href = `/${topic}-game-${selectedTier}`;
+
+    } catch (err) {
+      // Handled inside window.triggerStartGame
+    }
+  });
+});
+
 // 1 BLUR TOP OF PAGE - WITH CLONE
   document.addEventListener('DOMContentLoaded', () => {
   const scrollSource = document.querySelector('.mask-middle');
@@ -228,10 +383,14 @@ document.addEventListener('DOMContentLoaded', () => {
     toggleDropdown();
   });
 
-  levelRows.forEach((row) => {
-    row.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+  levelRows.forEach(row => {
+  row.addEventListener('click', () => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Clear previous selections and mark clicked row
+    levelRows.forEach(r => r.classList.remove('is-selected'));
+    row.classList.add('is-selected');
+     
 
       if (row.parentElement !== dropdownList) {
         // this IS the currently-shown option — just reopen the picker, don't re-select
@@ -1589,37 +1748,6 @@ setInterval(() => {
   });
 })();
 
-// ── MULTI-BUTTON KEY LISTENERS (ESC/ENTER) ────────────────────────────
-document.addEventListener('keydown', function(e) {
-    const triggerKeys = ["Escape", "Enter"];
-    if (!triggerKeys.includes(e.key)) return;
-
-    // 1. Är en overlay öppen? Klicka DESS egen .button och sluta.
-    const overlays = document.querySelectorAll('.rules-overlay, .leaderboard-overlay, .about-overlay');
-    for (const overlay of overlays) {
-        const style = window.getComputedStyle(overlay);
-        const isOpen = style.display !== 'none' && parseFloat(style.opacity) > 0.9;
-        if (isOpen) {
-            if (e.key === 'Enter' && overlay.classList.contains('about-overlay')) return;
-            e.preventDefault();
-            const btn = overlay.querySelector('.button');
-            if (btn) btn.click();
-            return;
-        }
-    }
-
-    // 3. Generisk fallback: klicka på den FAKTISKT SYNLIGA .button/.button-link
-    // i en .button-wrapper. offsetParent === null = display:none, vilket
-    // automatiskt filtrerar bort dolda variant-kopior i DOM:en.
-    const visibleWrapperBtn = Array.from(
-        document.querySelectorAll('.button-wrapper .button, .button-wrapper .button-link')
-    ).find(el => el.offsetParent !== null);
-
-    if (visibleWrapperBtn) {
-        e.preventDefault();
-        visibleWrapperBtn.click();
-    }
-});
 // ── CLIPPING MIN-WIDTH LOGIK ──────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   const trigger = document.querySelector('.welcome-text-container');
