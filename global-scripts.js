@@ -247,7 +247,8 @@ document.addEventListener('keydown', function(e) {
 const TIER_REQUIREMENTS = {
   1: 1,   // Tier 1 -> Player Lvl 1
   2: 10,  // Tier 2 -> Player Lvl 10
-  3: 20   // Tier 3 -> Player Lvl 20
+  3: 20,  // Tier 3 -> Player Lvl 20
+  4: 25   // Tier 4 -> Player Lvl 25
 };
 
 // ── START BUTTON HANDLER ──────────────────────────────────────────────
