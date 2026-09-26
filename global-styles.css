@@ -382,6 +382,8 @@ MASK-TOP-CLONE
 .mask-top,
 .mask-top * {
   pointer-events: none !important;
+  transition: none !important;
+  animation: none !important;
 }
 
 /* ARROW SCROLL ANCHOR */

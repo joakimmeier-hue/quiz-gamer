@@ -332,7 +332,16 @@ window.syncTopClone = window.syncClone = function() {
   const cleanNode = (el) => {
     interactiveClasses.forEach(cls => el.classList.remove(cls));
     
-    // Only clear inline transform if it was captured mid-hover scale
+    // Kill dynamic inline styles applied mid-animation by Webflow JS
+    el.style.transition = 'none';
+    el.style.animation = 'none';
+
+    // If Webflow captured mid-fade (opacity < 1 or display none on wrapper), reset visibility
+    if (el.style.opacity && el.style.opacity !== '1') {
+      el.style.opacity = '1';
+    }
+
+    // Only clear inline transforms if they contain scale hover states
     if (el.style.transform && el.style.transform.includes('scale')) {
       el.style.transform = '';
     }
