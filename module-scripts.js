@@ -1661,7 +1661,7 @@ Webflow.push(async function() {
   }
 });
 
-// --- COLLECT USER ANSWERS
+// ──────────── COLLECT USER ANSWERS ────────────
 window.collectUserAnswers = function collectUserAnswers() {
   const cards = document.querySelectorAll('.question-card');
   const answers = [];
@@ -1682,7 +1682,7 @@ window.collectUserAnswers = function collectUserAnswers() {
   return answers;
 };
 
-// ── FINISH BUTTON INTERCEPTOR & CALCULATOR ──────────────────────────
+// ────────────── FINISH BUTTON INTERCEPTOR & CALCULATOR ──────────────────────────
 document.addEventListener('click', async function(e) {
   const finishBtn = e.target.closest('.finish-btn');
   if (!finishBtn) return;

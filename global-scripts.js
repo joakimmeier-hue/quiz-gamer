@@ -326,21 +326,20 @@ window.syncTopClone = window.syncClone = function() {
   // Force link colors inside clone
   clone.querySelectorAll('a').forEach(el => { el.style.color = 'white'; });
 
-  // Classes to strip out
-  const interactiveClasses = ['hover-scale', 'js-press-scale'];
+  // Interactive/hover classes to remove
+  const interactiveClasses = ['hover-scale', 'js-press-scale', 'is-hovered'];
 
-  // Helper to strip hover scaling, transforms, and transitions from clone nodes
-  const sanitizeNode = (el) => {
+  const cleanNode = (el) => {
     interactiveClasses.forEach(cls => el.classList.remove(cls));
     
-    // Kill transforms and transitions so hover states and animations don't stick or delay
-    el.style.transform = 'none';
-    el.style.transition = 'none';
-    el.style.animation = 'none';
+    // Only clear inline transform if it was captured mid-hover scale
+    if (el.style.transform && el.style.transform.includes('scale')) {
+      el.style.transform = '';
+    }
   };
 
-  sanitizeNode(clone);
-  clone.querySelectorAll('*').forEach(sanitizeNode);
+  cleanNode(clone);
+  clone.querySelectorAll('*').forEach(cleanNode);
 
   dummySlot.appendChild(clone);
 };
