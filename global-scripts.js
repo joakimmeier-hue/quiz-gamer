@@ -367,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
   levelRows.forEach(row => { row.__originalNextSibling = row.nextSibling; });
 
   const slug = (typeof currentSlug !== 'undefined' && currentSlug) || window.location.pathname.split('/').pop();
-  const startMatch = slug.match(/^([a-z]+)-start$/i);
+  const startMatch = slug.match(/^([a-z0-9-]+)-start$/i);
   const topic = startMatch ? startMatch[1].toLowerCase() : null;
 
   let currentlyShown = null; // the .game-level-option currently sitting in the toggle, if any
@@ -384,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   levelRows.forEach(row => {
-  row.addEventListener('click', () => {
+  row.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
     // Clear previous selections and mark clicked row
@@ -407,7 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
       gamelvlBtn.style.display = 'none';
       currentlyShown = row;
 
-      row.style.width = getComputedStyle(dropdownToggle).width;
+      /* row.style.width = getComputedStyle(dropdownToggle).width; */
       // ^ delete this line once `.dropdown-toggle-lvl { width: 100% }` is set in the Designer
 
       const labelEl = row.querySelector('.game-level');
