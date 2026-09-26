@@ -309,46 +309,36 @@ const topic = topicMatch ? topicMatch[1] : "science";
 });
 
 // 1 BLUR TOP OF PAGE - WITH CLONE
-  document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
   const scrollSource = document.querySelector('.mask-middle');
   const scrollSlave = document.querySelector('.mask-top');
 
-  if (!scrollSource || !scrollSlave) {
-    console.warn('scroll sync: elements not found', scrollSource, scrollSlave);
-    return;
+  if (scrollSource && scrollSlave) {
+    scrollSource.addEventListener('scroll', () => {
+      requestAnimationFrame(() => {
+        scrollSlave.scrollTop = scrollSource.scrollTop;
+      });
+    }, { passive: true });
   }
 
-  function syncSlave() {
-    scrollSlave.scrollTop = scrollSource.scrollTop;
-  }
-
-  scrollSource.addEventListener('scroll', () => {
-    requestAnimationFrame(syncSlave);
-  }, { passive: true });
-});
-
-document.addEventListener('DOMContentLoaded', () => {
   const real = document.querySelector('.mask-middle .vertical-center');
   const dummySlot = document.querySelector('.mask-top .game-v-clone');
 
   if (!real || !dummySlot) return;
 
-  // Helper function to build fresh clone with clean state
-  function syncClone() {
+  // Global function to instantly refresh the clone
+  window.syncTopClone = function() {
     dummySlot.innerHTML = '';
-
     const clone = real.cloneNode(true);
 
-    // Strip IDs to avoid duplicate DOM ID conflicts
+    // Strip duplicate IDs
     clone.removeAttribute('id');
     clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
 
-    // Force link colors inside clone
-    clone.querySelectorAll('a').forEach(el => {
-      el.style.color = 'white';
-    });
+    // Force link colors
+    clone.querySelectorAll('a').forEach(el => { el.style.color = 'white'; });
 
-    // Strip interactive utility classes
+    // Strip interactive classes
     const interactiveClasses = ['hover-scale', 'js-press-scale'];
     interactiveClasses.forEach(cls => {
       clone.classList.remove(cls);
@@ -356,10 +346,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     dummySlot.appendChild(clone);
-  }
+  };
 
-  // 1. Initial clone on page load
-  syncClone();
+  // Initial clone on page load
+  window.syncTopClone();
+
 
   // 2. Efficient MutationObserver to re-sync only when dropdown options/classes change
   let pendingUpdate = false;
@@ -391,19 +382,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const startBtn = document.querySelector('.mask-middle .game-start-btn');
   if (!dropdownToggle || !dropdownList || !gamelvlBtn || !levelRows.length) return;
 
-  // remember each row's original slot so we can put it back when a different one is picked
   levelRows.forEach(row => { row.__originalNextSibling = row.nextSibling; });
 
   const slug = (typeof currentSlug !== 'undefined' && currentSlug) || window.location.pathname.split('/').pop();
   const startMatch = slug.match(/^([a-z0-9-]+)-start$/i);
   const topic = startMatch ? startMatch[1].toLowerCase() : null;
 
-  let currentlyShown = null; // the .game-level-option currently sitting in the toggle, if any
+  let currentlyShown = null;
 
- const toggleDropdown = (show) => {
-  const shouldOpen = show !== undefined ? show : !dropdownList.classList.contains('is-open');
-  dropdownList.classList.toggle('is-open', shouldOpen);
-};
+  const toggleDropdown = (show) => {
+    const shouldOpen = show !== undefined ? show : !dropdownList.classList.contains('is-open');
+    dropdownList.classList.toggle('is-open', shouldOpen);
+    
+    // ⚡ INSTANT CLONE SYNC ON TOGGLE
+    if (typeof window.syncTopClone === 'function') window.syncTopClone();
+  };
 
   dropdownToggle.addEventListener('click', (e) => {
     e.preventDefault();
@@ -412,31 +405,27 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   levelRows.forEach(row => {
-  row.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    // Clear previous selections and mark clicked row
-    levelRows.forEach(r => r.classList.remove('is-selected'));
-    row.classList.add('is-selected');
-     
+    row.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      levelRows.forEach(r => r.classList.remove('is-selected'));
+      row.classList.add('is-selected');
 
       if (row.parentElement !== dropdownList) {
-        // this IS the currently-shown option — just reopen the picker, don't re-select
         toggleDropdown();
         return;
       }
 
-      // put the previous selection back where it came from
       if (currentlyShown) {
         dropdownList.insertBefore(currentlyShown, currentlyShown.__originalNextSibling);
       }
 
-      gamelvlBtn.insertAdjacentElement('beforebegin', row); // move the real node
+      gamelvlBtn.insertAdjacentElement('beforebegin', row);
       gamelvlBtn.style.display = 'none';
       currentlyShown = row;
 
-      /* row.style.width = getComputedStyle(dropdownToggle).width; */
-      // ^ delete this line once `.dropdown-toggle-lvl { width: 100% }` is set in the Designer
+      row.style.width = getComputedStyle(dropdownToggle).width;
 
       const labelEl = row.querySelector('.game-level');
       const selectedText = (labelEl ? labelEl.textContent : row.textContent).trim();
@@ -449,6 +438,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       toggleDropdown(false);
+
+      // ⚡ INSTANT CLONE SYNC ON SELECTION
+      if (typeof window.syncTopClone === 'function') window.syncTopClone();
     });
   });
 
