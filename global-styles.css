@@ -415,11 +415,16 @@ a.button-link:hover {
 
 /* COMPONENT .dropdown-gamelevel */
 .dropdown-gamelevel {
-  /* opacity: 0; */
+  opacity: 0;
   animation: fadeIn 0.18s 1.75s forwards;
 }
 @keyframes fadeIn {
   to { opacity: 1; }
+}
+/* TOP CLONE OVERRIDE (Forces clone to be visible immediately) */
+.mask-top .dropdown-gamelevel {
+  opacity: 1 !important;
+  animation: none !important;
 }
 
 .dropdown-gamelvl {

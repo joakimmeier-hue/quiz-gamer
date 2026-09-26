@@ -332,12 +332,12 @@ window.syncTopClone = window.syncClone = function() {
     clone.querySelectorAll('.' + cls).forEach(el => el.classList.remove(cls));
   });
 
-  // Strip inline Webflow fade/transition styles from dropdown elements in clone
-  const dropdownEls = clone.querySelectorAll('.dropdown-gamelvl, .dropdown-toggle-lvl, .w-dropdown-list, .w-dropdown-toggle');
+  // Include .dropdown-gamelevel and force opacity 1 on clone elements
+  const dropdownEls = clone.querySelectorAll('.dropdown-gamelevel, .dropdown-gamelvl, .dropdown-toggle-lvl, .w-dropdown-list, .w-dropdown-toggle');
   dropdownEls.forEach(el => {
-    el.style.opacity = '';
-    el.style.transition = '';
-    el.style.animation = '';
+    el.style.opacity = '1';
+    el.style.transition = 'none';
+    el.style.animation = 'none';
   });
 
   dummySlot.appendChild(clone);
