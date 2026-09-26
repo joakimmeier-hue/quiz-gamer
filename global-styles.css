@@ -376,8 +376,23 @@ a.button-link:hover {
 
 
 /* ────────────────── GAME START PAGES ──────────────────
+/* ARROW SCROLL ANCHOR */
+.arrow-anchor-wrapper {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: opacity, transform;
+}
+.arrow-anchor-wrapper.is-loaded {
+  opacity: 1;
+  pointer-events: auto;
+}
+.arrow-anchor-wrapper.is-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
 
-MASK-TOP-CLONE
+/* MASK-TOP-CLONE */
 /* Mask Top - Disable pointer events and CSS transition delays */
 .mask-top,
 .mask-top * {
@@ -396,22 +411,6 @@ MASK-TOP-CLONE
   display: flex !important;
   opacity: 1 !important;
   visibility: visible !important;
-}
-
-/* ARROW SCROLL ANCHOR */
-.arrow-anchor-wrapper {
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-  will-change: opacity, transform;
-}
-.arrow-anchor-wrapper.is-loaded {
-  opacity: 1;
-  pointer-events: auto;
-}
-.arrow-anchor-wrapper.is-hidden {
-  opacity: 0 !important;
-  pointer-events: none !important;
 }
 
 /* COMPONENT .dropdown-gamelevel */
