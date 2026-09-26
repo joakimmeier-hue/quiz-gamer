@@ -394,8 +394,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const shouldOpen = show !== undefined ? show : !dropdownList.classList.contains('is-open');
     dropdownList.classList.toggle('is-open', shouldOpen);
     
-    // ⚡ INSTANT CLONE SYNC ON TOGGLE
-    if (typeof window.syncTopClone === 'function') window.syncTopClone();
+    if (typeof window.syncTopClone === 'function') {
+      window.syncTopClone();
+    }
   };
 
   dropdownToggle.addEventListener('click', (e) => {
@@ -439,8 +440,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       toggleDropdown(false);
 
-      // ⚡ INSTANT CLONE SYNC ON SELECTION
-      if (typeof window.syncTopClone === 'function') window.syncTopClone();
+      if (typeof window.syncTopClone === 'function') {
+        window.syncTopClone();
+      }
     });
   });
 

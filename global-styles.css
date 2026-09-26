@@ -376,6 +376,16 @@ a.button-link:hover {
 
 
 /* ────────────────── GAME START PAGES ──────────────────
+
+MASK-TOP-CLONE
+/* Disable all pointer events, transforms, and transition delays inside mask-top */
+.mask-top,
+.mask-top * {
+  pointer-events: none !important;
+  transform: none !important;
+  transition: none !important;
+}
+
 /* ARROW SCROLL ANCHOR */
 .arrow-anchor-wrapper {
   opacity: 0;
