@@ -250,6 +250,33 @@ const TIER_REQUIREMENTS = {
   3: 20,  // Tier 3 -> Player Lvl 20
   4: 25   // Tier 4 -> Player Lvl 25
 };
+// Hide lock symbols on tiers accordingly
+function updateTierLocks(playerLevel = 1) {
+  // Query all level options in the dropdown
+  const options = document.querySelectorAll('.game-level-option');
+
+  options.forEach(option => {
+    // Read the tier level from the row (e.g. data-level="2")
+    const tier = parseInt(option.getAttribute('data-level') || '1', 10);
+    const requiredLevel = TIER_REQUIREMENTS[tier] || 1;
+
+    // Find the lock image inside this row or check data-locked-tier
+    const lockImg = option.querySelector('.lock-game, [data-locked-tier]');
+
+    if (lockImg) {
+      if (playerLevel >= requiredLevel) {
+        lockImg.style.display = 'none'; // Unlocked
+      } else {
+        lockImg.style.display = '';     // Locked (default state)
+      }
+    }
+  });
+
+  // Re-sync top header clone so it reflects updated lock visibility
+  if (typeof window.syncTopClone === 'function') {
+    window.syncTopClone();
+  }
+}
 
 // ── START BUTTON HANDLER ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {

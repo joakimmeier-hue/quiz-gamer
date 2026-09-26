@@ -1,4 +1,4 @@
-import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { getFirestore, doc, onSnapshot, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-functions.js";
 import { 
@@ -1282,8 +1282,10 @@ onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   updateAuthUI(user);
 
+  // 1. LOGGED OUT STATE
   if (!user) {
-    window.currentUserData = null; // <-- ADDED 2: Clear data on logout
+    window.currentUserData = null;
+    updateTierLocks(1); // <-- Resets lock icons to default (locked) for guests
     routeGuard(false);
     return;
   }
@@ -1296,12 +1298,16 @@ onAuthStateChanged(auth, async (user) => {
       console.log("🔴 NEW USER - Showing create profile");
       hideLoginModal();
       showCreateProfile();
+      updateTierLocks(1); // New user has no doc yet -> fallback to level 1
       routeGuard(false);
       return;
     }
 
     const userData = userDoc.data();
-    window.currentUserData = userData; // <-- ADDED 3: Expose data to global scripts
+    window.currentUserData = userData;
+
+    // 2. LOGGED IN STATE - Unlock tiers based on actual level from Firestore
+    updateTierLocks(userData?.level || 1); // <-- PLACED HERE (after userData is loaded)
 
     const hasUsername = userData.username && userData.username.trim() !== "";
     const hasProfilePic = userData.profilePicUrl && userData.profilePicUrl !== "";
@@ -1333,6 +1339,7 @@ onAuthStateChanged(auth, async (user) => {
   } catch (err) {
     console.warn("Firestore error:", err.message || err);
     showCreateProfile();
+    updateTierLocks(1);
     routeGuard(false);
   }
 });
