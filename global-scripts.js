@@ -331,10 +331,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const real = document.querySelector('.mask-middle .vertical-center');
   const dummySlot = document.querySelector('.mask-top .game-v-clone');
 
-  if (real && dummySlot) {
+  if (!real || !dummySlot) return;
+
+  // Helper function to build fresh clone with clean state
+  function syncClone() {
+    dummySlot.innerHTML = '';
+
     const clone = real.cloneNode(true);
 
-    // Strip IDs to avoid duplicates
+    // Strip IDs to avoid duplicate DOM ID conflicts
     clone.removeAttribute('id');
     clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
 
@@ -343,7 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
       el.style.color = 'white';
     });
 
-    // Strip ONLY behavioral utility classes that trigger JS logic or animations
+    // Strip interactive utility classes
     const interactiveClasses = ['hover-scale', 'js-press-scale'];
     interactiveClasses.forEach(cls => {
       clone.classList.remove(cls);
@@ -352,6 +357,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     dummySlot.appendChild(clone);
   }
+
+  // 1. Initial clone on page load
+  syncClone();
+
+  // 2. Efficient MutationObserver to re-sync only when dropdown options/classes change
+  let pendingUpdate = false;
+  const observer = new MutationObserver(() => {
+    if (!pendingUpdate) {
+      pendingUpdate = true;
+      requestAnimationFrame(() => {
+        syncClone();
+        pendingUpdate = false;
+      });
+    }
+  });
+
+  // Observe text, class, and structure modifications inside .vertical-center
+  observer.observe(real, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['class', 'style']
+  });
 });
 
 // 2 COMPONENT .dropdown-gamelevel
