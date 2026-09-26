@@ -309,7 +309,6 @@ const topic = topicMatch ? topicMatch[1] : "science";
 });
 
 // 1 BLUR TOP OF PAGE - WITH CLONE
-// Global definition to prevent ReferenceErrors regardless of script load order
 window.syncTopClone = window.syncClone = function() {
   const real = document.querySelector('.mask-middle .vertical-center');
   const dummySlot = document.querySelector('.mask-top .game-v-clone');
@@ -326,29 +325,20 @@ window.syncTopClone = window.syncClone = function() {
   // Force link colors inside clone
   clone.querySelectorAll('a').forEach(el => { el.style.color = 'white'; });
 
-  // Interactive/hover classes to remove
+  // Strip hover/interactive classes
   const interactiveClasses = ['hover-scale', 'js-press-scale', 'is-hovered'];
+  interactiveClasses.forEach(cls => {
+    clone.classList.remove(cls);
+    clone.querySelectorAll('.' + cls).forEach(el => el.classList.remove(cls));
+  });
 
-  const cleanNode = (el) => {
-    interactiveClasses.forEach(cls => el.classList.remove(cls));
-    
-    // Kill dynamic inline styles applied mid-animation by Webflow JS
-    el.style.transition = 'none';
-    el.style.animation = 'none';
-
-    // If Webflow captured mid-fade (opacity < 1 or display none on wrapper), reset visibility
-    if (el.style.opacity && el.style.opacity !== '1') {
-      el.style.opacity = '1';
-    }
-
-    // Only clear inline transforms if they contain scale hover states
-    if (el.style.transform && el.style.transform.includes('scale')) {
-      el.style.transform = '';
-    }
-  };
-
-  cleanNode(clone);
-  clone.querySelectorAll('*').forEach(cleanNode);
+  // Strip inline Webflow fade/transition styles from dropdown elements in clone
+  const dropdownEls = clone.querySelectorAll('.dropdown-gamelvl, .dropdown-toggle-lvl, .w-dropdown-list, .w-dropdown-toggle');
+  dropdownEls.forEach(el => {
+    el.style.opacity = '';
+    el.style.transition = '';
+    el.style.animation = '';
+  });
 
   dummySlot.appendChild(clone);
 };

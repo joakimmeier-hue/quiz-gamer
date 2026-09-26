@@ -378,12 +378,24 @@ a.button-link:hover {
 /* ────────────────── GAME START PAGES ──────────────────
 
 MASK-TOP-CLONE
-/* Disable all pointer events, transforms, and transition delays inside mask-top */
+/* Mask Top - Disable pointer events and CSS transition delays */
 .mask-top,
 .mask-top * {
   pointer-events: none !important;
-  /* transition: none !important;
-  animation: none !important; */
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Instant clone visibility mirror */
+.mask-top .dropdown-gamelvl {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+.mask-top .dropdown-gamelvl.is-open {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 /* ARROW SCROLL ANCHOR */
