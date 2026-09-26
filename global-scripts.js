@@ -309,6 +309,43 @@ const topic = topicMatch ? topicMatch[1] : "science";
 });
 
 // 1 BLUR TOP OF PAGE - WITH CLONE
+// Global definition to prevent ReferenceErrors regardless of script load order
+window.syncTopClone = window.syncClone = function() {
+  const real = document.querySelector('.mask-middle .vertical-center');
+  const dummySlot = document.querySelector('.mask-top .game-v-clone');
+
+  if (!real || !dummySlot) return;
+
+  dummySlot.innerHTML = '';
+  const clone = real.cloneNode(true);
+
+  // Strip duplicate IDs
+  clone.removeAttribute('id');
+  clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+
+  // Force link colors inside clone
+  clone.querySelectorAll('a').forEach(el => { el.style.color = 'white'; });
+
+  // Classes to strip out
+  const interactiveClasses = ['hover-scale', 'js-press-scale'];
+
+  // Helper to strip hover scaling, transforms, and transitions from clone nodes
+  const sanitizeNode = (el) => {
+    interactiveClasses.forEach(cls => el.classList.remove(cls));
+    
+    // Kill transforms and transitions so hover states and animations don't stick or delay
+    el.style.transform = 'none';
+    el.style.transition = 'none';
+    el.style.animation = 'none';
+  };
+
+  sanitizeNode(clone);
+  clone.querySelectorAll('*').forEach(sanitizeNode);
+
+  dummySlot.appendChild(clone);
+};
+
+// DOM listener for initial layout setup & scroll sync
 document.addEventListener('DOMContentLoaded', () => {
   const scrollSource = document.querySelector('.mask-middle');
   const scrollSlave = document.querySelector('.mask-top');
@@ -321,56 +358,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { passive: true });
   }
 
-  const real = document.querySelector('.mask-middle .vertical-center');
-  const dummySlot = document.querySelector('.mask-top .game-v-clone');
-
-  if (!real || !dummySlot) return;
-
-  // Global function to instantly refresh the clone
-  window.syncTopClone = function() {
-    dummySlot.innerHTML = '';
-    const clone = real.cloneNode(true);
-
-    // Strip duplicate IDs
-    clone.removeAttribute('id');
-    clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
-
-    // Force link colors
-    clone.querySelectorAll('a').forEach(el => { el.style.color = 'white'; });
-
-    // Strip interactive classes
-    const interactiveClasses = ['hover-scale', 'js-press-scale'];
-    interactiveClasses.forEach(cls => {
-      clone.classList.remove(cls);
-      clone.querySelectorAll('.' + cls).forEach(el => el.classList.remove(cls));
-    });
-
-    dummySlot.appendChild(clone);
-  };
-
-  // Initial clone on page load
+  // Run initial sync on load
   window.syncTopClone();
-
-
-  // 2. Efficient MutationObserver to re-sync only when dropdown options/classes change
-  let pendingUpdate = false;
-  const observer = new MutationObserver(() => {
-    if (!pendingUpdate) {
-      pendingUpdate = true;
-      requestAnimationFrame(() => {
-        syncClone();
-        pendingUpdate = false;
-      });
-    }
-  });
-
-  // Observe text, class, and structure modifications inside .vertical-center
-  observer.observe(real, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ['class', 'style']
-  });
 });
 
 // 2 COMPONENT .dropdown-gamelevel
