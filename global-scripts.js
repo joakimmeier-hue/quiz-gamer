@@ -469,6 +469,19 @@ document.addEventListener('DOMContentLoaded', () => {
         startBtn.setAttribute('href', `/${topic}-game-${selectedLevel}`);
       }
 
+      // ➕ ADD THIS BLOCK: Fetch dynamic stats for the newly selected tier
+      if (typeof window.loadGameInfo === 'function') {
+        // Temporarily show "..." or a loader while fetching (optional but good for UX)
+        const preAttemptsEl = document.getElementById('pre-attempts');
+        const highscoreEl = document.getElementById('highscore');
+        const lbHighscoreEl = document.getElementById('lb-highscore');
+        if (preAttemptsEl) preAttemptsEl.textContent = "...";
+        if (highscoreEl) highscoreEl.textContent = "...";
+        if (lbHighscoreEl) lbHighscoreEl.textContent = "...";
+
+        window.loadGameInfo(topic, selectedLevel);
+      }
+
       toggleDropdown(false);
 
       if (typeof window.syncTopClone === 'function') {

@@ -1526,49 +1526,64 @@ function validateUsernameRules(rawName) {
 }
 
 // ────────────────────────────────────── GAME START ──────────────────────────────────────
-// ── GAME INFO ───
-(function initGameInfoPanel() {
-  const gameMatch = currentSlug.match(/^([a-z]+)-start$/);
-  if (!gameMatch) return; // not a start page
+// ────────────────────────────────────── GAME START ──────────────────────────────────────
+// ── GAME-START INFO PANEL ───
 
-  const topic = gameMatch[1];
-  const level = 1;
+// 1. Make the fetch logic globally accessible so the dropdown can trigger it
+window.loadGameInfo = async function(topic, level) {
+  if (!currentUser) return; // Failsafe
+
   const gameId = `${topic}-l${level}`;
 
-  const tryLoad = async () => {
+  // Fetch User Attempts & Highscore
+  try {
+    const attemptRef = doc(db, "users", currentUser.uid, "attempts", gameId);
+    const attemptSnap = await getDoc(attemptRef);
+    const preAttempts = attemptSnap.exists() ? attemptSnap.data().attemptCount || 0 : 0;
+    const highscore = attemptSnap.exists() ? attemptSnap.data().bestScore || 0 : 0;
+
+    const preAttemptsEl = document.getElementById('pre-attempts');
+    if (preAttemptsEl) preAttemptsEl.textContent = preAttempts;
+    
+    const highscoreEl = document.getElementById('highscore');
+    if (highscoreEl) highscoreEl.textContent = highscore;
+  } catch (err) {
+    console.error("Failed to load attempt data:", err.message);
+  }
+
+  // Fetch Global Leaderboard Highscore
+  try {
+    const getGameInfoFn = httpsCallable(functions, "getGameInfo");
+    const result = await getGameInfoFn({ topic, level: parseInt(level, 10) });
+    
+    const lbHighscoreEl = document.getElementById('lb-highscore');
+    if (lbHighscoreEl) lbHighscoreEl.textContent = result.data.lbHighscore;
+  } catch (err) {
+    console.error("Failed to load leaderboard highscore:", err.message);
+  }
+
+  // ➕ SYNC TOP CLONE ONCE ALL DATA IS POPULATED
+  if (typeof window.syncTopClone === 'function') {
+    window.syncTopClone();
+  }
+};
+
+// 2. Initial Page Load (Defaults to Level 1)
+(function initGameInfoPanel() {
+  const gameMatch = currentSlug.match(/^([a-z]+)-start$/);
+  if (!gameMatch) return; 
+  const topic = gameMatch[1];
+
+  const tryInitialLoad = () => {
     if (!currentUser) {
-      setTimeout(tryLoad, 200);
+      setTimeout(tryInitialLoad, 200); // Wait for Auth
       return;
     }
-    try {
-      const attemptRef = doc(db, "users", currentUser.uid, "attempts", gameId);
-      const attemptSnap = await getDoc(attemptRef);
-      const preAttempts = attemptSnap.exists() ? attemptSnap.data().attemptCount || 0 : 0;
-      const highscore = attemptSnap.exists() ? attemptSnap.data().bestScore || 0 : 0;
-
-      const preAttemptsEl = document.getElementById('pre-attempts');
-      if (preAttemptsEl) preAttemptsEl.textContent = fmtNum(preAttempts);
-      const highscoreEl = document.getElementById('highscore');
-      if (highscoreEl) highscoreEl.textContent = fmtNum(highscore);
-    } catch (err) {
-      console.error("Failed to load attempt data:", err.message);
-    }
-
-    try {
-      const getGameInfoFn = httpsCallable(functions, "getGameInfo");
-      const result = await getGameInfoFn({ topic, level });
-      const lbHighscoreEl = document.getElementById('lb-highscore');
-      if (lbHighscoreEl) lbHighscoreEl.textContent = fmtNum(result.data.lbHighscore);
-    } catch (err) {
-      console.error("Failed to load leaderboard highscore:", err.message);
-    }
-
-    // ➕ SYNC TOP CLONE ONCE DATA IS POPULATED IN DOM
-    if (typeof window.syncTopClone === 'function') {
-      window.syncTopClone();
-    }
+    // Load Tier 1 data initially
+    window.loadGameInfo(topic, 1);
   };
-  tryLoad();
+  
+  tryInitialLoad();
 })();
 
 /* setupGameListener();  */ // whats this?????????? remove
