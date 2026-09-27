@@ -1557,6 +1557,10 @@ function validateUsernameRules(rawName) {
     } catch (err) {
       console.error("Failed to load leaderboard highscore:", err.message);
     }
+    // ➕ SYNC TOP CLONE ONCE DATA IS POPULATED IN DOM
+    if (typeof window.syncTopClone === 'function') {
+      window.syncTopClone();
+    }
   };
   tryLoad();
 })();
