@@ -151,17 +151,17 @@ function revealFoucElements() {
   }, 7500);
 });
 
-
-// ── CENTRALIZED POPUP MESSAGE DICTIONARY ──────────────────────────────
+// ──────────────── REUSABLE GLOBAL INFO POP  ───────────────────────────────────────
+// Pop up message dictionary 
 const INFO_MESSAGES = {
   // Start Page / Tier Selection
   NO_TIER_SELECTED: "Please select a tier!",
   LEVEL_TOO_LOW: (reqLvl) => `Progress to level ${reqLvl} to play this tier!`,
   
   // Future scenarios can be added here:
-};
 
-// ── REUSABLE GLOBAL INFO HELPER ───────────────────────────────────────
+};
+// GLobal info helper
 function showGlobalInfo(text) {
   const globalInfo = document.querySelector('.global-info');
   const giText = document.querySelector('.gi-text');
@@ -361,8 +361,12 @@ window.syncTopClone = window.syncClone = function() {
   });
 
   // Include .dropdown-gamelevel and force opacity 1 on clone elements
-  const dropdownEls = clone.querySelectorAll('.dropdown-gamelevel, .dropdown-gamelvl, .dropdown-toggle-lvl, .w-dropdown-list, .w-dropdown-toggle');
-  dropdownEls.forEach(el => {
+const dropdownEls = clone.querySelectorAll('.dropdown-gamelevel, .dropdown-gamelevel *, .dropdown-gamelvl, .dropdown-toggle-lvl, .w-dropdown-list, .w-dropdown-toggle');
+dropdownEls.forEach(el => {
+  el.style.opacity = '1';
+  el.style.transition = 'none';
+  el.style.animation = 'none';
+});  dropdownEls.forEach(el => {
     el.style.opacity = '1';
     el.style.transition = 'none';
     el.style.animation = 'none';
@@ -376,6 +380,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const scrollSource = document.querySelector('.mask-middle');
   const scrollSlave = document.querySelector('.mask-top');
 
+  var Webflow = window.Webflow || [];
+  Webflow.push(function () {
+    if (typeof window.syncTopClone === 'function') {
+      window.syncTopClone();
+    }
+  });
+
   if (scrollSource && scrollSlave) {
     scrollSource.addEventListener('scroll', () => {
       requestAnimationFrame(() => {
@@ -386,6 +397,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Run initial sync on load
   window.syncTopClone();
+
+  // ➕ ADD THIS: Auto-sync after the 1.75s CSS animation delay completes
+  setTimeout(() => {
+    if (typeof window.syncTopClone === 'function') {
+      window.syncTopClone();
+    }
+  }, 1800);
 });
 
 // 2 COMPONENT .dropdown-gamelevel

@@ -1278,7 +1278,7 @@ window.currentUserData = null; // <-- ADDED 1: Initialize global variable
 
 // ── FIREBASE AUTH OBSERVER ── & ── INCOMPLETE ACCOUNT RECOVERY ──
 // ── UPDATE onAuthStateChanged to RESOLVE when profile is complete ──
-onAuthStateChanged(auth, async (user) => {
+  onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   updateAuthUI(user);
 
