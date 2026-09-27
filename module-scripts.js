@@ -1518,7 +1518,7 @@ function validateUsernameRules(rawName) {
 }
 
 // ────────────────────────────────────── GAME START ──────────────────────────────────────
-// ── GAME-START INFO PANEL ───
+// ── GAME INFO ───
 (function initGameInfoPanel() {
   const gameMatch = currentSlug.match(/^([a-z]+)-start$/);
   if (!gameMatch) return; // not a start page

@@ -360,14 +360,12 @@ window.syncTopClone = window.syncClone = function() {
     clone.querySelectorAll('.' + cls).forEach(el => el.classList.remove(cls));
   });
 
-  // Include .dropdown-gamelevel and force opacity 1 on clone elements
-const dropdownEls = clone.querySelectorAll('.dropdown-gamelevel, .dropdown-gamelevel *, .dropdown-gamelvl, .dropdown-toggle-lvl, .w-dropdown-list, .w-dropdown-toggle');
-dropdownEls.forEach(el => {
-  el.style.opacity = '1';
-  el.style.transition = 'none';
-  el.style.animation = 'none';
-});  dropdownEls.forEach(el => {
+// Include dropdown and .game-info, force opacity 1, and reset transforms on clone elements
+  const dropdownEls = clone.querySelectorAll('.dropdown-gamelevel, .dropdown-gamelevel *, .dropdown-gamelvl, .dropdown-toggle-lvl, .w-dropdown-list, .w-dropdown-toggle, .game-info, .game-info *');
+  
+  dropdownEls.forEach(el => {
     el.style.opacity = '1';
+    el.style.transform = 'translateY(0%)'; /* ➕ ADDED to prevent game-info from getting stuck off-screen */
     el.style.transition = 'none';
     el.style.animation = 'none';
   });
