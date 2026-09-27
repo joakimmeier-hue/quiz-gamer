@@ -1524,9 +1524,6 @@ function validateUsernameRules(rawName) {
   if (!gameMatch) return; // not a start page
 
   const topic = gameMatch[1];
-  // NOTE: level isn't in the slug on start pages — assumes level 1 for now.
-  // If start pages later support multiple levels via a dropdown, this needs
-  // to read the selected level instead of hardcoding it.
   const level = 1;
   const gameId = `${topic}-l${level}`;
 
@@ -1557,6 +1554,7 @@ function validateUsernameRules(rawName) {
     } catch (err) {
       console.error("Failed to load leaderboard highscore:", err.message);
     }
+
     // ➕ SYNC TOP CLONE ONCE DATA IS POPULATED IN DOM
     if (typeof window.syncTopClone === 'function') {
       window.syncTopClone();
