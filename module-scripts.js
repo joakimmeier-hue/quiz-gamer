@@ -61,9 +61,11 @@ const userLevelEl = document.getElementById('user-level');
 const userScoreEl = document.getElementById('user-total-score');
 const userRankEl = document.getElementById('user-rank');
 
-// Make number separator like 1,000
+// ───── Make number separator like 1,000 ─────
 function fmtNum(n) {
   const lang = document.documentElement.lang || 'en';
+  // If you want eng separator 10,000 disregarding region, use this instead:
+  /* const lang = (document.documentElement.lang || 'en').split('-')[0]; // "en-SE" → "en" */
   return new Intl.NumberFormat(lang).format(n);
 }
 
