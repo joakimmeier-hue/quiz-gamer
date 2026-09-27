@@ -1526,68 +1526,69 @@ function validateUsernameRules(rawName) {
 }
 
 // ────────────────────────────────────── GAME START ──────────────────────────────────────
-// ────────────────────────────────────── GAME START ──────────────────────────────────────
 // ── GAME-START INFO PANEL ───
 
-// 1. Make the fetch logic globally accessible so the dropdown can trigger it
 window.loadGameInfo = async function(topic, level) {
-  if (!currentUser) return; // Failsafe
+  if (!currentUser) return;
 
   const gameId = `${topic}-l${level}`;
 
-  // Fetch User Attempts & Highscore
+  let preAttempts = 0;
+  let highscore = 0;
+  let lbHighscore = 0;
+
+  // 1. Fetch User Stats
   try {
     const attemptRef = doc(db, "users", currentUser.uid, "attempts", gameId);
     const attemptSnap = await getDoc(attemptRef);
-    const preAttempts = attemptSnap.exists() ? attemptSnap.data().attemptCount || 0 : 0;
-    const highscore = attemptSnap.exists() ? attemptSnap.data().bestScore || 0 : 0;
-
-    const preAttemptsEl = document.getElementById('pre-attempts');
-    if (preAttemptsEl) preAttemptsEl.textContent = preAttempts;
-    
-    const highscoreEl = document.getElementById('highscore');
-    if (highscoreEl) highscoreEl.textContent = highscore;
+    if (attemptSnap.exists()) {
+      preAttempts = attemptSnap.data().attemptCount || 0;
+      highscore = attemptSnap.data().bestScore || 0;
+    }
   } catch (err) {
     console.error("Failed to load attempt data:", err.message);
   }
 
-  // Fetch Global Leaderboard Highscore
+  // 2. Fetch Leaderboard Stats
   try {
     const getGameInfoFn = httpsCallable(functions, "getGameInfo");
     const result = await getGameInfoFn({ topic, level: parseInt(level, 10) });
-    
-    const lbHighscoreEl = document.getElementById('lb-highscore');
-    if (lbHighscoreEl) lbHighscoreEl.textContent = result.data.lbHighscore;
+    lbHighscore = result.data.lbHighscore || 0;
   } catch (err) {
     console.error("Failed to load leaderboard highscore:", err.message);
   }
 
-  // ➕ SYNC TOP CLONE ONCE ALL DATA IS POPULATED
+  // 3. Format numbers with fmtNum and update the DOM
+  const preAttemptsEl = document.getElementById('pre-attempts');
+  const highscoreEl = document.getElementById('highscore');
+  const lbHighscoreEl = document.getElementById('lb-highscore');
+
+  if (preAttemptsEl) preAttemptsEl.textContent = fmtNum(preAttempts);
+  if (highscoreEl) highscoreEl.textContent = fmtNum(highscore);
+  if (lbHighscoreEl) lbHighscoreEl.textContent = fmtNum(lbHighscore);
+
+  // 4. Sync the top clone
   if (typeof window.syncTopClone === 'function') {
     window.syncTopClone();
   }
 };
 
-// 2. Initial Page Load (Defaults to Level 1)
+// ── Initial Page Load Trigger (Defaults to Level 1) ───
 (function initGameInfoPanel() {
-  const gameMatch = currentSlug.match(/^([a-z]+)-start$/);
-  if (!gameMatch) return; 
+  const gameMatch = currentSlug.match(/^([a-z0-9-]+)-start$/i);
+  if (!gameMatch) return;
   const topic = gameMatch[1];
 
   const tryInitialLoad = () => {
     if (!currentUser) {
-      setTimeout(tryInitialLoad, 200); // Wait for Auth
+      setTimeout(tryInitialLoad, 200);
       return;
     }
-    // Load Tier 1 data initially
     window.loadGameInfo(topic, 1);
   };
   
   tryInitialLoad();
 })();
-
-/* setupGameListener();  */ // whats this?????????? remove
-
 
 // ────────────────────────────────────── GAME RUNNING ──────────────────────────────────────
 // 3. FETCH AND SEED QUESTIONS RANDOMLY

@@ -7,6 +7,13 @@ document.addEventListener('auxclick', function(e) {
   }
 });
 
+// ───── Make number separator like 1,000 / 1 000 ─────
+function fmtNum(n) {
+  if (isNaN(n) || n === null || n === undefined) return n; // Safely returns "..." without turning into NaN!
+  const lang = document.documentElement.lang || 'en';
+  return new Intl.NumberFormat(lang).format(Number(n));
+}
+
 // ROBUST SMOOTH SCROLL TO ELEMENT ID (cancelable)
 // Finds the nearest scrollable ancestor, or null if the page itself scrolls
 function getScrollParent(el) {
@@ -475,6 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const preAttemptsEl = document.getElementById('pre-attempts');
         const highscoreEl = document.getElementById('highscore');
         const lbHighscoreEl = document.getElementById('lb-highscore');
+        
         if (preAttemptsEl) preAttemptsEl.textContent = "...";
         if (highscoreEl) highscoreEl.textContent = "...";
         if (lbHighscoreEl) lbHighscoreEl.textContent = "...";
