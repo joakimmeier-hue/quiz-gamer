@@ -61,6 +61,12 @@ const userLevelEl = document.getElementById('user-level');
 const userScoreEl = document.getElementById('user-total-score');
 const userRankEl = document.getElementById('user-rank');
 
+// Make number separator like 1,000
+function fmtNum(n) {
+  const lang = document.documentElement.lang || 'en';
+  return new Intl.NumberFormat(lang).format(n);
+}
+
 // Ensure currentSlug exists for routing (must be defined before routeGuard runs)
 if (typeof currentSlug === 'undefined') {
   let derived = (window.location.pathname || '/').replace(/^\/+|\/+$/g, '');
@@ -1226,8 +1232,8 @@ async function loadUserData(uid) {
        
        // Uppdatera resten av UI med sparad data
        if (userLevelEl) userLevelEl.textContent = "Level " + (data.level || 1);
-       if (userScoreEl) userScoreEl.textContent = (data.totalScore || 0);
-       if (userRankEl) userRankEl.textContent = (data.rank || 0);
+       if (userScoreEl) userScoreEl.textContent = fmtNum(data.totalScore || 0);
+       if (userRankEl) userRankEl.textContent = fmtNum(data.rank || 0);
        if (userDisplayName) userDisplayName.textContent = data.username || "Player";
        // NYTT: Tvinga ut namnet till alla UI-element när sidan laddas
         const uiNameElements = document.querySelectorAll('.player-info.username');
@@ -1539,9 +1545,9 @@ function validateUsernameRules(rawName) {
       const highscore = attemptSnap.exists() ? attemptSnap.data().bestScore || 0 : 0;
 
       const preAttemptsEl = document.getElementById('pre-attempts');
-      if (preAttemptsEl) preAttemptsEl.textContent = preAttempts;
+      if (preAttemptsEl) preAttemptsEl.textContent = fmtNum(preAttempts);
       const highscoreEl = document.getElementById('highscore');
-      if (highscoreEl) highscoreEl.textContent = highscore;
+      if (highscoreEl) highscoreEl.textContent = fmtNum(highscore);
     } catch (err) {
       console.error("Failed to load attempt data:", err.message);
     }
@@ -1550,7 +1556,7 @@ function validateUsernameRules(rawName) {
       const getGameInfoFn = httpsCallable(functions, "getGameInfo");
       const result = await getGameInfoFn({ topic, level });
       const lbHighscoreEl = document.getElementById('lb-highscore');
-      if (lbHighscoreEl) lbHighscoreEl.textContent = result.data.lbHighscore;
+      if (lbHighscoreEl) lbHighscoreEl.textContent = fmtNum(result.data.lbHighscore);
     } catch (err) {
       console.error("Failed to load leaderboard highscore:", err.message);
     }
@@ -1793,9 +1799,10 @@ Webflow.push(function() {
     return;
   }
   const setText = (id, value) => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = value;
-  };
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = typeof value === 'number' ? fmtNum(value) : value;
+};
   setText('list-game', data.topic.toUpperCase());
   setText('list-result', `${data.correctCount}/${data.totalQuestions}`);
   setText('list-time', data.timeStr);
