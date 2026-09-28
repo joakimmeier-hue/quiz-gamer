@@ -287,7 +287,7 @@ function updateTierLocks(playerLevel = 1) {
 
 // ── START BUTTON HANDLER ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  const startBtn = document.querySelector('.mask-middle .game-start-btn');
+  const startBtn = document.querySelector('.mask-middle .game-start-btn-wrapper');
   if (!startBtn) return;
 
   startBtn.addEventListener('click', async (e) => {
@@ -417,7 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const dropdownList = document.querySelector('.mask-middle .dropdown-gamelvl');
   const gamelvlBtn = document.querySelector('.mask-middle .gamelvl-btn');
   const levelRows = Array.from(document.querySelectorAll('.mask-middle .game-level-option'));
-  const startBtn = document.querySelector('.mask-middle .game-start-btn');
+  const startBtn = document.querySelector('.mask-middle .game-start-btn-wrapper');
   if (!dropdownToggle || !dropdownList || !gamelvlBtn || !levelRows.length) return;
 
   levelRows.forEach(row => { row.__originalNextSibling = row.nextSibling; });
@@ -509,7 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // SCROLL: game-start-btn visibility + arrow hide/show
 document.addEventListener('DOMContentLoaded', () => {
   const scrollContainer = document.querySelector('.mask-middle');
-  const targetBtns = document.querySelectorAll('.mask-middle .game-start-btn, .game-start-btn-gma');
+  const targetBtns = document.querySelectorAll('.mask-middle .game-start-btn-wrapper, .game-start-btn-gma');
   const arrowWrapper = document.querySelector('.arrow-anchor-wrapper');
 
   if (targetBtns.length === 0) return;
@@ -528,7 +528,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
-        const btnInside = entry.target.querySelector('.game-start-btn, .game-start-btn-gma');
+        const btnInside = entry.target.querySelector('.game-start-btn-wrapper, .game-start-btn-gma');
         if (!btnInside) return;
 
         if (entry.isIntersecting) {
@@ -1881,7 +1881,7 @@ const HOVER_SCALE_CLASSES = [
     'button',
     'button-link',
     'game-start-btn-gma',
-    'start-btn-text',
+    'game-start-btn',
     'finish-btn',    
     'share-score-btn',
     'link-next-challenge',
@@ -1919,7 +1919,7 @@ const PRESS_SCALE_CLASSES = [
     'button',
     'button-link',
     'game-start-btn-gma',
-    'start-btn-text',
+    'game-start-btn',
     'finish-btn',    
     'share-score-btn',
     'link-next-challenge',

@@ -413,7 +413,7 @@ a.button-link:hover {
 
 /* COMPONENT GAME START BTN */
   /* Base state: Hidden & displaced up by 350% */
-  .game-start-btn {
+  .game-start-btn-wrapper {
     opacity: 0;
     transform: translateY(-350%);
     pointer-events: none;
@@ -423,7 +423,7 @@ a.button-link:hover {
     will-change: opacity, transform;
   }
   /* Active visible state */
-  .game-start-btn.is-visible { 
+  .game-start-btn-wrapper.is-visible { 
     opacity: 1 !important;
     transform: translateY(0%) !important;
     pointer-events: auto !important;
