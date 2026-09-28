@@ -506,21 +506,21 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // 3 COMPONENT game-start-btn
-// SCROLL: game-start-btn visibility + arrow hide/show
+// SCROLL: game-start-btn-wrapper visibility + arrow hide/show
 document.addEventListener('DOMContentLoaded', () => {
   const scrollContainer = document.querySelector('.mask-middle');
-  const targetBtns = document.querySelectorAll('.mask-middle .game-start-btn-wrapper, .game-start-btn-gma');
+  const targetWrappers = document.querySelectorAll('.mask-middle .game-start-btn-wrapper, .game-start-btn-gma');
   const arrowWrapper = document.querySelector('.arrow-anchor-wrapper');
 
-  if (targetBtns.length === 0) return;
+  if (targetWrappers.length === 0) return;
 
-  function showButton(btnInside) {
-    if (btnInside) btnInside.classList.add('is-visible');
+  function showButton(wrapper) {
+    if (wrapper) wrapper.classList.add('is-visible');
     if (arrowWrapper) arrowWrapper.classList.add('is-hidden');
   }
 
-  function hideButton(btnInside) {
-    if (btnInside) btnInside.classList.remove('is-visible');
+  function hideButton(wrapper) {
+    if (wrapper) wrapper.classList.remove('is-visible');
     if (arrowWrapper) arrowWrapper.classList.remove('is-hidden');
   }
 
@@ -528,28 +528,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
-        const btnInside = entry.target.querySelector('.game-start-btn, .game-start-btn-gma');
-        if (!btnInside) return;
+        // Target the WRAPPER inside the intersecting row
+        const wrapper = entry.target.querySelector('.game-start-btn-wrapper, .game-start-btn-gma');
+        if (!wrapper) return;
 
         if (entry.isIntersecting) {
-          showButton(btnInside);
+          showButton(wrapper);
         } else {
-          // If we scroll back up, IMMEDIATELY allow the reverse animation to happen
           if (!isAtBottom()) {
-            hideButton(btnInside);
+            hideButton(wrapper);
           }
         }
       });
     },
     {
       root: scrollContainer,
-      threshold: 0.1, // Lower threshold so it reacts smoothly the moment it enters/exits view
+      threshold: 0.1,
       rootMargin: "0px 0px -15% 0px"
     }
   );
 
-  targetBtns.forEach((btn) => {
-    const parentRow = btn.closest('.row-gamestart, .row-2');
+  targetWrappers.forEach((wrapper) => {
+    const parentRow = wrapper.closest('.row-gamestart, .row-2');
     if (parentRow) observer.observe(parentRow);
   });
 
@@ -570,19 +570,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const scrollingUp = currentScrollPos < lastScrollPos;
 
     if (isAtBottom() && !scrollingUp) {
-      // Only force show when arriving at the bottom scrolling down
-      targetBtns.forEach((btn) => showButton(btn));
+      targetWrappers.forEach((wrapper) => showButton(wrapper));
     } else if (scrollingUp && !isAtBottom()) {
-      // The moment user scrolls UP and leaves the bottom, let observer take over naturally
-      targetBtns.forEach((btn) => {
-        const parentRow = btn.closest('.row-gamestart, .row-2');
+      targetWrappers.forEach((wrapper) => {
+        const parentRow = wrapper.closest('.row-gamestart, .row-2');
         if (parentRow) {
           const rect = parentRow.getBoundingClientRect();
           const containerRect = scrollContainer ? scrollContainer.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
           
-          // If the row is no longer in the trigger zone, hide button & bring back arrow
           if (rect.top > containerRect.bottom || rect.bottom < containerRect.top) {
-            hideButton(btn);
+            hideButton(wrapper);
           }
         }
       });
