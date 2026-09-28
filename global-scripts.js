@@ -419,6 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 2 COMPONENT .dropdown-gamelevel
 document.addEventListener('DOMContentLoaded', () => {
+  const dropdownComponent = document.querySelector('.mask-middle .dropdown-gamelevel');
   const dropdownToggle = document.querySelector('.mask-middle .dropdown-toggle-lvl');
   const dropdownList = document.querySelector('.mask-middle .dropdown-gamelvl');
   const gamelvlBtn = document.querySelector('.mask-middle .gamelvl-btn');
@@ -436,8 +437,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const toggleDropdown = (show) => {
     const shouldOpen = show !== undefined ? show : !dropdownList.classList.contains('is-open');
-    dropdownList.classList.toggle('is-open', shouldOpen);
     
+    // Toggle on both the list and the parent component wrapper
+    dropdownList.classList.toggle('is-open', shouldOpen);
+    if (dropdownComponent) dropdownComponent.classList.toggle('is-open', shouldOpen);
+
     if (typeof window.syncTopClone === 'function') {
       window.syncTopClone();
     }
@@ -482,9 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
         startBtn.setAttribute('href', `/${topic}-game-${selectedLevel}`);
       }
 
-      // ➕ ADD THIS BLOCK: Fetch dynamic stats for the newly selected tier
       if (typeof window.loadGameInfo === 'function') {
-        // Temporarily show "..." or a loader while fetching (optional but good for UX)
         const preAttemptsEl = document.getElementById('pre-attempts');
         const highscoreEl = document.getElementById('highscore');
         const lbHighscoreEl = document.getElementById('lb-highscore');

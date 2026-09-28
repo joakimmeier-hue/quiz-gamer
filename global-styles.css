@@ -415,6 +415,19 @@ a.button-link:hover {
   opacity: 1;
   transform: translateY(0%);
 }
+/* Button effects, small-squares. Base transition for smooth fading */
+.dropdown-gamelevel .small-square {
+  transition: opacity 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Scoped rule: Fade away square 3 and square 4 when dropdown is open */
+.dropdown-gamelevel.is-open .small-square._3,
+.dropdown-gamelevel.is-open .small-square._4,
+.dropdown-gamelevel:has(.dropdown-gamelvl.is-open) .small-square._3,
+.dropdown-gamelevel:has(.dropdown-gamelvl.is-open) .small-square._4 {
+  opacity: 0;
+  pointer-events: none;
+}
 
 /* GAME INFO LOAD ANIMATION */
 .game-info {
