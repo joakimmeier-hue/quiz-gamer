@@ -421,10 +421,10 @@ a.button-link:hover {
 }
 
 /* Scoped rule: Fade away square 3 and square 4 when dropdown is open */
-.dropdown-gamelevel.is-open .small-square._3,
-.dropdown-gamelevel.is-open .small-square._4,
-.dropdown-gamelevel:has(.dropdown-gamelvl.is-open) .small-square._3,
-.dropdown-gamelevel:has(.dropdown-gamelvl.is-open) .small-square._4 {
+.dropdown-gamelevel.is-open .small-square.bott-r,
+.dropdown-gamelevel.is-open .small-square.bott-l,
+.dropdown-gamelevel:has(.dropdown-gamelvl.is-open) .small-square.bott-r,
+.dropdown-gamelevel:has(.dropdown-gamelvl.is-open) .small-square.bott-l {
   opacity: 0;
   pointer-events: none;
 }
