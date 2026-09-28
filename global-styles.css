@@ -15,16 +15,24 @@
 :root { interpolate-size: allow-keywords; }
 
 /* ——————————————— GLOBAL INFO POP UP ——————————————— */ 
+/* Base overlay container */
 .global-info {
+  display: none;
   opacity: 0;
   pointer-events: none;
   transition: opacity 200ms ease-out;
-  will-change: opacity;
 }
 
 .global-info.is-visible {
   opacity: 1 !important;
   pointer-events: auto;
+}
+
+/* Backdrop blur element isolation */
+.blur-backdrop {
+  -webkit-backdrop-filter: blur(6px); /* Fallback for Safari */
+  backdrop-filter: blur(6px);
+  transform: translateZ(0); /* Forces clean GPU layer initialization */
 }
 
 /* ———————————— EMAIL AUTH MODAL POPUP ——————————————————————————— */

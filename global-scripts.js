@@ -176,16 +176,14 @@ function showGlobalInfo(text) {
 
   if (giText) giText.textContent = text;
 
-  // Set base hidden state explicitly before showing
+  // Make flex first
   globalInfo.style.display = 'flex';
-  globalInfo.style.opacity = '0';
 
-  // Double requestAnimationFrame guarantees browser paints opacity:0 before transitioning to 1
+  // Force a browser reflow/repaint so backdrop-filter initializes before opacity transitions
+  void globalInfo.offsetWidth;
+
   requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      globalInfo.classList.add('is-visible');
-      globalInfo.style.opacity = ''; // let CSS class handle opacity
-    });
+    globalInfo.classList.add('is-visible');
   });
 }
 
@@ -195,7 +193,6 @@ function hideGlobalInfo() {
 
   globalInfo.classList.remove('is-visible');
 
-  // Wait for CSS transition to finish before setting display: none
   setTimeout(() => {
     if (!globalInfo.classList.contains('is-visible')) {
       globalInfo.style.display = 'none';
