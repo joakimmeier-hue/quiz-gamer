@@ -168,7 +168,7 @@ const INFO_MESSAGES = {
   // Future scenarios can be added here:
 
 };
-// GLobal info helper
+// Global info helper
 function showGlobalInfo(text) {
   const globalInfo = document.querySelector('.global-info');
   const giText = document.querySelector('.gi-text');
@@ -176,10 +176,16 @@ function showGlobalInfo(text) {
 
   if (giText) giText.textContent = text;
 
+  // Set base hidden state explicitly before showing
   globalInfo.style.display = 'flex';
+  globalInfo.style.opacity = '0';
+
+  // Double requestAnimationFrame guarantees browser paints opacity:0 before transitioning to 1
   requestAnimationFrame(() => {
-    globalInfo.style.opacity = '1';
-    globalInfo.style.transition = 'opacity 200ms ease-out';
+    requestAnimationFrame(() => {
+      globalInfo.classList.add('is-visible');
+      globalInfo.style.opacity = ''; // let CSS class handle opacity
+    });
   });
 }
 
@@ -187,10 +193,13 @@ function hideGlobalInfo() {
   const globalInfo = document.querySelector('.global-info');
   if (!globalInfo) return;
 
-  globalInfo.style.transition = 'opacity 200ms ease-out';
-  globalInfo.style.opacity = '0';
+  globalInfo.classList.remove('is-visible');
+
+  // Wait for CSS transition to finish before setting display: none
   setTimeout(() => {
-    globalInfo.style.display = 'none';
+    if (!globalInfo.classList.contains('is-visible')) {
+      globalInfo.style.display = 'none';
+    }
   }, 200);
 }
 

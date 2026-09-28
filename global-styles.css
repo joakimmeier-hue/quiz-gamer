@@ -14,6 +14,19 @@
 /* Interpolate-size, try to autosize animations, for whole site */
 :root { interpolate-size: allow-keywords; }
 
+/* ——————————————— GLOBAL INFO POP UP ——————————————— */ 
+.global-info {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease-out;
+  will-change: opacity;
+}
+
+.global-info.is-visible {
+  opacity: 1 !important;
+  pointer-events: auto;
+}
+
 /* ———————————— EMAIL AUTH MODAL POPUP ——————————————————————————— */
 /* 1. Placeholder Text (Grey) */
 #email-auth-email::placeholder,
