@@ -524,11 +524,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (arrowWrapper) arrowWrapper.classList.remove('is-hidden');
   }
 
-  // --- 1. INTERSECTION OBSERVER ---
+ // --- 1. INTERSECTION OBSERVER ---
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
-        // Target the WRAPPER inside the intersecting row
         const wrapper = entry.target.querySelector('.game-start-btn-wrapper, .game-start-btn-gma');
         if (!wrapper) return;
 
@@ -543,8 +542,8 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     {
       root: scrollContainer,
-      threshold: 0.1,
-      rootMargin: "0px 0px -15% 0px"
+      threshold: 0,                   /* Trigger instantly when 1px enters zone */
+      rootMargin: "0px 0px 150px 0px" /* Pre-triggers 150px BEFORE reaching the section */
     }
   );
 

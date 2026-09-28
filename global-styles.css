@@ -411,8 +411,7 @@ a.button-link:hover {
   }
 }
 
-/* COMPONENT GAME START BTN */
-  /* Outer wrapper handles entry animation */
+/* Wrapper controls entry animation */
 .game-start-btn-wrapper {
   opacity: 0;
   transform: translateY(-350%);
@@ -422,12 +421,21 @@ a.button-link:hover {
   transition-delay: 0.13s;
   will-change: opacity, transform;
 }
-  /* Active visible state */
-  .game-start-btn-wrapper.is-visible { 
-    opacity: 1;
-    transform: translateY(0%);
-    pointer-events: auto;
-  } 
+
+.game-start-btn-wrapper.is-visible { 
+  opacity: 1;
+  transform: translateY(0%);
+  pointer-events: auto; /* Enables mouse events on the wrapper */
+}
+
+/* Inner button link */
+.game-start-btn {
+  display: inline-block;
+  position: relative;
+  z-index: 5;             /* Ensures it sits above sibling elements */
+  cursor: pointer;        /* Forces pointer cursor */
+  pointer-events: auto;   /* Ensures hover triggers */
+}
 
   /* ────────────────── GAME RUNNING PAGES ──────────────────
   /* GAME ALTERNATIVE-ROW */
