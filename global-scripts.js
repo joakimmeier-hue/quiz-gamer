@@ -417,7 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const dropdownList = document.querySelector('.mask-middle .dropdown-gamelvl');
   const gamelvlBtn = document.querySelector('.mask-middle .gamelvl-btn');
   const levelRows = Array.from(document.querySelectorAll('.mask-middle .game-level-option'));
-  const startBtn = document.querySelector('.mask-middle .game-start-btn-wrapper');
+  const startBtn = document.querySelector('.mask-middle .game-start-btn');
   if (!dropdownToggle || !dropdownList || !gamelvlBtn || !levelRows.length) return;
 
   levelRows.forEach(row => { row.__originalNextSibling = row.nextSibling; });
@@ -528,7 +528,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
-        const btnInside = entry.target.querySelector('.game-start-btn-wrapper, .game-start-btn-gma');
+        const btnInside = entry.target.querySelector('.game-start-btn, .game-start-btn-gma');
         if (!btnInside) return;
 
         if (entry.isIntersecting) {
