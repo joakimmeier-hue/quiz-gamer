@@ -378,7 +378,8 @@ a.button-link:hover {
   opacity: 0 !important;
 }
 
-.mask-top .dropdown-gllist.is-open {
+/* Change this target from .is-open to .w--open */
+.mask-top .dropdown-gllist.w--open {
   display: flex !important;
   opacity: 1 !important;
   visibility: visible !important;
