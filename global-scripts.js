@@ -1,8 +1,8 @@
 // ────────── GLOBAL INPUT PROTECTION & BUTTON SHIELD ────────
-['mousedown', 'mouseup', 'click', 'auxclick', 'contextmenu'].forEach(eventType => {
+['pointerdown', 'mousedown', 'mouseup', 'click', 'auxclick', 'contextmenu'].forEach(eventType => {
   document.addEventListener(eventType, (e) => {
     // 1. GLOBAL PROTECTION: Stop middle-mouse clicks (e.button === 1) anywhere on the app
-    if (e.button === 1 && eventType === 'auxclick') {
+    if (e.button === 1 && (eventType === 'auxclick' || eventType === 'pointerdown' || eventType === 'mousedown')) {
       e.preventDefault();
     }
 
@@ -13,12 +13,13 @@
 
     if (!shieldedElement) return;
 
-    // Block all non-left clicks (e.button !== 0), right-clicks, and context menus on these elements
+    // Allow ONLY primary left-click / touch tap (e.button === 0)
+    // Block right-clicks (e.button === 2), middle-clicks (e.button === 1), and context menus
     if (e.button !== 0 || eventType === 'contextmenu' || eventType === 'auxclick') {
       e.preventDefault();
       e.stopImmediatePropagation();
     }
-  }, true); // Capture phase stops non-left clicks before children see them
+  }, true); // Capture phase stops non-left clicks before Webflow or children see them
 });
 
 // ───────── Make number separator like 1,000 / 1 000 ───────────
@@ -362,8 +363,6 @@ const topic = topicMatch ? topicMatch[1] : "science";
     }
   }); 
 });
-
-
 
 // 1 BLUR TOP OF PAGE - WITH CLONE
 window.syncTopClone = window.syncClone = function() {
