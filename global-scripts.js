@@ -446,9 +446,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+ // Main top toggle click -> Play 'select'
   dropdownToggle.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (typeof playSFX === 'function') playSFX('select');
     toggleDropdown();
   });
 
@@ -457,13 +460,19 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       e.stopPropagation();
 
-      levelRows.forEach(r => r.classList.remove('is-selected'));
-      row.classList.add('is-selected');
-      if (dropdownComponent) dropdownComponent.classList.add('has-selection');
+      // CASE A: Row is sitting at the top acting as the toggle button -> Play 'select'
       if (row.parentElement !== dropdownList) {
+        if (typeof playSFX === 'function') playSFX('select');
         toggleDropdown();
         return;
       }
+
+      // CASE B: Row is inside the open list -> Play 'back' on selection
+      if (typeof playSFX === 'function') playSFX('back');
+
+      levelRows.forEach(r => r.classList.remove('is-selected'));
+      row.classList.add('is-selected');
+      if (dropdownComponent) dropdownComponent.classList.add('has-selection');
 
       if (currentlyShown) {
         dropdownList.insertBefore(currentlyShown, currentlyShown.__originalNextSibling);
