@@ -408,10 +408,12 @@ a.button-link:hover {
               opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1),
               transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
-.dropdown-gllist.is-open {
+/* Update list opening state to include Webflow's w--open class */
+.dropdown-gllist.is-open,
+.dropdown-gllist.w--open {
   overflow: visible;
   max-height: 20rem; /* comfortably above the real content height */
-  max-height: calc-size(auto, size);    /* Chrome/Edge 129+: exact real height, no guessing */
+  max-height: calc-size(auto, size); /* Chrome/Edge 129+: exact real height */
   opacity: 1;
   transform: translateY(0%);
 }
@@ -420,20 +422,21 @@ a.button-link:hover {
   transition: opacity 0.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* Fade away ONLY the top toggle button's bottom squares when open */
+/* Update bottom squares fade logic to check for w--open or :has(.w--open) */
 .dropdown-gamelevel.is-open .dropdown-toggle-lvl .small-square.bott-r,
 .dropdown-gamelevel.is-open .dropdown-toggle-lvl .small-square.bott-l,
 .dropdown-gamelevel:has(.dropdown-gllist.is-open) .dropdown-toggle-lvl .small-square.bott-r,
-.dropdown-gamelevel:has(.dropdown-gllist.is-open) .dropdown-toggle-lvl .small-square.bott-l {
+.dropdown-gamelevel:has(.dropdown-gllist.is-open) .dropdown-toggle-lvl .small-square.bott-l,
+.dropdown-gamelevel:has(.w--open) .dropdown-toggle-lvl .small-square.bott-r,
+.dropdown-gamelevel:has(.w--open) .dropdown-toggle-lvl .small-square.bott-l {
   opacity: 0;
   pointer-events: none;
 }
 
-/* Base state for squares inside the dropdown list (visible by default when list opens) */
-.dropdown-gllist .small-square {
-  opacity: 1;
-  transform: translateY(0);
-  transition: transform 0.23s cubic-bezier(0.25, 1, 0.5, 1);
+/* Base state for squares inside the dropdown list */
+.dropdown-gllist.is-open .small-square,
+.dropdown-gllist.w--open .small-square {
+  transform: translateY(1rem);
 }
 
 /* Move down when the dropdown list opens */
