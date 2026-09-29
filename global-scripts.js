@@ -397,8 +397,10 @@ window.syncTopClone = window.syncClone = function() {
 // Include dropdown and .game-info, force opacity 1, and reset transforms on clone elements
   const dropdownEls = clone.querySelectorAll('.dropdown-gamelevel, .dropdown-gamelevel *, .dropdown-gllist, .dropdown-toggle-lvl, .w-dropdown-list, .w-dropdown-toggle, .game-info, .game-info *');
   dropdownEls.forEach(el => {
+        // 🛑 ADD THIS: Stop JS from overwriting the squares' inline opacity and transform!
+    if (el.classList.contains('small-square')) return;
     el.style.opacity = '1';
-    el.style.transform = 'translateY(0%)'; /* ➕ ADDED to prevent game-info from getting stuck off-screen */
+    el.style.transform = 'translateY(0%)'; 
     el.style.transition = 'none';
     el.style.animation = 'none';
   });
