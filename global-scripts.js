@@ -1,10 +1,24 @@
-// PREVENT MIDDLE MOUSE BTN
-// Add this once globally in your app
-document.addEventListener('auxclick', function(e) {
-  // e.button === 1 is Middle Mouse Button
-  if (e.button === 1) {
-    e.preventDefault(); // Prevents links/elements from opening in a new tab/window
-  }
+// ── GLOBAL INPUT PROTECTION & BUTTON SHIELD ──
+['mousedown', 'mouseup', 'click', 'auxclick', 'contextmenu'].forEach(eventType => {
+  document.addEventListener(eventType, (e) => {
+    // 1. GLOBAL PROTECTION: Stop middle-mouse clicks (e.button === 1) anywhere on the app
+    if (e.button === 1 && eventType === 'auxclick') {
+      e.preventDefault();
+    }
+
+    // 2. COMPONENT SHIELD: Check if click happened inside protected UI elements
+    const shieldedElement = e.target.closest(
+      '.dropdown-gamelevel, .game-start-btn-wrapper, [data-left-click-only], .js-left-click-only'
+    );
+
+    if (!shieldedElement) return;
+
+    // Block all non-left clicks (e.button !== 0), right-clicks, and context menus on these elements
+    if (e.button !== 0 || eventType === 'contextmenu' || eventType === 'auxclick') {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
+  }, true); // Capture phase stops non-left clicks before children see them
 });
 
 // ───── Make number separator like 1,000 / 1 000 ─────
@@ -349,21 +363,7 @@ const topic = topicMatch ? topicMatch[1] : "science";
   }); 
 });
 
-// ──────────── UMBRELLA SHIELD: Block all non-left clicks on button containers ────────────
-['mousedown', 'mouseup', 'click', 'auxclick', 'contextmenu'].forEach(eventType => {
-  document.addEventListener(eventType, (e) => {
-    // Check if the event happened inside either component container
-    const isTargetComponent = e.target.closest('.dropdown-gamelevel, .game-start-btn-wrapper');
-    if (!isTargetComponent) return;
 
-    // e.button === 0 is Primary / Left Click (and standard Touch tap)
-    // Block middle clicks (1), right clicks (2), side buttons (3, 4), and context menus
-    if (e.button !== 0 || eventType === 'contextmenu' || eventType === 'auxclick') {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-    }
-  }, true); // `true` uses capture phase to stop non-left clicks BEFORE children hear them
-});
 
 // 1 BLUR TOP OF PAGE - WITH CLONE
 window.syncTopClone = window.syncClone = function() {
