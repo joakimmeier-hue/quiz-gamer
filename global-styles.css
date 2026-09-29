@@ -392,7 +392,7 @@ a.button-link:hover {
 @keyframes fadeIn {
   to { opacity: 1; }
 }
-/* TOP CLONE OVERRIDE (Forces clone to be visible immediately) */
+/* Top clone override (Forces clone to be visible immediately) */
 .mask-top .dropdown-gamelevel {
   opacity: 1 !important;
   animation: none !important;
@@ -420,23 +420,25 @@ a.button-link:hover {
   transition: opacity 0.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* Scoped rule: Fade away square 3 and square 4 when dropdown is open */
-.dropdown-gamelevel.is-open .small-square.bott-r,
-.dropdown-gamelevel.is-open .small-square.bott-l,
-.dropdown-gamelevel:has(.dropdown-gllist.is-open) .small-square.bott-r,
-.dropdown-gamelevel:has(.dropdown-gllist.is-open) .small-square.bott-l {
+/* Fade away ONLY the top toggle button's bottom squares when open */
+.dropdown-gamelevel.is-open .dropdown-toggle-lvl .small-square.bott-r,
+.dropdown-gamelevel.is-open .dropdown-toggle-lvl .small-square.bott-l,
+.dropdown-gamelevel:has(.dropdown-gllist.is-open) .dropdown-toggle-lvl .small-square.bott-r,
+.dropdown-gamelevel:has(.dropdown-gllist.is-open) .dropdown-toggle-lvl .small-square.bott-l {
   opacity: 0;
   pointer-events: none;
 }
-/* Base state & transition for bottom squares inside the dropdown list */
+
+/* Base state for squares inside the dropdown list (visible by default when list opens) */
 .dropdown-gllist .small-square {
-  transform: translateY(0%);
-  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  opacity: 1;
+  transform: translateY(0);
+  transition: transform 0.23s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* Open state: move down (adjust 0.25rem to your desired distance) */
+/* Move down when the dropdown list opens */
 .dropdown-gllist.is-open .small-square {
-  transform: translateY(200%);
+  transform: translateY(0.25rem); /* Or 100% / 200% depending on desired offset */
 }
 
 /* GAME INFO LOAD ANIMATION */
