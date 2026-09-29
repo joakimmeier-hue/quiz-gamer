@@ -424,6 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const gamelvlBtn = document.querySelector('.mask-middle .gamelevel-btn');
   const levelRows = Array.from(document.querySelectorAll('.mask-middle .game-level-option'));
   const startBtn = document.querySelector('.mask-middle .game-start-btn');
+
   if (!dropdownToggle || !dropdownList || !gamelvlBtn || !levelRows.length) return;
 
   levelRows.forEach(row => { row.__originalNextSibling = row.nextSibling; });
@@ -433,56 +434,53 @@ document.addEventListener('DOMContentLoaded', () => {
   const topic = startMatch ? startMatch[1].toLowerCase() : null;
 
   let currentlyShown = null;
+  let isProgrammaticClose = false;
 
-  const toggleDropdown = (show) => {
-    const shouldOpen = show !== undefined ? show : !dropdownList.classList.contains('is-open');
-    
-    dropdownList.classList.toggle('is-open', shouldOpen);
-    if (dropdownComponent) dropdownComponent.classList.toggle('is-open', shouldOpen);
+  // 1. Listen for clicks on the toggle to play native open/close sounds
+  dropdownToggle.addEventListener('click', () => {
+    if (isProgrammaticClose) return; // Prevent double sound when script forces menu shut
 
-    if (typeof window.syncTopClone === 'function') {
-      window.syncTopClone();
+    // If Webflow hasn't added w--open yet, it's opening
+    const isOpening = !dropdownToggle.classList.contains('w--open');
+    if (isOpening) {
+      if (typeof playSFX === 'function') playSFX('select');
+    } else {
+      if (typeof playSFX === 'function') playSFX('back');
     }
-  };
 
-  // Main top toggle click -> Play 'select'
-  dropdownToggle.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (typeof playSFX === 'function') playSFX('select');
-    toggleDropdown();
+    if (typeof window.syncTopClone === 'function') setTimeout(window.syncTopClone, 50);
   });
 
+  // 2. Handle selecting a level
   levelRows.forEach(row => {
     row.addEventListener('click', (e) => {
+      // CASE A: It's sitting at the top acting as the toggle
+      if (row.parentElement !== dropdownList) {
+        return; // Do nothing! Let the click bubble up and trigger the dropdownToggle natively
+      }
+
+      // CASE B: It's clicked INSIDE the dropdown list
       e.preventDefault();
       e.stopPropagation();
 
-      // CASE A: Row is sitting at the top acting as the toggle button -> Play 'select'
-      if (row.parentElement !== dropdownList) {
-        if (typeof playSFX === 'function') playSFX('select');
-        toggleDropdown();
-        return;
-      }
-
-      // CASE B: Row is inside the open list -> Play 'back' on selection
       if (typeof playSFX === 'function') playSFX('back');
 
+      // Update Selection States
       levelRows.forEach(r => r.classList.remove('is-selected'));
       row.classList.add('is-selected');
       if (dropdownComponent) dropdownComponent.classList.add('has-selection');
 
+      // Swap elements
       if (currentlyShown) {
         dropdownList.insertBefore(currentlyShown, currentlyShown.__originalNextSibling);
       }
-
       gamelvlBtn.insertAdjacentElement('beforebegin', row);
       gamelvlBtn.style.display = 'none';
       currentlyShown = row;
 
       row.style.width = getComputedStyle(dropdownToggle).width;
 
+      // Game logic update
       const labelEl = row.querySelector('.game-level');
       const selectedText = (labelEl ? labelEl.textContent : row.textContent).trim();
       const levelMatch = selectedText.match(/\d+/);
@@ -495,28 +493,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (typeof window.loadGameInfo === 'function') {
         const preAttemptsEl = document.getElementById('pre-attempts');
-        const highscoreEl = document.getElementById('highscore');
-        const lbHighscoreEl = document.getElementById('lb-highscore');
-        
         if (preAttemptsEl) preAttemptsEl.textContent = "...";
-        if (highscoreEl) highscoreEl.textContent = "...";
-        if (lbHighscoreEl) lbHighscoreEl.textContent = "...";
-
         window.loadGameInfo(topic, selectedLevel);
       }
 
-      toggleDropdown(false);
+      // Force Webflow to close the menu natively without triggering another sound
+      isProgrammaticClose = true;
+      dropdownToggle.click();
+      setTimeout(() => { isProgrammaticClose = false; }, 50);
 
-      if (typeof window.syncTopClone === 'function') {
-        window.syncTopClone();
-      }
+      if (typeof window.syncTopClone === 'function') window.syncTopClone();
     });
-  });
-
-  document.addEventListener('click', (e) => {
-    if (!dropdownToggle.contains(e.target) && !dropdownList.contains(e.target)) {
-      toggleDropdown(false);
-    }
   });
 });
 

@@ -387,19 +387,21 @@ a.button-link:hover {
 /* COMPONENT .dropdown-gamelevel */
 .dropdown-gamelevel {
   opacity: 0;
-  animation: fadeIn 0.18s 2s forwards;
+  animation: fadeIn 0.18s 1.75s forwards;
 }
+
 @keyframes fadeIn {
   to { opacity: 1; }
 }
-/* Top clone override (Forces clone to be visible immediately) */
+
 .mask-top .dropdown-gamelevel {
   opacity: 1 !important;
   animation: none !important;
 }
 
+/* DROPDOWN LIST STATE (Listens ONLY to Webflow's native w--open) */
 .dropdown-gllist {
-  display: flex;   /* no more display:none — max-height handles hiding now */
+  display: flex;
   overflow: hidden;
   max-height: 0;
   opacity: 0;
@@ -408,46 +410,33 @@ a.button-link:hover {
               opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1),
               transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
-/* Update list opening state to include Webflow's w--open class */
-.dropdown-gllist.is-open,
+
 .dropdown-gllist.w--open {
   overflow: visible;
-  max-height: 20rem; /* comfortably above the real content height */
-  max-height: calc-size(auto, size); /* Chrome/Edge 129+: exact real height */
+  max-height: 20rem;
+  max-height: calc-size(auto, size);
   opacity: 1;
   transform: translateY(0%);
 }
-/* Button effects, small-squares. Base transition for smooth fading */
+
+/* SQUARE BASE TRANSITIONS */
 .dropdown-gamelevel .small-square {
   transition: opacity 0.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* Update bottom squares fade logic to check for w--open or :has(.w--open) */
-.dropdown-gamelevel.is-open .dropdown-toggle-lvl .small-square.bott-r,
-.dropdown-gamelevel.is-open .dropdown-toggle-lvl .small-square.bott-l,
-.dropdown-gamelevel:has(.dropdown-gllist.is-open) .dropdown-toggle-lvl .small-square.bott-r,
-.dropdown-gamelevel:has(.dropdown-gllist.is-open) .dropdown-toggle-lvl .small-square.bott-l,
+/* Hide bottom toggle squares when dropdown is open */
 .dropdown-gamelevel:has(.w--open) .dropdown-toggle-lvl .small-square.bott-r,
 .dropdown-gamelevel:has(.w--open) .dropdown-toggle-lvl .small-square.bott-l {
   opacity: 0;
   pointer-events: none;
 }
 
-/* Base state for squares inside the dropdown list */
-.dropdown-gllist.is-open .small-square,
+/* Inner list squares move down when open */
 .dropdown-gllist.w--open .small-square {
   transform: translateY(1rem);
 }
 
-/* Move down when the dropdown list opens */
-.dropdown-gllist.is-open .small-square {
-  transform: translateY(1rem);
-}
-/* =========================================================
-   CENTER SQUARES: Pop out ONLY when a selection is active
-   ========================================================= */
-
-/* 1. DEFAULT / INITIAL LOAD / OPEN STATE (Hidden by default) */
+/* CENTER SQUARES (Pops out only when tier is selected and menu is completely closed) */
 .dropdown-gamelevel .small-square.center-l,
 .dropdown-gamelevel .small-square.center-r {
   opacity: 0;
@@ -457,16 +446,14 @@ a.button-link:hover {
               transform 0.15s 0s ease;
 }
 
-/* 2. HAS SELECTION & CLOSED STATE (Selected tier sits solo)
-   Slides outward with a 0.1s delay */
-.dropdown-gamelevel.has-selection:not(.is-open) .small-square.center-l {
+.dropdown-gamelevel.has-selection:not(:has(.w--open)) .small-square.center-l {
   opacity: 1;
   transform: translateX(-1rem);
   transition: opacity 0.2s 0.1s cubic-bezier(0.25, 1, 0.5, 1),
               transform 0.25s 0.1s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-.dropdown-gamelevel.has-selection:not(.is-open) .small-square.center-r {
+.dropdown-gamelevel.has-selection:not(:has(.w--open)) .small-square.center-r {
   opacity: 1;
   transform: translateX(1rem);
   transition: opacity 0.2s 0.1s cubic-bezier(0.25, 1, 0.5, 1),
