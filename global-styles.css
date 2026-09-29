@@ -430,13 +430,13 @@ a.button-link:hover {
 }
 /* Base state & transition for bottom squares inside the dropdown list */
 .dropdown-gllist .small-square {
-  transform: translateY(0);
+  transform: translateY(0%);
   transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 /* Open state: move down (adjust 0.25rem to your desired distance) */
 .dropdown-gllist.is-open .small-square {
-  transform: translateY(0.25rem);
+  transform: translateY(200%);
 }
 
 /* GAME INFO LOAD ANIMATION */
