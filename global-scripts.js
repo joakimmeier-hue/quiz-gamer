@@ -497,10 +497,8 @@ document.addEventListener('DOMContentLoaded', () => {
         window.loadGameInfo(topic, selectedLevel);
       }
 
-      // Force Webflow to close the menu natively without triggering another sound
-      isProgrammaticClose = true;
-      dropdownToggle.click();
-      setTimeout(() => { isProgrammaticClose = false; }, 50);
+      // Force Webflow's internal script to close the dropdown natively
+      dropdownComponent.dispatchEvent(new Event('w-close'));
 
       if (typeof window.syncTopClone === 'function') window.syncTopClone();
     });
