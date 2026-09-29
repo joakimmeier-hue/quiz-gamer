@@ -375,7 +375,6 @@ window.syncTopClone = window.syncClone = function() {
 
 // Include dropdown and .game-info, force opacity 1, and reset transforms on clone elements
   const dropdownEls = clone.querySelectorAll('.dropdown-gamelevel, .dropdown-gamelevel *, .dropdown-gllist, .dropdown-toggle-lvl, .w-dropdown-list, .w-dropdown-toggle, .game-info, .game-info *');
-  amelvl
   dropdownEls.forEach(el => {
     el.style.opacity = '1';
     el.style.transform = 'translateY(0%)'; /* ➕ ADDED to prevent game-info from getting stuck off-screen */
