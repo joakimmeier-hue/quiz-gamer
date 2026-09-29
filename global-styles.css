@@ -481,17 +481,24 @@ a.button-link:hover {
 .game-start-btn-wrapper {
   opacity: 0;
   transform: translateY(-350%);
-  pointer-events: none;
+  /* pointer-events: none; */
   transition: opacity 0.31s cubic-bezier(0.25, 1, 0.5, 1), 
               transform 0.31s cubic-bezier(0.25, 1, 0.5, 1);
   transition-delay: 0.13s;
   will-change: opacity, transform;
 }
-
+/* 1. Force the button to be unclickable by default */
+.game-start-btn {
+  pointer-events: none;
+}
 .game-start-btn-wrapper.is-visible { 
   opacity: 1;
   transform: translateY(0%);
   pointer-events: auto; /* Enables mouse events on the wrapper */
+}
+/* 2. Unlock the button ONLY when the parent wrapper becomes visible */
+.game-start-btn-wrapper.is-visible .game-start-btn {
+  pointer-events: auto;
 }
 
 /* Inner button link */
