@@ -421,7 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const dropdownComponent = document.querySelector('.mask-middle .dropdown-gamelevel');
   const dropdownToggle = document.querySelector('.mask-middle .dropdown-toggle-lvl');
   const dropdownList = document.querySelector('.mask-middle .dropdown-gllist');
-  const gamelvlBtn = document.querySelector('.mask-middle .gamelevel-btn');
+  const gamelvlBtn = document.querySelector('.mask-middle .gamelvl-btn');
   const levelRows = Array.from(document.querySelectorAll('.mask-middle .game-level-option'));
   const startBtn = document.querySelector('.mask-middle .game-start-btn');
   if (!dropdownToggle || !dropdownList || !gamelvlBtn || !levelRows.length) return;
@@ -437,7 +437,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const toggleDropdown = (show) => {
     const shouldOpen = show !== undefined ? show : !dropdownList.classList.contains('is-open');
     
-    // Toggle on both the list and the parent component wrapper
     dropdownList.classList.toggle('is-open', shouldOpen);
     if (dropdownComponent) dropdownComponent.classList.toggle('is-open', shouldOpen);
 
@@ -446,7 +445,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
- // Main top toggle click -> Play 'select'
+  // Main top toggle click -> Play 'select'
   dropdownToggle.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
