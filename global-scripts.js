@@ -421,7 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const dropdownComponent = document.querySelector('.mask-middle .dropdown-gamelevel');
   const dropdownToggle = document.querySelector('.mask-middle .dropdown-toggle-lvl');
   const dropdownList = document.querySelector('.mask-middle .dropdown-gllist');
-  const gamelvlBtn = document.querySelector('.mask-middle .gamelvl-btn');
+  const gamelvlBtn = document.querySelector('.mask-middle .gamelevel-btn');
   const levelRows = Array.from(document.querySelectorAll('.mask-middle .game-level-option'));
   const startBtn = document.querySelector('.mask-middle .game-start-btn');
   if (!dropdownToggle || !dropdownList || !gamelvlBtn || !levelRows.length) return;
