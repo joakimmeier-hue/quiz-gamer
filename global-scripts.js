@@ -1,4 +1,4 @@
-// ────────── GLOBAL INPUT PROTECTION & BUTTON SHIELD ────────
+// ─────────────────── GLOBAL INPUT PROTECTION & BUTTON SHIELD ──────────────────────
 ['pointerdown', 'mousedown', 'mouseup', 'click', 'auxclick', 'contextmenu'].forEach(eventType => {
   document.addEventListener(eventType, (e) => {
     // 1. GLOBAL PROTECTION: Stop middle-mouse clicks (e.button === 1) anywhere on the app
@@ -13,16 +13,22 @@
 
     if (!shieldedElement) return;
 
-    // Allow ONLY primary left-click / touch tap (e.button === 0)
-    // Block right-clicks (e.button === 2), middle-clicks (e.button === 1), and context menus
+    // Block all non-left clicks (e.button !== 0), right-clicks, and context menus
     if (e.button !== 0 || eventType === 'contextmenu' || eventType === 'auxclick') {
       e.preventDefault();
       e.stopImmediatePropagation();
-    }
-  }, true); // Capture phase stops non-left clicks before Webflow or children see them
-});
 
-// ───────── Make number separator like 1,000 / 1 000 ───────────
+      // Immediately strip focus so Webflow's script doesn't open on right/middle click
+      if (e.target && typeof e.target.blur === 'function') {
+        e.target.blur();
+      }
+      if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
+      }
+    }
+  }, true); // Capture phase
+});
+// ─────────────────── Make number separator like 1,000 / 1 000 ───────────
 function fmtNum(n) {
   if (isNaN(n) || n === null || n === undefined) return n; // Safely returns "..." without turning into NaN!
   const lang = document.documentElement.lang || 'en';
