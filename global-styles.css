@@ -441,36 +441,33 @@ a.button-link:hover {
   transform: translateY(1rem);
 }
 /* =========================================================
-   CENTER SQUARES: Pop out outward when dropdown is closed
+   CENTER SQUARES: Pop out ONLY when a selection is active
    ========================================================= */
-   /* 1. CLOSED / RESTING STATE (Selected level sits solo)
-   Opacity is 1, squares slide outward with a 0.1s delay */
-.dropdown-gamelevel .small-square.center-l {
-  opacity: 1;
+
+/* 1. DEFAULT / INITIAL LOAD / OPEN STATE (Hidden by default) */
+.dropdown-gamelevel .small-square.center-l,
+.dropdown-gamelevel .small-square.center-r {
+  opacity: 0;
   pointer-events: none;
+  transform: translateX(0);
+  transition: opacity 0.15s 0s ease,
+              transform 0.15s 0s ease;
+}
+
+/* 2. HAS SELECTION & CLOSED STATE (Selected tier sits solo)
+   Slides outward with a 0.1s delay */
+.dropdown-gamelevel.has-selection:not(.is-open) .small-square.center-l {
+  opacity: 1;
   transform: translateX(-1rem);
   transition: opacity 0.2s 0.1s cubic-bezier(0.25, 1, 0.5, 1),
               transform 0.25s 0.1s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-.dropdown-gamelevel .small-square.center-r {
+.dropdown-gamelevel.has-selection:not(.is-open) .small-square.center-r {
   opacity: 1;
-  pointer-events: none;
   transform: translateX(1rem);
   transition: opacity 0.2s 0.1s cubic-bezier(0.25, 1, 0.5, 1),
               transform 0.25s 0.1s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-/* 2. OPEN STATE (Dropdown menu is active)
-   Squares collapse back to 0 and fade out immediately without delay */
-.dropdown-gamelevel.is-open .small-square.center-l,
-.dropdown-gamelevel.is-open .small-square.center-r,
-.dropdown-gamelevel:has(.dropdown-gllist.is-open) .small-square.center-l,
-.dropdown-gamelevel:has(.dropdown-gllist.is-open) .small-square.center-r {
-  opacity: 0;
-  transform: translateX(0);
-  transition: opacity 0.15s 0s ease,
-              transform 0.15s 0s ease;
 }
 
 /* GAME INFO LOAD ANIMATION */

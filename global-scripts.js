@@ -459,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       levelRows.forEach(r => r.classList.remove('is-selected'));
       row.classList.add('is-selected');
-
+      if (dropdownComponent) dropdownComponent.classList.add('has-selection');
       if (row.parentElement !== dropdownList) {
         toggleDropdown();
         return;
