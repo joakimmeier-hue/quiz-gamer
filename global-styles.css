@@ -438,7 +438,7 @@ a.button-link:hover {
 
 /* Move down when the dropdown list opens */
 .dropdown-gllist.is-open .small-square {
-  transform: translateY(2rem);
+  transform: translateY(1rem);
 }
 
 /* GAME INFO LOAD ANIMATION */
