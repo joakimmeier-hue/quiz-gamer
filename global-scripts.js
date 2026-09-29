@@ -349,6 +349,22 @@ const topic = topicMatch ? topicMatch[1] : "science";
   });
 });
 
+// ──────────── UMBRELLA SHIELD: Block all non-left clicks on button containers ────────────
+['mousedown', 'mouseup', 'click', 'auxclick', 'contextmenu'].forEach(eventType => {
+  document.addEventListener(eventType, (e) => {
+    // Check if the event happened inside either component container
+    const isTargetComponent = e.target.closest('.dropdown-gamelevel, .game-start-btn-wrapper');
+    if (!isTargetComponent) return;
+
+    // e.button === 0 is Primary / Left Click (and standard Touch tap)
+    // Block middle clicks (1), right clicks (2), side buttons (3, 4), and context menus
+    if (e.button !== 0 || eventType === 'contextmenu' || eventType === 'auxclick') {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
+  }, true); // `true` uses capture phase to stop non-left clicks BEFORE children hear them
+});
+
 // 1 BLUR TOP OF PAGE - WITH CLONE
 window.syncTopClone = window.syncClone = function() {
   const real = document.querySelector('.mask-middle .vertical-center');
