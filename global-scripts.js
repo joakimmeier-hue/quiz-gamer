@@ -1,4 +1,4 @@
-// ── GLOBAL INPUT PROTECTION & BUTTON SHIELD ──
+// ────────── GLOBAL INPUT PROTECTION & BUTTON SHIELD ────────
 ['mousedown', 'mouseup', 'click', 'auxclick', 'contextmenu'].forEach(eventType => {
   document.addEventListener(eventType, (e) => {
     // 1. GLOBAL PROTECTION: Stop middle-mouse clicks (e.button === 1) anywhere on the app
@@ -21,7 +21,7 @@
   }, true); // Capture phase stops non-left clicks before children see them
 });
 
-// ───── Make number separator like 1,000 / 1 000 ─────
+// ───────── Make number separator like 1,000 / 1 000 ───────────
 function fmtNum(n) {
   if (isNaN(n) || n === null || n === undefined) return n; // Safely returns "..." without turning into NaN!
   const lang = document.documentElement.lang || 'en';
