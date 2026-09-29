@@ -374,8 +374,8 @@ window.syncTopClone = window.syncClone = function() {
   });
 
 // Include dropdown and .game-info, force opacity 1, and reset transforms on clone elements
-  const dropdownEls = clone.querySelectorAll('.dropdown-gamelevel, .dropdown-gamelevel *, .dropdown-gamelvl, .dropdown-toggle-lvl, .w-dropdown-list, .w-dropdown-toggle, .game-info, .game-info *');
-  
+  const dropdownEls = clone.querySelectorAll('.dropdown-gamelevel, .dropdown-gamelevel *, .dropdown-gllist, .dropdown-toggle-lvl, .w-dropdown-list, .w-dropdown-toggle, .game-info, .game-info *');
+  amelvl
   dropdownEls.forEach(el => {
     el.style.opacity = '1';
     el.style.transform = 'translateY(0%)'; /* ➕ ADDED to prevent game-info from getting stuck off-screen */
@@ -421,7 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
   const dropdownComponent = document.querySelector('.mask-middle .dropdown-gamelevel');
   const dropdownToggle = document.querySelector('.mask-middle .dropdown-toggle-lvl');
-  const dropdownList = document.querySelector('.mask-middle .dropdown-gamelvl');
+  const dropdownList = document.querySelector('.mask-middle .dropdown-gllist');
   const gamelvlBtn = document.querySelector('.mask-middle .gamelvl-btn');
   const levelRows = Array.from(document.querySelectorAll('.mask-middle .game-level-option'));
   const startBtn = document.querySelector('.mask-middle .game-start-btn');
