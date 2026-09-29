@@ -477,7 +477,7 @@ a.button-link:hover {
   }
 }
 
-/* Wrapper controls entry animation */
+/* GAME START BUTTON. Wrapper controls entry animation */
 .game-start-btn-wrapper {
   opacity: 0;
   transform: translateY(-350%);
@@ -500,7 +500,6 @@ a.button-link:hover {
   position: relative;
   z-index: 5;             /* Ensures it sits above sibling elements */
   cursor: pointer;        /* Forces pointer cursor */
-  pointer-events: auto;   /* Ensures hover triggers */
 }
 
   /* ────────────────── GAME RUNNING PAGES ──────────────────
