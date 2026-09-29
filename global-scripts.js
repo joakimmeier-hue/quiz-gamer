@@ -346,7 +346,7 @@ const topic = topicMatch ? topicMatch[1] : "science";
     } catch (err) {
       // Handled inside window.triggerStartGame
     }
-  });
+  }); 
 });
 
 // ──────────── UMBRELLA SHIELD: Block all non-left clicks on button containers ────────────
