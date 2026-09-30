@@ -2,9 +2,9 @@
 ['pointerdown', 'mousedown', 'mouseup', 'click', 'auxclick', 'contextmenu'].forEach(eventType => {
   document.addEventListener(eventType, (e) => {
     // 1. GLOBAL PROTECTION: Stop middle-mouse clicks (e.button === 1) anywhere on the app
-    if (e.button === 1 && (eventType === 'auxclick' || eventType === 'pointerdown' || eventType === 'mousedown')) {
+    /* if (e.button === 1 && (eventType === 'auxclick' || eventType === 'pointerdown' || eventType === 'mousedown')) {
       e.preventDefault();
-    }
+    } */
 
     // 2. COMPONENT SHIELD: Check if click happened inside protected UI elements
     const shieldedElement = e.target.closest(
