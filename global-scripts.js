@@ -1901,7 +1901,7 @@ const HOVER_SCALE_CLASSES = [
     'button',
     'button-link',
     'game-start-btn-gma',
-    'game-start-btn',
+    /* 'game-start-btn', */
     'finish-btn',    
     'share-score-btn',
     'link-next-challenge',
@@ -1939,7 +1939,7 @@ const PRESS_SCALE_CLASSES = [
     'button',
     'button-link',
     'game-start-btn-gma',
-    'game-start-btn',
+    /* 'game-start-btn', */
     'finish-btn',    
     'share-score-btn',
     'link-next-challenge',
