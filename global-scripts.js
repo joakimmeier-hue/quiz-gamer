@@ -1,6 +1,7 @@
 // ─────────────────── GLOBAL INPUT PROTECTION & BUTTON SHIELD ──────────────────────
 ['pointerdown', 'mousedown', 'mouseup', 'click', 'auxclick', 'contextmenu'].forEach(eventType => {
   document.addEventListener(eventType, (e) => {
+
     // 1. GLOBAL PROTECTION: Stop middle-mouse clicks (e.button === 1) anywhere on the app
     /* if (e.button === 1 && (eventType === 'auxclick' || eventType === 'pointerdown' || eventType === 'mousedown')) {
       e.preventDefault();
@@ -448,6 +449,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const levelRows = Array.from(document.querySelectorAll('.mask-middle .game-level-option'));
   const startBtn = document.querySelector('.mask-middle .game-start-btn');
 
+  // ── ADD THIS: Watch for Webflow's native open/close class changes ──
+  if (dropdownToggle) {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          // Whenever Webflow natively adds/removes 'w--open', re-sync the clone
+          if (typeof window.syncTopClone === 'function') {
+            setTimeout(window.syncTopClone, 50); // 50ms delay lets Webflow finish its DOM updates first
+          }
+        }
+      });
+    });
+    
+    // Start watching the toggle for class attribute changes
+    observer.observe(dropdownToggle, { attributes: true, attributeFilter: ['class'] });
+  }
+  
   if (!dropdownToggle || !dropdownList || !gamelvlBtn || !levelRows.length) return;
 
   levelRows.forEach(row => { row.__originalNextSibling = row.nextSibling; });
