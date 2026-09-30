@@ -478,24 +478,24 @@ a.button-link:hover {
 }
 
 /* GAME START BUTTON. Wrapper controls entry animation */
+/* Base state (Hidden) -> Delays hiding until the 0.31s fade/move is done */
 .game-start-btn-wrapper {
   opacity: 0;
   transform: translateY(-350%);
-  visibility: hidden; /* 🛑 Completely removes it from interaction/tabbing */
+  visibility: hidden; 
   transition: opacity 0.31s cubic-bezier(0.25, 1, 0.5, 1),
               transform 0.31s cubic-bezier(0.25, 1, 0.5, 1),
-              visibility 0s 0.31s; /* Waits for opacity fade to finish before hiding */
-  transition-delay: 0.13s;
-  will-change: opacity, transform;
+              visibility 0s 0.31s; /* 👈 The 0.31s delay is the key */
 }
 
+/* Active state (Visible) -> Becomes visible instantly (0s delay) so you see the fade-in */
 .game-start-btn-wrapper.is-visible {
   opacity: 1;
   transform: translateY(0%);
-  visibility: visible; /* 🟢 Brings it back for interaction */
+  visibility: visible; 
   transition: opacity 0.31s cubic-bezier(0.25, 1, 0.5, 1),
               transform 0.31s cubic-bezier(0.25, 1, 0.5, 1),
-              visibility 0s 0s; /* Becomes visible instantly so it can be clicked during fade-in */
+              visibility 0s 0s; /* 👈 Instantly visible */
 }
 /* Inner button link */
 .game-start-btn {
