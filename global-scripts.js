@@ -449,7 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const levelRows = Array.from(document.querySelectorAll('.mask-middle .game-level-option'));
   const startBtn = document.querySelector('.mask-middle .game-start-btn');
 
-  // ── ADD THIS: Watch for Webflow's native open/close class changes ──
+  // ──────────── ADD THIS: Observer.. Watch for Webflow's native open/close class changes ──
   if (dropdownToggle) {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
@@ -465,7 +465,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Start watching the toggle for class attribute changes
     observer.observe(dropdownToggle, { attributes: true, attributeFilter: ['class'] });
   }
-  
+  //──────────────
+
   if (!dropdownToggle || !dropdownList || !gamelvlBtn || !levelRows.length) return;
 
   levelRows.forEach(row => { row.__originalNextSibling = row.nextSibling; });
