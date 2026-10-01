@@ -11,6 +11,11 @@
   --dark-grey: #181717;
 }
 
+/* Inventory component at Lobby */
+.inventory-overlay {
+  display: none;
+}
+
 /* Interpolate-size, try to autosize animations, for whole site */
 :root { interpolate-size: allow-keywords; }
 
