@@ -20,7 +20,7 @@ import {
 
 const firebaseConfig = {
   apiKey: "AIzaSyAfZQM3H5XAYkEt2ARInoA1Xs-Qd1DXL_s",
-  authDomain: "auth.quizgamer.se",
+  authDomain: "auth.quizgamer.nexus",
   projectId: "quizgamer-web-app",
   storageBucket: "quizgamer-web-app.firebasestorage.app",
   messagingSenderId: "229730753032",
