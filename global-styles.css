@@ -11,11 +11,10 @@
   --dark-grey: #181717;
 }
 
-/* Inventory component at Lobby */
 /* Gömmer enbart inventory-overlay i lobby-varianten vid start */
-  .lobby .inventory-overlay {
+  /* .lobby .inventory-overlay {
     display: none;
-  }
+  } */
 
 /* Interpolate-size, try to autosize animations, for whole site */
 :root { interpolate-size: allow-keywords; }
