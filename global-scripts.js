@@ -1441,7 +1441,7 @@ toggleBtn.addEventListener('click', (e) => {
     overlay.id = 'back-overlay';
     overlay.style.cssText = `position:fixed;inset:0;z-index:1000000;background:${themeColor};display:flex;align-items:center;justify-content:center;cursor:pointer;transition:opacity 1.0s ease;opacity:1;`;
     overlay.innerHTML = `<style>@keyframes softBlink {0%,100%{opacity:0;}50%{opacity:1;}}</style>
-      <span style="font-family:'Itc Bauhaus',sans-serif;font-size:1rem;color:${textColor};text-transform:uppercase;letter-spacing:0.08em;animation:softBlink 1.5s ease-in-out infinite;">Click to continue</span>`;
+      <span style="font-size:1rem;color:${textColor};text-transform:uppercase;letter-spacing:0.08em;animation:softBlink 1.5s ease-in-out infinite;">Click to continue</span>`;
     
     const closeOverlay = function(e) {
       if (e) {

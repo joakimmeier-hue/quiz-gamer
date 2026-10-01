@@ -370,7 +370,7 @@ async function handleLogin(provider) {
 
       if (email && pendingCred) {
         const mergeDiv = document.createElement('div');
-        mergeDiv.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; z-index:99999; font-family:"itc bauhaus", sans-serif; backdrop-filter: blur(4px);';
+        mergeDiv.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; z-index:99999; backdrop-filter: blur(4px);';
         
         mergeDiv.innerHTML = `
           <div style="padding: 2rem 4rem; text-align:center; max-width:25rem; color:white; border-right: var(--stroke) solid var(--grey-stroke); border-left: var(--stroke) solid var(--grey-stroke);">
