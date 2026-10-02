@@ -22,7 +22,7 @@
   transition: opacity 0.3s ease;
 }
 
-/* ——————— SMART INVENTORY HIDE IN CANVAS ——————— Gömmer enbart inventory-overlay i lobby-varianten vid start */
+/* —————————— Gömmer enbart inventory-overlay i lobby-varianten vid start */
 /*   .lobby .inventory-overlay {
     display: none;
   } */
