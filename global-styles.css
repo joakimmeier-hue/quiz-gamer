@@ -19,7 +19,7 @@
 /* ————————— UNIVERSAL ANTI-FOUC CLASS ———————— */
 .fouc-reveal {
   opacity: 0;
-  /* transition: opacity 0.3s ease; */
+  transition: opacity 0.3s ease;
 }
 
 /* —————————— Gömmer enbart inventory-overlay i lobby-varianten vid start */
