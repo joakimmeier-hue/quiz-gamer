@@ -1647,32 +1647,37 @@ function getRatingData(n) {
 }
 
 async function playRating(selector, n) {
-  const el = document.querySelector(selector);
-  if (!el) return console.warn("Rating element not found:", selector);
+  const els = document.querySelectorAll(selector);
+  console.log("playRating", selector, "rating:", n, "matches:", els.length);
+  const el = els[0];
+  if (!el) return console.warn("no element for", selector);
 
   const token = (ratingTokens.get(el) || 0) + 1;
   ratingTokens.set(el, token);
 
   try {
     const lottie = await getLottieLib();
-    if (ratingTokens.get(el) !== token) return;
+    if (ratingTokens.get(el) !== token) return console.log("superseded", selector);
 
-    lottie.getRegisteredAnimations().forEach((a) => {
-      if (a.wrapper === el) a.destroy();
-    });
+    const regs = lottie.getRegisteredAnimations();
+    console.log("registered:", regs.length, "on this el:", regs.filter(a => a.wrapper === el).length);
+    regs.forEach((a) => { if (a.wrapper === el) a.destroy(); });
     el.innerHTML = "";
+
+    console.log("url:", RATING_URLS[n]);
     if (!RATING_URLS[n]) return;
 
     const data = await getRatingData(n);
-    if (ratingTokens.get(el) !== token) return;
+    if (ratingTokens.get(el) !== token) return console.log("superseded after fetch", selector);
 
-    lottie.loadAnimation({
+    const anim = lottie.loadAnimation({
       container: el,
       renderer: "svg",
       loop: false,
       autoplay: true,
       animationData: structuredClone(data),
     });
+    console.log("loaded", selector, anim);
   } catch (err) {
     console.error("Rating lottie failed:", err);
   }
