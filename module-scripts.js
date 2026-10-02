@@ -1528,7 +1528,7 @@ function validateUsernameRules(rawName) {
 // ────────────────────────────────────── GAME START ──────────────────────────────────────
 // ── GAME-INFO PANEL ───
 window.loadGameInfo = async function(topic, level) {
-  window.playGameRatings(topic, level);   // ← add this for game rating
+  window.applyGameConfig(topic, level); 
   if (!currentUser) return;
 
   const gameId = `${topic}-l${level}`;
@@ -1584,55 +1584,59 @@ window.loadGameInfo = async function(topic, level) {
       setTimeout(tryInitialLoad, 200);
       return;
     }
-    window.loadGameInfo(topic, 1);
+        (function initGameInfoPanel() {
+      const gameMatch = currentSlug.match(/^([a-z0-9-]+)-start$/i);
+      if (!gameMatch) return;
+      window.resetGameInfoPanel();
+    })();
   };
   
   tryInitialLoad();
 })();
 
 // ───────────────── DYNAMIC GAME RATING SYSTEM (DIFF & BONUS LOTTIES) ──────────────────────────────
-// ── RATINGS DATA ─────────────────────────────────────
-const RATING_URLS = {
+const RATING_URLS = { // ── RATINGS DATA ─────────────────────────────────────
   1: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3a01ff91c4daae84ea_1f8fa74613944f5a9ac25e2aac7b6051_game-rating-1.json",
   2: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3aacb1ae9005246beb_a3cf25b733cc7e02dee51b452032b1e3_game-rating-2.json",
-  3: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3aacb1ae9005246beb_a3cf25b733cc7e02dee51b452032b1e3_game-rating-2.json",
+  3: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3a01ff91c4daae84ef_134ebc6a9f4fd5ca311b1a4f5fe69112_game-rating-3.json",
   4: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3a18793645ec4b0cf8_5baa664b38d30c21cff231395a48efd4_game-rating-4.json",
   5: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3a729f5fafbcaa9390_2618b717e5ef44cc5a9868485966b1fd_game-rating-5.json",
+ };
+
+// 'topic-lLEVEL': { diff, bonus (1–5), questions, time }
+const GAME_CONFIG = {
+  // Science
+  "science-l1": { diff: 2, bonus: 2, questions: 10, time: "none" },
+  "science-l2": { diff: 3, bonus: 3, questions: 10, time: "none" },
+  "science-l3": { diff: 4, bonus: 3, questions: 10, time: "none" },
+  "science-l4": { diff: 5, bonus: 2, questions: 10, time: "none" },
+  // History
+  "history-l1": { diff: 1, bonus: 2, questions: 10, time: "none" },
+  "history-l2": { diff: 2, bonus: 3, questions: 10, time: "none" },
+  "history-l3": { diff: 3, bonus: 3, questions: 10, time: "none" },
+  "history-l4": { diff: 4, bonus: 4, questions: 10, time: "none" },
+  // ...movies, puzzle same pattern
 };
 
-// 'topic-lLEVEL': [difficulty, bonus]   (1–5)
-const GAME_RATINGS = {
-  "science-l1": [2, 2],
-  "science-l2": [3, 3],
-  "science-l3": [4, 3],
-  "science-l4": [5, 2],
-
-  "history-l1": [1, 2],
-  "history-l2": [2, 3],
-  "history-l3": [3, 3],
-  "history-l4": [4, 4],
-
-  "movies-l1": [1, 2],
-  "movies-l2": [2, 3],
-  "movies-l3": [3, 3],
-  "movies-l4": [5, 3],
-
-  "puzzle-l1": [1, 3],
-  "puzzle-l2": [2, 4],
-  "puzzle-l3": [3, 4],
-  "puzzle-l4": [5, 5],
-
-  // "food-l1": [1, 2],
-};
-
-// ── RATINGS PLAYER ───────────────────────────────────
 const BONUS_DELAY_MS = 500;
 const ratingCache = {};
-const ratingTokens = new Map(); // el -> latest request id
+const ratingTokens = new Map();
 let bonusTimer = null;
+let lottiePromise = null;
 
 function getLottieLib() {
-  return window.Webflow?.require?.("lottie")?.lottie;
+  const wf = window.Webflow?.require?.("lottie")?.lottie;
+  if (wf) return Promise.resolve(wf);
+  if (!lottiePromise) {
+    lottiePromise = new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = "https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js";
+      s.onload = () => resolve(window.lottie);
+      s.onerror = () => reject(new Error("lottie-web failed to load"));
+      document.head.appendChild(s);
+    });
+  }
+  return lottiePromise;
 }
 
 function getRatingData(n) {
@@ -1644,23 +1648,24 @@ function getRatingData(n) {
 
 async function playRating(selector, n) {
   const el = document.querySelector(selector);
-  const lottie = getLottieLib();
-  if (!el || !lottie) return;
+  if (!el) return console.warn("Rating element not found:", selector);
 
   const token = (ratingTokens.get(el) || 0) + 1;
   ratingTokens.set(el, token);
 
-  // Destroy whatever Webflow (or we) loaded in this element
-  lottie.getRegisteredAnimations().forEach((a) => {
-    if (a.wrapper === el) a.destroy();
-  });
-  el.innerHTML = "";
-
-  if (!RATING_URLS[n]) return; // no rating set = empty
-
   try {
+    const lottie = await getLottieLib();
+    if (ratingTokens.get(el) !== token) return;
+
+    lottie.getRegisteredAnimations().forEach((a) => {
+      if (a.wrapper === el) a.destroy();
+    });
+    el.innerHTML = "";
+    if (!RATING_URLS[n]) return;
+
     const data = await getRatingData(n);
-    if (ratingTokens.get(el) !== token) return; // user already switched again
+    if (ratingTokens.get(el) !== token) return;
+
     lottie.loadAnimation({
       container: el,
       renderer: "svg",
@@ -1669,20 +1674,33 @@ async function playRating(selector, n) {
       animationData: structuredClone(data),
     });
   } catch (err) {
-    console.error("Rating lottie failed:", err.message);
+    console.error("Rating lottie failed:", err);
   }
 }
 
-window.playGameRatings = function (topic, level) {
-  const [diff, bonus] = GAME_RATINGS[`${topic}-l${level}`] || [0, 0];
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
 
-  playRating(".game-rating-diff", diff);
+// Page load / "Select Level" state
+window.resetGameInfoPanel = function () {
+  setText("questions-qty", "-");
+  setText("time-limit", "-");
+};
 
+// Called on every tier selection
+window.applyGameConfig = function (topic, level) {
+  const cfg = GAME_CONFIG[`${topic}-l${level}`] || {};
+
+  setText("questions-qty", cfg.questions ?? "-");
+  setText("time-limit", cfg.time ?? "-");
+
+  playRating(".game-rating-diff", cfg.diff || 0);
   clearTimeout(bonusTimer);
-  // clear bonus right away so the old one doesn't linger during the delay
   playRating(".game-rating-bonus", 0);
   bonusTimer = setTimeout(
-    () => playRating(".game-rating-bonus", bonus),
+    () => playRating(".game-rating-bonus", cfg.bonus || 0),
     BONUS_DELAY_MS
   );
 };
