@@ -22,10 +22,10 @@
   transition: opacity 0.3s ease;
 }
 
-/* Gömmer enbart inventory-overlay i lobby-varianten vid start */
-  .lobby .inventory-overlay {
+/* ——————— SMART INVENTORY HIDE IN CANVAS ——————— Gömmer enbart inventory-overlay i lobby-varianten vid start */
+/*   .lobby .inventory-overlay {
     display: none;
-  }
+  } */
 
 /* Interpolate-size, try to autosize animations, for whole site */
 :root { interpolate-size: allow-keywords; }

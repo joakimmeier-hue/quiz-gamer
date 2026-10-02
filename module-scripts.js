@@ -1526,7 +1526,7 @@ function validateUsernameRules(rawName) {
 }
 
 // ────────────────────────────────────── GAME START ──────────────────────────────────────
-// ── GAME-START INFO PANEL ───
+// ── GAME-INFO PANEL ───
 
 window.loadGameInfo = async function(topic, level) {
   if (!currentUser) return;
