@@ -1646,41 +1646,33 @@ function getRatingData(n) {
   return ratingCache[n];
 }
 
-async function playRating(selector, n) {
+async function playRating(selector, n, frozen = false) {
   const els = document.querySelectorAll(selector);
-  console.log("playRating", selector, "rating:", n, "matches:", els.length);
-  const el = els[0];
-  if (!el) return console.warn("no element for", selector);
+  if (!els.length) return console.warn("no element for", selector);
 
-  const token = (ratingTokens.get(el) || 0) + 1;
-  ratingTokens.set(el, token);
+  const lottie = await getLottieLib();
+  const useN = RATING_URLS[n] ? n : 1;        // 0/missing -> empty boxes
+  const data = await getRatingData(useN);
 
-  try {
-    const lottie = await getLottieLib();
-    if (ratingTokens.get(el) !== token) return console.log("superseded", selector);
+  els.forEach((el) => {
+    const token = (ratingTokens.get(el) || 0) + 1;
+    ratingTokens.set(el, token);
 
-    const regs = lottie.getRegisteredAnimations();
-    console.log("registered:", regs.length, "on this el:", regs.filter(a => a.wrapper === el).length);
-    regs.forEach((a) => { if (a.wrapper === el) a.destroy(); });
+    lottie.getRegisteredAnimations().forEach((a) => {
+      if (a.wrapper === el) a.destroy();
+    });
     el.innerHTML = "";
 
-    console.log("url:", RATING_URLS[n]);
-    if (!RATING_URLS[n]) return;
-
-    const data = await getRatingData(n);
-    if (ratingTokens.get(el) !== token) return console.log("superseded after fetch", selector);
-
+    const stopped = frozen || !RATING_URLS[n];
     const anim = lottie.loadAnimation({
       container: el,
       renderer: "svg",
       loop: false,
-      autoplay: true,
+      autoplay: !stopped,
       animationData: structuredClone(data),
     });
-    console.log("loaded", selector, anim);
-  } catch (err) {
-    console.error("Rating lottie failed:", err);
-  }
+    if (stopped) anim.goToAndStop(0, true);   // frame 0 = empty boxes
+  });
 }
 
 function setText(id, value) {
@@ -1692,18 +1684,18 @@ function setText(id, value) {
 window.resetGameInfoPanel = function () {
   setText("questions-qty", "-");
   setText("time-limit", "-");
+  playRating(".game-rating-diff", 0, true);
+  playRating(".game-rating-bonus", 0, true);
 };
 
-// Called on every tier selection
 window.applyGameConfig = function (topic, level) {
   const cfg = GAME_CONFIG[`${topic}-l${level}`] || {};
-
   setText("questions-qty", cfg.questions ?? "-");
   setText("time-limit", cfg.time ?? "-");
 
   playRating(".game-rating-diff", cfg.diff || 0);
   clearTimeout(bonusTimer);
-  playRating(".game-rating-bonus", 0);
+  playRating(".game-rating-bonus", 0, true);    // empty boxes while waiting
   bonusTimer = setTimeout(
     () => playRating(".game-rating-bonus", cfg.bonus || 0),
     BONUS_DELAY_MS
