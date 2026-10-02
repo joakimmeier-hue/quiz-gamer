@@ -11,6 +11,17 @@
   --dark-grey: #181717;
 }
 
+/* Global overflow-stopper */
+.wrapper-1 {
+  overflow-x: hidden;
+}
+
+/* ————————— UNIVERSAL ANTI-FOUC CLASS ———————— */
+.fouc-reveal {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
 /* Gömmer enbart inventory-overlay i lobby-varianten vid start */
   .lobby .inventory-overlay {
     display: none;
@@ -73,12 +84,6 @@
     pointer-events: auto; /* Restores clickability */
     cursor: pointer; /* Acts as a failsafe for iOS Safari to register tap events */
 } 
-
-/* ————————— UNIVERSAL ANTI-FOUC CLASS ———————— */
-.fouc-reveal {
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
 
 /* Tvingar bort de blå linjerna på sidorna i Webflow-formulär */
   .w-input:focus, 
