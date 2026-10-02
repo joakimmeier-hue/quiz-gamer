@@ -536,6 +536,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof window.loadGameInfo === 'function') {
         const preAttemptsEl = document.getElementById('pre-attempts');
         if (preAttemptsEl) preAttemptsEl.textContent = "...";
+        
+        console.log("tier click", topic, selectedLevel)
         window.loadGameInfo(topic, selectedLevel);
       }
 
