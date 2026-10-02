@@ -1821,7 +1821,7 @@ Webflow.push(function() {
   if (!el) return;
   el.textContent = typeof value === 'number' ? fmtNum(value) : value;
 };
-  setText('list-game', data.topic.toUpperCase());
+  setText('list-game', data.topic.toUpperCase()); // Really best looking with uppercase here?
   setText('list-result', `${data.correctCount}/${data.totalQuestions}`);
   setText('list-time', data.timeStr);
   setText('list-attempts', data.attemptCount - 1);
