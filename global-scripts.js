@@ -457,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const levelRows = Array.from(document.querySelectorAll('.mask-middle .game-level-option'));
   const startBtn = document.querySelector('.mask-middle .game-start-btn');
 
-  // ──────────── ADD THIS: Observer.. Watch for Webflow's native open/close class changes ──
+  // ──────────── ADD THIS: Observer.. re-syncs the clone when w--open changes ──
   if (dropdownToggle) {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
@@ -485,7 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof window.syncTopClone === 'function') window.syncTopClone();
   };
   window.Webflow = window.Webflow || [];
-  window.Webflow.push(() => setTimeout(forceClosed, 0));
+  window.Webflow.push(() => setTimeout(forceClosed, 0)); // end force close
   
   levelRows.forEach(row => { row.__originalNextSibling = row.nextSibling; });
 
@@ -1823,7 +1823,7 @@ setInterval(() => {
     const el = document.elementFromPoint(x, y);
 
     console.log('fakeClick: center element', el ? el.tagName + ' ' + (el.className || '') : null);
-    const skipReasonEl = el ? el.closest('.pp-dropdown, .i-closer-game, .button.i-lobby-back, .profile-pic-option, .pp-grid-wrapper') : null;
+    const skipReasonEl = el ? el.closest('.pp-dropdown, .i-closer-game, .button.i-lobby-back, .profile-pic-option, .pp-grid-wrapper, .dropdown-gamelevel, .w-dropdown') : null;
     console.log('fakeClick: closest skip element:', skipReasonEl);
 
     if (!el) return;
@@ -1872,7 +1872,7 @@ setInterval(() => {
             scrollEl.scrollTop = 0;
           }
           // 2. Fokus-klick (med en liten fördröjning för att vara säker)
-          setTimeout(fakeClick, 150);
+          if (document.body.dataset.page === 'lobby') setTimeout(fakeClick, 150);       
         } else if (!isVisible) {
           isOverlayOpen[selector] = false; // Lås upp när den stängs
         }
