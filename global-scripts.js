@@ -476,7 +476,15 @@ document.addEventListener('DOMContentLoaded', () => {
   //──────────────
 
   if (!dropdownToggle || !dropdownList || !gamelvlBtn || !levelRows.length) return;
-
+    const forceClosed = () => {
+    dropdownComponent.dispatchEvent(new Event('w-close'));
+    [dropdownToggle, dropdownList].forEach(el => el.classList.remove('w--open'));
+    dropdownToggle.setAttribute('aria-expanded', 'false');
+    if (typeof window.syncTopClone === 'function') window.syncTopClone();
+  };
+  window.Webflow = window.Webflow || [];
+  window.Webflow.push(() => setTimeout(forceClosed, 0));
+  
   levelRows.forEach(row => { row.__originalNextSibling = row.nextSibling; });
 
   const slug = (typeof currentSlug !== 'undefined' && currentSlug) || window.location.pathname.split('/').pop();
