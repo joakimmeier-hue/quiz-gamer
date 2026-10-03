@@ -1527,7 +1527,7 @@ function validateUsernameRules(rawName) {
 
 // ────────────────────────────────────── GAME START ──────────────────────────────────────
 // ── GAME-INFO PANEL ───
-/* window.loadGameInfo = async function(topic, level) {
+window.loadGameInfo = async function(topic, level) {
   window.applyGameConfig(topic, level); 
   if (!currentUser) return;
 
@@ -1593,8 +1593,9 @@ function validateUsernameRules(rawName) {
   
   tryInitialLoad();
 })();
- */
-/* // ───────────────── DYNAMIC GAME RATING SYSTEM (DIFF & BONUS LOTTIES) ──────────────────────────────
+
+
+// ───────────────── DYNAMIC GAME RATING SYSTEM (DIFF & BONUS LOTTIES) ──────────────────────────────
 const RATING_URLS = { // ── RATINGS DATA ─────────────────────────────────────
   1: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3a01ff91c4daae84ea_1f8fa74613944f5a9ac25e2aac7b6051_game-rating-1.json",
   2: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3aacb1ae9005246beb_a3cf25b733cc7e02dee51b452032b1e3_game-rating-2.json",
@@ -1734,7 +1735,7 @@ window.applyGameConfig = function (topic, level) {
     BONUS_DELAY_MS
   );
 };
- */
+
 
 
 // ────────────────────────────────────── GAME RUNNING ──────────────────────────────────────
