@@ -1619,7 +1619,7 @@ const GAME_CONFIG = {
   // ...movies, puzzle same pattern
 };
 
-const BONUS_DELAY_MS = 900;
+const BONUS_DELAY_MS = 1000;
 const ratingCache = {};
 const ratingTokens = new Map();
 let bonusTimer = null;
