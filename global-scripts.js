@@ -476,6 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
   //──────────────
 
   if (!dropdownToggle || !dropdownList || !gamelvlBtn || !levelRows.length) return;
+  // force close .dropdown-gamelevel
     const forceClosed = () => {
     dropdownComponent.dispatchEvent(new Event('w-close'));
     [dropdownToggle, dropdownList].forEach(el => el.classList.remove('w--open'));
