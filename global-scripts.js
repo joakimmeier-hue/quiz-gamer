@@ -555,7 +555,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const preAttemptsEl = document.getElementById('pre-attempts');
         if (preAttemptsEl) preAttemptsEl.textContent = "...";
 
-        console.log("tier click", topic, selectedLevel)
         window.loadGameInfo(topic, selectedLevel);
       }
 
@@ -1822,16 +1821,13 @@ setInterval(() => {
     const y = window.innerHeight / 2;
     const el = document.elementFromPoint(x, y);
 
-    console.log('fakeClick: center element', el ? el.tagName + ' ' + (el.className || '') : null);
     const skipReasonEl = el ? el.closest('.pp-dropdown, .i-closer-game, .button.i-lobby-back, .profile-pic-option, .pp-grid-wrapper, .dropdown-gamelevel, .w-dropdown') : null;
-    console.log('fakeClick: closest skip element:', skipReasonEl);
 
     if (!el) return;
 
     // Hoppa över om det landar på pp-dropdown eller dess close-triggers
     // (annars stänger detta dropdownen ~150ms efter att den öppnats)
     if (skipReasonEl) {
-      console.log('fakeClick: skipping because center element matches skip selector');
       return;
     }
 
@@ -1843,7 +1839,6 @@ setInterval(() => {
       evt._synthetic = true;
       try {
         el.dispatchEvent(evt);
-        console.log('fakeClick: dispatched', type, 'to', el);
       } catch (err) {
         console.warn('fakeClick: dispatch error', err);
       }
@@ -1852,7 +1847,6 @@ setInterval(() => {
     // Clear the flag after a short delay (handlers should check this flag)
     setTimeout(() => {
       window.__syntheticClickRunning = false;
-      console.log('fakeClick: synthetic flag cleared');
     }, 80);
   }
 
