@@ -387,6 +387,12 @@ window.syncTopClone = window.syncClone = function() {
 
   // Force link colors inside clone
   clone.querySelectorAll('a').forEach(el => { el.style.color = 'white'; });
+    // Lotties in the clone: empty + hide from Webflow, module paints them later
+  clone.querySelectorAll('.game-rating-diff, .game-rating-bonus').forEach(el => {
+    el.innerHTML = '';
+    ['data-animation-type', 'data-src', 'data-loading', 'data-autoplay']
+      .forEach(a => el.removeAttribute(a));
+  });
 
   // Strip hover/interactive classes
   const interactiveClasses = ['hover-scale', 'js-press-scale', 'is-hovered'];
@@ -399,6 +405,7 @@ window.syncTopClone = window.syncClone = function() {
   const dropdownEls = clone.querySelectorAll('.dropdown-gamelevel, .dropdown-gamelevel *, .dropdown-gllist, .dropdown-toggle-lvl, .w-dropdown-list, .w-dropdown-toggle, .game-info, .game-info *');
   dropdownEls.forEach(el => {
         // 🛑 ADD THIS: Stop JS from overwriting the squares' inline opacity and transform!
+    if (el.closest('.game-rating-diff, .game-rating-bonus')) return;
     if (el.classList.contains('small-square')) return;
     el.style.opacity = '1';
     el.style.transform = 'translateY(0%)'; 
@@ -407,6 +414,7 @@ window.syncTopClone = window.syncClone = function() {
   });
 
   dummySlot.appendChild(clone);
+    if (typeof window.paintCloneRatings === 'function') window.paintCloneRatings();
 };
 
 // DOM listener for initial layout setup & scroll sync
@@ -536,7 +544,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof window.loadGameInfo === 'function') {
         const preAttemptsEl = document.getElementById('pre-attempts');
         if (preAttemptsEl) preAttemptsEl.textContent = "...";
-        
+
         console.log("tier click", topic, selectedLevel)
         window.loadGameInfo(topic, selectedLevel);
       }

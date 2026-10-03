@@ -1603,7 +1603,7 @@ const RATING_URLS = { // ── RATINGS DATA ───────────�
   5: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3a729f5fafbcaa9390_2618b717e5ef44cc5a9868485966b1fd_game-rating-5.json",
  };
 
-// 'topic-lLEVEL': { diff, bonus (1–5), questions, time }
+// 'topic-l LEVEL': { diff, bonus (1–5), questions, time }
 const GAME_CONFIG = {
   // Science
   "science-l1": { diff: 2, bonus: 2, questions: 10, time: "none" },
@@ -1646,46 +1646,76 @@ function getRatingData(n) {
   return ratingCache[n];
 }
 
-async function playRating(selector, n, frozen = false) {
-  const els = document.querySelectorAll(selector);
-  if (!els.length) return console.warn("no element for", selector);
+const ratingState = { diff: 0, bonus: 0 };   // what should be shown (final state)
+const RATING_SELECTORS = { diff: ".game-rating-diff", bonus: ".game-rating-bonus" };
+
+// stop Webflow from (re)initialising this element on its own
+function neutralize(el) {
+  ["data-animation-type", "data-src", "data-loading", "data-autoplay"]
+    .forEach((a) => el.removeAttribute(a));
+}
+
+// mode: "play" | "empty" | "final"
+async function renderRating(el, n, mode) {
+  const token = (ratingTokens.get(el) || 0) + 1;
+  ratingTokens.set(el, token);
 
   const lottie = await getLottieLib();
-  const useN = RATING_URLS[n] ? n : 1;        // 0/missing -> empty boxes
-  const data = await getRatingData(useN);
+  const data = await getRatingData(RATING_URLS[n] ? n : 1);
+  if (!el.isConnected || ratingTokens.get(el) !== token) return;
 
-  els.forEach((el) => {
-    const token = (ratingTokens.get(el) || 0) + 1;
-    ratingTokens.set(el, token);
-
-    lottie.getRegisteredAnimations().forEach((a) => {
-      if (a.wrapper === el) a.destroy();
-    });
-    el.innerHTML = "";
-
-    const stopped = frozen || !RATING_URLS[n];
-    const anim = lottie.loadAnimation({
-      container: el,
-      renderer: "svg",
-      loop: false,
-      autoplay: !stopped,
-      animationData: structuredClone(data),
-    });
-    if (stopped) anim.goToAndStop(0, true);   // frame 0 = empty boxes
+  neutralize(el);
+  lottie.getRegisteredAnimations().forEach((a) => {
+    if (a.wrapper === el) a.destroy();
   });
+  el.innerHTML = "";
+
+  const hasRating = !!RATING_URLS[n];
+  const anim = lottie.loadAnimation({
+    container: el,
+    renderer: "svg",
+    loop: false,
+    autoplay: mode === "play" && hasRating,
+    animationData: structuredClone(data),
+  });
+  if (mode === "empty" || !hasRating) anim.goToAndStop(0, true);
+  else if (mode === "final") anim.goToAndStop(anim.totalFrames - 1, true);
 }
+
+// real elements only
+function playRating(key, n, mode = "play") {
+  const el = document.querySelector(".mask-middle " + RATING_SELECTORS[key]);
+  if (el) renderRating(el, n, mode);
+  else console.warn("no rating element for", key);
+}
+
+// called by syncTopClone (global-scripts) after it builds the clone
+window.paintCloneRatings = function () {
+  Object.keys(RATING_SELECTORS).forEach((key) => {
+    const el = document.querySelector(".mask-top " + RATING_SELECTORS[key]);
+    const n = ratingState[key];
+    if (el) renderRating(el, n, n ? "final" : "empty");
+  });
+  // destroy animations whose clone was thrown away
+  getLottieLib().then((l) =>
+    l.getRegisteredAnimations().forEach((a) => {
+      if (!a.wrapper.isConnected) a.destroy();
+    })
+  );
+};
 
 function setText(id, value) {
   const el = document.getElementById(id);
   if (el) el.textContent = value;
 }
 
-// Page load / "Select Level" state
 window.resetGameInfoPanel = function () {
   setText("questions-qty", "-");
   setText("time-limit", "-");
-  playRating(".game-rating-diff", 0, true);
-  playRating(".game-rating-bonus", 0, true);
+  ratingState.diff = 0;
+  ratingState.bonus = 0;
+  playRating("diff", 0, "empty");
+  playRating("bonus", 0, "empty");
 };
 
 window.applyGameConfig = function (topic, level) {
@@ -1693,11 +1723,14 @@ window.applyGameConfig = function (topic, level) {
   setText("questions-qty", cfg.questions ?? "-");
   setText("time-limit", cfg.time ?? "-");
 
-  playRating(".game-rating-diff", cfg.diff || 0);
+  ratingState.diff = cfg.diff || 0;
+  ratingState.bonus = cfg.bonus || 0;
+
+  playRating("diff", ratingState.diff);
   clearTimeout(bonusTimer);
-  playRating(".game-rating-bonus", 0, true);    // empty boxes while waiting
+  playRating("bonus", 0, "empty");   // empty boxes during the delay
   bonusTimer = setTimeout(
-    () => playRating(".game-rating-bonus", cfg.bonus || 0),
+    () => playRating("bonus", ratingState.bonus),
     BONUS_DELAY_MS
   );
 };
