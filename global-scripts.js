@@ -324,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 1. Identify selected tier
     const activeOption = document.querySelector('.mask-middle .game-level-option.is-selected') 
-                      || document.querySelector('.mask-middle .gamelevel-btn');
+                          || document.querySelector('.mask-middle .gamelevel-btn');
     
     let selectedTier = null;
     if (activeOption) {
@@ -343,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // SCENARIO 2: Player level too low (Client-side fast check)
+    // SCENARIO 2: Player level too low
     const playerLevel = window.currentUserData?.level || 1;
     const requiredLevel = TIER_REQUIREMENTS[selectedTier] || 1;
 
@@ -352,21 +352,40 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // 2. Client checks passed -> Call Backend Function
+    // 2. FADA UT SIDAN DIREKT (Visa overlay medan backend laddar)
+    const overlay = document.getElementById('global-transition-overlay');
+    if (overlay) {
+      overlay.style.pointerEvents = 'all';
+      overlay.style.opacity = '1';
+    }
+
+    // 3. Call Backend Function
     try {
-      // Get current page topic from slug (e.g., "science-start" -> "science")
       const topicMatch = currentSlug.match(/^([a-z0-9-]+)-start$/i);
-const topic = topicMatch ? topicMatch[1] : "science";
+      const topic = topicMatch ? topicMatch[1] : "science";
 
       const session = await window.triggerStartGame(topic, selectedTier);
       
-      // Store session and navigate to game page
       sessionStorage.setItem('activeSessionId', session.sessionId);
       sessionStorage.setItem('navFrom', currentSlug);
-      window.location.href = `/${topic}-game-${selectedTier}`;
+
+      const targetUrl = `/${topic}-game-${selectedTier}`;
+
+      // Använd global exit-funktion om den finns, annars direkt navigering efter kort delay
+      if (typeof window.triggerPageExit === 'function') {
+        window.triggerPageExit(targetUrl);
+      } else {
+        setTimeout(() => {
+          window.location.href = targetUrl;
+        }, 300);
+      }
 
     } catch (err) {
-      // Handled inside window.triggerStartGame
+      // Om backend misslyckas, tona tillbaka sidan så spelaren kan försöka igen
+      if (overlay) {
+        overlay.style.opacity = '0';
+        overlay.style.pointerEvents = 'none';
+      }
     }
   }); 
 });
