@@ -88,10 +88,11 @@ if (typeof currentSlug === 'undefined') {
 // Expose callable trigger to global scope
 window.triggerStartGame = async function(topic, tierLevel) {
   try {
-    /* const result = await startGameFn({ topic, level: tierLevel }); */
+    const result = await startGameFn({ topic, level: tierLevel });
     return result.data; // Returns { sessionId }
   } catch (err) {
     console.error("Start Game Error:", err);
+
     // If client was modified in DevTools and server rejected request, display server message
     if (typeof showGlobalInfo === 'function') {
       showGlobalInfo(err.message || "Failed to start game session.");
@@ -1809,7 +1810,7 @@ Webflow.push(async function() {
 
     // --- Start a server-side session (store session id for later grading)
     try {
-      const startResp = await startGameFn({ topic, level });
+      /* const startResp = await startGameFn({ topic, level }); */
       const sessionId = startResp?.data?.sessionId;
       if (sessionId) {
         window.currentSession = sessionId;
