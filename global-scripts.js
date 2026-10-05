@@ -1090,7 +1090,7 @@ function getTopicFromUrl(url) {
     if (lowerUrl.includes('uc')) return 'uc';
     if (lowerUrl.includes('terms')) return 'terms';  
     if (lowerUrl.includes('privacy')) return 'privacy';
-    return 'lobby';
+    return 'lobby'; // If not in list, fallback to Lobby
 }
 const currentTopicId = getTopicFromUrl(window.location.pathname);
 const currentSlug = window.location.pathname.split('/').filter(Boolean).pop() || 'lobby';

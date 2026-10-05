@@ -564,3 +564,17 @@ a.button-link:hover {
   touch-action: none; /* finger landing on a row can't start a page scroll */
 }
 
+/* ── Score Review mode ── */
+.review-mode .question-card { pointer-events: none; }          /* frozen */
+.review-mode .alternative-row { position: relative; }
+.review-mode .alternative-row::before {
+  content: ""; position: absolute; left: -2.4rem; top: 50%;
+  width: 1.4rem; height: 1.4rem; transform: translateY(-50%);
+  background: center / contain no-repeat; opacity: 0;
+}
+.review-mode .alternative-row.is-correct-choice::before {
+  background-image: url("https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6ac29376b3075c803e5b82cf_review-check-yellow.svg"); opacity: 1;
+}
+.review-mode .alternative-row.is-wrong-choice::before {
+  background-image: url("https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6ac293760d510514d031cfb7_review-cross-red.svg"); opacity: 1;
+}

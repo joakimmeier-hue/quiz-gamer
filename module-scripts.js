@@ -38,6 +38,7 @@ const completeProfileFn = httpsCallable(functions, "completeProfile");
 const changeUsernameFn = httpsCallable(functions, "changeUsername");
 const startGameFn = httpsCallable(functions, "startGame");
 const gradeGameFn = httpsCallable(functions, "gradeGame");
+const getReviewFn = httpsCallable(functions, 'getReview');
 
 // ── SETUP PROVIDERS ──
 const googleProvider = new GoogleAuthProvider();
@@ -1742,6 +1743,7 @@ window.applyGameConfig = function (topic, level) {
 // 3. FETCH AND SEED QUESTIONS RANDOMLY
 var Webflow = window.Webflow || [];
 Webflow.push(async function() {
+  if (!/-game-\d+/.test(window.location.pathname)) return;   // NEW
   const cards = document.querySelectorAll('.question-card');
   if (!cards || cards.length === 0) return;
   const path = window.location.pathname;
@@ -1779,6 +1781,7 @@ Webflow.push(async function() {
 
       card.style.display = ''; // Ensure card is visible wrapper
       const data = docSnap.data();
+      console.log('doc fields:', Object.keys(data), 'correctChoice =', data.correctChoice);
       const titleEl = card.querySelector('.q-title');
       if (titleEl) titleEl.textContent = `Question ${index + 1}`;
       card.setAttribute('data-question-id', docSnap.id);
@@ -2038,7 +2041,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     });
-
     observer.observe(targetEl, { attributes: true });
   });
 });
@@ -2065,3 +2067,82 @@ Webflow.push(function() {
   if (justTriggeredThisLoad || remaining <= 0) return;
   tryShowLevelUpPopup();
 });
+
+/* Review Score */
+const REVIEW_SLUG = 'score-review';
+
+async function initReviewPage() {
+  document.body.classList.add('review-mode');
+  const template = document.querySelector('.question-card');
+  if (!template) return;
+
+  try {
+    const { data } = await getReviewFn({});
+    let prev = template;
+
+    data.questions.forEach((q, i) => {
+      const timeEl = document.querySelector('#timer-text'); // whichever element holds the digits
+    if (timeEl) timeEl.textContent = data.timeStr;
+      const card = template.cloneNode(true);
+      card.style.display = '';
+      card.style.opacity = '1';
+      card.setAttribute('data-question-id', q.id);
+      card.querySelector('.q-title').textContent = `Question ${i + 1}`;
+      card.querySelector('.q-text').textContent = q.text;
+
+      for (let c = 1; c <= 4; c++) {
+        const row = card.querySelector(`[data-choice="${c}"]`);
+        if (!row) continue;
+        const raw = q.alternatives ? q.alternatives[c] : null;
+        const alt = typeof raw === 'string' ? raw.trim() : '';
+        if (!alt || alt === '...') { row.style.display = 'none'; continue; }
+        row.style.display = '';
+        row.querySelector('.qalt-text').textContent = alt;
+
+        const cb = row.querySelector('.checkbox');
+        cb.classList.remove('is-active', 'no-transition');
+        if (q.picked === c) cb.classList.add('is-active', 'no-transition');
+        row.classList.toggle('is-correct-choice', q.correct === c);
+        row.classList.toggle('is-wrong-choice', q.picked === c && q.picked !== q.correct);
+      }
+      prev.after(card);
+      prev = card;
+    });
+
+    template.remove();
+    freezeTimerLottie();
+    document.dispatchEvent(new CustomEvent('questionsLoaded')); // see section 1 first
+  } catch (err) {
+    console.error('Review failed:', err);
+    window.location.replace('/');
+  }
+}
+
+function freezeTimerLottie(tries = 0) {
+  const lot = window.Webflow?.require?.('lottie')?.lottie;
+  const anims = lot?.getRegisteredAnimations?.() || [];
+  if (!anims.length) { if (tries < 20) setTimeout(() => freezeTimerLottie(tries + 1), 250); return; }
+  anims.forEach(a => {
+    if (a.wrapper?.closest?.('.timer-wrapper')) a.pause();
+  });
+}
+
+if (currentSlug === REVIEW_SLUG) {
+  Webflow.push(initReviewPage);
+
+  // Back to Score: tell the score page to skip its intro
+  const back = document.querySelector('#link-back-score, a[href="/score"]');
+  if (back) back.addEventListener('click', () => {
+    sessionStorage.setItem('scoreRevisit', 'true');
+  });
+}
+
+// Score page: Review button
+if (currentSlug === 'score') {
+  document.getElementById('link-review')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    // later: pop-info + cost goes here
+    if (window.triggerPageExit) window.triggerPageExit('/' + REVIEW_SLUG, true, true);
+    else window.location.href = '/' + REVIEW_SLUG;
+  });
+}
