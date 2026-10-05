@@ -88,7 +88,7 @@ if (typeof currentSlug === 'undefined') {
 // Expose callable trigger to global scope
 window.triggerStartGame = async function(topic, tierLevel) {
   try {
-    const result = await startGameFn({ topic, level: tierLevel });
+    /* const result = await startGameFn({ topic, level: tierLevel }); */
     return result.data; // Returns { sessionId }
   } catch (err) {
     console.error("Start Game Error:", err);
