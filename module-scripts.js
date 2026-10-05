@@ -1781,7 +1781,6 @@ Webflow.push(async function() {
 
       card.style.display = ''; // Ensure card is visible wrapper
       const data = docSnap.data();
-      console.log('doc fields:', Object.keys(data), 'correctChoice =', data.correctChoice);
       const titleEl = card.querySelector('.q-title');
       if (titleEl) titleEl.textContent = `Question ${index + 1}`;
       card.setAttribute('data-question-id', docSnap.id);
