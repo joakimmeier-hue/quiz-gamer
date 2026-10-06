@@ -1937,68 +1937,56 @@ let justTriggeredThisLoad = false;
 function showLevelUpPopup() {
   const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10);
   if (remaining <= 0) return;
+  
   const targetLevel = parseInt(sessionStorage.getItem('pendingLevelUpTarget') || '0', 10);
   const currentLevelShown = targetLevel - remaining + 1;
   const levelTextEl = document.getElementById('lvlup-text');
+  
   if (levelTextEl) {
     levelTextEl.textContent = `Congratulations, you have reached level ${currentLevelShown}!`;
   }
+
+  // 1. Reset element state before opening
+  const linesEl = document.querySelector('.lines-radiate');
+  if (linesEl) {
+    linesEl.classList.remove('animate-flash');
+    linesEl.style.opacity = '0';
+  }
+
+  // 2. Trigger Webflow interaction
   const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
   if (wfIx) wfIx.emit("lvlup");
-}
-function tryShowLevelUpPopup(attempts = 0, maxAttempts = 8) {
-  showLevelUpPopup();
-  setTimeout(() => {
-    const levelUpEl = document.querySelector('.level-up');
-    const isOpen = levelUpEl && window.getComputedStyle(levelUpEl).display !== 'none';
-    const stillPending = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10) > 0;
-    if (isOpen || !stillPending || attempts >= maxAttempts) return;
-    tryShowLevelUpPopup(attempts + 1, maxAttempts);
-  }, 500);
+
+  // 3. Wait 0.3s (300ms) delay, then flash 4 times and hold
+  if (linesEl) {
+    setTimeout(() => {
+      linesEl.classList.add('animate-flash');
+    }, 300);
+  }
 }
 
+// ── LEVEL UP: dismiss handler (Updated with reset) ──
 Webflow.push(function() {
-  const resultDataRaw = sessionStorage.getItem('lastGameResult');
-  if (!resultDataRaw) return;
-  let data;
-  try {
-    data = JSON.parse(resultDataRaw);
-  } catch (err) {
-    console.error("Couldn't interpret the game result:", err);
-    return;
-  }
-  const setText = (id, value) => {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.textContent = typeof value === 'number' ? fmtNum(value) : value;
-};
-  setText('list-game', data.topic.toUpperCase()); // Really best looking with uppercase here?
-  setText('list-result', `${data.correctCount}/${data.totalQuestions}`);
-  setText('list-time', data.timeStr);
-  setText('list-attempts', data.attemptCount - 1);
-  setText('list-leaderboard', `${data.leaderboardPosition}`);
-  setText('list-score', data.finalScore);
-  setText('list-unlimited-score', data.unlimitedScore);
-  const levelsGained = data.levelsGained;
-  sessionStorage.removeItem('lastGameResult');
-
-  if (levelsGained > 0) {
-    sessionStorage.setItem('pendingLevelUps', levelsGained);
-    sessionStorage.setItem('pendingLevelUpTarget', data.newLevel);
-    justTriggeredThisLoad = true;
-    const triggerEl = document.querySelector('.sub-result-2.init-lvlup');
-    const levelUpEl = document.querySelector('.level-up');
-
-    if (triggerEl && levelUpEl) {
-      const observer = new MutationObserver(() => {
-        if (window.getComputedStyle(triggerEl).display === 'none') {
-          observer.disconnect();
-          tryShowLevelUpPopup();
-        }
-      });
-      observer.observe(triggerEl, { attributes: true, attributeFilter: ['style', 'class'] });
+  const btn = document.querySelector('.level-up .button.lvlup');
+  if (!btn) return;
+  
+  btn.addEventListener('click', () => {
+    // Reset lines element for subsequent level ups if user leveled up multiple times
+    const linesEl = document.querySelector('.lines-radiate');
+    if (linesEl) {
+      linesEl.classList.remove('animate-flash');
+      linesEl.style.opacity = '0';
     }
-  }
+
+    const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10) - 1;
+    if (remaining > 0) {
+      sessionStorage.setItem('pendingLevelUps', remaining);
+      setTimeout(() => tryShowLevelUpPopup(), 500);
+    } else {
+      sessionStorage.removeItem('pendingLevelUps');
+      sessionStorage.removeItem('pendingLevelUpTarget');
+    }
+  });
 });
 
 // ------- Score sfx - Flash -----------

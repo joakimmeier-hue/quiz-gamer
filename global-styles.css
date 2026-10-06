@@ -51,6 +51,29 @@
   transform: translateZ(0); /* Forces clean GPU layer initialization */
 }
 
+/* ——————————————— LEVEL UP POP UP ——————————————— */ 
+/* 1. Ensure it starts invisible so there is no flash on page load */
+.lines-radiate {
+  opacity: 0;
+}
+
+/* 2. Keyframe class triggered by JS */
+.lines-radiate.animate-flash {
+  animation: flashRadiate4 1.2s ease-in-out forwards;
+}
+
+/* 3. 4 pulses ending at full opacity (100%) */
+@keyframes flashRadiate4 {
+  0%    { opacity: 0; }
+  12.5% { opacity: 1; }
+  25%   { opacity: 0; }
+  37.5% { opacity: 1; }
+  50%   { opacity: 0; }
+  62.5% { opacity: 1; }
+  75%   { opacity: 0; }
+  100%  { opacity: 1; }
+}
+
 /* ———————————— EMAIL AUTH MODAL POPUP ——————————————————————————— */
 /* 1. Placeholder Text (Grey) */
 #email-auth-email::placeholder,
