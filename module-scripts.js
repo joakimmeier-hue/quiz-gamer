@@ -1956,17 +1956,39 @@ function showLevelUpPopup() {
     linesEl.classList.remove('animate-flash');
     linesEl.style.opacity = '0';
   }
+// 2. Göm sprinkles direkt innan animationen börjar
+  const sprinklesEl = document.querySelector('.square-sprinkles.lvlup');
+  if (sprinklesEl) {
+    sprinklesEl.style.display = 'none';
+  }
 
   // Trigga Webflow Interaction
   const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
   if (wfIx) wfIx.emit("lvlup");
 
-  // Vänta 0.3s delay, blinka 4 ggr och stanna på opacity: 1
-  if (linesEl) {
-    setTimeout(() => {
+ // 3. Efter 0.3s delay: starta blink på linjerna samt visa & spela Lottie
+  setTimeout(() => {
+    // Linje-blink
+    if (linesEl) {
       linesEl.classList.add('animate-flash');
-    }, 300);
-  }
+    }
+
+    // Visa sprinkles och tvinga Lottien att spela från start (frame 0)
+    if (sprinklesEl) {
+      sprinklesEl.style.display = 'flex';
+
+      const wfLottie = Webflow.require('lottie');
+      if (wfLottie) {
+        // Hämta animeringsinstansen för elementet om den finns och spela från bildruta 0
+        const anims = wfLottie.getAnim ? wfLottie.getAnim(sprinklesEl) : null;
+        if (anims && anims.length > 0) {
+          anims[0].goToAndPlay(0, true);
+        } else if (typeof wfLottie.init === 'function') {
+          wfLottie.init(); // Fallback om instansen inte var initierad
+        }
+      }
+    }
+  }, 300);
 }
 
 function tryShowLevelUpPopup(attempts = 0, maxAttempts = 8) {
