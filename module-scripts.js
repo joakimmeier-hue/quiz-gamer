@@ -1950,13 +1950,14 @@ function showLevelUpPopup() {
     levelTextEl.textContent = `Congratulations, you have reached level ${currentLevelShown}!`;
   }
 
-  // Återställ .lines-radiate innan start
+  // 1. Återställ .lines-radiate innan start
   const linesEl = document.querySelector('.lines-radiate');
   if (linesEl) {
     linesEl.classList.remove('animate-flash');
     linesEl.style.opacity = '0';
   }
-// 2. Göm sprinkles direkt innan animationen börjar
+
+  // 2. Göm sprinkles direkt innan animationen börjar
   const sprinklesEl = document.querySelector('.square-sprinkles.lvlup');
   if (sprinklesEl) {
     sprinklesEl.style.display = 'none';
@@ -1966,7 +1967,7 @@ function showLevelUpPopup() {
   const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
   if (wfIx) wfIx.emit("lvlup");
 
- // 3. Efter 0.3s delay: starta blink på linjerna samt visa & spela Lottie
+  // 3. Efter 0.3s delay: starta blink på linjerna samt visa & spela Lottie
   setTimeout(() => {
     // Linje-blink
     if (linesEl) {
