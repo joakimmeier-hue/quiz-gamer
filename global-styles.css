@@ -59,6 +59,11 @@
 
 /* ——————————————— LEVEL UP POP UP ——————————————— */ 
 /* 1. SKÄRM-FLASH (FULLSCREEN) */
+.level-up {
+  overscroll-behavior: none;
+  touch-action: none; /* Förhindrar att touch-gester scrollar sidan bakom */
+}
+
 .level-up .flash {
   opacity: 0;
 }
@@ -117,7 +122,7 @@
 
 .eam-submit-btn {
     color: var(--grey-text, #9b9b9b);
-    background-color: var(--gold-dark, #47391c);
+    background-color: var(--gold-dark, #35332f);
     transition: background-color 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955),
                 color 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955);
                 pointer-events: none;
@@ -391,7 +396,7 @@ a.button-link:hover {
 
 .cp-submit-btn {
     color: var(--grey-text, #9b9b9b);
-    background-color: var(--gold-dark, #47391c);
+    background-color: var(--gold-dark, #35332f);
     transition: background-color 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955),
                 color 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955),
 }
