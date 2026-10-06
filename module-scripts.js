@@ -2075,7 +2075,8 @@ Webflow.push(function() {
 // ── SCORE SFX ──
 document.addEventListener('DOMContentLoaded', () => {
   const soundTriggers = [
-    { selector: '.flash', sfxKey: 'scoreFlash', threshold: 0.9, hasFired: false },
+    { selector: '.level-up .flash', sfxKey: 'scoreFlash', threshold: 0.9, hasFired: false },
+    { selector: '.body-1 .flash', sfxKey: 'scoreFlash', threshold: 0.9, hasFired: false },
     { selector: '.final-score', sfxKey: 'finalScore', threshold: 0.1, hasFired: false }
   ];
 
@@ -2090,7 +2091,7 @@ document.addEventListener('DOMContentLoaded', () => {
           
           if (opacity >= config.threshold && !config.hasFired) {
             config.hasFired = true;
-            playSFX(config.sfxKey); // Calls your global Web Audio API function instantly!
+            playSFX(config.sfxKey);
           } else if (opacity === 0) {
             config.hasFired = false;
           }
