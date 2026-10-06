@@ -1967,6 +1967,9 @@ function showLevelUpPopup() {
   const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
   if (wfIx) wfIx.emit("lvlup");
 
+  // 🔊 SPELA LEVEL UP SFX HÄR (eller inuti setTimeout nedanför)
+  playSFX('levelUp');
+
   // 3. Efter 0.3s delay: starta blink på linjerna samt visa & spela Lottie
   setTimeout(() => {
     // Linje-blink
@@ -1980,12 +1983,11 @@ function showLevelUpPopup() {
 
       const wfLottie = Webflow.require('lottie');
       if (wfLottie) {
-        // Hämta animeringsinstansen för elementet om den finns och spela från bildruta 0
         const anims = wfLottie.getAnim ? wfLottie.getAnim(sprinklesEl) : null;
         if (anims && anims.length > 0) {
           anims[0].goToAndPlay(0, true);
         } else if (typeof wfLottie.init === 'function') {
-          wfLottie.init(); // Fallback om instansen inte var initierad
+          wfLottie.init();
         }
       }
     }
@@ -2060,23 +2062,22 @@ Webflow.push(function() {
 // ── SCORE SFX ──
 document.addEventListener('DOMContentLoaded', () => {
   const soundTriggers = [
-    { selector: '.flash', audioId: 'flash-sfx', threshold: 0.9, hasFired: false },
-    { selector: '.final-score', audioId: 'score-sfx', threshold: 0.1, hasFired: false }
+    { selector: '.flash', sfxKey: 'scoreFlash', threshold: 0.9, hasFired: false },
+    { selector: '.final-score', sfxKey: 'finalScore', threshold: 0.1, hasFired: false }
   ];
 
   soundTriggers.forEach((config) => {
     const targetEl = document.querySelector(config.selector);
-    const sfx = document.getElementById(config.audioId);
-    if (!targetEl || !sfx) return;
+    if (!targetEl) return;
 
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.attributeName === 'style') {
           const opacity = parseFloat(window.getComputedStyle(targetEl).opacity);
+          
           if (opacity >= config.threshold && !config.hasFired) {
             config.hasFired = true;
-            sfx.currentTime = 0;
-            sfx.play().catch(e => console.log(`Autoplay blocked (${config.audioId}):`, e));
+            playSFX(config.sfxKey); // Calls your global Web Audio API function instantly!
           } else if (opacity === 0) {
             config.hasFired = false;
           }

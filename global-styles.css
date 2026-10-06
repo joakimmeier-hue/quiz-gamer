@@ -65,22 +65,20 @@
 
 /* 2. steps(1) tar bort all mjuk fade och ger stumma av/på-klipp */
 .lines-radiate.animate-flash {
-  animation: flashRadiate5 0.75s steps(1) forwards;
+  animation: flashRadiate5 1s steps(1) forwards;
 }
 
 /* 3. 5 skarpa blinkningar som stannar på opacity: 1 */
 @keyframes flashRadiate5 {
   0%   { opacity: 0; }
-  10%  { opacity: 1; } /* Blink 1 */
-  20%  { opacity: 0; }
-  30%  { opacity: 1; } /* Blink 2 */
-  40%  { opacity: 0; }
-  50%  { opacity: 1; } /* Blink 3 */
-  60%  { opacity: 0; }
-  70%  { opacity: 1; } /* Blink 4 */
-  80%  { opacity: 0; }
-  90%  { opacity: 1; } /* Blink 5 */
-  100%  { opacity: 0; } /* Stannar osynlig */
+  12%  { opacity: 1; } /* Blink 1 */
+  24%  { opacity: 0; }
+  37%  { opacity: 1; } /* Blink 2 */
+  49%  { opacity: 0; }
+  61%  { opacity: 1; } /* Blink 3 */
+  74%  { opacity: 0; }
+  86%  { opacity: 1; } /* Blink 4 */
+  100%  { opacity: 0; }/* Stannar osynlig */
 }
 
 /* ———————————— EMAIL AUTH MODAL POPUP ——————————————————————————— */
