@@ -1975,21 +1975,22 @@ function showLevelUpPopup() {
   // 🔊 SPELA LEVEL UP SFX HÄR (eller inuti setTimeout nedanför)
   playSFX('levelUp');
 
-  // ⚡ TIMING 1: Triggning av skärm-flash (t.ex. direkt eller efter 100ms)
+  // ⚡ TIMING 1: Skärm-flash (efter 100 ms)
   setTimeout(() => {
     if (flashEl) {
       flashEl.classList.add('animate-screen-flash');
     }
-  }, 100); // <-- Justera fördröjning för flashen här
+  }, 100);
 
-  // 🎆 TIMING 2: Triggning av strålande linjer, sprinkles & Lottie (t.ex. efter 300ms)
+  // 🎆 TIMING 2: Strålande linjer (efter 300 ms)
   setTimeout(() => {
-    // Starta linje-blink
     if (linesEl) {
       linesEl.classList.add('animate-radiate');
     }
+  }, 300);
 
-    // Visa sprinkles och tvinga Lottien att spela från start (frame 0)
+  // ✨ TIMING 3: Sprinkles & Lottie (+400 ms extra = totalt 700 ms)
+  setTimeout(() => {
     if (sprinklesEl) {
       sprinklesEl.style.display = 'flex';
 
@@ -2003,7 +2004,7 @@ function showLevelUpPopup() {
         }
       }
     }
-  }, 300); // <-- Justera fördröjning för linjer & Lottie här
+  }, 700); // 300 ms + 400 ms = 700 ms
 }
 
 function tryShowLevelUpPopup(attempts = 0, maxAttempts = 8) {
