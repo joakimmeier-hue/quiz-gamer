@@ -58,27 +58,44 @@
 }
 
 /* ——————————————— LEVEL UP POP UP ——————————————— */ 
-/* 1. Släckt som standard så den inte syns innan popupen öppnas */
+/* 1. SKÄRM-FLASH (FULLSCREEN) */
+.level-up .flash {
+  opacity: 0;
+}
+
+.level-up .flash.animate-screen-flash {
+  /* Sätt totaltiden till 120ms */
+  animation: lvlupFlashBlink 200ms ease-out forwards;
+}
+
+@keyframes lvlupFlashBlink {
+  0%   { opacity: 0; }   /* 0 ms: osynlig */
+  20%  { opacity: 1; }  
+  40%  { opacity: 0.75; } 
+  60% { opacity: 0.5; }  
+  80% { opacity: 0.25; } 
+  100% { opacity: 0; }  /* helt släckt */
+}
+
+/* 2. STRÅLANDE LINJER (.lines-radiate) */
 .lines-radiate {
   opacity: 0;
 }
 
-/* 2. steps(1) tar bort all mjuk fade och ger stumma av/på-klipp */
-.lines-radiate.animate-flash {
+.lines-radiate.animate-radiate {
   animation: flashRadiate5 1s steps(1) forwards;
 }
 
-/* 3. 5 skarpa blinkningar som stannar på opacity: 1 */
 @keyframes flashRadiate5 {
   0%   { opacity: 0; }
-  12%  { opacity: 1; } /* Blink 1 */
+  12%  { opacity: 1; }
   24%  { opacity: 0; }
-  37%  { opacity: 1; } /* Blink 2 */
+  37%  { opacity: 1; }
   49%  { opacity: 0; }
-  61%  { opacity: 1; } /* Blink 3 */
+  61%  { opacity: 1; }
   74%  { opacity: 0; }
-  86%  { opacity: 1; } /* Blink 4 */
-  100%  { opacity: 0; }/* Stannar osynlig */
+  86%  { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 /* ———————————— EMAIL AUTH MODAL POPUP ——————————————————————————— */

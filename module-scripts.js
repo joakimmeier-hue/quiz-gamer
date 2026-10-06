@@ -1950,11 +1950,17 @@ function showLevelUpPopup() {
     levelTextEl.textContent = `Congratulations, you have reached level ${currentLevelShown}!`;
   }
 
-  // 1. Återställ .lines-radiate innan start
+// 1. Återställ båda elementen innan start
   const linesEl = document.querySelector('.lines-radiate');
   if (linesEl) {
-    linesEl.classList.remove('animate-flash');
+    linesEl.classList.remove('animate-radiate');
     linesEl.style.opacity = '0';
+  }
+
+  const flashEl = document.querySelector('.level-up .flash');
+  if (flashEl) {
+    flashEl.classList.remove('animate-screen-flash');
+    flashEl.style.opacity = '0';
   }
 
   // 2. Göm sprinkles direkt innan animationen börjar
@@ -1962,19 +1968,25 @@ function showLevelUpPopup() {
   if (sprinklesEl) {
     sprinklesEl.style.display = 'none';
   }
-
-  // Trigga Webflow Interaction
+    // Trigga Webflow Interaction
   const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
   if (wfIx) wfIx.emit("lvlup");
 
   // 🔊 SPELA LEVEL UP SFX HÄR (eller inuti setTimeout nedanför)
   playSFX('levelUp');
 
-  // 3. Efter 0.3s delay: starta blink på linjerna samt visa & spela Lottie
+  // ⚡ TIMING 1: Triggning av skärm-flash (t.ex. direkt eller efter 100ms)
   setTimeout(() => {
-    // Linje-blink
+    if (flashEl) {
+      flashEl.classList.add('animate-screen-flash');
+    }
+  }, 100); // <-- Justera fördröjning för flashen här
+
+  // 🎆 TIMING 2: Triggning av strålande linjer, sprinkles & Lottie (t.ex. efter 300ms)
+  setTimeout(() => {
+    // Starta linje-blink
     if (linesEl) {
-      linesEl.classList.add('animate-flash');
+      linesEl.classList.add('animate-radiate');
     }
 
     // Visa sprinkles och tvinga Lottien att spela från start (frame 0)
@@ -1991,7 +2003,7 @@ function showLevelUpPopup() {
         }
       }
     }
-  }, 300);
+  }, 300); // <-- Justera fördröjning för linjer & Lottie här
 }
 
 function tryShowLevelUpPopup(attempts = 0, maxAttempts = 8) {
