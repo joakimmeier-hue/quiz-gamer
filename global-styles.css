@@ -80,8 +80,7 @@
   70%  { opacity: 1; } /* Blink 4 */
   80%  { opacity: 0; }
   90%  { opacity: 1; } /* Blink 5 */
-  95%  { opacity: 0; }
-  100% { opacity: 1; } /* Stannar kvar helt synlig */
+  100%  { opacity: 0; } /* Stannar osynlig */
 }
 
 /* ———————————— EMAIL AUTH MODAL POPUP ——————————————————————————— */
