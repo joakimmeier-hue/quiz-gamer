@@ -1,6 +1,6 @@
 :root {
-  --yellow: #ffc04b;
-  --gold: #947434;
+  --yellow: #ffcb6b;
+  --gold-sand: #f5d497;
   --gold-dark: #47391c;
   --sand: #494643;
   --white-1: #ffffff;
@@ -71,9 +71,6 @@
 @keyframes lvlupFlashBlink {
   0%   { opacity: 0; }   /* 0 ms: osynlig */
   20%  { opacity: 1; }  
-  40%  { opacity: 0.75; } 
-  60% { opacity: 0.5; }  
-  80% { opacity: 0.25; } 
   100% { opacity: 0; }  /* helt släckt */
 }
 
@@ -127,7 +124,7 @@
 }
 .eam-submit-btn.is-active {
     color: var(--white-1, #ffffff);
-    background-color: var(--gold, #947434);
+    background-color: var(--gold-sand, #f5d497);
     pointer-events: auto; /* Restores clickability */
     cursor: pointer; /* Acts as a failsafe for iOS Safari to register tap events */
 } 
@@ -137,19 +134,19 @@
   .w-input[data-name]:focus,
   .w-select:focus,
   .submit-button:focus-visible {
-    border-color: var(--yellow, #ffc04b) !important; /* Ändra färg eller osynlig */
+    border-color: var(--yellow, #ffcb6b) !important; /* Ändra färg eller osynlig */
     box-shadow: none !important;               /* Tar bort eventuell blå glöd */
   }
   
   /* 2. Change the text selection highlight color site-wide */
   ::selection {
-    background-color: var(--yellow, #ffc04b);
+    background-color: var(--yellow, #ffcb6b);
     color: #111111; /* Makes the text dark when highlighted so it's readable against the yellow/orange */
   }
 
   /* Fallback for older Firefox browsers */
   ::-moz-selection {
-    background-color: var(--yellow, #ffc04b);
+    background-color: var(--yellow, #ffcb6b);
     color: #111111;
   }
   
@@ -400,7 +397,7 @@ a.button-link:hover {
 }
 .cp-submit-btn.is-active {
     color: var(--white-1, #ffffff);
-    background-color: var(--gold, #947434);
+    background-color: var(--gold-sand, #f5d497);
 }
 
 /* ────────────────── GAME START PAGES ──────────────────
