@@ -428,7 +428,7 @@ a.button-link:hover {
   visibility: visible !important;
 }
 
-/* COMPONENT .dropdown-gamelevel */
+/* ---- COMPONENT .dropdown-gamelevel ---- */
 .dropdown-gamelevel {
   opacity: 0;
   animation: fadeIn 0.18s 1.95s forwards;
@@ -475,9 +475,15 @@ a.button-link:hover {
   pointer-events: none;
 }
 
-/* Inner list squares move down when open */
+/* 1. Stängt läge: Åker tillbaka upp DIREKT (0s delay) när menyn stängs */
+.dropdown-gllist .small-square {
+  transform: translateY(0);
+  transition: transform 0.15s 0.07s ease;
+}
+/* 2. Öppet läge: Åker ner 1rem MED fördröjning (0.15s delay) när menyn öppnas */
 .dropdown-gllist.w--open .small-square {
   transform: translateY(1rem);
+  transition: transform 0.15s 0.15s ease;
 }
 
 /* CENTER SQUARES (Pops out only when tier is selected and menu is completely closed) */
