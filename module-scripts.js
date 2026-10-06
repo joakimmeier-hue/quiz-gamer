@@ -1934,30 +1934,34 @@ document.addEventListener('click', async function(e) {
 // ──────────── SCORE PAGE: DISPLAY RESULTS + LEVEL UP ────────────
 var Webflow = window.Webflow || [];
 let justTriggeredThisLoad = false;
+
+// Säker formatteringsfunktion om fmtNum saknas i globalt scope
+const safeFmtNum = (val) => (typeof fmtNum === 'function' ? fmtNum(val) : val);
+
 function showLevelUpPopup() {
   const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10);
   if (remaining <= 0) return;
-  
+
   const targetLevel = parseInt(sessionStorage.getItem('pendingLevelUpTarget') || '0', 10);
   const currentLevelShown = targetLevel - remaining + 1;
   const levelTextEl = document.getElementById('lvlup-text');
-  
+
   if (levelTextEl) {
     levelTextEl.textContent = `Congratulations, you have reached level ${currentLevelShown}!`;
   }
 
-  // 1. Reset element state before opening
+  // Återställ .lines-radiate innan start
   const linesEl = document.querySelector('.lines-radiate');
   if (linesEl) {
     linesEl.classList.remove('animate-flash');
     linesEl.style.opacity = '0';
   }
 
-  // 2. Trigger Webflow interaction
+  // Trigga Webflow Interaction
   const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
   if (wfIx) wfIx.emit("lvlup");
 
-  // 3. Wait 0.3s (300ms) delay, then flash 4 times and hold
+  // Vänta 0.3s delay, blinka 4 ggr och stanna på opacity: 1
   if (linesEl) {
     setTimeout(() => {
       linesEl.classList.add('animate-flash');
@@ -1965,13 +1969,107 @@ function showLevelUpPopup() {
   }
 }
 
-// ── LEVEL UP: dismiss handler (Updated with reset) ──
+function tryShowLevelUpPopup(attempts = 0, maxAttempts = 8) {
+  showLevelUpPopup();
+  setTimeout(() => {
+    const levelUpEl = document.querySelector('.level-up');
+    const isOpen = levelUpEl && window.getComputedStyle(levelUpEl).display !== 'none';
+    const stillPending = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10) > 0;
+    if (isOpen || !stillPending || attempts >= maxAttempts) return;
+    tryShowLevelUpPopup(attempts + 1, maxAttempts);
+  }, 500);
+}
+
+// Exponera för test i DevTools-konsolen
+window.showLevelUpPopup = showLevelUpPopup;
+window.tryShowLevelUpPopup = tryShowLevelUpPopup;
+
+// ── LÄS OCH VISA SPELRESULTAT ──
+Webflow.push(function() {
+  const resultDataRaw = sessionStorage.getItem('lastGameResult');
+  if (!resultDataRaw) return;
+
+  let data;
+  try {
+    data = JSON.parse(resultDataRaw);
+  } catch (err) {
+    console.error("Couldn't interpret the game result:", err);
+    return;
+  }
+
+  const setText = (id, value) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = typeof value === 'number' ? safeFmtNum(value) : value;
+  };
+
+  setText('list-game', data.topic ? data.topic.toUpperCase() : '');
+  setText('list-result', `${data.correctCount}/${data.totalQuestions}`);
+  setText('list-time', data.timeStr);
+  setText('list-attempts', data.attemptCount - 1);
+  setText('list-leaderboard', `${data.leaderboardPosition}`);
+  setText('list-score', data.finalScore);
+  setText('list-unlimited-score', data.unlimitedScore);
+
+  const levelsGained = data.levelsGained || 0;
+  sessionStorage.removeItem('lastGameResult');
+
+  if (levelsGained > 0) {
+    sessionStorage.setItem('pendingLevelUps', levelsGained);
+    sessionStorage.setItem('pendingLevelUpTarget', data.newLevel);
+    justTriggeredThisLoad = true;
+
+    const triggerEl = document.querySelector('.sub-result-2.init-lvlup');
+    const levelUpEl = document.querySelector('.level-up');
+
+    if (triggerEl && levelUpEl) {
+      const observer = new MutationObserver(() => {
+        if (window.getComputedStyle(triggerEl).display === 'none') {
+          observer.disconnect();
+          tryShowLevelUpPopup();
+        }
+      });
+      observer.observe(triggerEl, { attributes: true, attributeFilter: ['style', 'class'] });
+    }
+  }
+});
+
+// ── SCORE SFX ──
+document.addEventListener('DOMContentLoaded', () => {
+  const soundTriggers = [
+    { selector: '.flash', audioId: 'flash-sfx', threshold: 0.9, hasFired: false },
+    { selector: '.final-score', audioId: 'score-sfx', threshold: 0.1, hasFired: false }
+  ];
+
+  soundTriggers.forEach((config) => {
+    const targetEl = document.querySelector(config.selector);
+    const sfx = document.getElementById(config.audioId);
+    if (!targetEl || !sfx) return;
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'style') {
+          const opacity = parseFloat(window.getComputedStyle(targetEl).opacity);
+          if (opacity >= config.threshold && !config.hasFired) {
+            config.hasFired = true;
+            sfx.currentTime = 0;
+            sfx.play().catch(e => console.log(`Autoplay blocked (${config.audioId}):`, e));
+          } else if (opacity === 0) {
+            config.hasFired = false;
+          }
+        }
+      });
+    });
+    observer.observe(targetEl, { attributes: true });
+  });
+});
+
+// ── LEVEL UP: DISMISS HANDLER ──
 Webflow.push(function() {
   const btn = document.querySelector('.level-up .button.lvlup');
   if (!btn) return;
-  
+
   btn.addEventListener('click', () => {
-    // Reset lines element for subsequent level ups if user leveled up multiple times
     const linesEl = document.querySelector('.lines-radiate');
     if (linesEl) {
       linesEl.classList.remove('animate-flash');
@@ -1989,74 +2087,14 @@ Webflow.push(function() {
   });
 });
 
-// ------- Score sfx - Flash -----------
-document.addEventListener('DOMContentLoaded', () => {
-  // Config for all timeline-triggered sound effects
-  const soundTriggers = [
-    {
-      selector: '.flash',
-      audioId: 'flash-sfx',
-      threshold: 0.9, // Triggers at 90%+ opacity
-      hasFired: false
-    },
-    {
-      selector: '.final-score',
-      audioId: 'score-sfx',
-      threshold: 0.1, // Triggers as soon as it hits 10% opacity
-      hasFired: false
-    }
-  ];
-  soundTriggers.forEach((config) => {
-    const targetEl = document.querySelector(config.selector);
-    const sfx = document.getElementById(config.audioId);
-
-    if (!targetEl || !sfx) return;
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'style') {
-          const opacity = parseFloat(window.getComputedStyle(targetEl).opacity);
-
-          // Fire sound when passing threshold
-          if (opacity >= config.threshold && !config.hasFired) {
-            config.hasFired = true;
-            sfx.currentTime = 0;
-            sfx.play().catch(e => console.log(`Autoplay blocked (${config.audioId}):`, e));
-          } 
-          // Reset trigger flag if element fades back out completely
-          else if (opacity === 0) {
-            config.hasFired = false;
-          }
-        }
-      });
-    });
-    observer.observe(targetEl, { attributes: true });
-  });
-});
-
-// ── LEVEL UP: dismiss handler ──
-Webflow.push(function() {
-  const btn = document.querySelector('.level-up .button.lvlup');
-  if (!btn) return;
-  btn.addEventListener('click', () => {
-    const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10) - 1;
-    if (remaining > 0) {
-      sessionStorage.setItem('pendingLevelUps', remaining);
-      setTimeout(() => tryShowLevelUpPopup(), 500);
-    } else {
-      sessionStorage.removeItem('pendingLevelUps');
-      sessionStorage.removeItem('pendingLevelUpTarget');
-    }
-  });
-});
-
-// ── LEVEL UP: re-show on load if not yet acknowledged ──
+// ── LEVEL UP: RE-SHOW ON LOAD ──
 Webflow.push(function() {
   const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10);
   if (justTriggeredThisLoad || remaining <= 0) return;
   tryShowLevelUpPopup();
 });
 
-/* Review Score */
+/* ──────────────── SCORE REVIEW ──────────────── */
 const REVIEW_SLUG = 'score-review';
 
 async function initReviewPage() {

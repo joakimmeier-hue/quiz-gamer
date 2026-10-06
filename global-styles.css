@@ -57,12 +57,10 @@
   opacity: 0;
 }
 
-/* 2. Keyframe class triggered by JS */
 .lines-radiate.animate-flash {
   animation: flashRadiate4 1.2s ease-in-out forwards;
 }
 
-/* 3. 4 pulses ending at full opacity (100%) */
 @keyframes flashRadiate4 {
   0%    { opacity: 0; }
   12.5% { opacity: 1; }
