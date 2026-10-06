@@ -2075,11 +2075,11 @@ Webflow.push(function() {
 // ── SCORE SFX ──
 document.addEventListener('DOMContentLoaded', () => {
   const soundTriggers = [
+    // Lyssna BARA på flashen inuti .level-up popupen
     { selector: '.level-up .flash', sfxKey: 'scoreFlash', threshold: 0.9, hasFired: false },
-    { selector: '.body-1 .flash', sfxKey: 'scoreFlash', threshold: 0.9, hasFired: false },
+    { selector: '.wrapper-score .flash', sfxKey: 'scoreFlash', threshold: 0.9, hasFired: false },
     { selector: '.final-score', sfxKey: 'finalScore', threshold: 0.1, hasFired: false }
   ];
-
   soundTriggers.forEach((config) => {
     const targetEl = document.querySelector(config.selector);
     if (!targetEl) return;
