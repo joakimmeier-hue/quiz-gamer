@@ -1242,7 +1242,7 @@ const SFX_VOLUMES = {
     qalt5: 0.5,
     deny: 0.9,
     scoreFlash: 0.9,
-    finalScore: 0.9,
+    finalScore: 1,
     levelUp: 0.9
 };
 // ── QALT CYCLE CONFIG ──
