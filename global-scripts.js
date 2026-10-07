@@ -315,79 +315,98 @@ function updateTierLocks(playerLevel = 1) {
 
 // ── START BUTTON HANDLER ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  const startBtn = document.querySelector('.mask-middle .game-start-btn-wrapper');
-  if (!startBtn) return;
+  // Leta efter BÅDE standard-knapparna och GMA-knappen
+  const startBtns = document.querySelectorAll('.mask-middle .game-start-btn-wrapper, #game-start-btn-gma, .game-start-btn-gma');
+  
+  if (startBtns.length === 0) return;
 
-  startBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  startBtns.forEach(startBtn => {
+    startBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-    // 1. Identify selected tier
-    const activeOption = document.querySelector('.mask-middle .game-level-option.is-selected') 
-                          || document.querySelector('.mask-middle .gamelevel-btn');
-    
-    let selectedTier = null;
-    if (activeOption) {
-      const dataLvl = activeOption.getAttribute('data-level');
-      if (dataLvl) {
-        selectedTier = parseInt(dataLvl, 10);
-      } else {
-        const match = activeOption.textContent.match(/(?:Tier|Level)\s*(\d+)/i);
-        if (match) selectedTier = parseInt(match[1], 10);
-      }
-    }
+      // Kontrollera om det är GMA-knappen vi klickade på
+      const isGma = startBtn.id === 'game-start-btn-gma' || startBtn.classList.contains('game-start-btn-gma');
 
-    // SCENARIO 1: No tier selected
-    if (!selectedTier) {
-      showGlobalInfo(INFO_MESSAGES.NO_TIER_SELECTED);
-      return;
-    }
+      let selectedTier = null;
+      let topic = "science"; // fallback
 
-    // SCENARIO 2: Player level too low
-    const playerLevel = window.currentUserData?.level || 1;
-    const requiredLevel = TIER_REQUIREMENTS[selectedTier] || 1;
-
-    if (playerLevel < requiredLevel) {
-      showGlobalInfo(INFO_MESSAGES.LEVEL_TOO_LOW(requiredLevel));
-      return;
-    }
-
-    // 2. FADA UT SIDAN DIREKT (Visa overlay medan backend laddar)
-    const overlay = document.getElementById('global-transition-overlay');
-    if (overlay) {
-      overlay.style.pointerEvents = 'all';
-      overlay.style.opacity = '1';
-    }
-
-    // 3. Call Backend Function
-    try {
+      // Hämta topic från URL (fungerar för både science-start och gma-start)
       const topicMatch = currentSlug.match(/^([a-z0-9-]+)-start$/i);
-      const topic = topicMatch ? topicMatch[1] : "science";
+      if (topicMatch) {
+        topic = topicMatch[1];
+      }
 
-      const session = await window.triggerStartGame(topic, selectedTier);
-      
-      sessionStorage.setItem('activeSessionId', session.sessionId);
-      sessionStorage.setItem('navFrom', currentSlug);
-
-      const targetUrl = `/${topic}-game-${selectedTier}`;
-
-      // Använd global exit-funktion om den finns, annars direkt navigering efter kort delay
-      if (typeof window.triggerPageExit === 'function') {
-        window.triggerPageExit(targetUrl);
+      if (isGma) {
+        // SPECIAL FÖR GMA: Eftersom GMA saknar dropdown, låtsas vi att användaren valde Level 1
+        selectedTier = 1;
+        topic = "gma"; 
       } else {
-        setTimeout(() => {
-          window.location.href = targetUrl;
-        }, 300);
+        // 1. Identify selected tier (DITT VANLIGA SYSTEM)
+        const activeOption = document.querySelector('.mask-middle .game-level-option.is-selected') 
+                           || document.querySelector('.mask-middle .gamelevel-btn');
+        
+        if (activeOption) {
+          const dataLvl = activeOption.getAttribute('data-level');
+          if (dataLvl) {
+            selectedTier = parseInt(dataLvl, 10);
+          } else {
+            const match = activeOption.textContent.match(/(?:Tier|Level)\s*(\d+)/i);
+            if (match) selectedTier = parseInt(match[1], 10);
+          }
+        }
+
+        // SCENARIO 1: No tier selected
+        if (!selectedTier) {
+          showGlobalInfo(INFO_MESSAGES.NO_TIER_SELECTED);
+          return;
+        }
+
+        // SCENARIO 2: Player level too low
+        const playerLevel = window.currentUserData?.level || 1;
+        const requiredLevel = TIER_REQUIREMENTS[selectedTier] || 1;
+
+        if (playerLevel < requiredLevel) {
+          showGlobalInfo(INFO_MESSAGES.LEVEL_TOO_LOW(requiredLevel));
+          return;
+        }
       }
 
-    } catch (err) {
-      // Om backend misslyckas, tona tillbaka sidan så spelaren kan försöka igen
+      // 2. FADA UT SIDAN DIREKT (Visa overlay medan backend laddar)
+      const overlay = document.getElementById('global-transition-overlay');
       if (overlay) {
-        overlay.style.opacity = '0';
-        overlay.style.pointerEvents = 'none';
+        overlay.style.pointerEvents = 'all';
+        overlay.style.opacity = '1';
       }
-    }
-  }); 
+
+      // 3. Call Backend Function
+      try {
+        const session = await window.triggerStartGame(topic, selectedTier);
+        
+        sessionStorage.setItem('activeSessionId', session.sessionId);
+        sessionStorage.setItem('navFrom', currentSlug);
+
+        const targetUrl = `/${topic}-game-${selectedTier}`;
+
+        // Använd global exit-funktion om den finns, annars direkt navigering efter kort delay
+        if (typeof window.triggerPageExit === 'function') {
+          window.triggerPageExit(targetUrl);
+        } else {
+          setTimeout(() => {
+            window.location.href = targetUrl;
+          }, 300);
+        }
+
+      } catch (err) {
+        console.error("Failed to start game session:", err);
+        // Om backend misslyckas, tona tillbaka sidan så spelaren kan försöka igen
+        if (overlay) {
+          overlay.style.opacity = '0';
+          overlay.style.pointerEvents = 'none';
+        }
+      }
+    });
+  });
 });
 
 // 1 BLUR TOP OF PAGE - WITH CLONE
