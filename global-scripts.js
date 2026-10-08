@@ -1244,7 +1244,7 @@ const SFX_CONFIG = {
     qalt4: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a9ddb45dc2eadae3b74007a_qalt-wave-004.ogg',
     qalt5: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a9ddb458b1a0a8fdca1c43c_qalt-wave-005.ogg',
     deny: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a1af8aa81c60eedf18e0c0f_a7982f0695a5917df328945f1a32c008_deny.ogg',
-    scoreFlash: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6ac4f01d1b08cc98e6778d48_score-flash.ogg',
+    scoreFlash: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6ac4f01d1b08cc98e6778d48_d40f31f1284edad04844d3286edf94ce_score-flash.ogg',
     finalScore: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6ac4e2072ebe3b1a3f994b43_b708d5dedbc863182a6f21715776a86f_final-score.ogg',
     levelUp: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6ac4e2072759160b75a1fbbf_level-up.ogg'
 
