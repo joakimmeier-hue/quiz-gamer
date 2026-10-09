@@ -1628,7 +1628,7 @@ document.addEventListener("visibilitychange", function() {
 });
 
 // ── REUSABLE TRANSITION OVERLAY HELPER ──────────────────────────────────────────
-window.showGameLoadingOverlay = function(speed = '0.4s') {
+window.showGameLoadingOverlay = function(speed = '0.5s') {
   const overlay = document.getElementById('global-transition-overlay');
   if (!overlay) return;
 
@@ -1651,13 +1651,16 @@ window.showGameLoadingOverlay = function(speed = '0.4s') {
       </lottie-player>
     </div>`;
 
+  // Explicitly reset opacity to 0 BEFORE un-hiding DOM element
   overlay.style.pointerEvents = 'all';
   overlay.style.cursor = 'default';
+  overlay.style.opacity = '0';
   overlay.style.display = 'block';
 
-  // Force browser reflow so the CSS opacity transition animates smoothly from current opacity to 1
+  // Force browser layout repaint to lock in opacity: 0
   void overlay.offsetWidth; 
 
+  // Trigger smooth fade-in
   overlay.style.transition = `opacity ${speed} ease`;
   overlay.style.opacity = '1';
 };
@@ -1739,9 +1742,12 @@ window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false
     
     sessionStorage.setItem('skipIntro', 'true');
 
+    let isLeavingLobby = false;
+
     if (typeof getTopicFromUrl === 'function' && typeof currentTopicId !== 'undefined') {
         const targetTopicId = getTopicFromUrl(url);
         const changingTopic = currentTopicId !== targetTopicId;
+        isLeavingLobby = currentTopicId === 'lobby' && targetTopicId !== 'lobby';
 
         if (changingTopic) {
             sessionStorage.setItem('fromTopic', currentTopicId);
@@ -1751,14 +1757,18 @@ window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false
         }
     }
 
-    const fadeSpeed = isSlowFinish ? '0.8s' : '0.4s';
-    
-    // Call our reusable overlay!
-    window.showGameLoadingOverlay(fadeSpeed);
+    // Adjust delays here:
+    let durationMs = 500;                 // Standard navigation duration (ms)
+    if (isSlowFinish)   durationMs = 800;  // Score finish duration (ms)
+    if (isLeavingLobby) durationMs = 1000; // Leaving lobby duration (ms)
+
+    const fadeSpeedStr = `${(durationMs / 1000).toFixed(1)}s`;
+
+    window.showGameLoadingOverlay(fadeSpeedStr);
 
     setTimeout(() => {
         window.location.href = url;
-    }, 400); 
+    }, durationMs); 
 };
 
 
@@ -1814,8 +1824,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      // 1. TRIGGER SMOOTH OVERLAY FADE-IN IMMEDIATELY (Uses Reusable Helper)
-      window.showGameLoadingOverlay('0.4s');
+      // 1. SMOOTH OVERLAY FADE-IN (0.5s fade duration)
+      window.showGameLoadingOverlay('0.5s');
 
       // 2. CALL FIREBASE BACKEND IN BACKGROUND
       try {
@@ -1824,13 +1834,10 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionStorage.setItem('activeSessionId', session.sessionId);
         sessionStorage.setItem('navFrom', currentSlug);
 
-        // DIRECT NAVIGATION: We do NOT call triggerPageExit here,
-        // because the overlay is ALREADY smoothly faded in!
         window.location.href = `/${topic}-game-${selectedTier}`;
 
       } catch (err) {
         console.error("Failed to start game session:", err);
-        // Hide overlay if backend call fails so user isn't stuck
         const overlayEl = document.getElementById('global-transition-overlay');
         if (overlayEl) {
           overlayEl.style.opacity = '0';
