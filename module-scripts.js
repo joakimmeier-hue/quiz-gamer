@@ -1989,7 +1989,7 @@ function showLevelUpPopup() {
     }
   }, 300);
 
-  // ✨ TIMING 3: Sprinkles & Lottie (+400 ms extra = totalt 700 ms)
+  // ✨ TIMING 3: Sprinkles & Lottie
   setTimeout(() => {
     if (sprinklesEl) {
       sprinklesEl.style.display = 'flex';
@@ -2004,7 +2004,7 @@ function showLevelUpPopup() {
         }
       }
     }
-  }, 700); // 300 ms + 400 ms = 700 ms
+  }, 600);
 }
 
 function tryShowLevelUpPopup(attempts = 0, maxAttempts = 8) {
