@@ -1810,7 +1810,7 @@ Webflow.push(async function() {
 
     // --- Start a server-side session (store session id for later grading)
     try {
-      /* const startResp = await startGameFn({ topic, level }); */
+      const startResp = await startGameFn({ topic, level });
       const sessionId = startResp?.data?.sessionId;
       if (sessionId) {
         window.currentSession = sessionId;

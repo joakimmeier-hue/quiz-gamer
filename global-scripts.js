@@ -860,7 +860,7 @@ Webflow.push(function() {
   if (!document.getElementById('timer-display')) return;
 
   let timerInterval = null;
-  let clientStartTime = null; // Store start timestamp here
+  let clientStartTime = null;
   
   window.FinalTimeStr = "00:00"; 
   window.FinalTimeSecs = 0;      
@@ -869,6 +869,18 @@ Webflow.push(function() {
   const displayElInit = document.getElementById('timer-display');
   if (displayElInit) displayElInit.innerText = "00:00";
 
+  // HELPER FUNCTION: Safely emit Webflow IX3 / IX2 custom events
+  function emitWebflowEvent(eventName) {
+    const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
+    if (wfIx) {
+      wfIx.emit(eventName);
+      console.log(`Webflow Event Emitted: ${eventName}`);
+    } else {
+      console.warn(`Webflow IX engine not ready for event: ${eventName}`);
+    }
+  }
+
+  // THE MASTER GATEKEEPER: Wait for Firebase cards to load
   document.addEventListener('corePageReady', () => {
     
     // 1. Fire "321-go"
@@ -888,7 +900,7 @@ Webflow.push(function() {
       if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
       window.TimerRunning = true;
       
-      clientStartTime = Date.now(); // Record start time!
+      clientStartTime = Date.now();
       
       timerInterval = setInterval(function() {
         const elapsedMs = Date.now() - clientStartTime;
@@ -917,17 +929,14 @@ Webflow.push(function() {
     
     if (finishBtn) {
       finishBtn.addEventListener('click', function() {
-        // 1. Stop timer interval
         clearInterval(timerInterval);
         window.TimerRunning = false; 
 
-        // 2. Calculate final elapsed visual seconds
         if (clientStartTime) {
           const elapsedMs = Date.now() - clientStartTime;
           window.FinalTimeSecs = Math.max(Math.floor(elapsedMs / 1000), 1);
         }
 
-        // 3. Clone Lottie
         const lottieContainer = document.getElementById('stopwatch-lottie');
         if (lottieContainer) {
           const frozenSVG = lottieContainer.innerHTML;
