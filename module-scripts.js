@@ -1910,6 +1910,7 @@ document.addEventListener('click', async function(e) {
     level: level,
     sessionId: sessionId,
     answers: answers
+    clientTimeSecs: window.FinalTimeSecs || 1 // 👈 PASS VISUAL TIME HERE!
   });
 
     // 4. Save response for the score card

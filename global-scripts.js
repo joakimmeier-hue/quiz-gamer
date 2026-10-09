@@ -857,102 +857,90 @@ document.addEventListener('DOMContentLoaded', () => {
 // 2 TIMER DISPLAY
 var Webflow = window.Webflow || [];
 Webflow.push(function() {
-  if (!document.getElementById('timer-display')) return; // Not a game page, skip entirely
+  if (!document.getElementById('timer-display')) return;
 
-  let totalSeconds = 0;
   let timerInterval = null;
+  let clientStartTime = null; // Store start timestamp here
+  
   window.FinalTimeStr = "00:00"; 
   window.FinalTimeSecs = 0;      
   window.TimerRunning = false;
 
-  // 0. Set initial display
   const displayElInit = document.getElementById('timer-display');
-  if (displayElInit) {
-    displayElInit.innerText = "00:00";
-  }
+  if (displayElInit) displayElInit.innerText = "00:00";
 
-  // Helper function to safely emit Webflow IX3 / IX2 custom events
-  function emitWebflowEvent(eventName) {
-    const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
-    if (wfIx) {
-      wfIx.emit(eventName);
-      console.log(`Webflow Event Emitted: ${eventName}`);
-    }
-  }
-
-  // THE MASTER GATEKEEPER: Wait for Firebase cards to load
   document.addEventListener('corePageReady', () => {
     
-    // 1. Fire "321-go" sequence (1000ms after overlay fades)
+    // 1. Fire "321-go"
     setTimeout(function() {
       if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
       emitWebflowEvent("321-go");
     }, 1300); 
 
-    // 2. Start Lottie animation ("start-stopwatch")
+    // 2. Start stopwatch Lottie
     setTimeout(function() {
       if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
       emitWebflowEvent("start-stopwatch");
     }, 2400); 
 
-   // 3. Start running numbers in the timer
-setTimeout(function() {
-  if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
-  window.TimerRunning = true;
-  
-  // Record exact start time in milliseconds
-  const clientStartTime = Date.now();
-  
-  timerInterval = setInterval(function() {
-    // Calculate exact elapsed seconds based on system clock
-    const elapsedMs = Date.now() - clientStartTime;
-    const currentSeconds = Math.floor(elapsedMs / 1000);
-    
-    let minutes = Math.floor(currentSeconds / 60);
-    let seconds = currentSeconds % 60;
-    let minStr = String(minutes).padStart(2, '0');
-    let secStr = String(seconds).padStart(2, '0');
-    
-    const displayEl = document.getElementById('timer-display');
-    if (displayEl) {
-      displayEl.innerText = minStr + ':' + secStr;
-    }
+    // 3. Start running numbers
+    setTimeout(function() {
+      if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
+      window.TimerRunning = true;
+      
+      clientStartTime = Date.now(); // Record start time!
+      
+      timerInterval = setInterval(function() {
+        const elapsedMs = Date.now() - clientStartTime;
+        const currentSeconds = Math.floor(elapsedMs / 1000);
+        
+        let minutes = Math.floor(currentSeconds / 60);
+        let seconds = currentSeconds % 60;
+        let minStr = String(minutes).padStart(2, '0');
+        let secStr = String(seconds).padStart(2, '0');
+        
+        const displayEl = document.getElementById('timer-display');
+        if (displayEl) displayEl.innerText = minStr + ':' + secStr;
 
-    if (minutes >= 99 && seconds >= 59) {
-      const finishBtn = document.getElementById('finish-btn');
-      if (finishBtn) finishBtn.click(); 
-    }
-  }, 250); // Tick 4x per second so display updates smoothly with zero drift
-}, 3400);
+        if (minutes >= 99 && seconds >= 59) {
+          const finishBtn = document.getElementById('finish-btn');
+          if (finishBtn) finishBtn.click(); 
+        }
+      }, 250);
+    }, 3400);
 
-  }); // End of corePageReady listener
+  });
 
-
-// 4 LYSSNA PÅ FINISH-KNAPPEN (Dödar och klonar Lottien)
+  // 4. FINISH LISTENER
   function setupFinishListener() {
     const finishBtn = document.getElementById('finish-btn');
     
     if (finishBtn) {
       finishBtn.addEventListener('click', function() {
-        // 1. Stoppa sifferräknaren
+        // 1. Stop timer interval
         clearInterval(timerInterval);
         window.TimerRunning = false; 
-        // 2. DEN AUTOMATISKA KLONEN (Dödar Webflows kontroll)
+
+        // 2. Calculate final elapsed visual seconds
+        if (clientStartTime) {
+          const elapsedMs = Date.now() - clientStartTime;
+          window.FinalTimeSecs = Math.max(Math.floor(elapsedMs / 1000), 1);
+        }
+
+        // 3. Clone Lottie
         const lottieContainer = document.getElementById('stopwatch-lottie');
         if (lottieContainer) {
           const frozenSVG = lottieContainer.innerHTML;
           const frozenDiv = document.createElement('div');
-          frozenDiv.className = lottieContainer.className; // Behåller din styling
+          frozenDiv.className = lottieContainer.className;
           frozenDiv.innerHTML = frozenSVG;
-          
           lottieContainer.parentNode.replaceChild(frozenDiv, lottieContainer);
-          console.log("Lottien mördades och ersattes med en fryst klon!");
         }
-        // 3. Spara sluttiden
+
         const finalDisplay = document.getElementById('timer-display');
         if (finalDisplay) window.FinalTimeStr = finalDisplay.innerText;
-        window.FinalTimeSecs = totalSeconds;
-        console.log("Avslutad! Sluttid:", window.FinalTimeStr);
+
+        console.log("Finished! Sluttid:", window.FinalTimeStr, "| Sekunder:", window.FinalTimeSecs);
       });
     } else {
       setTimeout(setupFinishListener, 200);
@@ -960,7 +948,6 @@ setTimeout(function() {
   }
   setupFinishListener();
 });
-
 
 // 5 GAME ALTERNATIVE-ROW - Click animation
 document.addEventListener("DOMContentLoaded", function() {
