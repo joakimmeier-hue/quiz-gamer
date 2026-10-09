@@ -1884,34 +1884,34 @@ document.addEventListener('click', async function(e) {
   finishBtn.style.pointerEvents = 'none';
 
   try {
-// 2. Gather user answers from page (with validation)
-  const answers = (typeof window.collectUserAnswers === 'function') ? window.collectUserAnswers() : [];
-  const sessionId = window.currentSession || sessionStorage.getItem('activeSessionId') || null;
+    // 2. Gather user answers from page (with validation)
+    const answers = (typeof window.collectUserAnswers === 'function') ? window.collectUserAnswers() : [];
+    const sessionId = window.currentSession || sessionStorage.getItem('activeSessionId') || null;
 
-// Client-side validation before calling gradeGame
-  if (!Array.isArray(answers) || answers.length === 0) {
-    console.error('Cannot grade: answers missing or not an array', answers);
-    alert('No answers found. Please answer at least one question before finishing.');
-    if (textEl) textEl.textContent = "Finish!";
-    finishBtn.style.pointerEvents = 'auto';
-    return;
-  }
-  if (typeof sessionId !== 'string' || sessionId.trim() === '') {
-    console.error('Cannot grade: sessionId missing', sessionId);
-    alert('Session id missing — the game was not started properly. Please restart the game.');
-    if (textEl) textEl.textContent = "Finish!";
-    finishBtn.style.pointerEvents = 'auto';
-    return;
-  }
+    // Client-side validation before calling gradeGame
+    if (!Array.isArray(answers) || answers.length === 0) {
+      console.error('Cannot grade: answers missing or not an array', answers);
+      alert('No answers found. Please answer at least one question before finishing.');
+      if (textEl) textEl.textContent = "Finish!";
+      finishBtn.style.pointerEvents = 'auto';
+      return;
+    }
+    if (typeof sessionId !== 'string' || sessionId.trim() === '') {
+      console.error('Cannot grade: sessionId missing', sessionId);
+      alert('Session id missing — the game was not started properly. Please restart the game.');
+      if (textEl) textEl.textContent = "Finish!";
+      finishBtn.style.pointerEvents = 'auto';
+      return;
+    }
 
-// 3. Send topic, level, sessionId, and answers to gradeGame (validated payload)
+    // 3. Send topic, level, sessionId, answers, AND visual timer to gradeGame
     const response = await gradeGameFn({
-    topic: topic,
-    level: level,
-    sessionId: sessionId,
-    answers: answers
-    clientTimeSecs: window.FinalTimeSecs || 1 // 👈 PASS VISUAL TIME HERE!
-  });
+      topic: topic,
+      level: level,
+      sessionId: sessionId,
+      answers: answers,
+      clientTimeSecs: window.FinalTimeSecs || 1 // 👈 Passed directly to server
+    });
 
     // 4. Save response for the score card
     sessionStorage.setItem('lastGameResult', JSON.stringify(response.data));
@@ -1930,7 +1930,6 @@ document.addEventListener('click', async function(e) {
     if (textEl) textEl.textContent = "Finish!";
   }
 });
-
 
 // ──────────── SCORE PAGE: DISPLAY RESULTS + LEVEL UP ────────────
 var Webflow = window.Webflow || [];
