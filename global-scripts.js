@@ -895,30 +895,35 @@ Webflow.push(function() {
       emitWebflowEvent("start-stopwatch");
     }, 2400); 
 
-    // 3. Start running numbers in the timer
-    setTimeout(function() {
-      if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
-      window.TimerRunning = true;
-      
-      timerInterval = setInterval(function() {
-        totalSeconds++;
-        
-        let minutes = Math.floor(totalSeconds / 60);
-        let seconds = totalSeconds % 60;
-        let minStr = String(minutes).padStart(2, '0');
-        let secStr = String(seconds).padStart(2, '0');
-        
-        const displayEl = document.getElementById('timer-display');
-        if (displayEl) {
-          displayEl.innerText = minStr + ':' + secStr;
-        }
+   // 3. Start running numbers in the timer
+setTimeout(function() {
+  if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
+  window.TimerRunning = true;
+  
+  // Record exact start time in milliseconds
+  const clientStartTime = Date.now();
+  
+  timerInterval = setInterval(function() {
+    // Calculate exact elapsed seconds based on system clock
+    const elapsedMs = Date.now() - clientStartTime;
+    const currentSeconds = Math.floor(elapsedMs / 1000);
+    
+    let minutes = Math.floor(currentSeconds / 60);
+    let seconds = currentSeconds % 60;
+    let minStr = String(minutes).padStart(2, '0');
+    let secStr = String(seconds).padStart(2, '0');
+    
+    const displayEl = document.getElementById('timer-display');
+    if (displayEl) {
+      displayEl.innerText = minStr + ':' + secStr;
+    }
 
-        if (minutes >= 99 && seconds >= 59) {
-          const finishBtn = document.getElementById('finish-btn');
-          if (finishBtn) finishBtn.click(); 
-        }
-      }, 1000);
-    }, 3400); 
+    if (minutes >= 99 && seconds >= 59) {
+      const finishBtn = document.getElementById('finish-btn');
+      if (finishBtn) finishBtn.click(); 
+    }
+  }, 250); // Tick 4x per second so display updates smoothly with zero drift
+}, 3400);
 
   }); // End of corePageReady listener
 
