@@ -315,6 +315,7 @@ function updateTierLocks(playerLevel = 1) {
 
 // ── START BUTTON HANDLER ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  // Leta efter BÅDE standard-knapparna och GMA-knappen
   const startBtns = document.querySelectorAll('.mask-middle .game-start-btn-wrapper, #game-start-btn-gma, .game-start-btn-gma');
   
   if (startBtns.length === 0) return;
@@ -324,22 +325,26 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       e.stopPropagation();
 
+      // Kontrollera om det är GMA-knappen vi klickade på
       const isGma = startBtn.id === 'game-start-btn-gma' || startBtn.classList.contains('game-start-btn-gma');
 
       let selectedTier = null;
       let topic = "science"; // fallback
 
+      // Hämta topic från URL (fungerar för både science-start och gma-start)
       const topicMatch = currentSlug.match(/^([a-z0-9-]+)-start$/i);
       if (topicMatch) {
         topic = topicMatch[1];
       }
 
       if (isGma) {
+        // SPECIAL FÖR GMA: Eftersom GMA saknar dropdown, låtsas vi att användaren valde Level 1
         selectedTier = 1;
         topic = "gma"; 
       } else {
+        // 1. Identify selected tier (DITT VANLIGA SYSTEM)
         const activeOption = document.querySelector('.mask-middle .game-level-option.is-selected') 
-                          || document.querySelector('.mask-middle .gamelevel-btn');
+                           || document.querySelector('.mask-middle .gamelevel-btn');
         
         if (activeOption) {
           const dataLvl = activeOption.getAttribute('data-level');
@@ -351,11 +356,13 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
 
+        // SCENARIO 1: No tier selected
         if (!selectedTier) {
           showGlobalInfo(INFO_MESSAGES.NO_TIER_SELECTED);
           return;
         }
 
+        // SCENARIO 2: Player level too low
         const playerLevel = window.currentUserData?.level || 1;
         const requiredLevel = TIER_REQUIREMENTS[selectedTier] || 1;
 
@@ -365,46 +372,37 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      // STEP 1: SHOW LOTTIE OVERLAY IMMEDIATELY (0ms Delay)
+      // 2. FADA UT SIDAN DIREKT (Visa overlay medan backend laddar)
       const overlay = document.getElementById('global-transition-overlay');
       if (overlay) {
-        overlay.innerHTML = `
-          <style>
-            .transition-lottie { width: 8rem; height: 8rem; }
-            @media (max-width: 991px) { .transition-lottie { width: 7rem; height: 7rem; } }
-          </style>
-          <div style="display:flex; justify-content:center; align-items:center; height:100svh; width:100vw;">
-            <lottie-player 
-              class="transition-lottie"
-              src="https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a159263c0394fc57a0ee84a_loading-game-2.json" 
-              background="transparent" 
-              speed="1" 
-              autoplay>
-            </lottie-player>
-          </div>`;
         overlay.style.pointerEvents = 'all';
-        overlay.style.transition = 'opacity 0.2s ease';
         overlay.style.opacity = '1';
-        overlay.style.display = 'block';
       }
 
-      // STEP 2: CALL BACKEND IN BACKGROUND & NAVIGATE
+      // 3. Call Backend Function
       try {
         const session = await window.triggerStartGame(topic, selectedTier);
         
         sessionStorage.setItem('activeSessionId', session.sessionId);
         sessionStorage.setItem('navFrom', currentSlug);
 
-        // Direct navigation to dynamic game URL
-        window.location.href = `/${topic}-game-${selectedTier}`;
+        const targetUrl = `/${topic}-game-${selectedTier}`;
+
+        // Använd global exit-funktion om den finns, annars direkt navigering efter kort delay
+        if (typeof window.triggerPageExit === 'function') {
+          window.triggerPageExit(targetUrl);
+        } else {
+          setTimeout(() => {
+            window.location.href = targetUrl;
+          }, 300);
+        }
 
       } catch (err) {
         console.error("Failed to start game session:", err);
-        // Reset overlay on error so user isn't locked out
+        // Om backend misslyckas, tona tillbaka sidan så spelaren kan försöka igen
         if (overlay) {
           overlay.style.opacity = '0';
           overlay.style.pointerEvents = 'none';
-          overlay.innerHTML = '';
         }
       }
     });
@@ -1629,16 +1627,47 @@ document.addEventListener("visibilitychange", function() {
   }
 });
 
-// ── TRANSITION OVERLAY ────────────────────────────────────────────────
+// ── REUSABLE TRANSITION OVERLAY HELPER ──────────────────────────────────────────
+window.showGameLoadingOverlay = function(speed = '0.4s') {
+  const overlay = document.getElementById('global-transition-overlay');
+  if (!overlay) return;
+
+  const currentTheme = document.body.getAttribute('data-theme');
+  const transitionColor = (currentTheme === 'light' ? '#ffffff' : '#000000');
+
+  overlay.style.background = transitionColor;
+  overlay.innerHTML = `
+    <style>
+      .transition-lottie { width: 8rem; height: 8rem; }
+      @media (max-width: 991px) { .transition-lottie { width: 7rem; height: 7rem; } }
+    </style>
+    <div style="display:flex; justify-content:center; align-items:center; height:100svh; width:100vw;">
+      <lottie-player 
+        class="transition-lottie"
+        src="https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a159263c0394fc57a0ee84a_loading-game-2.json" 
+        background="transparent" 
+        speed="1" 
+        autoplay>
+      </lottie-player>
+    </div>`;
+
+  overlay.style.pointerEvents = 'all';
+  overlay.style.cursor = 'default';
+  overlay.style.display = 'block';
+
+  // Force browser reflow so the CSS opacity transition animates smoothly from current opacity to 1
+  void overlay.offsetWidth; 
+
+  overlay.style.transition = `opacity ${speed} ease`;
+  overlay.style.opacity = '1';
+};
+
+// ── TRANSITION OVERLAY INITIALIZATION ─────────────────────────────────
 const overlay = document.createElement('div');
 overlay.id = 'global-transition-overlay';
 
-// FIX 1: Check the actual window location, not an undefined 'url' variable
 const isGamePage = window.location.pathname.includes('game');
-
-// FIX 2: Calculate duration dynamically instead of using sessionStorage, 
-// to prevent the timing from applying to the wrong page.
-const revealDuration = isGamePage ? '0.8s' : '0.8s'; // extra load time on game pages
+const revealDuration = '0.8s';
 
 overlay.style.cssText = `position:fixed;inset:0;z-index:999999;pointer-events:none;transition:opacity ${revealDuration} ease;opacity:1;display:block;`;
 
@@ -1647,8 +1676,7 @@ const bodyTheme  = document.body.getAttribute('data-theme');
 const initColor  = savedColor || (bodyTheme === 'light' ? '#ffffff' : '#000000');
 
 overlay.style.background = initColor;
-// NEW: real loading screen — plays once, freezes on last frame,
-// sits there for however long questionsLoaded takes (no timer here)
+
 if (isGamePage) {
   overlay.innerHTML = `
     <style>
@@ -1671,7 +1699,7 @@ window.addEventListener('pageshow', () => {
   sessionStorage.removeItem('exitColor');
 
   const revealOverlayAndStartGame = () => {
-    if (overlay.style.opacity === '0') return; // Prevent double-triggers
+    if (overlay.style.opacity === '0') return; 
 
     overlay.style.opacity = '0';
     overlay.style.pointerEvents = 'none';
@@ -1682,42 +1710,38 @@ window.addEventListener('pageshow', () => {
       overlay.style.display = 'none';
       overlay.innerHTML = '';
     }, durationMs + 50);
-    // 2. KICK OFF THE REST OF THE PAGE HERE!
+
     document.dispatchEvent(new CustomEvent('corePageReady'));
 
-        // MOVED HERE: Check music only AFTER the game is actually starting    if (typeof currentTopicId !== 'undefined') {
-        if (typeof currentTopicId !== 'undefined') {
-          const isTopicPage = currentTopicId !== 'lobby';
-        if (isTopicPage && typeof audio !== 'undefined' && audio.paused) {
-            window.startMusic(false); 
-        }
+    if (typeof currentTopicId !== 'undefined') {
+      const isTopicPage = currentTopicId !== 'lobby';
+      if (isTopicPage && typeof audio !== 'undefined' && audio.paused) {
+        window.startMusic(false); 
+      }
     }
   };
-  
+
   if (isGamePage) {
     document.addEventListener('questionsLoaded', revealOverlayAndStartGame, { once: true });
-    setTimeout(revealOverlayAndStartGame, 2500); // 2.5s safety net
+    setTimeout(revealOverlayAndStartGame, 2500); 
   } else {
     revealOverlayAndStartGame();
   }
 });
 
-// ── GLOBAL EXIT FUNCTION ─────────────────────────────
+// ── GLOBAL EXIT FUNCTION (STANDARD LINKS) ─────────────────────────────
 window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false) {
     if (typeof currentSlug !== 'undefined') sessionStorage.setItem('navFrom', currentSlug);
     
-    // Automatically authorize if it's explicitly flagged or the destination is the score page
     if (isFinishBtn || (url && url.includes('score'))) {
         sessionStorage.setItem('scoreAuthorized', 'true');
     }
     
     sessionStorage.setItem('skipIntro', 'true');
 
-    // Make sure getTopicFromUrl exists before calling it
     if (typeof getTopicFromUrl === 'function' && typeof currentTopicId !== 'undefined') {
         const targetTopicId = getTopicFromUrl(url);
         const changingTopic = currentTopicId !== targetTopicId;
-        const isLeavingLobby = currentTopicId === 'lobby' && targetTopicId !== 'lobby';
 
         if (changingTopic) {
             sessionStorage.setItem('fromTopic', currentTopicId);
@@ -1725,63 +1749,97 @@ window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false
         } else {
             sessionStorage.removeItem('fromTopic');
         }
-
-        handleOverlayExit(url, isLeavingLobby, isSlowFinish);
-    } else {
-        // Fallback if topic logic fails
-        handleOverlayExit(url, false, isSlowFinish);
     }
+
+    const fadeSpeed = isSlowFinish ? '0.8s' : '0.4s';
+    
+    // Call our reusable overlay!
+    window.showGameLoadingOverlay(fadeSpeed);
+
+    setTimeout(() => {
+        window.location.href = url;
+    }, 400); 
 };
 
-// Extracted for cleaner logic
-function handleOverlayExit(url, isLeavingLobby, isSlowFinish) {
-    const currentTheme = document.body.getAttribute('data-theme');
-    const transitionColor = (currentTheme === 'light' ? '#ffffff' : '#000000');
-    sessionStorage.setItem('exitColor', transitionColor);
 
-    overlay.style.pointerEvents = 'auto'; 
-    overlay.style.cursor = 'default';
-    overlay.style.transition = 'none'; // Snap to solid color
-    overlay.style.background = transitionColor;
-    overlay.style.opacity = '0';
-    overlay.style.display = 'block';
+// ── START BUTTON HANDLER (SPECIAL ASYNC NAVIGATION) ───────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const startBtns = document.querySelectorAll('.mask-middle .game-start-btn-wrapper, #game-start-btn-gma, .game-start-btn-gma');
+  
+  if (startBtns.length === 0) return;
 
-    const fadeSpeed = isSlowFinish ? '2s' : '0.8s';
+  startBtns.forEach(startBtn => {
+    startBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            overlay.style.transition = `opacity ${fadeSpeed} ease`;
-            overlay.style.opacity = '1';
+      const isGma = startBtn.id === 'game-start-btn-gma' || startBtn.classList.contains('game-start-btn-gma');
 
-            if (isLeavingLobby) {
-                setTimeout(() => {
-                    overlay.innerHTML = `
-                    <style>
-                        .transition-lottie { width: 8rem; height: 8rem; }
-                        @media (max-width: 991px) { .transition-lottie { width: 7rem; height: 7rem; } }
-                    </style>
-                    <div style="display:flex; justify-content:center; align-items:center; height:100svh; width:100vw;">
-                        <lottie-player 
-                            class="transition-lottie"
-                            src="https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a159263c0394fc57a0ee84a_loading-game-2.json" 
-                            background="transparent" 
-                            speed="1" 
-                            autoplay>
-                        </lottie-player>
-                    </div>`;
-                    setTimeout(() => {
-                        window.location.href = url;
-                    }, 1345); 
-                }, 800);
-            } else {
-                const waitTime = isSlowFinish ? 2000 : 800; 
-                setTimeout(() => {
-                    window.location.href = url;
-                }, waitTime); 
-            }
-        });
+      let selectedTier = null;
+      let topic = "science"; 
+
+      const topicMatch = currentSlug.match(/^([a-z0-9-]+)-start$/i);
+      if (topicMatch) {
+        topic = topicMatch[1];
+      }
+
+      if (isGma) {
+        selectedTier = 1;
+        topic = "gma"; 
+      } else {
+        const activeOption = document.querySelector('.mask-middle .game-level-option.is-selected') 
+                          || document.querySelector('.mask-middle .gamelevel-btn');
+        
+        if (activeOption) {
+          const dataLvl = activeOption.getAttribute('data-level');
+          if (dataLvl) {
+            selectedTier = parseInt(dataLvl, 10);
+          } else {
+            const match = activeOption.textContent.match(/(?:Tier|Level)\s*(\d+)/i);
+            if (match) selectedTier = parseInt(match[1], 10);
+          }
+        }
+
+        if (!selectedTier) {
+          showGlobalInfo(INFO_MESSAGES.NO_TIER_SELECTED);
+          return;
+        }
+
+        const playerLevel = window.currentUserData?.level || 1;
+        const requiredLevel = TIER_REQUIREMENTS[selectedTier] || 1;
+
+        if (playerLevel < requiredLevel) {
+          showGlobalInfo(INFO_MESSAGES.LEVEL_TOO_LOW(requiredLevel));
+          return;
+        }
+      }
+
+      // 1. TRIGGER SMOOTH OVERLAY FADE-IN IMMEDIATELY (Uses Reusable Helper)
+      window.showGameLoadingOverlay('0.4s');
+
+      // 2. CALL FIREBASE BACKEND IN BACKGROUND
+      try {
+        const session = await window.triggerStartGame(topic, selectedTier);
+        
+        sessionStorage.setItem('activeSessionId', session.sessionId);
+        sessionStorage.setItem('navFrom', currentSlug);
+
+        // DIRECT NAVIGATION: We do NOT call triggerPageExit here,
+        // because the overlay is ALREADY smoothly faded in!
+        window.location.href = `/${topic}-game-${selectedTier}`;
+
+      } catch (err) {
+        console.error("Failed to start game session:", err);
+        // Hide overlay if backend call fails so user isn't stuck
+        const overlayEl = document.getElementById('global-transition-overlay');
+        if (overlayEl) {
+          overlayEl.style.opacity = '0';
+          overlayEl.style.pointerEvents = 'none';
+        }
+      }
     });
-}
+  });
+});
 
 // ── CLICK HANDLER FÖR LÄNKAR ──────────────────────────────────────────
 document.addEventListener('click', function(e) {
