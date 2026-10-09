@@ -313,13 +313,11 @@ function updateTierLocks(playerLevel = 1) {
   }
 }
 
-// ── START BUTTON HANDLER ──────────────────────────────────────────────
+// ── START BUTTON HANDLER game start pages ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   // Leta efter BÅDE standard-knapparna och GMA-knappen
   const startBtns = document.querySelectorAll('.mask-middle .game-start-btn-wrapper, #game-start-btn-gma, .game-start-btn-gma');
-  
-  if (startBtns.length === 0) return;
-
+    if (startBtns.length === 0) return;
   startBtns.forEach(startBtn => {
     startBtn.addEventListener('click', async (e) => {
       e.preventDefault();
@@ -327,7 +325,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Kontrollera om det är GMA-knappen vi klickade på
       const isGma = startBtn.id === 'game-start-btn-gma' || startBtn.classList.contains('game-start-btn-gma');
-
       let selectedTier = null;
       let topic = "science"; // fallback
 
@@ -345,8 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 1. Identify selected tier (DITT VANLIGA SYSTEM)
         const activeOption = document.querySelector('.mask-middle .game-level-option.is-selected') 
                            || document.querySelector('.mask-middle .gamelevel-btn');
-        
-        if (activeOption) {
+                if (activeOption) {
           const dataLvl = activeOption.getAttribute('data-level');
           if (dataLvl) {
             selectedTier = parseInt(dataLvl, 10);
@@ -355,55 +351,40 @@ document.addEventListener('DOMContentLoaded', () => {
             if (match) selectedTier = parseInt(match[1], 10);
           }
         }
-
         // SCENARIO 1: No tier selected
         if (!selectedTier) {
           showGlobalInfo(INFO_MESSAGES.NO_TIER_SELECTED);
           return;
         }
-
         // SCENARIO 2: Player level too low
         const playerLevel = window.currentUserData?.level || 1;
         const requiredLevel = TIER_REQUIREMENTS[selectedTier] || 1;
-
         if (playerLevel < requiredLevel) {
           showGlobalInfo(INFO_MESSAGES.LEVEL_TOO_LOW(requiredLevel));
           return;
         }
       }
-
-      // 2. FADA UT SIDAN DIREKT (Visa overlay medan backend laddar)
-      const overlay = document.getElementById('global-transition-overlay');
-      if (overlay) {
-        overlay.style.pointerEvents = 'all';
-        overlay.style.opacity = '1';
-      }
+      // 2. FADE OUT IMMEDIATELY (also starts the 1.2s Lottie timer)
+      window.showGameLoadingOverlay('0.5s', true);
 
       // 3. Call Backend Function
       try {
         const session = await window.triggerStartGame(topic, selectedTier);
-        
+
         sessionStorage.setItem('activeSessionId', session.sessionId);
         sessionStorage.setItem('navFrom', currentSlug);
 
         const targetUrl = `/${topic}-game-${selectedTier}`;
 
-        // Använd global exit-funktion om den finns, annars direkt navigering efter kort delay
         if (typeof window.triggerPageExit === 'function') {
           window.triggerPageExit(targetUrl);
         } else {
-          setTimeout(() => {
-            window.location.href = targetUrl;
-          }, 300);
+          setTimeout(() => { window.location.href = targetUrl; }, 300);
         }
 
       } catch (err) {
         console.error("Failed to start game session:", err);
-        // Om backend misslyckas, tona tillbaka sidan så spelaren kan försöka igen
-        if (overlay) {
-          overlay.style.opacity = '0';
-          overlay.style.pointerEvents = 'none';
-        }
+        window.hideGameLoadingOverlay();    
       }
     });
   });
@@ -1629,70 +1610,94 @@ document.addEventListener("visibilitychange", function() {
 
 // ── REUSABLE TRANSITION OVERLAY & LOTTIE MANAGER ────────────────────────────────
 
-// 1. GLOBAL SETTINGS
-const LOTTIE_DELAY_MS = 1200; // Lottie only shows if loading takes longer than 1.2s
-let lottieDelayTimeout = null;
-const isGamePage = window.location.pathname.includes('game') || document.body.getAttribute('data-page') === 'game';
+// 1. SETTINGS
+const LOTTIE_DELAY_MS = 1200;
+const LOTTIE_SRC = 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a159263c0394fc57a0ee84a_loading-game-2.json';
 const revealDuration = '0.8s';
+const isGamePage = window.location.pathname.includes('game') || document.body.getAttribute('data-page') === 'game';
 
-// 2. HELPER TO INJECT LOTTIE (Fades in smoothly)
-window.injectLottiePlayer = function() {
+let lottieDelayTimeout = null;
+let cleanupTimeout = null;
+let isExiting = false;
+
+fetch(LOTTIE_SRC).catch(() => {}); // warm the cache so the Lottie appears instantly
+
+// 2. ONE TIMER ACROSS PAGES (start time lives in sessionStorage)
+function startLottieTimer() {
+  clearTimeout(lottieDelayTimeout);
+  let start = parseInt(sessionStorage.getItem('transitionStart'), 10);
+  if (!start || Date.now() - start > 15000) {            // missing or stale
+    start = Date.now();
+    sessionStorage.setItem('transitionStart', start);
+  }
+  const remaining = Math.max(LOTTIE_DELAY_MS - (Date.now() - start), 0);
+  lottieDelayTimeout = setTimeout(() => window.injectLottiePlayer(remaining === 0), remaining);
+}
+
+window.injectLottiePlayer = function(instant = false) {
   const overlay = document.getElementById('global-transition-overlay');
-  if (!overlay || overlay.querySelector('lottie-player')) return; // Prevent double insertion
+  if (!overlay || overlay.querySelector('lottie-player')) return;
 
-  const lottieContainer = document.createElement('div');
-  lottieContainer.className = 'lottie-wrapper-inner';
-  lottieContainer.style.cssText = 'display:flex; justify-content:center; align-items:center; height:100svh; width:100vw; opacity:0; transition:opacity 0.3s ease;';
-  lottieContainer.innerHTML = `
+  const wrap = document.createElement('div');
+  wrap.className = 'lottie-wrapper-inner';
+  wrap.style.cssText = `display:flex;justify-content:center;align-items:center;height:100svh;width:100vw;opacity:${instant ? 1 : 0};transition:opacity 0.3s ease;`;
+  wrap.innerHTML = `
     <style>
       .transition-lottie { width: 8rem; height: 8rem; }
       @media (max-width: 991px) { .transition-lottie { width: 7rem; height: 7rem; } }
     </style>
-    <lottie-player 
-      class="transition-lottie"
-      src="https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a159263c0394fc57a0ee84a_loading-game-2.json" 
-      background="transparent" 
-      speed="1" 
-      autoplay>
-    </lottie-player>`;
+    <lottie-player class="transition-lottie" src="${LOTTIE_SRC}"
+      background="transparent" speed="1" loop autoplay></lottie-player>`;
+  overlay.appendChild(wrap);
 
-  overlay.appendChild(lottieContainer);
-  
-  // Trigger CSS fade-in for Lottie
-  requestAnimationFrame(() => {
-    lottieContainer.style.opacity = '1';
-  });
+  if (!instant) requestAnimationFrame(() => requestAnimationFrame(() => { wrap.style.opacity = '1'; }));
 };
 
-// 3. HELPER TO FADE IN SOLID OVERLAY
+// 3. SHOW / HIDE (both global, usable for the # navigation too)
 window.showGameLoadingOverlay = function(speed = '0.5s', enableLottieDelay = true) {
   const overlay = document.getElementById('global-transition-overlay');
   if (!overlay) return;
 
-  const currentTheme = document.body.getAttribute('data-theme');
-  const transitionColor = (currentTheme === 'light' ? '#ffffff' : '#000000');
+  clearTimeout(cleanupTimeout);   // <-- kills the race from point 2
 
-  overlay.style.background = transitionColor;
+  const currentTheme = document.body.getAttribute('data-theme');
+  overlay.style.background = currentTheme === 'light' ? '#ffffff' : '#000000';
   overlay.style.pointerEvents = 'all';
   overlay.style.cursor = 'default';
 
   if (overlay.style.display === 'none') {
     overlay.style.opacity = '0';
     overlay.style.display = 'block';
-    void overlay.offsetWidth; // Force layout recalculation to enable smooth fade
+    void overlay.offsetWidth;
   }
-
   overlay.style.transition = `opacity ${speed} ease`;
   overlay.style.opacity = '1';
 
-  if (lottieDelayTimeout) clearTimeout(lottieDelayTimeout);
-
-  if (enableLottieDelay) {
-    // Start the timer to inject Lottie only if transition is slow
-    lottieDelayTimeout = setTimeout(() => {
-      window.injectLottiePlayer();
-    }, LOTTIE_DELAY_MS);
+  if (!sessionStorage.getItem('transitionStart')) {
+    sessionStorage.setItem('transitionStart', Date.now());
   }
+  clearTimeout(lottieDelayTimeout);
+  if (enableLottieDelay) startLottieTimer();
+};
+
+window.hideGameLoadingOverlay = function() {
+  const overlay = document.getElementById('global-transition-overlay');
+  if (!overlay) return;
+
+  clearTimeout(lottieDelayTimeout);
+  lottieDelayTimeout = null;
+  sessionStorage.removeItem('transitionStart');
+
+  overlay.style.opacity = '0';
+  overlay.style.pointerEvents = 'none';
+  overlay.style.cursor = 'auto';
+
+  clearTimeout(cleanupTimeout);
+  cleanupTimeout = setTimeout(() => {
+    if (overlay.style.opacity !== '0') return;  // a new transition has started, leave it alone
+    overlay.style.display = 'none';
+    overlay.innerHTML = '';
+  }, parseFloat(revealDuration) * 1000 + 50);
 };
 
 // ── TRANSITION OVERLAY INITIALIZATION ON PAGE LOAD ─────────────────────────────────
@@ -1708,57 +1713,49 @@ const initColor  = savedColor || (bodyTheme === 'light' ? '#ffffff' : '#000000')
 overlay.style.background = initColor;
 document.body.appendChild(overlay);
 
-// Check Phase 2 timer on Game Page Arrival
-if (isGamePage) {
-  if (lottieDelayTimeout) clearTimeout(lottieDelayTimeout);
-  lottieDelayTimeout = setTimeout(() => {
-    window.injectLottiePlayer();
-  }, LOTTIE_DELAY_MS);
-}
+// If we arrived via a transition (or this is a game page), continue the SAME timer
+if (isGamePage || sessionStorage.getItem('transitionStart')) startLottieTimer();
 
-// ── ARRIVAL LOGIC (FADE OUT OVERLAY) ───────────────────────────────────────────────
-window.addEventListener('pageshow', () => {
-  sessionStorage.removeItem('exitColor');
+let pageShown = false;
+let questionsReady = !isGamePage;
+let arrivalRevealed = false;
 
-  const revealOverlayAndStartGame = () => {
-    // Page loaded fully, stop the Lottie timer!
-    if (lottieDelayTimeout) {
-      clearTimeout(lottieDelayTimeout);
-      lottieDelayTimeout = null;
-    }
+function revealArrival(fromBfcache) {
+  if (arrivalRevealed) return;
+  arrivalRevealed = true;
+  window.hideGameLoadingOverlay();
 
-    if (overlay.style.opacity === '0') return; 
-
-    overlay.style.opacity = '0';
-    overlay.style.pointerEvents = 'none';
-    overlay.style.cursor = 'auto';
-
-    const durationMs = parseFloat(revealDuration) * 1000;
-    setTimeout(() => {
-      overlay.style.display = 'none';
-      overlay.innerHTML = ''; // Clean up Lottie DOM 
-    }, durationMs + 50);
-
+  if (!fromBfcache) {
     document.dispatchEvent(new CustomEvent('corePageReady'));
-
     if (typeof currentTopicId !== 'undefined') {
       const isTopicPage = currentTopicId !== 'lobby';
-      if (isTopicPage && typeof audio !== 'undefined' && audio.paused) {
-        window.startMusic(false); 
-      }
+      if (isTopicPage && typeof audio !== 'undefined' && audio.paused) window.startMusic(false);
     }
-  };
+  }
+}
+function tryReveal(fromBfcache) { if (pageShown && questionsReady) revealArrival(fromBfcache); }
 
-  if (isGamePage) {
-    document.addEventListener('questionsLoaded', revealOverlayAndStartGame, { once: true });
-    setTimeout(revealOverlayAndStartGame, 2500); // Fallback if data fails
+// Listen from the start, NOT inside pageshow, so the event can't be missed
+document.addEventListener('questionsLoaded', () => { questionsReady = true; tryReveal(); }, { once: true });
+setTimeout(() => { questionsReady = true; tryReveal(); }, 2500); // fallback, measured from script start
+
+window.addEventListener('pageshow', (e) => {
+  sessionStorage.removeItem('exitColor');
+  isExiting = false;
+  pageShown = true;
+  if (e.persisted) {              // back button / bfcache: nothing reloads
+    arrivalRevealed = false;
+    questionsReady = true;
+    tryReveal(true);
   } else {
-    revealOverlayAndStartGame();
+    tryReveal();
   }
 });
 
 // ── GLOBAL EXIT FUNCTION (STANDARD LINKS) ─────────────────────────────
 window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false) {
+    if (isExiting) return;
+    isExiting = true;
     if (typeof currentSlug !== 'undefined') sessionStorage.setItem('navFrom', currentSlug);
     
     if (isFinishBtn || (url && url.includes('score'))) {
@@ -1863,12 +1860,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       } catch (err) {
         console.error("Failed to start game session:", err);
-        if (lottieDelayTimeout) clearTimeout(lottieDelayTimeout);
-        const overlayEl = document.getElementById('global-transition-overlay');
-        if (overlayEl) {
-          overlayEl.style.opacity = '0';
-          overlayEl.style.pointerEvents = 'none';
-        }
+        window.hideGameLoadingOverlay();
       }
     });
   });
