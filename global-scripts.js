@@ -1627,8 +1627,39 @@ document.addEventListener("visibilitychange", function() {
   }
 });
 
-// ── REUSABLE TRANSITION OVERLAY HELPER ──────────────────────────────────────────
-window.showGameLoadingOverlay = function(speed = '0.5s') {
+// ── REUSABLE OVERLAY & LOTTIE MANAGER ────────────────────────────────
+let lottieDelayTimeout = null;
+
+// Helper to inject Lottie only if loading exceeds 700ms
+window.injectLottiePlayer = function() {
+  const overlay = document.getElementById('global-transition-overlay');
+  if (!overlay || overlay.querySelector('lottie-player')) return; // Avoid duplicate insertion
+
+  const lottieContainer = document.createElement('div');
+  lottieContainer.className = 'lottie-wrapper-inner';
+  lottieContainer.style.cssText = 'display:flex; justify-content:center; align-items:center; height:100svh; width:100vw; opacity:0; transition:opacity 0.3s ease;';
+  lottieContainer.innerHTML = `
+    <style>
+      .transition-lottie { width: 8rem; height: 8rem; }
+      @media (max-width: 991px) { .transition-lottie { width: 7rem; height: 7rem; } }
+    </style>
+    <lottie-player 
+      class="transition-lottie"
+      src="https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a159263c0394fc57a0ee84a_loading-game-2.json" 
+      background="transparent" 
+      speed="1" 
+      autoplay>
+    </lottie-player>`;
+
+  overlay.appendChild(lottieContainer);
+  
+  // Fade in Lottie inside overlay
+  requestAnimationFrame(() => {
+    lottieContainer.style.opacity = '1';
+  });
+};
+
+window.showGameLoadingOverlay = function(speed = '0.5s', enableLottieDelay = true) {
   const overlay = document.getElementById('global-transition-overlay');
   if (!overlay) return;
 
@@ -1636,33 +1667,27 @@ window.showGameLoadingOverlay = function(speed = '0.5s') {
   const transitionColor = (currentTheme === 'light' ? '#ffffff' : '#000000');
 
   overlay.style.background = transitionColor;
-  overlay.innerHTML = `
-    <style>
-      .transition-lottie { width: 8rem; height: 8rem; }
-      @media (max-width: 991px) { .transition-lottie { width: 7rem; height: 7rem; } }
-    </style>
-    <div style="display:flex; justify-content:center; align-items:center; height:100svh; width:100vw;">
-      <lottie-player 
-        class="transition-lottie"
-        src="https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a159263c0394fc57a0ee84a_loading-game-2.json" 
-        background="transparent" 
-        speed="1" 
-        autoplay>
-      </lottie-player>
-    </div>`;
-
-  // Explicitly reset opacity to 0 BEFORE un-hiding DOM element
   overlay.style.pointerEvents = 'all';
   overlay.style.cursor = 'default';
-  overlay.style.opacity = '0';
-  overlay.style.display = 'block';
 
-  // Force browser layout repaint to lock in opacity: 0
-  void overlay.offsetWidth; 
+  if (overlay.style.display === 'none') {
+    overlay.style.opacity = '0';
+    overlay.style.display = 'block';
+    void overlay.offsetWidth; // Force layout recalculation
+  }
 
-  // Trigger smooth fade-in
   overlay.style.transition = `opacity ${speed} ease`;
   overlay.style.opacity = '1';
+
+  // Clear any existing timer before starting a new one
+  if (lottieDelayTimeout) clearTimeout(lottieDelayTimeout);
+
+  if (enableLottieDelay) {
+    // 700ms Threshold: Only show Lottie if operation takes longer than 700ms
+    lottieDelayTimeout = setTimeout(() => {
+      window.injectLottiePlayer();
+    }, 700);
+  }
 };
 
 // ── TRANSITION OVERLAY INITIALIZATION ─────────────────────────────────
@@ -1679,29 +1704,26 @@ const bodyTheme  = document.body.getAttribute('data-theme');
 const initColor  = savedColor || (bodyTheme === 'light' ? '#ffffff' : '#000000');
 
 overlay.style.background = initColor;
-
-if (isGamePage) {
-  overlay.innerHTML = `
-    <style>
-      .transition-lottie { width: 8rem; height: 8rem; }
-      @media (max-width: 991px) { .transition-lottie { width: 7rem; height: 7rem; } }
-    </style>
-    <div style="display:flex; justify-content:center; align-items:center; height:100svh; width:100vw;">
-      <lottie-player 
-        class="transition-lottie"
-        src="https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a159263c0394fc57a0ee84a_loading-game-2.json" 
-        background="transparent" 
-        speed="1" 
-        autoplay>
-      </lottie-player>
-    </div>`;
-}
 document.body.appendChild(overlay);
+
+// On game pages, set 700ms threshold for question loading
+if (isGamePage) {
+  if (lottieDelayTimeout) clearTimeout(lottieDelayTimeout);
+  lottieDelayTimeout = setTimeout(() => {
+    window.injectLottiePlayer();
+  }, 700);
+}
 
 window.addEventListener('pageshow', () => {
   sessionStorage.removeItem('exitColor');
 
   const revealOverlayAndStartGame = () => {
+    // If questions loaded under 700ms, cancel Lottie injection completely
+    if (lottieDelayTimeout) {
+      clearTimeout(lottieDelayTimeout);
+      lottieDelayTimeout = null;
+    }
+
     if (overlay.style.opacity === '0') return; 
 
     overlay.style.opacity = '0';
@@ -1711,7 +1733,7 @@ window.addEventListener('pageshow', () => {
     const durationMs = parseFloat(revealDuration) * 1000;
     setTimeout(() => {
       overlay.style.display = 'none';
-      overlay.innerHTML = '';
+      overlay.innerHTML = ''; // Clean up container
     }, durationMs + 50);
 
     document.dispatchEvent(new CustomEvent('corePageReady'));
@@ -1726,7 +1748,7 @@ window.addEventListener('pageshow', () => {
 
   if (isGamePage) {
     document.addEventListener('questionsLoaded', revealOverlayAndStartGame, { once: true });
-    setTimeout(revealOverlayAndStartGame, 2500); 
+    setTimeout(revealOverlayAndStartGame, 2500); // Fallback timeout
   } else {
     revealOverlayAndStartGame();
   }
@@ -1757,14 +1779,13 @@ window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false
         }
     }
 
-    // Adjust delays here:
-    let durationMs = 500;                 // Standard navigation duration (ms)
-    if (isSlowFinish)   durationMs = 800;  // Score finish duration (ms)
-    if (isLeavingLobby) durationMs = 1000; // Leaving lobby duration (ms)
+    let durationMs = 500;                 
+    if (isSlowFinish)   durationMs = 800;  
+    if (isLeavingLobby) durationMs = 1000; 
 
     const fadeSpeedStr = `${(durationMs / 1000).toFixed(1)}s`;
 
-    window.showGameLoadingOverlay(fadeSpeedStr);
+    window.showGameLoadingOverlay(fadeSpeedStr, true);
 
     setTimeout(() => {
         window.location.href = url;
@@ -1824,10 +1845,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      // 1. SMOOTH OVERLAY FADE-IN (0.5s fade duration)
-      window.showGameLoadingOverlay('0.5s');
+      // 1. Solid transition fades in immediately; Lottie deferred by 700ms
+      window.showGameLoadingOverlay('0.5s', true);
 
-      // 2. CALL FIREBASE BACKEND IN BACKGROUND
+      // 2. Call Firebase backend asynchronously
       try {
         const session = await window.triggerStartGame(topic, selectedTier);
         
@@ -1838,6 +1859,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       } catch (err) {
         console.error("Failed to start game session:", err);
+        if (lottieDelayTimeout) clearTimeout(lottieDelayTimeout);
         const overlayEl = document.getElementById('global-transition-overlay');
         if (overlayEl) {
           overlayEl.style.opacity = '0';
