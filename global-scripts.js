@@ -1627,13 +1627,18 @@ document.addEventListener("visibilitychange", function() {
   }
 });
 
-// ── REUSABLE OVERLAY & LOTTIE MANAGER ────────────────────────────────
-let lottieDelayTimeout = null;
+// ── REUSABLE TRANSITION OVERLAY & LOTTIE MANAGER ────────────────────────────────
 
-// Helper to inject Lottie only if loading exceeds 700ms
+// 1. GLOBAL SETTINGS
+const LOTTIE_DELAY_MS = 1200; // Lottie only shows if loading takes longer than 1.2s
+let lottieDelayTimeout = null;
+const isGamePage = window.location.pathname.includes('game') || document.body.getAttribute('data-page') === 'game';
+const revealDuration = '0.8s';
+
+// 2. HELPER TO INJECT LOTTIE (Fades in smoothly)
 window.injectLottiePlayer = function() {
   const overlay = document.getElementById('global-transition-overlay');
-  if (!overlay || overlay.querySelector('lottie-player')) return; // Avoid duplicate insertion
+  if (!overlay || overlay.querySelector('lottie-player')) return; // Prevent double insertion
 
   const lottieContainer = document.createElement('div');
   lottieContainer.className = 'lottie-wrapper-inner';
@@ -1653,12 +1658,13 @@ window.injectLottiePlayer = function() {
 
   overlay.appendChild(lottieContainer);
   
-  // Fade in Lottie inside overlay
+  // Trigger CSS fade-in for Lottie
   requestAnimationFrame(() => {
     lottieContainer.style.opacity = '1';
   });
 };
 
+// 3. HELPER TO FADE IN SOLID OVERLAY
 window.showGameLoadingOverlay = function(speed = '0.5s', enableLottieDelay = true) {
   const overlay = document.getElementById('global-transition-overlay');
   if (!overlay) return;
@@ -1673,29 +1679,25 @@ window.showGameLoadingOverlay = function(speed = '0.5s', enableLottieDelay = tru
   if (overlay.style.display === 'none') {
     overlay.style.opacity = '0';
     overlay.style.display = 'block';
-    void overlay.offsetWidth; // Force layout recalculation
+    void overlay.offsetWidth; // Force layout recalculation to enable smooth fade
   }
 
   overlay.style.transition = `opacity ${speed} ease`;
   overlay.style.opacity = '1';
 
-  // Clear any existing timer before starting a new one
   if (lottieDelayTimeout) clearTimeout(lottieDelayTimeout);
 
   if (enableLottieDelay) {
-    // 700ms Threshold: Only show Lottie if operation takes longer than 700ms
+    // Start the timer to inject Lottie only if transition is slow
     lottieDelayTimeout = setTimeout(() => {
       window.injectLottiePlayer();
-    }, 700);
+    }, LOTTIE_DELAY_MS);
   }
 };
 
-// ── TRANSITION OVERLAY INITIALIZATION ─────────────────────────────────
+// ── TRANSITION OVERLAY INITIALIZATION ON PAGE LOAD ─────────────────────────────────
 const overlay = document.createElement('div');
 overlay.id = 'global-transition-overlay';
-
-const isGamePage = window.location.pathname.includes('game');
-const revealDuration = '0.8s';
 
 overlay.style.cssText = `position:fixed;inset:0;z-index:999999;pointer-events:none;transition:opacity ${revealDuration} ease;opacity:1;display:block;`;
 
@@ -1706,19 +1708,20 @@ const initColor  = savedColor || (bodyTheme === 'light' ? '#ffffff' : '#000000')
 overlay.style.background = initColor;
 document.body.appendChild(overlay);
 
-// On game pages, set 700ms threshold for question loading
+// Check Phase 2 timer on Game Page Arrival
 if (isGamePage) {
   if (lottieDelayTimeout) clearTimeout(lottieDelayTimeout);
   lottieDelayTimeout = setTimeout(() => {
     window.injectLottiePlayer();
-  }, 700);
+  }, LOTTIE_DELAY_MS);
 }
 
+// ── ARRIVAL LOGIC (FADE OUT OVERLAY) ───────────────────────────────────────────────
 window.addEventListener('pageshow', () => {
   sessionStorage.removeItem('exitColor');
 
   const revealOverlayAndStartGame = () => {
-    // If questions loaded under 700ms, cancel Lottie injection completely
+    // Page loaded fully, stop the Lottie timer!
     if (lottieDelayTimeout) {
       clearTimeout(lottieDelayTimeout);
       lottieDelayTimeout = null;
@@ -1733,7 +1736,7 @@ window.addEventListener('pageshow', () => {
     const durationMs = parseFloat(revealDuration) * 1000;
     setTimeout(() => {
       overlay.style.display = 'none';
-      overlay.innerHTML = ''; // Clean up container
+      overlay.innerHTML = ''; // Clean up Lottie DOM 
     }, durationMs + 50);
 
     document.dispatchEvent(new CustomEvent('corePageReady'));
@@ -1748,7 +1751,7 @@ window.addEventListener('pageshow', () => {
 
   if (isGamePage) {
     document.addEventListener('questionsLoaded', revealOverlayAndStartGame, { once: true });
-    setTimeout(revealOverlayAndStartGame, 2500); // Fallback timeout
+    setTimeout(revealOverlayAndStartGame, 2500); // Fallback if data fails
   } else {
     revealOverlayAndStartGame();
   }
@@ -1845,16 +1848,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      // 1. Solid transition fades in immediately; Lottie deferred by 700ms
+      // 1. Instantly trigger smooth color fade (and starts Phase 1 1200ms Lottie timer)
       window.showGameLoadingOverlay('0.5s', true);
 
-      // 2. Call Firebase backend asynchronously
+      // 2. Call Firebase backend
       try {
         const session = await window.triggerStartGame(topic, selectedTier);
         
         sessionStorage.setItem('activeSessionId', session.sessionId);
         sessionStorage.setItem('navFrom', currentSlug);
 
+        // 3. Move to game page (which triggers Phase 2 Lottie timer on load)
         window.location.href = `/${topic}-game-${selectedTier}`;
 
       } catch (err) {
