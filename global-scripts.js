@@ -1501,11 +1501,11 @@ toggleBtn.addEventListener('click', (e) => {
         document.activeElement.blur();
       }
       window.removeEventListener('keydown', blockAndClose, true);
+      runSkip(true);   // skip while the screen is still covered
+      setTimeout(function() {
         overlay.style.opacity = '0';
-        setTimeout(function() {
-        overlay.remove();
-        runSkip(true);
-      }, 1000); 
+        setTimeout(function() { overlay.remove(); }, 1000);
+      }, 400);         // runSkip applies the skip after its own 300ms, so wait a bit longer
     };
     const blockAndClose = function(e) {
       e.preventDefault();
