@@ -1080,25 +1080,25 @@ const TOPICS = {
     uc: { 
         url: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69b08a22396c27a611026d0c_The%20end%20of%20tyreen%20remix.mp3',
         volume: 0.6, 
-        startTime: 19.482,
+        startTime: 19,
         fadeColor: '#000000'
     },
     lobby: { 
         url: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69b08a22396c27a611026d0c_The%20end%20of%20tyreen%20remix.mp3',
         volume: 0.6, 
-        startTime: 19.482,
+        startTime: 19,
         fadeColor: '#000000'
     },
     terms: { 
         url: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69b08a22396c27a611026d0c_The%20end%20of%20tyreen%20remix.mp3',
         volume: 0.0, 
-        startTime: 19.482,
+        startTime: 19,
         fadeColor: '#000000'
     },
     privacy: { 
         url: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69b08a22396c27a611026d0c_The%20end%20of%20tyreen%20remix.mp3',
         volume: 0.0, 
-        startTime: 19.482,
+        startTime: 19,
         fadeColor: '#000000'
     }
 };
@@ -1364,8 +1364,8 @@ function initAudio() {
     }
     // TIDSHANTERING VID VANLIG PAGE LOAD (Från början)
     if (currentTopicId === 'lobby' || currentTopicId === 'uc') {
-        // Första gången sidan laddas -> Kör vanliga startTime (19.482s)
-        audio.currentTime = currentConfig.startTime || 19.482;
+        // Första gången sidan laddas -> Kör vanliga startTime (19s)
+        audio.currentTime = currentConfig.startTime || 19;
     } else {
         const isInternalNavigation = savedTime && (!fromTopic || fromTopic === currentTopicId);
         if (isInternalNavigation) {
@@ -1501,11 +1501,11 @@ toggleBtn.addEventListener('click', (e) => {
         document.activeElement.blur();
       }
       window.removeEventListener('keydown', blockAndClose, true);
-      runSkip(true);   // skip while the screen is still covered
-      setTimeout(function() {
         overlay.style.opacity = '0';
-        setTimeout(function() { overlay.remove(); }, 1000);
-      }, 400);         // runSkip applies the skip after its own 300ms, so wait a bit longer
+        setTimeout(function() {
+        overlay.remove();
+        runSkip(true);
+      }, 1000); 
     };
     const blockAndClose = function(e) {
       e.preventDefault();
@@ -1564,11 +1564,11 @@ window.addEventListener('pageshow', (event) => {
     
     // Hantera tider när man navigerar runt (länk eller backa) — ONLY for non-lobby or when NOT skipping
     if (currentTopicId === 'lobby' || currentTopicId === 'uc') {
-        const baseStart = currentConfig.startTime || 19.482;
+        const baseStart = currentConfig.startTime || 19;
         
         // Om det INTE är en helt ren förstahandsladdning (t.ex. vid backning/historik)
         if (event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward" || performance.getEntriesByType("navigation")[0].type === "navigate") {
-            // Lägg på dina extra 8 sekunders skip! (19.482 + 8 = 27.482s)
+            // Lägg på dina extra 8 sekunders skip! (19 + 8 = 27.482s)
             audio.currentTime = baseStart + 8;
         } else {
             audio.currentTime = baseStart;
