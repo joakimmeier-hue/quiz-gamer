@@ -1447,7 +1447,6 @@ toggleBtn.addEventListener('click', (e) => {
     if (el) el.style.display = 'none';
   }
   function runSkip(isFromBack = false) {
-    console.log('[runSkip]', { isFromBack, t: Math.round(performance.now()) });
     sessionStorage.removeItem('skipIntro');
     hideIntro();
     let fadeScreen = null;
@@ -1481,7 +1480,6 @@ toggleBtn.addEventListener('click', (e) => {
   }
 
   function showBackOverlay() {
-    console.log('[showBackOverlay]', Math.round(performance.now()));
     hideIntro();
     if (document.getElementById('back-overlay')) return;
     const themeColor = document.body.getAttribute('data-theme') === 'light' ? '#ffffff' : '#000000';
@@ -2247,8 +2245,8 @@ document.addEventListener("click", (e) => {
 });
 
 //temporary skip intro debug log
-window.addEventListener('pageshow', (e) => console.log('[pageshow]', {
+/* window.addEventListener('pageshow', (e) => console.log('[pageshow]', {
   persisted: e.persisted,
   navType: performance.getEntriesByType('navigation')[0]?.type,
   skipIntro: sessionStorage.getItem('skipIntro')
-}));
+})); */
