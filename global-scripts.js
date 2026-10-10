@@ -1645,9 +1645,10 @@ window.injectLottiePlayer = function(instant = false) {
   const wrap = document.createElement('div');
   wrap.className = 'lottie-wrapper-inner';
   wrap.style.cssText = `display:flex;justify-content:center;align-items:center;height:100svh;width:100vw;opacity:${instant ? 1 : 0};transition:opacity 0.3s ease;`;
-    // white Lottie on a white overlay would be invisible, so flip it
-  if (getComputedStyle(overlay).backgroundColor === 'rgb(255, 255, 255)') wrap.style.filter = 'invert(1)';
-  wrap.innerHTML = `
+  // white (or near-white) overlay: flip the Lottie so it stays visible
+  const bg = (getComputedStyle(overlay).backgroundColor.match(/[\d.]+/g) || [0, 0, 0]).map(Number);
+  const brightness = 0.299 * bg[0] + 0.587 * bg[1] + 0.114 * bg[2];   // standard perceived brightness, 0-255
+  if (brightness > 245) wrap.style.filter = 'invert(1)';  wrap.innerHTML = `
     <style>
       .transition-lottie { width: 8rem; height: 8rem; }
       @media (max-width: 991px) { .transition-lottie { width: 7rem; height: 7rem; } }
