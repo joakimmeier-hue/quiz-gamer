@@ -1621,8 +1621,6 @@ let lottieDelayTimeout = null;
 let cleanupTimeout = null;
 let isExiting = false;
 
-fetch(LOTTIE_SRC).catch(() => {}); // warm the cache so the Lottie appears instantly
-
 // 2. ONE TIMER ACROSS PAGES (start time lives in sessionStorage)
 function startLottieTimer() {
   clearTimeout(lottieDelayTimeout);
@@ -1656,6 +1654,7 @@ window.injectLottiePlayer = function(instant = false) {
 
 // 3. SHOW / HIDE (both global, usable for the # navigation too)
 window.showGameLoadingOverlay = function(speed = '0.5s', enableLottieDelay = true) {
+  fetch(LOTTIE_SRC).catch(() => {});
   const overlay = document.getElementById('global-transition-overlay');
   if (!overlay) return;
 
