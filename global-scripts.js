@@ -1621,8 +1621,7 @@ document.addEventListener("visibilitychange", function() {
 const LOTTIE_DELAY_MS = 1200;
 const LOTTIE_SRC = 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a159263c0394fc57a0ee84a_loading-game-2.json';
 const revealDuration = '0.8s';
-const isGamePage = /-game-\d+/.test(window.location.pathname) || document.body.getAttribute('data-page') === 'game';
-
+const isGamePage = /-game-\d+/.test(window.location.pathname);
 let lottieDelayTimeout = null;
 let cleanupTimeout = null;
 let isExiting = false;
@@ -1646,6 +1645,8 @@ window.injectLottiePlayer = function(instant = false) {
   const wrap = document.createElement('div');
   wrap.className = 'lottie-wrapper-inner';
   wrap.style.cssText = `display:flex;justify-content:center;align-items:center;height:100svh;width:100vw;opacity:${instant ? 1 : 0};transition:opacity 0.3s ease;`;
+    // white Lottie on a white overlay would be invisible, so flip it
+  if (getComputedStyle(overlay).backgroundColor === 'rgb(255, 255, 255)') wrap.style.filter = 'invert(1)';
   wrap.innerHTML = `
     <style>
       .transition-lottie { width: 8rem; height: 8rem; }
