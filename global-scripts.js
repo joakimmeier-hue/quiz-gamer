@@ -1648,7 +1648,7 @@ window.injectLottiePlayer = function(instant = false) {
       @media (max-width: 991px) { .transition-lottie { width: 7rem; height: 7rem; } }
     </style>
     <lottie-player class="transition-lottie" src="${LOTTIE_SRC}"
-      background="transparent" speed="1" loop autoplay></lottie-player>`;
+            background="transparent" speed="1" autoplay></lottie-player>`;
   overlay.appendChild(wrap);
 
   if (!instant) requestAnimationFrame(() => requestAnimationFrame(() => { wrap.style.opacity = '1'; }));
@@ -1674,8 +1674,9 @@ window.showGameLoadingOverlay = function(speed = '0.5s', enableLottieDelay = tru
   overlay.style.transition = `opacity ${speed} ease`;
   overlay.style.opacity = '1';
 
-  if (!sessionStorage.getItem('transitionStart')) {
-    sessionStorage.setItem('transitionStart', Date.now());
+    if (!sessionStorage.getItem('transitionStart')) {
+    // count from when the screen is fully covered, not from the click
+    sessionStorage.setItem('transitionStart', Date.now() + parseFloat(speed) * 1000);
   }
   clearTimeout(lottieDelayTimeout);
   if (enableLottieDelay) startLottieTimer();
