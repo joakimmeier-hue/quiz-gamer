@@ -1641,6 +1641,7 @@ function startLottieTimer() {
 window.injectLottiePlayer = function(instant = false) {
   const overlay = document.getElementById('global-transition-overlay');
   if (!overlay || overlay.querySelector('lottie-player')) return;
+    console.log('[lottie] injected', { page: location.pathname, instant, t: Math.round(performance.now()) });
 
   const wrap = document.createElement('div');
   wrap.className = 'lottie-wrapper-inner';
