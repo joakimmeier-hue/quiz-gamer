@@ -1447,6 +1447,7 @@ toggleBtn.addEventListener('click', (e) => {
     if (el) el.style.display = 'none';
   }
   function runSkip(isFromBack = false) {
+    console.log('[runSkip]', { isFromBack, t: Math.round(performance.now()) });
     sessionStorage.removeItem('skipIntro');
     hideIntro();
     let fadeScreen = null;
@@ -1480,6 +1481,7 @@ toggleBtn.addEventListener('click', (e) => {
   }
 
   function showBackOverlay() {
+    console.log('[showBackOverlay]', Math.round(performance.now()));
     hideIntro();
     if (document.getElementById('back-overlay')) return;
     const themeColor = document.body.getAttribute('data-theme') === 'light' ? '#ffffff' : '#000000';
@@ -1514,11 +1516,15 @@ toggleBtn.addEventListener('click', (e) => {
     overlay.onclick = closeOverlay;
     document.body.appendChild(overlay);
   }
+      const navTypeAtLoad = performance.getEntriesByType('navigation')[0]?.type;
     if (sessionStorage.getItem('skipIntro') === 'true') {
     hideIntro();
-    if (document.readyState === 'complete') { runSkip(false); } 
-    else { window.addEventListener('load', function() { runSkip(false); }); }
+    if (navTypeAtLoad !== 'back_forward') {   // Back gets the click-to-continue overlay, which runs the skip
+      if (document.readyState === 'complete') { runSkip(false); } 
+      else { window.addEventListener('load', function() { runSkip(false); }); }
+    }
   }
+
   window.addEventListener('pageshow', function(event) {
     const navEntry = performance.getEntriesByType('navigation')[0];
     const isBack = (navEntry && navEntry.type === 'back_forward') || event.persisted;
@@ -2237,6 +2243,7 @@ document.addEventListener("click", (e) => {
   }
 });
 
+//temporary skip intro debug log
 window.addEventListener('pageshow', (e) => console.log('[pageshow]', {
   persisted: e.persisted,
   navType: performance.getEntriesByType('navigation')[0]?.type,
