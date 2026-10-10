@@ -372,6 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const session = await window.triggerStartGame(topic, selectedTier);
 
         sessionStorage.setItem('activeSessionId', session.sessionId);
+        sessionStorage.setItem('activeSessionGame', `${topic}-${selectedTier}`);
         sessionStorage.setItem('navFrom', currentSlug);
 
         const targetUrl = `/${topic}-game-${selectedTier}`;
@@ -1614,7 +1615,7 @@ document.addEventListener("visibilitychange", function() {
 const LOTTIE_DELAY_MS = 1200;
 const LOTTIE_SRC = 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a159263c0394fc57a0ee84a_loading-game-2.json';
 const revealDuration = '0.8s';
-const isGamePage = window.location.pathname.includes('game') || document.body.getAttribute('data-page') === 'game';
+const isGamePage = /-game-\d+/.test(window.location.pathname) || document.body.getAttribute('data-page') === 'game';
 
 let lottieDelayTimeout = null;
 let cleanupTimeout = null;
@@ -1791,80 +1792,6 @@ window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false
         window.location.href = url;
     }, durationMs); 
 };
-
-
-// ── START BUTTON HANDLER (SPECIAL ASYNC NAVIGATION) ───────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  const startBtns = document.querySelectorAll('.mask-middle .game-start-btn-wrapper, #game-start-btn-gma, .game-start-btn-gma');
-  
-  if (startBtns.length === 0) return;
-
-  startBtns.forEach(startBtn => {
-    startBtn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const isGma = startBtn.id === 'game-start-btn-gma' || startBtn.classList.contains('game-start-btn-gma');
-
-      let selectedTier = null;
-      let topic = "science"; 
-
-      const topicMatch = currentSlug.match(/^([a-z0-9-]+)-start$/i);
-      if (topicMatch) {
-        topic = topicMatch[1];
-      }
-
-      if (isGma) {
-        selectedTier = 1;
-        topic = "gma"; 
-      } else {
-        const activeOption = document.querySelector('.mask-middle .game-level-option.is-selected') 
-                          || document.querySelector('.mask-middle .gamelevel-btn');
-        
-        if (activeOption) {
-          const dataLvl = activeOption.getAttribute('data-level');
-          if (dataLvl) {
-            selectedTier = parseInt(dataLvl, 10);
-          } else {
-            const match = activeOption.textContent.match(/(?:Tier|Level)\s*(\d+)/i);
-            if (match) selectedTier = parseInt(match[1], 10);
-          }
-        }
-
-        if (!selectedTier) {
-          showGlobalInfo(INFO_MESSAGES.NO_TIER_SELECTED);
-          return;
-        }
-
-        const playerLevel = window.currentUserData?.level || 1;
-        const requiredLevel = TIER_REQUIREMENTS[selectedTier] || 1;
-
-        if (playerLevel < requiredLevel) {
-          showGlobalInfo(INFO_MESSAGES.LEVEL_TOO_LOW(requiredLevel));
-          return;
-        }
-      }
-
-      // 1. Instantly trigger smooth color fade (and starts Phase 1 1200ms Lottie timer)
-      window.showGameLoadingOverlay('0.5s', true);
-
-      // 2. Call Firebase backend
-      try {
-        const session = await window.triggerStartGame(topic, selectedTier);
-        
-        sessionStorage.setItem('activeSessionId', session.sessionId);
-        sessionStorage.setItem('navFrom', currentSlug);
-
-        // 3. Move to game page (which triggers Phase 2 Lottie timer on load)
-        window.location.href = `/${topic}-game-${selectedTier}`;
-
-      } catch (err) {
-        console.error("Failed to start game session:", err);
-        window.hideGameLoadingOverlay();
-      }
-    });
-  });
-});
 
 // ── CLICK HANDLER FÖR LÄNKAR ──────────────────────────────────────────
 document.addEventListener('click', function(e) {

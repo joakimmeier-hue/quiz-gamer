@@ -1808,20 +1808,11 @@ Webflow.push(async function() {
       }
     });
 
-    // --- Start a server-side session (store session id for later grading)
-    try {
-      const startResp = await startGameFn({ topic, level });
-      const sessionId = startResp?.data?.sessionId;
-      if (sessionId) {
-        window.currentSession = sessionId;
-        sessionStorage.setItem('activeSessionId', sessionId);
-        console.log('Started game session:', sessionId);
-      } else {
-        console.warn('startGame returned no sessionId');
-      }
-    } catch (err) {
-      console.warn('Failed to start game session:', err);
-    }
+  // --- Session: normally already started by the start button handler (window.triggerStartGame)
+        const storedSessionId = (sessionStorage.getItem('activeSessionGame') === `${topic}-${level}`)
+      ? sessionStorage.getItem('activeSessionId')
+      : null;
+    if (storedSessionId) window.currentSession = storedSessionId;
 
     // 1. Reveal populated cards in DOM
     cards.forEach((card, index) => {
@@ -1829,15 +1820,27 @@ Webflow.push(async function() {
       if (index < shuffledDocs.length) {
         card.style.transition = 'opacity 0.1s ease';
         card.style.opacity = '1';
-        // Trigger page reveal once card 2 (index 1) is ready
-        if (index === 1) {
-          document.dispatchEvent(new CustomEvent('questionsLoaded'));
-        }
       }
     });
-    // FIX 3: Base fallback check on actual returned questions, not DOM card elements
-    if (shuffledDocs.length < 2) {     
+    if (shuffledDocs.length > 0) {
       document.dispatchEvent(new CustomEvent('questionsLoaded'));
+    }
+
+    // --- Fallback: player arrived without the start button (typed URL etc.), so start a session now
+    if (!storedSessionId) {
+      try {
+        const startResp = await startGameFn({ topic, level });
+        const sessionId = startResp?.data?.sessionId;
+        if (sessionId) {
+          window.currentSession = sessionId;
+          sessionStorage.setItem('activeSessionId', sessionId);
+          console.log('Started game session:', sessionId);
+        } else {
+          console.warn('startGame returned no sessionId');
+        }
+      } catch (err) {
+        console.warn('Failed to start game session:', err);
+      }
     }
   } catch (error) {
     console.error("Error fetching/seeding questions:", error);
@@ -1916,6 +1919,9 @@ document.addEventListener('click', async function(e) {
     // 4. Save response for the score card
     sessionStorage.setItem('lastGameResult', JSON.stringify(response.data));
     sessionStorage.setItem('scoreAuthorized', 'true');
+        // Session is used up, don't let it be reused
+    sessionStorage.removeItem('activeSessionId');
+    window.currentSession = null;
 
     // 5. Exit page transition
     if (window.triggerPageExit) {
