@@ -1612,7 +1612,7 @@ document.addEventListener("visibilitychange", function() {
 // ── REUSABLE TRANSITION OVERLAY & LOTTIE MANAGER ────────────────────────────────
 
 // 1. SETTINGS
-const LOTTIE_DELAY_MS = 2500;
+const LOTTIE_DELAY_MS = 1500;
 const LOTTIE_SRC = 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a159263c0394fc57a0ee84a_loading-game-2.json';
 const revealDuration = '0.8s';
 const isGamePage = /-game-\d+/.test(window.location.pathname) || document.body.getAttribute('data-page') === 'game';
@@ -1627,7 +1627,7 @@ fetch(LOTTIE_SRC).catch(() => {}); // warm the cache so the Lottie appears insta
 function startLottieTimer() {
   clearTimeout(lottieDelayTimeout);
   let start = parseInt(sessionStorage.getItem('transitionStart'), 10);
-  if (!start || Date.now() - start > 15000) {            // missing or stale
+  if (!start || Date.now() - start > 15000) {   // missing or stale
     start = Date.now();
     sessionStorage.setItem('transitionStart', start);
   }
