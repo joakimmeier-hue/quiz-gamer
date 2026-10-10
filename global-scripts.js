@@ -1612,7 +1612,7 @@ document.addEventListener("visibilitychange", function() {
 // ── REUSABLE TRANSITION OVERLAY & LOTTIE MANAGER ────────────────────────────────
 
 // 1. SETTINGS
-const LOTTIE_DELAY_MS = 1500;
+const LOTTIE_DELAY_MS = 1200;
 const LOTTIE_SRC = 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a159263c0394fc57a0ee84a_loading-game-2.json';
 const revealDuration = '0.8s';
 const isGamePage = /-game-\d+/.test(window.location.pathname) || document.body.getAttribute('data-page') === 'game';
