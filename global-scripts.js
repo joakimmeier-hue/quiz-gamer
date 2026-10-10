@@ -1639,7 +1639,13 @@ function startLottieTimer() {
 window.injectLottiePlayer = function(instant = false) {
   const overlay = document.getElementById('global-transition-overlay');
   if (!overlay || overlay.querySelector('lottie-player')) return;
-    console.log('[lottie] injected', { page: location.pathname, instant, t: Math.round(performance.now()) });
+  // The previous page may already have shown the Lottie (start button waiting for the backend).
+  // Then continue from where it was instead of restarting from frame 0.
+  const shownAt = parseInt(sessionStorage.getItem('lottieShownAt'), 10);
+  const offsetMs = (shownAt && Date.now() - shownAt < 20000) ? Date.now() - shownAt : 0;
+  if (!offsetMs) sessionStorage.setItem('lottieShownAt', Date.now());
+  if (offsetMs) instant = true;   // already visible on the previous page, so no fade-in blink
+  console.log('[lottie] injected', { page: location.pathname, instant, offsetMs, t: Math.round(performance.now()) });
 
   const wrap = document.createElement('div');
   wrap.className = 'lottie-wrapper-inner';
@@ -1647,14 +1653,26 @@ window.injectLottiePlayer = function(instant = false) {
   // white (or near-white) overlay: flip the Lottie so it stays visible
   const bg = (getComputedStyle(overlay).backgroundColor.match(/[\d.]+/g) || [0, 0, 0]).map(Number);
   const brightness = 0.299 * bg[0] + 0.587 * bg[1] + 0.114 * bg[2];   // standard perceived brightness, 0-255
-  if (brightness > 245) wrap.style.filter = 'invert(1)';  wrap.innerHTML = `
+  if (brightness > 245) wrap.style.filter = 'invert(1)';
+
+  wrap.innerHTML = `
     <style>
       .transition-lottie { width: 8rem; height: 8rem; }
       @media (max-width: 991px) { .transition-lottie { width: 7rem; height: 7rem; } }
     </style>
     <lottie-player class="transition-lottie" src="${LOTTIE_SRC}"
-            background="transparent" speed="1" autoplay></lottie-player>`;
+      background="transparent" speed="1" ${offsetMs ? '' : 'autoplay'}></lottie-player>`;
   overlay.appendChild(wrap);
+  const player = wrap.querySelector('lottie-player');
+  if (offsetMs) {
+    player.addEventListener('ready', () => {
+      const anim = player.getLottie && player.getLottie();
+      if (anim) anim.goToAndPlay(offsetMs, false);   // continue; past the end it stays on the last frame
+    });
+  }
+  // TEMPORARY: log what the player does, remove when it behaves
+  ['ready', 'play', 'pause', 'freeze', 'stop', 'loop', 'complete', 'error'].forEach(ev =>
+    player.addEventListener(ev, () => console.log('[lottie-player]', ev, location.pathname, Math.round(performance.now()))));
 
   if (!instant) requestAnimationFrame(() => requestAnimationFrame(() => { wrap.style.opacity = '1'; }));
 };
@@ -1695,7 +1713,7 @@ window.hideGameLoadingOverlay = function() {
   clearTimeout(lottieDelayTimeout);
   lottieDelayTimeout = null;
   sessionStorage.removeItem('transitionStart');
-
+  sessionStorage.removeItem('lottieShownAt');
   overlay.style.opacity = '0';
   overlay.style.pointerEvents = 'none';
   overlay.style.cursor = 'auto';
@@ -1769,9 +1787,7 @@ window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false
     if (isFinishBtn || (url && url.includes('score'))) {
         sessionStorage.setItem('scoreAuthorized', 'true');
     }
-    
-    sessionStorage.setItem('skipIntro', 'true');
-
+        sessionStorage.setItem('skipIntro', 'true');
     let isLeavingLobby = false;
 
     if (typeof getTopicFromUrl === 'function' && typeof currentTopicId !== 'undefined') {
@@ -1790,14 +1806,12 @@ window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false
     let durationMs = 500;                 
     if (isSlowFinish)   durationMs = 800;  
     if (isLeavingLobby) durationMs = 1000; 
-
     const fadeSpeedStr = `${(durationMs / 1000).toFixed(1)}s`;
-
     window.showGameLoadingOverlay(fadeSpeedStr, true);
-
-    setTimeout(() => {
+        setTimeout(() => {
+        clearTimeout(lottieDelayTimeout);   // never start a Lottie on a page that is already leaving
         window.location.href = url;
-    }, durationMs); 
+    }, durationMs);
 };
 
 // ── CLICK HANDLER FÖR LÄNKAR ──────────────────────────────────────────
