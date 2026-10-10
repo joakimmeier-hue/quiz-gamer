@@ -2237,3 +2237,8 @@ document.addEventListener("click", (e) => {
   }
 });
 
+window.addEventListener('pageshow', (e) => console.log('[pageshow]', {
+  persisted: e.persisted,
+  navType: performance.getEntriesByType('navigation')[0]?.type,
+  skipIntro: sessionStorage.getItem('skipIntro')
+}));
