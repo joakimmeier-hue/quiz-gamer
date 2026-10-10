@@ -1785,9 +1785,9 @@ window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false
     if (typeof currentSlug !== 'undefined') sessionStorage.setItem('navFrom', currentSlug);
     
     if (isFinishBtn || (url && url.includes('score'))) {
-        sessionStorage.setItem('scoreAuthorized', 'true');
+    sessionStorage.setItem('scoreAuthorized', 'true');
     }
-        sessionStorage.setItem('skipIntro', 'true');
+    sessionStorage.setItem('skipIntro', 'true');
     let isLeavingLobby = false;
 
     if (typeof getTopicFromUrl === 'function' && typeof currentTopicId !== 'undefined') {
