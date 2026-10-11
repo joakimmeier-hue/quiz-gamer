@@ -916,7 +916,7 @@ Webflow.push(function() {
 
         if (clientStartTime) {
           const elapsedMs = Date.now() - clientStartTime;
-          window.FinalTimeSecs = Math.max(Math.floor(elapsedMs / 1000), 1);
+          window.FinalTimeSecs = Math.max(elapsedMs / 1000, 1);
         }
 
         const lottieContainer = document.getElementById('stopwatch-lottie');
