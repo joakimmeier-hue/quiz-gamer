@@ -1044,7 +1044,9 @@ if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
 window.addEventListener('load', function() {
   window.scrollTo(0, 0);
 }); */
-  
+
+
+  // IS THIS LOTTIE PLAYER NEEDED?!
 // ── LADDA LOTTIE-SPELAREN ─────────────────────────────────────────────
 if (!document.querySelector('script[src*="lottie-player"]')) {
     const script = document.createElement('script');
