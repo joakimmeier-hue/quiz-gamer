@@ -1938,6 +1938,25 @@ document.addEventListener('click', async function(e) {
 });
 
 // ──────────── SCORE PAGE: DISPLAY RESULTS + LEVEL UP ────────────
+//Move score-title
+const setTitleStart = () => {
+  const title = document.querySelector('.score-title-3');
+  if (!title) return;
+
+  // Offset from the title's own position to the screen center
+  const rect = title.getBoundingClientRect();
+  const startX = window.innerWidth / 2 - (rect.left + rect.width / 2);
+  const startY = window.innerHeight / 2 - (rect.top + rect.height / 2) - 120;
+
+  // Only store the values, CSS does the actual animation
+  title.style.setProperty('--title-x', startX + 'px');
+  title.style.setProperty('--title-y', startY + 'px');
+};
+
+window.Webflow = window.Webflow || [];
+window.Webflow.push(setTitleStart);
+//END- Move score-title
+
 var Webflow = window.Webflow || [];
 let justTriggeredThisLoad = false;
 

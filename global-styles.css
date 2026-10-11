@@ -11,6 +11,22 @@
   --dark-grey: #181717;
 }
 
+/* —————————————— SCORE PAGE ————————————— */
+.score-title-3 {
+  opacity: 0;
+  transform: translate(var(--title-x, 0px), var(--title-y, 0px)) scale(1.5);
+}
+
+.score-title-3.title-show {
+  opacity: 1;
+  transition: opacity 0.05s ease-out;
+}
+
+.score-title-3.title-move {
+  opacity: 1;
+  transform: translate(0px, 0px) scale(1);
+  transition: opacity 0.05s ease-out, transform 0.37s ease-in-out;
+}
 /* Global overflow-stopper */
 .wrapper-score {
   overflow-x: hidden;
@@ -21,8 +37,6 @@
   opacity: 0;
   /* transition: opacity 0.3s ease; */
 }
-
-
 
 
 /* —————————— Gömmer enbart inventory-overlay i lobby-varianten vid start */
