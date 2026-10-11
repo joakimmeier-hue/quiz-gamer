@@ -1670,6 +1670,7 @@ window.injectLottiePlayer = function(instant = false) {
       if (anim) anim.goToAndPlay(offsetMs, false);   // continue; past the end it stays on the last frame
     });
   }
+  // Delete Later:
   // TEMPORARY: log what the player does, remove when it behaves
   ['ready', 'play', 'pause', 'freeze', 'stop', 'loop', 'complete', 'error'].forEach(ev =>
     player.addEventListener(ev, () => console.log('[lottie-player]', ev, location.pathname, Math.round(performance.now()))));
