@@ -427,10 +427,10 @@ window.syncTopClone = window.syncClone = function() {
         // 🛑 ADD THIS: Stop JS from overwriting the squares' inline opacity and transform!
     if (el.closest('.game-rating-diff, .game-rating-bonus')) return;
     if (el.classList.contains('small-square')) return;
-    el.style.opacity = '1';
     el.style.transform = 'translateY(0%)'; 
     el.style.transition = 'none';
-    el.style.animation = 'none';
+    /* el.style.opacity = '1';
+    el.style.animation = 'none'; */
   });
 
   dummySlot.appendChild(clone);
