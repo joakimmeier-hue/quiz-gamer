@@ -421,16 +421,25 @@ window.syncTopClone = window.syncClone = function() {
     clone.querySelectorAll('.' + cls).forEach(el => el.classList.remove(cls));
   });
 
-// Include dropdown and .game-info, force opacity 1, and reset transforms on clone elements
-  const dropdownEls = clone.querySelectorAll('.dropdown-gamelevel, .dropdown-gamelevel *, .dropdown-gllist, .dropdown-toggle-lvl, .w-dropdown-list, .w-dropdown-toggle, .game-info, .game-info *');
-  dropdownEls.forEach(el => {
-        // 🛑 ADD THIS: Stop JS from overwriting the squares' inline opacity and transform!
+// 1. Force game-info elements to opacity 1 so they show up in the clone
+  const gameInfoEls = clone.querySelectorAll('.game-info, .game-info *');
+  gameInfoEls.forEach(el => {
     if (el.closest('.game-rating-diff, .game-rating-bonus')) return;
+    if (el.classList.contains('small-square')) return;
+    el.style.opacity = '1';
+    el.style.transform = 'translateY(0%)'; 
+    el.style.transition = 'none';
+    el.style.animation = 'none';
+  });
+
+  // 2. Handle dropdowns separately WITHOUT touching their opacity or animation,
+  // allowing your CSS fadeIn animation to work smoothly!
+  const dropdownEls = clone.querySelectorAll('.dropdown-gamelevel, .dropdown-gamelevel *, .dropdown-gllist, .dropdown-toggle-lvl, .w-dropdown-list, .w-dropdown-toggle');
+  dropdownEls.forEach(el => {
     if (el.classList.contains('small-square')) return;
     el.style.transform = 'translateY(0%)'; 
     el.style.transition = 'none';
-    el.style.opacity = '1';
-    el.style.animation = 'none';
+    // Notice we DO NOT touch opacity or animation here!
   });
 
   dummySlot.appendChild(clone);
