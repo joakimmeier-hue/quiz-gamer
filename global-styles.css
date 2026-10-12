@@ -464,7 +464,7 @@ a.button-link:hover {
   pointer-events: none;
   animation:
     fadeIn 0.3s 0.8s ease-in forwards,
-    enableClicks 0s 1.7s forwards;
+    enableClicks 0s 1.3s forwards;
 }
 @keyframes enableClicks {
   to { pointer-events: auto; }
