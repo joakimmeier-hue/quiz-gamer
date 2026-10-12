@@ -460,18 +460,18 @@ a.button-link:hover {
 
 /* ---- COMPONENT .dropdown-gamelevel ---- */
 .dropdown-gamelevel {
-  opacity: 1;
+  opacity: 0;
   pointer-events: none;
   animation:
-    /* fadeIn 0.18s 1.60s forwards, */
-    enableClicks 0s 1.5s forwards;
+    fadeIn 0.18s 1.20s forwards,
+    enableClicks 0s 1.7s forwards;
 }
 @keyframes enableClicks {
   to { pointer-events: auto; }
 }
-/* @keyframes fadeIn {
+@keyframes fadeIn {
   to { opacity: 1; }
-} */
+}
 
 .mask-top .dropdown-gamelevel {
   opacity: 1 !important;
