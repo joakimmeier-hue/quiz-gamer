@@ -58,6 +58,7 @@ const googleLoginBtn = document.getElementById('google-login-btn');
 const microsoftLoginBtn = document.getElementById('microsoft-login-btn'); // Fixed variable name
 const userDisplayName = document.getElementById('user-display-name');
 const userLevelEl = document.getElementById('user-level');
+const levelBarEl = document.querySelector('.level-bar');
 const userScoreEl = document.getElementById('user-total-score');
 const userRankEl = document.getElementById('user-rank');
 
@@ -1235,6 +1236,7 @@ async function loadUserData(uid) {
        
        // Uppdatera resten av UI med sparad data
        if (userLevelEl) userLevelEl.textContent = "Level " + (data.level || 1);
+       if (levelBarEl) levelBarEl.style.width = ((data.levelProgress || 0) * 100) + "%";
        if (userScoreEl) userScoreEl.textContent = fmtNum(data.totalScore || 0);
        if (userRankEl) userRankEl.textContent = fmtNum(data.rank || 0);
        if (userDisplayName) userDisplayName.textContent = data.username || "Player";
@@ -1257,6 +1259,7 @@ async function loadUserData(uid) {
       }
       
       if (userLevelEl) userLevelEl.textContent = "Level 1";
+      if (levelBarEl) levelBarEl.style.width = "0%";
       if (userScoreEl) userScoreEl.textContent = "0";
       if (userRankEl) userRankEl.textContent = "0";
       
@@ -1268,6 +1271,30 @@ async function loadUserData(uid) {
      console.error("Failed to load user data:", error);
    }
 }
+
+// LEVEL BAR PROGRESSION (TOTAL SCORE/EXP)
+const bar = document.querySelector('.level-bar');
+let lastLevel = null;
+
+function updateLevelBar(info) {
+  const pct = Math.min(100, Math.max(0, info.progress * 100));
+
+  if (lastLevel !== null && info.level > lastLevel) {
+    // Level up: fill to 100%, then snap to 0 and grow to the new value
+    bar.style.width = '100%';
+    setTimeout(() => {
+      bar.style.transition = 'none';
+      bar.style.width = '0%';
+      bar.offsetWidth; // force reflow so the snap applies
+      bar.style.transition = '';
+      bar.style.width = pct + '%';
+    }, 400); // match your transition duration
+  } else {
+    bar.style.width = pct + '%';
+  }
+  lastLevel = info.level;
+}
+
 
 // SPARA PROFILBILD
   async function saveUserAvatar(avatarUrl) {
@@ -2073,6 +2100,9 @@ Webflow.push(function() {
   setText('list-score', data.finalScore);
   setText('list-unlimited-score', data.unlimitedScore);
 
+  const barEl = document.querySelector('.level-bar');
+  if (barEl) barEl.style.width = ((data.levelProgress || 0) * 100) + "%";
+  
   const levelsGained = data.levelsGained || 0;
   sessionStorage.removeItem('lastGameResult');
 
