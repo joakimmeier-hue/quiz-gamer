@@ -551,7 +551,7 @@ a.button-link:hover {
   opacity: 0;
   transform: translateY(80%);
   /* Power 1 Out is roughly this cubic-bezier */
-  animation: gameInfoFadeIn 0.29s cubic-bezier(0.25, 0.46, 0.45, 0.94) 2.04s forwards;
+  animation: gameInfoFadeIn 0.29s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.6s forwards;
   will-change: opacity, transform;
 }
 
