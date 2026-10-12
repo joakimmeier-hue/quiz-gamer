@@ -429,8 +429,8 @@ window.syncTopClone = window.syncClone = function() {
     if (el.classList.contains('small-square')) return;
     el.style.transform = 'translateY(0%)'; 
     el.style.transition = 'none';
-    /* el.style.opacity = '1';
-    el.style.animation = 'none'; */
+    el.style.opacity = '1';
+    el.style.animation = 'none';
   });
 
   dummySlot.appendChild(clone);
