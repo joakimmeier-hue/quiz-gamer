@@ -463,7 +463,7 @@ a.button-link:hover {
   opacity: 0;
   pointer-events: none;
   animation:
-    fadeIn 0.3s 1.05s ease-in forwards,
+    fadeIn 0.3s 0.9s ease-in forwards,
     enableClicks 0s 1.7s forwards;
 }
 @keyframes enableClicks {
@@ -551,7 +551,7 @@ a.button-link:hover {
   opacity: 0;
   transform: translateY(80%);
   /* Power 1 Out is roughly this cubic-bezier */
-  animation: gameInfoFadeIn 0.29s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.6s forwards;
+  animation: gameInfoFadeIn 0.29s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.2s forwards;
   will-change: opacity, transform;
 }
 
