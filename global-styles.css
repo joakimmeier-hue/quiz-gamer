@@ -643,13 +643,13 @@ a.button-link:hover {
 .review-mode .question-card { pointer-events: none; }          /* frozen */
 .review-mode .alternative-row { position: relative; }
 .review-mode .alternative-row::before {
-  content: ""; position: absolute; left: -2.4rem; top: 50%;
-  width: 1.4rem; height: 1.4rem; transform: translateY(-50%);
+  content: ""; position: absolute; left: -1.5rem; top: 50%;
+  width: 2rem; height: 2rem; transform: translateY(-50%);
   background: center / contain no-repeat; opacity: 0;
 }
 .review-mode .alternative-row.is-correct-choice::before {
-  background-image: url("https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6ac29376b3075c803e5b82cf_review-check-yellow.svg"); opacity: 1;
+  background-image: url("https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6ac29376b3075c803e5b82cf_05f136ee63ebd8c4d459c4c83f8b12e6_review-check.svg"); opacity: 1;
 }
 .review-mode .alternative-row.is-wrong-choice::before {
-  background-image: url("https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6ac293760d510514d031cfb7_review-cross-red.svg"); opacity: 1;
+  background-image: url("https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6ac293760d510514d031cfb7_af61178e1ed8b34e8e2647d0f2f07a30_review-cross.svg"); opacity: 1;
 }
