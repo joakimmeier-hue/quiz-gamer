@@ -1272,30 +1272,6 @@ async function loadUserData(uid) {
    }
 }
 
-// LEVEL BAR PROGRESSION (TOTAL SCORE/EXP)
-const bar = document.querySelector('.level-bar');
-let lastLevel = null;
-
-function updateLevelBar(info) {
-  const pct = Math.min(100, Math.max(0, info.progress * 100));
-
-  if (lastLevel !== null && info.level > lastLevel) {
-    // Level up: fill to 100%, then snap to 0 and grow to the new value
-    bar.style.width = '100%';
-    setTimeout(() => {
-      bar.style.transition = 'none';
-      bar.style.width = '0%';
-      bar.offsetWidth; // force reflow so the snap applies
-      bar.style.transition = '';
-      bar.style.width = pct + '%';
-    }, 400); // match your transition duration
-  } else {
-    bar.style.width = pct + '%';
-  }
-  lastLevel = info.level;
-}
-
-
 // SPARA PROFILBILD
   async function saveUserAvatar(avatarUrl) {
   if (!currentUser) return;
@@ -2102,7 +2078,7 @@ Webflow.push(function() {
 
   const barEl = document.querySelector('.level-bar');
   if (barEl) barEl.style.width = ((data.levelProgress || 0) * 100) + "%";
-  
+
   const levelsGained = data.levelsGained || 0;
   sessionStorage.removeItem('lastGameResult');
 
