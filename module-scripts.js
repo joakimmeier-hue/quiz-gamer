@@ -1940,7 +1940,7 @@ document.addEventListener('click', async function(e) {
 });
 
 // ──────────── SCORE PAGE: DISPLAY RESULTS + LEVEL UP ────────────
-//Move score-title
+// Move score-title animation helper
 const setTitleStart = () => {
   const title = document.querySelector('.score-title-3');
   if (!title) return;
@@ -1957,7 +1957,7 @@ const setTitleStart = () => {
 
 window.Webflow = window.Webflow || [];
 window.Webflow.push(setTitleStart);
-//END- Move score-title
+// END- Move score-title animation helper
 
 var Webflow = window.Webflow || [];
 let justTriggeredThisLoad = false;
@@ -2071,6 +2071,7 @@ Webflow.push(function() {
   setText('list-game', data.topic ? data.topic.toUpperCase() : '');
   setText('list-result', `${data.correctCount}/${data.totalQuestions}`);
   setText('list-time', data.timeStr);
+  setText('list-tier-bonus', `Tier ${data.tier} bonus: ${Number(data.tierMultiplier).toFixed(1)}x`);
   setText('list-attempts', data.attemptCount - 1);
   setText('list-leaderboard', `${data.leaderboardPosition}`);
   setText('list-score', data.finalScore);
