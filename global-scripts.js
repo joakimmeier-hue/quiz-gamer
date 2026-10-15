@@ -1158,8 +1158,7 @@ window.startMusic = function(forceInstant = false) {
                 const targetVol = currentConfig.volume;
                 const steps = 50; 
                 const stepAmount = targetVol / steps;
-                
-                let fadeIn = setInterval(() => {
+                   let fadeIn = setInterval(() => {
                     if (audio.volume + stepAmount < targetVol) { 
                         audio.volume += stepAmount; 
                     } else { 
@@ -1170,27 +1169,18 @@ window.startMusic = function(forceInstant = false) {
             }
         }).catch(() => {
             console.log("Autoplay blockerat. Väntar på interaktion.");
-        });
-    }
-}
-// Rå, central funktion för att tvinga bild och ljud att matcha exakt
-function applyMuteState(muted) {
+        });    
+      }
+ }
+
+const MUTE_KEY = 'audioMuted';
+function applyMuteState(muted, save = true) {
     isMuted = muted;
+    audio.muted = muted;   // music keeps playing silently
+    if (window.sfxMaster) window.sfxMaster.gain.setTargetAtTime(muted ? 0 : 1, sfxCtx.currentTime, 0.01);   // all SFX
+    if (save) { try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch (e) {} }
     const toggleBtn = document.getElementById('toggle-audio-lobby');
-    if (toggleBtn) {
-        if (muted) {
-            toggleBtn.classList.add('is-muted');
-            
-            // Istället för pause(): Vi sätter volymen till extremt lågt (ohörbart),
-            // men låter filen fortsätta spela. Då dör aldrig Bluetooth-strömmen!
-            audio.volume = 0.001; 
-            
-        } else {
-            toggleBtn.classList.remove('is-muted');
-            // Gå tillbaka till standardvolymen för den aktuella kategorin
-            audio.volume = (typeof currentConfig !== 'undefined') ? currentConfig.volume : 1;
-        }
-    }
+    if (toggleBtn) toggleBtn.classList.toggle('is-muted', muted);
 }
   // ── WEB AUDIO API: 0 MS FÖRDRÖJNING (RAM-BUFFER) ──
 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -1199,7 +1189,11 @@ const sfxCtx = new AudioContext({
     latencyHint: 'interactive',
     sampleRate: 44100
 });
-const sfxBuffers = {}; 	
+  const sfxMaster = sfxCtx.createGain();
+  sfxMaster.connect(sfxCtx.destination);
+  window.sfxMaster = sfxMaster;
+  sfxMaster.gain.value = isMuted ? 0 : 1;   // in case mute was applied before this line ran
+  const sfxBuffers = {}; 	
 // Mobiler (särskilt iOS) blockerar ljudmotorn tills användaren rör skärmen.
 // Det här låser upp ljudmotorn vid allra första klicket/touchen.
 ['mousedown', 'touchstart', 'keydown'].forEach(event => {
@@ -1273,7 +1267,7 @@ function playSFX(type, vol) {
         gainNode.gain.value = finalVol;
         
         source.connect(gainNode);
-        gainNode.connect(sfxCtx.destination);
+          gainNode.connect(sfxMaster);
         
         source.start(0); // 0 ms fördröjning
     } else {
@@ -1356,7 +1350,9 @@ function initAudio() {
     const savedTime = sessionStorage.getItem(audioKey);
     const isTopicPage = currentTopicId !== 'lobby';
     // Stenhård återställning av mute-variabeln och ikonen direkt vid laddning
-    applyMuteState(false);
+        let storedMute = false;
+    try { storedMute = localStorage.getItem(MUTE_KEY) === '1'; } catch (e) {}
+    applyMuteState(storedMute, false);
     // FIXA HOVER & KLICK-ZONER DIREKT I JS FÖR ATT SLIPPA SLÖHET
     if (toggleBtn) {
      // Säkerställ att ALLA barn till knappen (ikoner/divar) har pointer-events none
@@ -1547,8 +1543,10 @@ window.addEventListener('DOMContentLoaded', initAudio);
 // Skottsäker bfcache-fix för BACK/FORWARD-knapparna!
 // ── BACK BUTTON: Skip intro on return to lobby ────────────────────
 window.addEventListener('pageshow', (event) => {
-    // Tvinga variabeln till false och rensa gamla klasser DIREKT för att döda dubbelklick-buggen
-    applyMuteState(false);
+    // Läs sparat mute-läge (translated: read the saved mute state) so icon and sound match after back/forward
+    let storedMute = false;
+    try { storedMute = localStorage.getItem(MUTE_KEY) === '1'; } catch (e) {}
+    applyMuteState(storedMute, false);
     
     // Only handle intro skip on lobby
     const isLobby = currentTopicId === 'lobby';
@@ -1580,6 +1578,10 @@ window.addEventListener('pageshow', (event) => {
     if (currentTopicId !== 'lobby' || !isIntroActive) {
         window.startMusic(true);
     }
+});
+
+window.addEventListener('storage', (e) => {
+    if (e.key === MUTE_KEY) applyMuteState(e.newValue === '1', false);
 });
 
 // Spara tid när man lämnar en undersida
