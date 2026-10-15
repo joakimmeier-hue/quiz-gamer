@@ -1385,7 +1385,7 @@ if (currentSlug === 'score-review' && cameFrom !== 'score') {
         window.location.replace('/');
         return;
     }
-    
+
     const gameMatch = currentSlug.match(/^([a-z]+)-game-(\d+)$/);
     if (gameMatch) {
         const theme = gameMatch[1];
@@ -2223,8 +2223,8 @@ function freezeTimerLottie(tries = 0) {
   const lot = window.Webflow?.require?.('lottie')?.lottie;
   const anims = lot?.getRegisteredAnimations?.() || [];
   if (!anims.length) { if (tries < 20) setTimeout(() => freezeTimerLottie(tries + 1), 250); return; }
-  anims.forEach(a => {
-    if (a.wrapper?.closest?.('.timer-wrapper')) a.pause();
+    anims.forEach(a => {
+    if (a.wrapper?.closest?.('.timer-wrapper')) a.goToAndStop(Math.floor(Math.random() * a.totalFrames), true);
   });
 }
 
