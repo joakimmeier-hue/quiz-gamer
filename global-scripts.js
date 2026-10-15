@@ -1081,25 +1081,25 @@ const TOPICS = {
     uc: { 
         url: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69b08a22396c27a611026d0c_The%20end%20of%20tyreen%20remix.mp3',
         volume: 0.6, 
-        startTime: 19.7,
+        startTime: 19.8,
         fadeColor: '#000000'
     },
     lobby: { 
         url: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69b08a22396c27a611026d0c_The%20end%20of%20tyreen%20remix.mp3',
         volume: 0.6, 
-        startTime: 19.7,
+        startTime: 19.8,
         fadeColor: '#000000'
     },
     terms: { 
         url: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69b08a22396c27a611026d0c_The%20end%20of%20tyreen%20remix.mp3',
         volume: 0.0, 
-        startTime: 19.7,
+        startTime: 19.8,
         fadeColor: '#000000'
     },
     privacy: { 
         url: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69b08a22396c27a611026d0c_The%20end%20of%20tyreen%20remix.mp3',
         volume: 0.0, 
-        startTime: 19.7,
+        startTime: 19.8,
         fadeColor: '#000000'
     }
 };
@@ -1177,8 +1177,8 @@ const MUTE_KEY = 'audioMuted';
 let muteTimer = null;
 function applyMuteState(muted, save = true, sfxDelayMs = 0) {
     isMuted = muted;
-    clearTimeout(muteTimer);                        // cancel a pending delayed mute
-    audio.muted = muted;                            // music: immediate
+    clearTimeout(muteTimer);          // cancel a pending delayed mute
+    audio.muted = muted;              // music: immediate
     const setSfx = () => {
         if (window.sfxMaster) window.sfxMaster.gain.setTargetAtTime(muted ? 0 : 1, sfxCtx.currentTime, 0.01);
     };
@@ -1368,8 +1368,8 @@ function initAudio() {
     }
     // TIDSHANTERING VID VANLIG PAGE LOAD (Från början)
     if (currentTopicId === 'lobby' || currentTopicId === 'uc') {
-        // Första gången sidan laddas -> Kör vanliga startTime (19.7s)
-        audio.currentTime = currentConfig.startTime || 19.7;
+        // Första gången sidan laddas -> Kör vanliga startTime (19.8s)
+        audio.currentTime = currentConfig.startTime || 19.8;
     } else {
         const isInternalNavigation = savedTime && (!fromTopic || fromTopic === currentTopicId);
         if (isInternalNavigation) {
@@ -1424,7 +1424,7 @@ toggleBtn.addEventListener('click', (e) => {
   // 2. BYT BILD/STATUS DIREKT OCH SPELA RÄTT LJUD
           if (!isMuted) {
               if (typeof playSFX === 'function') playSFX('back'); // Spela "Av"-ljudet
-              applyMuteState(true, true, 400); // Muta (the old comment said "only lowers the volume now", no longer true)
+              applyMuteState(true, true, 400); // Mute click
           } else {
               applyMuteState(false); // Höj volymen igen
               // window.startMusic(false); <-- Denna kan du kommentera bort/ta bort om den försöker starta om en låt som redan spelar!
@@ -1568,11 +1568,11 @@ window.addEventListener('pageshow', (event) => {
     
     // Hantera tider när man navigerar runt (länk eller backa) — ONLY for non-lobby or when NOT skipping
     if (currentTopicId === 'lobby' || currentTopicId === 'uc') {
-        const baseStart = currentConfig.startTime || 19.7;
+        const baseStart = currentConfig.startTime || 19.8;
         
         // Om det INTE är en helt ren förstahandsladdning (t.ex. vid backning/historik)
         if (event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward" || performance.getEntriesByType("navigation")[0].type === "navigate") {
-            // Lägg på dina extra 8 sekunders skip! (19.7 + 8 = 27.482s)
+            // Lägg på dina extra 8 sekunders skip! (19.8 + 8 = 27.482s)
             audio.currentTime = baseStart + 8;
         } else {
             audio.currentTime = baseStart;
