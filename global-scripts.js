@@ -873,6 +873,7 @@ Webflow.push(function() {
 
   // THE MASTER GATEKEEPER: Wait for Firebase cards to load
   document.addEventListener('corePageReady', () => {
+    if (!/-game-\d+/.test(window.location.pathname)) return;   // timer + 321-go only on game pages
     
     // 1. Fire "321-go"
     setTimeout(function() {
