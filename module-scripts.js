@@ -2175,9 +2175,9 @@ async function initReviewPage() {
     const { data } = await getReviewFn({});
     let prev = template;
 
-    data.questions.forEach((q, i) => {
-      const timeEl = document.querySelector('#timer-text'); // whichever element holds the digits
+    const timeEl = document.querySelector('#timer-text'); // whichever element holds the digits
     if (timeEl) timeEl.textContent = data.timeStr;
+    data.questions.forEach((q, i) => {    
       const card = template.cloneNode(true);
       card.style.display = '';
       card.style.opacity = '1';

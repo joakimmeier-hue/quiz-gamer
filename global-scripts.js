@@ -1062,6 +1062,8 @@ if (!document.querySelector('script[src*="lottie-player"]')) {
     script.src = "https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js";
     document.head.appendChild(script);
 }
+
+
 // ── KATEGORI / ÄMNES-SYSTEM FÖR MUSIK & FÄRGER ────────────────────────
 const TOPICS = {
     gma: { 
@@ -1631,7 +1633,8 @@ const LOTTIE_DELAY_MS = 1200;
 const LOTTIE_SRC = 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a159263c0394fc57a0ee84a_loading-game-2.json';
 const revealDuration = '0.8s';
 const isGamePage = /-game-\d+/.test(window.location.pathname);
-let lottieDelayTimeout = null;
+const isReviewPage = /^\/score-review\/?$/.test(window.location.pathname);
+const waitsForData = isGamePage || isReviewPage;   // pages that fire 'questionsLoaded' themselveslet lottieDelayTimeout = null;
 let cleanupTimeout = null;
 let isExiting = false;
 
@@ -1753,12 +1756,11 @@ overlay.style.background = initColor;
 document.body.appendChild(overlay);
 
 // If we arrived via a transition (or this is a game page), continue the SAME timer
-if (isGamePage || sessionStorage.getItem('transitionStart')) startLottieTimer();
+if (waitsForData || sessionStorage.getItem('transitionStart')) startLottieTimer();
 
 let pageShown = false;
-let questionsReady = !isGamePage;
+let questionsReady = !waitsForData;
 let arrivalRevealed = false;
-
 function revealArrival(fromBfcache) {
   if (arrivalRevealed) return;
   arrivalRevealed = true;
@@ -1776,13 +1778,13 @@ function tryReveal(fromBfcache) { if (pageShown && questionsReady) revealArrival
 
 // Listen from the start, NOT inside pageshow, so the event can't be missed
 document.addEventListener('questionsLoaded', () => { questionsReady = true; tryReveal(); }, { once: true });
-setTimeout(() => { questionsReady = true; tryReveal(); }, 2500); // fallback, measured from script start
+setTimeout(() => { questionsReady = true; tryReveal(); }, isReviewPage ? 10000 : 2500); // fallback, measured from script start
 
 window.addEventListener('pageshow', (e) => {
   sessionStorage.removeItem('exitColor');
   isExiting = false;
   pageShown = true;
-  if (e.persisted) {              // back button / bfcache: nothing reloads
+  if (e.persisted) {    // back button / bfcache: nothing reloads
     arrivalRevealed = false;
     questionsReady = true;
     tryReveal(true);
