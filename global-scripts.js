@@ -1174,14 +1174,21 @@ window.startMusic = function(forceInstant = false) {
  }
 
 const MUTE_KEY = 'audioMuted';
-function applyMuteState(muted, save = true) {
+let muteTimer = null;
+function applyMuteState(muted, save = true, sfxDelayMs = 0) {
     isMuted = muted;
-    audio.muted = muted;   // music keeps playing silently
-    if (window.sfxMaster) window.sfxMaster.gain.setTargetAtTime(muted ? 0 : 1, sfxCtx.currentTime, 0.01);   // all SFX
+    clearTimeout(muteTimer);                        // cancel a pending delayed mute
+    audio.muted = muted;                            // music: immediate
+    const setSfx = () => {
+        if (window.sfxMaster) window.sfxMaster.gain.setTargetAtTime(muted ? 0 : 1, sfxCtx.currentTime, 0.01);
+    };
+    if (muted && sfxDelayMs > 0) muteTimer = setTimeout(setSfx, sfxDelayMs);
+    else setSfx();
     if (save) { try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch (e) {} }
     const toggleBtn = document.getElementById('toggle-audio-lobby');
     if (toggleBtn) toggleBtn.classList.toggle('is-muted', muted);
 }
+
   // ── WEB AUDIO API: 0 MS FÖRDRÖJNING (RAM-BUFFER) ──
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 // Vi låser sampleRate till 44100 Hz, vilket alla Bluetooth-lurar fixar utan att krascha
@@ -1417,7 +1424,7 @@ toggleBtn.addEventListener('click', (e) => {
   // 2. BYT BILD/STATUS DIREKT OCH SPELA RÄTT LJUD
           if (!isMuted) {
               if (typeof playSFX === 'function') playSFX('back'); // Spela "Av"-ljudet
-              applyMuteState(true); // Muta (sänker bara volymen nu!)
+              applyMuteState(true, true, 500); // Muta (the old comment said "only lowers the volume now", no longer true)
           } else {
               applyMuteState(false); // Höj volymen igen
               // window.startMusic(false); <-- Denna kan du kommentera bort/ta bort om den försöker starta om en låt som redan spelar!
