@@ -1424,7 +1424,7 @@ toggleBtn.addEventListener('click', (e) => {
   // 2. BYT BILD/STATUS DIREKT OCH SPELA RÄTT LJUD
           if (!isMuted) {
               if (typeof playSFX === 'function') playSFX('back'); // Spela "Av"-ljudet
-              applyMuteState(true, true, 500); // Muta (the old comment said "only lowers the volume now", no longer true)
+              applyMuteState(true, true, 400); // Muta (the old comment said "only lowers the volume now", no longer true)
           } else {
               applyMuteState(false); // Höj volymen igen
               // window.startMusic(false); <-- Denna kan du kommentera bort/ta bort om den försöker starta om en låt som redan spelar!
