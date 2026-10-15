@@ -1041,9 +1041,6 @@ row.addEventListener('pointerdown', function(e) {
 });
 });
 
-
-
-
 /* // --- HINDRA CTRL + SCROLL ZOOM ---
 window.addEventListener('wheel', function(e) {
   if (e.ctrlKey) { e.preventDefault(); }
@@ -1054,16 +1051,6 @@ if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
 window.addEventListener('load', function() {
   window.scrollTo(0, 0);
 }); */
-
-
-  // IS THIS LOTTIE PLAYER NEEDED?!
-// ── LADDA LOTTIE-SPELAREN ─────────────────────────────────────────────
-if (!document.querySelector('script[src*="lottie-player"]')) {
-    const script = document.createElement('script');
-    script.src = "https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js";
-    document.head.appendChild(script);
-}
-
 
 // ── KATEGORI / ÄMNES-SYSTEM FÖR MUSIK & FÄRGER ────────────────────────
 const TOPICS = {
@@ -1627,8 +1614,14 @@ document.addEventListener("visibilitychange", function() {
   }
 });
 
-// ── REUSABLE TRANSITION OVERLAY & LOTTIE MANAGER ────────────────────────────────
-
+// ────────────────── REUSABLE TRANSITION OVERLAY & LOTTIE MANAGER ────────────────────────────────
+ // LOTTIE PLAYER NEEDED FOR TRANSITION LOADING SCREEN
+  // ── LADDA LOTTIE-SPELAREN ─────────────────────────────────────────────
+if (!document.querySelector('script[src*="lottie-player"]')) {
+    const script = document.createElement('script');
+    script.src = "https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js";
+    document.head.appendChild(script);
+}
 // 1. SETTINGS
 const LOTTIE_DELAY_MS = 1200;
 const LOTTIE_SRC = 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a159263c0394fc57a0ee84a_loading-game-2.json';
