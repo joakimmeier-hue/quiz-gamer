@@ -1381,6 +1381,11 @@ function routeGuard(isLoggedIn) {
         return;
     }
 }
+if (currentSlug === 'score-review' && cameFrom !== 'score') {
+        window.location.replace('/');
+        return;
+    }
+    
     const gameMatch = currentSlug.match(/^([a-z]+)-game-(\d+)$/);
     if (gameMatch) {
         const theme = gameMatch[1];
@@ -2175,7 +2180,7 @@ async function initReviewPage() {
     const { data } = await getReviewFn({});
     let prev = template;
 
-    const timeEl = document.querySelector('#timer-text'); // whichever element holds the digits
+    const timeEl = document.querySelector('#timer-text, #timer-display'); // whichever element holds the digits
     if (timeEl) timeEl.textContent = data.timeStr;
 
     data.questions.forEach((q, i) => {    
