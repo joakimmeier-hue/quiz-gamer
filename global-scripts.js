@@ -1634,7 +1634,8 @@ const LOTTIE_SRC = 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/
 const revealDuration = '0.8s';
 const isGamePage = /-game-\d+/.test(window.location.pathname);
 const isReviewPage = /^\/score-review\/?$/.test(window.location.pathname);
-const waitsForData = isGamePage || isReviewPage;   // pages that fire 'questionsLoaded' themselveslet lottieDelayTimeout = null;
+const waitsForData = isGamePage || isReviewPage;   // pages that fire 'questionsLoaded' themselves
+let lottieDelayTimeout = null;
 let cleanupTimeout = null;
 let isExiting = false;
 
@@ -1799,7 +1800,7 @@ window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false
     isExiting = true;
     if (typeof currentSlug !== 'undefined') sessionStorage.setItem('navFrom', currentSlug);
     
-    if (isFinishBtn || (url && url.includes('score'))) {
+    if (isFinishBtn || /^\/score\/?$/.test(url)) {
     sessionStorage.setItem('scoreAuthorized', 'true');
     }
     sessionStorage.setItem('skipIntro', 'true');

@@ -1374,13 +1374,13 @@ function routeGuard(isLoggedIn) {
     const cameFrom = sessionStorage.getItem('navFrom');
     sessionStorage.removeItem('navFrom');
     if (currentSlug === 'score') {
-        const authorized = sessionStorage.getItem('scoreAuthorized') === 'true';
-        sessionStorage.removeItem('scoreAuthorized');
-        if (!authorized) {
-            window.location.replace('/');
-            return;
-        }
+    const authorized = sessionStorage.getItem('scoreAuthorized') === 'true';
+    sessionStorage.removeItem('scoreAuthorized');
+    if (!authorized && cameFrom !== 'score-review') {
+        window.location.replace('/');
+        return;
     }
+}
     const gameMatch = currentSlug.match(/^([a-z]+)-game-(\d+)$/);
     if (gameMatch) {
         const theme = gameMatch[1];
@@ -2177,6 +2177,7 @@ async function initReviewPage() {
 
     const timeEl = document.querySelector('#timer-text'); // whichever element holds the digits
     if (timeEl) timeEl.textContent = data.timeStr;
+
     data.questions.forEach((q, i) => {    
       const card = template.cloneNode(true);
       card.style.display = '';
