@@ -1941,6 +1941,9 @@ document.addEventListener('click', async function(e) {
     alert("Error calculating score. Please try again.");
     finishBtn.style.pointerEvents = 'auto';
     if (textEl) textEl.textContent = "Finish!";
+    // let the player edit answers and retry
+    document.body.classList.remove('game-finished');
+    sessionStorage.removeItem('gameFinished');
   }
 });
 
