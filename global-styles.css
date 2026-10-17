@@ -592,7 +592,7 @@ a.button-link:hover {
 
   /* ────────────────── GAME RUNNING PAGES ──────────────────
   /* GAME ALTERNATIVE-ROW */
-/* Se till att din checkbox-div är redo för animationen */
+/* checkbox-div animation */
 .checkbox {
   position: relative;
   width: 1rem;
@@ -641,7 +641,13 @@ a.button-link:hover {
 
 /* ── Score Review mode ── */
 .review-mode .question-card { pointer-events: none; }          /* frozen */
-.review-mode .alternative-row { position: relative; }
+.review-mode .alternative-row {
+  position: relative;
+  pointer-events: none !important;  /* beats the inline 'auto' from the 2s lock script */
+  touch-action: auto !important;    /* normal touch scroll again */
+}
+
+
 .review-mode .alternative-row::before {
   content: ""; position: absolute; left: -1.5rem; top: 50%;
   width: 2rem; height: 2rem; transform: translateY(-50%);
