@@ -372,6 +372,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const session = await window.triggerStartGame(topic, selectedTier);
 
         sessionStorage.setItem('activeSessionId', session.sessionId);
+        // New session created: unlock answers for the next game page
+        sessionStorage.removeItem('gameFinished');
+
         sessionStorage.setItem('activeSessionGame', `${topic}-${selectedTier}`);
         sessionStorage.setItem('navFrom', currentSlug);
 
@@ -923,6 +926,10 @@ Webflow.push(function() {
       finishBtn.addEventListener('click', function() {
         clearInterval(timerInterval);
         window.TimerRunning = false; 
+         // If the game was already finished (e.g. user came back with the browser's back button), keep answers locked
+  if (sessionStorage.getItem('gameFinished') === 'true') {
+    document.body.classList.add('game-finished');
+  }
 
         if (clientStartTime) {
           const elapsedMs = Date.now() - clientStartTime;
@@ -952,6 +959,11 @@ Webflow.push(function() {
 
 // 5 GAME ALTERNATIVE-ROW - Click animation
 document.addEventListener("DOMContentLoaded", function() {
+      // If the game was already finished (e.g. user came back with the browser's back button), keep answers locked
+  if (sessionStorage.getItem('gameFinished') === 'true') {
+    document.body.classList.add('game-finished');
+  }
+
   const scrollDuration = 400; 
   const topOffsetPercent = window.innerWidth < 600 ? 0.16 : 0.20;
   const animationDelay = 450;  // Väntar tills keyframe-animationen är klar

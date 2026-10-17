@@ -604,6 +604,7 @@ a.button-link:hover {
   cursor: pointer;
   overflow: visible; 
 }
+
 /* Den dolda vita boxen i utgångsläget (Inaktiv) */
 .checkbox::after {
   content: "";
@@ -637,6 +638,11 @@ a.button-link:hover {
   cursor: pointer;
   user-select: none;
   touch-action: none; /* finger landing on a row can't start a page scroll */
+}
+
+/* ── Game finished: answers locked until next game ── */
+body.game-finished .alternative-row {
+  pointer-events: none !important;
 }
 
 /* ── Score Review mode ── */
