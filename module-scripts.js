@@ -85,7 +85,7 @@ if (typeof currentSlug === 'undefined') {
   currentSlug = derived;
 }
 
-// Expose callable trigger to global scope
+// Expose callable Start Game trigger to global scope
 window.triggerStartGame = async function(topic, tierLevel) {
   try {
     const result = await startGameFn({ topic, level: tierLevel });

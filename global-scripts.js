@@ -926,10 +926,9 @@ Webflow.push(function() {
       finishBtn.addEventListener('click', function() {
         clearInterval(timerInterval);
         window.TimerRunning = false; 
-         // If the game was already finished (e.g. user came back with the browser's back button), keep answers locked
-  if (sessionStorage.getItem('gameFinished') === 'true') {
-    document.body.classList.add('game-finished');
-  }
+          // Lock all answers immediately, and remember it for back-navigation
+        document.body.classList.add('game-finished');
+        sessionStorage.setItem('gameFinished', 'true');
 
         if (clientStartTime) {
           const elapsedMs = Date.now() - clientStartTime;
