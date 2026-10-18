@@ -1948,6 +1948,13 @@ const setTitleStart = () => {
   const title = document.querySelector('.score-title-3');
   if (!title) return;
 
+  // Revisit: no start offset, so the title stays in place instead of flying in from the center
+  if (isScoreRevisit) {
+    title.style.setProperty('--title-x', '0px');
+    title.style.setProperty('--title-y', '0px');
+    return;
+  }
+
   // Offset from the title's own position to the screen center
   const rect = title.getBoundingClientRect();
   const startX = window.innerWidth / 2 - (rect.left + rect.width / 2);
@@ -1957,9 +1964,6 @@ const setTitleStart = () => {
   title.style.setProperty('--title-x', startX + 'px');
   title.style.setProperty('--title-y', startY + 'px');
 };
-
-window.Webflow = window.Webflow || [];
-window.Webflow.push(setTitleStart);
 // END- Move score-title animation helper
 
 var Webflow = window.Webflow || [];
@@ -2118,6 +2122,10 @@ Webflow.push(function() {
     }
   }
 });
+
+
+window.Webflow = window.Webflow || [];
+window.Webflow.push(setTitleStart);
 
 // ── START SCORE INTRO (custom event "score-page") ──
 Webflow.push(function() {
