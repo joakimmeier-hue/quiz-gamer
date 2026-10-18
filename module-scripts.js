@@ -1948,10 +1948,11 @@ const setTitleStart = () => {
   const title = document.querySelector('.score-title-3');
   if (!title) return;
 
-  // Revisit: no start offset, so the title stays in place instead of flying in from the center
+ // Revisit: show the title at its final position instantly (no fly-in, no scale/fade transition)
   if (isScoreRevisit) {
-    title.style.setProperty('--title-x', '0px');
-    title.style.setProperty('--title-y', '0px');
+    title.style.transition = 'none';
+    title.style.opacity = '1';
+    title.style.transform = 'translate(0px, 0px) scale(1)';
     return;
   }
 
