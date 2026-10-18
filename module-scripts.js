@@ -1969,6 +1969,7 @@ window.Webflow.push(setTitleStart);
 
 var Webflow = window.Webflow || [];
 let justTriggeredThisLoad = false;
+let isScoreRevisit = false;
 
 // Säker formatteringsfunktion om fmtNum saknas i globalt scope
 const safeFmtNum = (val) => (typeof fmtNum === 'function' ? fmtNum(val) : val);
@@ -2061,7 +2062,7 @@ window.tryShowLevelUpPopup = tryShowLevelUpPopup;
 Webflow.push(function() {
   // Fresh result from a just-finished game, or a saved copy when coming back from the review page
   const isFreshResult = !!sessionStorage.getItem('lastGameResult');
-  const isRevisit = sessionStorage.getItem('scoreRevisit') === 'true';
+    isScoreRevisit = sessionStorage.getItem('scoreRevisit') === 'true';
   sessionStorage.removeItem('scoreRevisit');
 
   const resultDataRaw = sessionStorage.getItem('lastGameResult')
@@ -2118,6 +2119,14 @@ Webflow.push(function() {
       observer.observe(triggerEl, { attributes: true, attributeFilter: ['style', 'class'] });
     }
   }
+});
+
+// ── START SCORE INTRO (custom event "score-page") ──
+Webflow.push(function() {
+  if (currentSlug !== 'score') return;
+  const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
+  // later: wfIx.emit(isScoreRevisit ? "score-page-skip" : "score-page") once the skip trigger exists
+  if (wfIx) wfIx.emit("score-page");
 });
 
 // ── SCORE SFX ──
@@ -2243,19 +2252,14 @@ function freezeTimerLottie(tries = 0) {
 if (currentSlug === REVIEW_SLUG) {
   Webflow.push(initReviewPage);
 
-  // Back to Score: tell the score page to skip its intro
-  const back = document.querySelector('#link-back-score, #link-score, a[href="/score"]');
-  if (back) back.addEventListener('click', () => {
-    sessionStorage.setItem('scoreRevisit', 'true');
-  });
-}
 
-// Score page: Review button
-if (currentSlug === 'score') {
-  document.getElementById('link-review')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    // later: pop-info + cost goes here
-    if (window.triggerPageExit) window.triggerPageExit('/' + REVIEW_SLUG, true, true);
-    else window.location.href = '/' + REVIEW_SLUG;
-  });
+  if (currentSlug === REVIEW_SLUG) {
+  Webflow.push(initReviewPage);
+
+    // Back to Score: tell the score page to skip its intro
+    const back = document.querySelector('.link-score, a[href="/score"]');
+    if (back) back.addEventListener('click', () => {
+      sessionStorage.setItem('scoreRevisit', 'true');
+    });
+  }
 }
