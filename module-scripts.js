@@ -2119,9 +2119,13 @@ Webflow.push(function() {
 // ── START SCORE INTRO (custom event "score-page") ──
 Webflow.push(function() {
   if (currentSlug !== 'score') return;
-  const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
-  // later: wfIx.emit(isScoreRevisit ? "score-page-skip" : "score-page") once the skip trigger exists
-  if (wfIx) wfIx.emit("score-page");
+  const startIntro = () => {
+    const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
+    // later: wfIx.emit(isScoreRevisit ? "score-page-skip" : "score-page") once the skip trigger exists
+    if (wfIx) wfIx.emit("score-page");
+  };
+  if (document.readyState === 'complete') startIntro();
+  else window.addEventListener('load', startIntro, { once: true });
 });
 
 // ── SCORE SFX ──
