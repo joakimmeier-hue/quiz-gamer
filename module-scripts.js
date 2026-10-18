@@ -2121,8 +2121,11 @@ Webflow.push(function() {
   if (currentSlug !== 'score') return;
   const startIntro = () => {
     const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
-    // later: wfIx.emit(isScoreRevisit ? "score-page-skip" : "score-page") once the skip trigger exists
     if (wfIx) wfIx.emit("score-page");
+    // Revisit: let the intro start, then jump the whole GSAP timeline to its end (same trick as SKIP INTRO LOBBY)
+    if (isScoreRevisit && window.gsap) {
+      setTimeout(() => gsap.globalTimeline.seek(9999, false), 100);
+    }
   };
   if (document.readyState === 'complete') startIntro();
   else window.addEventListener('load', startIntro, { once: true });
