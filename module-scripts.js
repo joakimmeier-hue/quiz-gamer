@@ -814,11 +814,6 @@ function resolvePendingAction() {
   pendingAction = null;
 }
 
-// ── HJÄLPFUNKTION: Kollar om en knapp faktiskt syns ──
-  function isVisible(el) {
-    return el && window.getComputedStyle(el).display !== 'none';
-  }
-
 // Robust close for the profile-pic dropdown / pp-grid-wrapper (Silent Version)
 function hidePPDropdown() {
   try {
@@ -2251,15 +2246,9 @@ function freezeTimerLottie(tries = 0) {
 
 if (currentSlug === REVIEW_SLUG) {
   Webflow.push(initReviewPage);
-
-
-  if (currentSlug === REVIEW_SLUG) {
-  Webflow.push(initReviewPage);
-
     // Back to Score: tell the score page to skip its intro
     const back = document.querySelector('.link-score, a[href="/score"]');
     if (back) back.addEventListener('click', () => {
       sessionStorage.setItem('scoreRevisit', 'true');
     });
-  }
 }
