@@ -2059,7 +2059,13 @@ window.tryShowLevelUpPopup = tryShowLevelUpPopup;
 
 // ── LÄS OCH VISA SPELRESULTAT ──
 Webflow.push(function() {
-  const resultDataRaw = sessionStorage.getItem('lastGameResult');
+  // Fresh result from a just-finished game, or a saved copy when coming back from the review page
+  const isFreshResult = !!sessionStorage.getItem('lastGameResult');
+  const isRevisit = sessionStorage.getItem('scoreRevisit') === 'true';
+  sessionStorage.removeItem('scoreRevisit');
+
+  const resultDataRaw = sessionStorage.getItem('lastGameResult')
+                     || sessionStorage.getItem('lastGameResultView');
   if (!resultDataRaw) return;
 
   let data;
@@ -2088,7 +2094,10 @@ Webflow.push(function() {
   const barEl = document.querySelector('.level-bar');
   if (barEl) barEl.style.width = ((data.levelProgress || 0) * 100) + "%";
 
-  const levelsGained = data.levelsGained || 0;
+    // Level-up popup only for a fresh result, never when the saved copy is shown again
+  const levelsGained = isFreshResult ? (data.levelsGained || 0) : 0;
+  // Keep a copy so the score page can be shown again from the review page
+  sessionStorage.setItem('lastGameResultView', resultDataRaw);
   sessionStorage.removeItem('lastGameResult');
 
   if (levelsGained > 0) {
@@ -2235,7 +2244,7 @@ if (currentSlug === REVIEW_SLUG) {
   Webflow.push(initReviewPage);
 
   // Back to Score: tell the score page to skip its intro
-  const back = document.querySelector('#link-back-score, a[href="/score"]');
+  const back = document.querySelector('#link-back-score, #link-score, a[href="/score"]');
   if (back) back.addEventListener('click', () => {
     sessionStorage.setItem('scoreRevisit', 'true');
   });
