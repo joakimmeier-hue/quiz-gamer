@@ -2053,11 +2053,14 @@ function tryShowLevelUpPopup(attempts = 0, maxAttempts = 8) {
 window.showLevelUpPopup = showLevelUpPopup;
 window.tryShowLevelUpPopup = tryShowLevelUpPopup;
 
-// ── LÄS OCH VISA SPELRESULTAT ──
+// ── READ AND SHOW GAME RESULT ──
 Webflow.push(function() {
   // Fresh result from a just-finished game, or a saved copy when coming back from the review page
   const isFreshResult = !!sessionStorage.getItem('lastGameResult');
-    isScoreRevisit = sessionStorage.getItem('scoreRevisit') === 'true';
+      // Revisit = back from the review page (link flag or browser back/forward), never for a fresh result
+  const navType = performance.getEntriesByType('navigation')[0]?.type;
+  isScoreRevisit = !isFreshResult &&
+    (sessionStorage.getItem('scoreRevisit') === 'true' || navType === 'back_forward');
   sessionStorage.removeItem('scoreRevisit');
 
   const resultDataRaw = sessionStorage.getItem('lastGameResult')
@@ -2145,7 +2148,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'style') {
+          if (mutation.attributeName === 'style' && !isScoreRevisit) {
           const opacity = parseFloat(window.getComputedStyle(targetEl).opacity);
           
           if (opacity >= config.threshold && !config.hasFired) {
