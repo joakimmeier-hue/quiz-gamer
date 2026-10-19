@@ -38,6 +38,7 @@ const changeUsernameFn = httpsCallable(functions, "changeUsername");
 const startGameFn = httpsCallable(functions, "startGame");
 const gradeGameFn = httpsCallable(functions, "gradeGame");
 const getReviewFn = httpsCallable(functions, 'getReview');
+const payForReviewFn = httpsCallable(functions, "payForReview");
 
 // ── SETUP PROVIDERS ──
 const googleProvider = new GoogleAuthProvider();
@@ -2058,7 +2059,7 @@ function tryShowLevelUpPopup(attempts = 0, maxAttempts = 8) {
 window.showLevelUpPopup = showLevelUpPopup;
 window.tryShowLevelUpPopup = tryShowLevelUpPopup;
 
-// ── READ AND SHOW GAME RESULT ──
+// ────────── READ AND SHOW GAME RESULT ──────────────
 Webflow.push(function() {
   // Fresh result from a just-finished game, or a saved copy when coming back from the review page
   const isFreshResult = !!sessionStorage.getItem('lastGameResult');
@@ -2067,6 +2068,8 @@ Webflow.push(function() {
   isScoreRevisit = !isFreshResult &&
     (sessionStorage.getItem('scoreRevisit') === 'true' || navType === 'back_forward');
   sessionStorage.removeItem('scoreRevisit');
+    // New game result: the review of this game has not been paid for yet
+  if (isFreshResult) sessionStorage.removeItem('reviewPaid');
 
   const resultDataRaw = sessionStorage.getItem('lastGameResult')
                      || sessionStorage.getItem('lastGameResultView');
@@ -2272,7 +2275,7 @@ function freezeTimerLottie(tries = 0) {
 if (currentSlug === REVIEW_SLUG) {
   Webflow.push(initReviewPage);
     // Back to Score: tell the score page to skip its intro
-    const back = document.querySelector('.link-score, a[href="/score"]');
+    const back = document.querySelector('a[href="/score"]');
     if (back) back.addEventListener('click', () => {
       sessionStorage.setItem('scoreRevisit', 'true');
     });

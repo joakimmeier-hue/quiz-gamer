@@ -186,6 +186,8 @@ const INFO_MESSAGES = {
   // Start Page / Tier Selection
   NO_TIER_SELECTED: "Please select a tier!",
   LEVEL_TOO_LOW: (reqLvl) => `Progress to level ${reqLvl} to play this tier!`,
+  // Score page
+  REVIEW_COST: "Cost for review is 15% of the Final Score. Not affecting your Highscore"
   
   // Future scenarios can be added here:
 
@@ -196,7 +198,7 @@ function showGlobalInfo(text) {
   const giText = document.querySelector('.gi-text');
   if (!globalInfo) return;
 
-  if (giText) giText.textContent = text;
+  if (giText) { giText. textContent = text; }
 
   // Make flex first
   globalInfo.style.display = 'flex';
