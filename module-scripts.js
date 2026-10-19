@@ -2175,7 +2175,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── LEVEL UP: DISMISS HANDLER ──
 Webflow.push(function() {
-  const btn = document.querySelector('.level-up .button.continue');
+  const btn = document.querySelector('.level-up .button.lvlup');
   if (!btn) return;
 
   btn.addEventListener('click', () => {
