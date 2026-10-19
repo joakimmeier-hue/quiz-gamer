@@ -2175,16 +2175,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── LEVEL UP: DISMISS HANDLER ──
 Webflow.push(function() {
-  const btn = document.querySelector('.level-up .button.lvlup');
-  if (!btn) return;
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.level-up .button');
+    if (!btn) return;
 
-  btn.addEventListener('click', () => {
+    // 1. Clean up radiate animation
     const linesEl = document.querySelector('.lines-radiate');
     if (linesEl) {
       linesEl.classList.remove('animate-flash');
       linesEl.style.opacity = '0';
     }
 
+    // 2. Decrement or clear pending level ups
     const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10) - 1;
     if (remaining > 0) {
       sessionStorage.setItem('pendingLevelUps', remaining);
@@ -2192,6 +2194,10 @@ Webflow.push(function() {
     } else {
       sessionStorage.removeItem('pendingLevelUps');
       sessionStorage.removeItem('pendingLevelUpTarget');
+      
+      // Ensure popup hides if Webflow interaction doesn't close it instantly
+      const levelUpEl = document.querySelector('.level-up');
+      if (levelUpEl) levelUpEl.style.display = 'none';
     }
   });
 });
