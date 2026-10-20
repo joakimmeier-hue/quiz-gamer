@@ -619,6 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     e.stopPropagation();   // capture phase below: we go first, so no other Enter handler also fires
     console.log('Enter-start: clicking START');   // temporary
+    if (typeof playSFX === 'function') playSFX('select');
     startBtn.click();      // click the child link: plays the select sound and bubbles up to the start handler
   }, true);
 });
