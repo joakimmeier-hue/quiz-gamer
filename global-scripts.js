@@ -84,7 +84,6 @@ function smoothScrollToId(targetId, opts = {}) {
       (isWindow ? window : container).removeEventListener(type, fn);
     }
   };
-
   const targetRect = target.getBoundingClientRect();
   const baseRect = isWindow ? { top: 0 } : container.getBoundingClientRect();
   const elementTop = targetRect.top - baseRect.top + scroller.pos;
@@ -187,7 +186,7 @@ const INFO_MESSAGES = {
   NO_TIER_SELECTED: "Please select a tier!",
   LEVEL_TOO_LOW: (reqLvl) => `Progress to level ${reqLvl} to play this tier!`,
   // Score page
-  REVIEW_COST: "Cost for review is 15% of the Final Score. Not affecting your Highscore"
+  REVIEW_COST: "Cost for review is 15% of the Final Score. Affecting you global score but not your Highscore"
   
   // Future scenarios can be added here:
 

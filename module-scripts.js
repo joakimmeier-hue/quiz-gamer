@@ -2212,7 +2212,7 @@ Webflow.push(function() {
   tryShowLevelUpPopup();
 });
 
-/* ──────────────── SCORE REVIEW ──────────────── */
+/* ──────────────────────────────── SCORE REVIEW ──────────────────────────────── */
 const REVIEW_SLUG = 'score-review';
 
 async function initReviewPage() {
@@ -2279,4 +2279,36 @@ if (currentSlug === REVIEW_SLUG) {
     if (back) back.addEventListener('click', () => {
       sessionStorage.setItem('scoreRevisit', 'true');
     });
+}
+
+// Score page: Review link asks for payment first
+let pendingReviewPayment = false;
+if (currentSlug === 'score') {
+  const reviewLink = document.querySelector('a[href="/' + REVIEW_SLUG + '"]');
+  if (reviewLink) reviewLink.addEventListener('click', (e) => {
+    // Already paid for this game: let the link work normally
+    if (sessionStorage.getItem('reviewPaid') === 'true') return;
+    e.preventDefault();
+    e.stopPropagation();
+    pendingReviewPayment = true;
+    showGlobalInfo(INFO_MESSAGES.REVIEW_COST);
+  });
+
+  document.addEventListener('click', async (e) => {
+    if (!pendingReviewPayment) return;
+    if (e.target.closest('.global-info .button.deny')) { pendingReviewPayment = false; return; }
+    if (!e.target.closest('.global-info .button.accept')) return;
+
+    pendingReviewPayment = false;   // also stops double clicks
+    try {
+      await payForReviewFn({});     // no amount is sent, the server decides the cost
+      sessionStorage.setItem('reviewPaid', 'true');
+      if (window.triggerPageExit) window.triggerPageExit('/' + REVIEW_SLUG, true, true);
+      else window.location.href = '/' + REVIEW_SLUG;
+    } catch (err) {
+      console.error('Review payment failed:', err);
+      pendingReviewPayment = true;  // Accept can retry
+      showGlobalInfo('Something went wrong. Try again?');
+    }
+  });
 }
