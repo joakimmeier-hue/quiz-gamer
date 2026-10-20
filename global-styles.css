@@ -392,6 +392,12 @@ body .games-grid-clip.is-skewed {
   50%  { opacity: 1; }
   100% { opacity: 0; }
 }
+/* Cancel button: no pulsing, always visible */
+.button-wrapper .button.cancel {
+  opacity: 1;
+  animation: none;
+}
+
 /* Lottie-spelare ska ALDRIG fånga klick/hover - släpp igenom till föräldern */
 .js-hover-scale lottie-player,
 .js-hover-scale-sm lottie-player,

@@ -2296,7 +2296,7 @@ if (currentSlug === 'score') {
 
   document.addEventListener('click', async (e) => {
     if (!pendingReviewPayment) return;
-    if (e.target.closest('.global-info .button.deny')) { pendingReviewPayment = false; return; }
+    if (e.target.closest('.global-info .button.cancel')) { pendingReviewPayment = false; return; }
     if (!e.target.closest('.global-info .button.accept')) return;
 
     pendingReviewPayment = false;   // also stops double clicks
