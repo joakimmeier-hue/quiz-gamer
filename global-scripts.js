@@ -376,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const nowMs = Date.now();
       if (nowMs - (window.lastStartAttempt || 0) < 3000) return;
       window.lastStartAttempt = nowMs;
-      
+
       // 2. FADE OUT IMMEDIATELY (also starts the 1.2s Lottie timer)
       window.showGameLoadingOverlay('0.5s', true);
 
@@ -616,8 +616,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dropdownToggle.classList.contains('w--open')) return;   // dropdown open: Enter belongs to it
     const info = document.querySelector('.global-info');
     if (info && getComputedStyle(info).display !== 'none') return;   // popup open: its own Enter handler
-    const wrapper = startBtn.closest('.game-start-btn-wrapper');
-    if (wrapper && !wrapper.classList.contains('is-visible')) return;   // START not shown yet
     e.preventDefault();
     e.stopPropagation();   // capture phase below: we go first, so no other Enter handler also fires
     startBtn.click();      // click the child link: plays the select sound and bubbles up to the start handler
