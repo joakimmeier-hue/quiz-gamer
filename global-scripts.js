@@ -256,11 +256,11 @@ document.addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && overlay.classList.contains('about-overlay')) return;
       e.preventDefault();
 
-            if (overlay.classList.contains('global-info')) {
+              if (overlay.classList.contains('global-info')) {
         // Two-choice popup: Enter = Accept, Esc = close (same as Cancel)
-        const acceptBtn = overlay.querySelector('.button.accept');
-        const acceptVisible = acceptBtn && acceptBtn.offsetParent !== null;
-        if (e.key === 'Enter' && acceptVisible && !e.repeat) {
+        const acceptBtn = Array.from(overlay.querySelectorAll('.button.accept'))
+          .find(el => el.offsetParent !== null);
+        if (e.key === 'Enter' && acceptBtn && !e.repeat) {
           acceptBtn.click();
         } else {
           hideGlobalInfo();
