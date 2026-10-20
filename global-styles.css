@@ -381,16 +381,16 @@ body .games-grid-clip.is-skewed {
 /* ── SCROLL-PULSE SYSTEM ── */
 .button-wrapper .button,
 .button-wrapper .button-link {
-  opacity: 0;
+  opacity: 1;
 }
 .button-wrapper .button.is-pulsing,
 .button-wrapper .button-link.is-pulsing {
   animation: scrollPulse 2.12s linear infinite;
 }
 @keyframes scrollPulse {
-  0%   { opacity: 0; }
-  50%  { opacity: 1; }
-  100% { opacity: 0; }
+  0%   { opacity: 1; }
+  50%  { opacity: 0; }
+  100% { opacity: 1; }
 }
 /* Cancel button: no pulsing, always visible */
 .button-wrapper .button.cancel {
