@@ -405,7 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
-});
+ });
 
 // 1 BLUR TOP OF PAGE - WITH CLONE
 window.syncTopClone = window.syncClone = function() {
@@ -618,6 +618,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (info && getComputedStyle(info).display !== 'none') return;   // popup open: its own Enter handler
     e.preventDefault();
     e.stopPropagation();   // capture phase below: we go first, so no other Enter handler also fires
+    console.log('Enter-start: clicking START');   // temporary
     startBtn.click();      // click the child link: plays the select sound and bubbles up to the start handler
   }, true);
 });
