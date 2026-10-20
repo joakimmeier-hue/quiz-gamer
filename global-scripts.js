@@ -256,8 +256,15 @@ document.addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && overlay.classList.contains('about-overlay')) return;
       e.preventDefault();
 
-      if (overlay.classList.contains('global-info')) {
-        hideGlobalInfo();
+            if (overlay.classList.contains('global-info')) {
+        // Two-choice popup: Enter = Accept, Esc = close (same as Cancel)
+        const acceptBtn = overlay.querySelector('.button.accept');
+        const acceptVisible = acceptBtn && acceptBtn.offsetParent !== null;
+        if (e.key === 'Enter' && acceptVisible && !e.repeat) {
+          acceptBtn.click();
+        } else {
+          hideGlobalInfo();
+        }
       } else {
         const btn = overlay.querySelector('.button');
         if (btn) btn.click();
@@ -269,7 +276,7 @@ document.addEventListener('keydown', function(e) {
   // Fallback for visible buttons
   const visibleWrapperBtn = Array.from(
     document.querySelectorAll('.button-wrapper .button, .button-wrapper .button-link')
-  ).find(el => el.offsetParent !== null);
+    ).find(el => el.offsetParent !== null && !el.closest('.global-info'));
 
   if (visibleWrapperBtn) {
     e.preventDefault();
