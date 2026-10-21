@@ -158,10 +158,21 @@ function smoothScrollToId(targetId, opts = {}) {
 // Function to reveal all anti-FOUC elements on the page
 function revealFoucElements() {
   const elements = document.querySelectorAll('.fouc-reveal');
-  elements.forEach(el => {
-    el.style.opacity = '1';
-  });
-}
+
+  // Kontrollera om vi är på Lobbysidan (kollar URL eller om lobby-ljudknappen finns på sidan)
+  const isLobbyPage = window.location.pathname === '/' || 
+      window.location.pathname.includes('lobby');
+
+      elements.forEach(el => {
+    // Om det är bakgrundsvideon och vi är på Lobbysidan: hoppa över den!
+    if (isLobbyPage && el.classList.contains('bg-video-glitch')) {
+      return; 
+    }
+
+      el.style.opacity = '1';
+    });
+  }
+ 
   // 1. Primary Trigger: Reveal when corePageReady fires
   document.addEventListener('corePageReady', revealFoucElements);
 
@@ -173,7 +184,7 @@ function revealFoucElements() {
     document.dispatchEvent(new CustomEvent('corePageReady'));
   }
 
-  // Last Global Safety Net: Force reveal after 3.5 seconds if corePageReady hung or failed
+  // Last Global Safety Net: Force reveal after x seconds if corePageReady hung or failed
   setTimeout(() => {
     revealFoucElements();
   }, 7500);
