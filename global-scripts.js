@@ -321,104 +321,6 @@ function updateTierLocks(playerLevel = 1) {
   }
 }
 
-// ── START BUTTON HANDLER game start pages ──────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  // Leta efter BÅDE standard-knapparna och GMA-knappen
-  const startBtns = document.querySelectorAll('.mask-middle .game-start-btn-wrapper, #game-start-btn-gma, .game-start-btn-gma');
-    if (startBtns.length === 0) return;
-  startBtns.forEach(startBtn => {
-    startBtn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      // Kontrollera om det är GMA-knappen vi klickade på
-      const isGma = startBtn.id === 'game-start-btn-gma' || startBtn.classList.contains('game-start-btn-gma');
-      let selectedTier = null;
-      let topic = null;
-
-      // Hämta topic från URL (fungerar för både science-start och gma-start)
-      const topicMatch = currentSlug.match(/^([a-z0-9-]+)-start$/i);
-      if (topicMatch) {
-        topic = topicMatch[1];
-      }
-      if (!topic) {
-        console.error("Could not read topic from slug:", currentSlug);
-        return;
-      }
-
-      if (isGma) {
-        // SPECIAL FÖR GMA: Eftersom GMA saknar dropdown, låtsas vi att användaren valde Level 1
-        selectedTier = 1;
-        topic = "gma"; 
-      } else {
-        // 1. Identify selected tier (DITT VANLIGA SYSTEM)
-        const activeOption = document.querySelector('.mask-middle .game-level-option.is-selected') 
-                           || document.querySelector('.mask-middle .gamelevel-btn');
-                if (activeOption) {
-          const dataLvl = activeOption.getAttribute('data-level');
-          if (dataLvl) {
-            selectedTier = parseInt(dataLvl, 10);
-          } else {
-            const match = activeOption.textContent.match(/(?:Tier|Level)\s*(\d+)/i);
-            if (match) selectedTier = parseInt(match[1], 10);
-          }
-        }
-        // SCENARIO 1: No tier selected
-        if (!selectedTier) {
-          showGlobalInfo(INFO_MESSAGES.NO_TIER_SELECTED);
-          return;
-        }
-        // SCENARIO 2: Player level too low
-        const playerLevel = window.currentUserData?.level || 1;
-        const requiredLevel = TIER_REQUIREMENTS[selectedTier] || 1;
-        if (playerLevel < requiredLevel) {
-          showGlobalInfo(INFO_MESSAGES.LEVEL_TOO_LOW(requiredLevel));
-          return;
-        }
-      }
-            // Already starting a game (double click / Enter + click): ignore the second one
-      const nowMs = Date.now();
-      if (nowMs - (window.lastStartAttempt || 0) < 3000) return;
-      window.lastStartAttempt = nowMs;
-
-      // 2. FADE OUT IMMEDIATELY (also starts the 1.2s Lottie timer)
-      window.showGameLoadingOverlay('0.5s', true);
-
-      // 3. Call Backend Function
-      try {
-        const session = await window.triggerStartGame(topic, selectedTier);
-
-        sessionStorage.setItem('activeSessionId', session.sessionId);
-        // New session created: unlock answers for the next game page
-        sessionStorage.removeItem('gameFinished');
-
-        sessionStorage.setItem('activeTopic', topic);
-        sessionStorage.setItem('activeTier', String(selectedTier));
-        sessionStorage.setItem('activeSessionGame', `${topic}-${selectedTier}`);
-        sessionStorage.setItem('navFrom', currentSlug);
-        const targetUrl = isGma ? '/gma-game-1' : '/quiz-game';
-
-        if (typeof window.triggerPageExit === 'function') {
-          window.triggerPageExit(targetUrl);
-        } else {
-          setTimeout(() => { window.location.href = targetUrl; }, 300);
-        }
-
-      } catch (err) {
-        console.error("Failed to start game session:", err);
-        window.hideGameLoadingOverlay();    
-      }
-    });
-  });
- });
-
- function getGameContext() {
-  const topic = sessionStorage.getItem('activeTopic');
-  const tier = parseInt(sessionStorage.getItem('activeTier'), 10);
-  return (topic && tier) ? { topic, level: tier } : null;
-}
-
-
 // 1 BLUR TOP OF PAGE - WITH CLONE
 window.syncTopClone = window.syncClone = function() {
   const real = document.querySelector('.mask-middle .vertical-center');
@@ -636,6 +538,99 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // 3 COMPONENT game-start-btn
+
+// ── START BUTTON HANDLER game start pages ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Leta efter BÅDE standard-knapparna och GMA-knappen
+  const startBtns = document.querySelectorAll('.mask-middle .game-start-btn-wrapper, #game-start-btn-gma, .game-start-btn-gma');
+    if (startBtns.length === 0) return;
+  startBtns.forEach(startBtn => {
+    startBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Kontrollera om det är GMA-knappen vi klickade på
+      const isGma = startBtn.id === 'game-start-btn-gma' || startBtn.classList.contains('game-start-btn-gma');
+      let selectedTier = null;
+      let topic = null;
+
+      // Hämta topic från URL (fungerar för både science-start och gma-start)
+      const topicMatch = currentSlug.match(/^([a-z0-9-]+)-start$/i);
+      if (topicMatch) {
+        topic = topicMatch[1];
+      }
+      if (!topic) {
+        console.error("Could not read topic from slug:", currentSlug);
+        return;
+      }
+      if (isGma) {
+        // SPECIAL FÖR GMA: Eftersom GMA saknar dropdown, låtsas vi att användaren valde Level 1
+        selectedTier = 1;
+        topic = "gma"; 
+      } else {
+        // 1. Identify selected tier (DITT VANLIGA SYSTEM)
+        const activeOption = document.querySelector('.mask-middle .game-level-option.is-selected') 
+                           || document.querySelector('.mask-middle .gamelevel-btn');
+                if (activeOption) {
+          const dataLvl = activeOption.getAttribute('data-level');
+          if (dataLvl) {
+            selectedTier = parseInt(dataLvl, 10);
+          } else {
+            const match = activeOption.textContent.match(/(?:Tier|Level)\s*(\d+)/i);
+            if (match) selectedTier = parseInt(match[1], 10);
+          }
+        }
+        // SCENARIO 1: No tier selected
+        if (!selectedTier) {
+          showGlobalInfo(INFO_MESSAGES.NO_TIER_SELECTED);
+          return;
+        }
+        // SCENARIO 2: Player level too low
+        const playerLevel = window.currentUserData?.level || 1;
+        const requiredLevel = TIER_REQUIREMENTS[selectedTier] || 1;
+        if (playerLevel < requiredLevel) {
+          showGlobalInfo(INFO_MESSAGES.LEVEL_TOO_LOW(requiredLevel));
+          return;
+        }
+      }
+            // Already starting a game (double click / Enter + click): ignore the second one
+      const nowMs = Date.now();
+      if (nowMs - (window.lastStartAttempt || 0) < 3000) return;
+      window.lastStartAttempt = nowMs;
+      // 2. FADE OUT IMMEDIATELY (also starts the 1.2s Lottie timer)
+      window.showGameLoadingOverlay('0.5s', true);
+      // 3. Call Backend Function
+      try {
+        const session = await window.triggerStartGame(topic, selectedTier);
+        sessionStorage.setItem('activeSessionId', session.sessionId);
+        // New session created: unlock answers for the next game page
+        sessionStorage.removeItem('gameFinished');
+        sessionStorage.setItem('activeTopic', topic);
+        sessionStorage.setItem('activeTier', String(selectedTier));
+        sessionStorage.setItem('activeSessionGame', `${topic}-${selectedTier}`);
+        sessionStorage.setItem('navFrom', currentSlug);
+        const targetUrl = isGma ? '/gma-game-1' : '/quiz-game';
+
+        if (typeof window.triggerPageExit === 'function') {
+          window.triggerPageExit(targetUrl);
+        } else {
+          setTimeout(() => { window.location.href = targetUrl; }, 300);
+        }
+
+      } catch (err) {
+        console.error("Failed to start game session:", err);
+        window.hideGameLoadingOverlay();    
+      }
+    });
+  });
+ });
+
+ function getGameContext() {
+  const topic = sessionStorage.getItem('activeTopic');
+  const tier = parseInt(sessionStorage.getItem('activeTier'), 10);
+  return (topic && tier) ? { topic, level: tier } : null;
+}
+
 // SCROLL: game-start-btn-wrapper visibility + arrow hide/show
 document.addEventListener('DOMContentLoaded', () => {
   const scrollContainer = document.querySelector('.mask-middle');
@@ -643,12 +638,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const arrowWrapper = document.querySelector('.arrow-anchor-wrapper');
 
   if (targetWrappers.length === 0) return;
-
   function showButton(wrapper) {
     if (wrapper) wrapper.classList.add('is-visible');
     if (arrowWrapper) arrowWrapper.classList.add('is-hidden');
   }
-
   function hideButton(wrapper) {
     if (wrapper) wrapper.classList.remove('is-visible');
     if (arrowWrapper) arrowWrapper.classList.remove('is-hidden');
@@ -677,7 +670,6 @@ document.addEventListener('DOMContentLoaded', () => {
       rootMargin: "0px 0px -35% 0px"
     }
   );
-
   targetWrappers.forEach((wrapper) => {
     const parentRow = wrapper.closest('.row-gamestart, .row-2');
     if (parentRow) observer.observe(parentRow);
@@ -691,7 +683,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 5;
     }
   }
-
   const scrollTarget = scrollContainer || window;
   let lastScrollPos = 0;
 
@@ -913,7 +904,7 @@ Webflow.push(function() {
 
   // THE MASTER GATEKEEPER: Wait for Firebase cards to load
   document.addEventListener('corePageReady', () => {
-    window.location.pathname === '/quiz-game' || window.location.pathname === '/gma-game-1'   // timer + 321-go only on game pages
+    if (!/^\/(quiz-game|gma-game-1)\/?$/.test(window.location.pathname)) return;   // timer + 321-go only on game pages
     
     // 1. Fire "321-go"
     setTimeout(function() {
