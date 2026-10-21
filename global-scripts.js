@@ -913,7 +913,7 @@ Webflow.push(function() {
 
   // THE MASTER GATEKEEPER: Wait for Firebase cards to load
   document.addEventListener('corePageReady', () => {
-    if (window.currentSlug !== 'quiz-game' && currentSlug !== 'gma-game-1') return;   // timer + 321-go only on game pages
+    window.location.pathname === '/quiz-game' || window.location.pathname === '/gma-game-1'   // timer + 321-go only on game pages
     
     // 1. Fire "321-go"
     setTimeout(function() {
@@ -1736,12 +1736,6 @@ window.injectLottiePlayer = function(instant = false) {
       if (anim) anim.goToAndPlay(offsetMs, false);   // continue; past the end it stays on the last frame
     });
   }
-
-  // Delete Later:
-  // TEMPORARY: log what the player does, remove when it behaves
-  ['ready', 'play', 'pause', 'freeze', 'stop', 'loop', 'complete', 'error'].forEach(ev =>
-    player.addEventListener(ev, () => console.log('[lottie-player]', ev, location.pathname, Math.round(performance.now()))));
-//till here ----------
 
   if (!instant) requestAnimationFrame(() => requestAnimationFrame(() => { wrap.style.opacity = '1'; }));
 };
