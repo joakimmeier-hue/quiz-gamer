@@ -1611,7 +1611,7 @@ const RATING_URLS = { // ── RATINGS DATA ───────────�
 const GAME_CONFIG = {
   // Science
   "science-l1": { diff: 2, bonus: 2, questions: 10, time: "none" },
-  "science-l2": { diff: 3, bonus: 3, questions: 10, time: "yes" },
+  "science-l2": { diff: 3, bonus: 3, questions: 10, time: "none" },
   "science-l3": { diff: 4, bonus: 3, questions: 10, time: "none" },
   "science-l4": { diff: 5, bonus: 2, questions: 10, time: "none" },
   // History
