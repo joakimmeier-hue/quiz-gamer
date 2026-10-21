@@ -285,9 +285,9 @@ body .games-grid-clip.is-skewed {
 }
 
 /* ── Lobby Audio HOVER (Nu använder vi 'scale' egenskapen, inte transform) ── */
-#toggle-audio-lobby:hover {
+/* #toggle-audio-lobby:hover {
   scale: 1.2;
-}
+} */
 /* ── Lobby Audio KLICK-ANIMATION (Här kör vi transform, som läggs PÅ TOPPEN) ── */
 @keyframes clickStretch {
   0% { transform: scale(1); } /* Startar från 1 relativt till hovern */
