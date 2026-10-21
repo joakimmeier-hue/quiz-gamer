@@ -159,9 +159,8 @@ function smoothScrollToId(targetId, opts = {}) {
 function revealFoucElements() {
   const elements = document.querySelectorAll('.fouc-reveal');
 
-  // Kontrollera om vi är på Lobbysidan (kollar URL eller om lobby-ljudknappen finns på sidan)
-  const isLobbyPage = window.location.pathname === '/' || 
-      window.location.pathname.includes('lobby') || document.getElementById('toggle-audio-lobby');
+  // Kontrollera om vi är på startsidan Lobby
+  const isLobbyPage = window.location.pathname === '/' || window.location.pathname === '';
 
       elements.forEach(el => {
     // Om det är bakgrundsvideon och vi är på Lobbysidan: hoppa över den!
