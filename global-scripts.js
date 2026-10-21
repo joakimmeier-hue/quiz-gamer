@@ -161,7 +161,7 @@ function revealFoucElements() {
 
   // Kontrollera om vi är på Lobbysidan (kollar URL eller om lobby-ljudknappen finns på sidan)
   const isLobbyPage = window.location.pathname === '/' || 
-      window.location.pathname.includes('lobby');
+      window.location.pathname.includes('lobby') || document.getElementById('toggle-audio-lobby');
 
       elements.forEach(el => {
     // Om det är bakgrundsvideon och vi är på Lobbysidan: hoppa över den!
