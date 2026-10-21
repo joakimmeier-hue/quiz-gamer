@@ -538,7 +538,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // 3 COMPONENT game-start-btn
-
 // ── START BUTTON HANDLER game start pages ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   // Leta efter BÅDE standard-knapparna och GMA-knappen
@@ -631,7 +630,7 @@ document.addEventListener('DOMContentLoaded', () => {
   return (topic && tier) ? { topic, level: tier } : null;
 }
 
-// SCROLL: game-start-btn-wrapper visibility + arrow hide/show
+// SCROLL: GAME-START-BTN-WRAPPER visibility + arrow hide/show
 document.addEventListener('DOMContentLoaded', () => {
   const scrollContainer = document.querySelector('.mask-middle');
   const targetWrappers = document.querySelectorAll('.mask-middle .game-start-btn-wrapper, .game-start-btn-gma');

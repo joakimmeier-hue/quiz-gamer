@@ -2295,7 +2295,8 @@ if (currentSlug === 'score') {
     if (e.target.closest('.global-info .button.cancel')) { pendingReviewPayment = false; return; }
     if (!e.target.closest('.global-info .button.accept')) return;
 
-    pendingReviewPayment = false;   // also stops double clicks
+        pendingReviewPayment = false;   // also stops double clicks
+    if (window.showGameLoadingOverlay) window.showGameLoadingOverlay('0.8s', true);   // fade in right away
     try {
       await payForReviewFn({});     // no amount is sent, the server decides the cost
       sessionStorage.setItem('reviewPaid', 'true');
@@ -2303,6 +2304,7 @@ if (currentSlug === 'score') {
       else window.location.href = '/' + REVIEW_SLUG;
     } catch (err) {
       console.error('Review payment failed:', err);
+      if (window.hideGameLoadingOverlay) window.hideGameLoadingOverlay();   // payment failed: lift the overlay again
       pendingReviewPayment = true;  // Accept can retry
       showGlobalInfo('Something went wrong. Try again?');
     }
