@@ -2059,7 +2059,7 @@ window.addEventListener('keydown', function(e) {
 // Klasser som ska skalas upp till 1.15 vid hover (stor effekt)
 const HOVER_SCALE_CLASSES = [
     'cp-exit',
-    /* 'sound-toggle', */
+    'sound-toggle',
     'games-link-block',
     'games-link-block-gma',
     'link-to-lobby',
@@ -2098,7 +2098,7 @@ const HOVER_SCALE_CLASSES_SM = [
 // Klasser som ska ändra scale vid press (pointerdown -> pointerup)
 const PRESS_SCALE_CLASSES = [
     'cp-exit',
-    /* 'sound-toggle', */
+    'sound-toggle',
     'games-link-block',
     'games-link-block-gma',
     'link-to-lobby',
