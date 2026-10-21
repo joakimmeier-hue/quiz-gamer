@@ -1662,7 +1662,7 @@ document.addEventListener("visibilitychange", function() {
   }
 });
 
-// ────────────────── REUSABLE TRANSITION OVERLAY & LOTTIE MANAGER ────────────────────────────────
+// ────────────────── REUSABLE TRANSITION COLOR OVERLAY & LOTTIE MANAGER ────────────────────────────────
  // LOTTIE PLAYER NEEDED FOR TRANSITION LOADING SCREEN
   // ── LADDA LOTTIE-SPELAREN ─────────────────────────────────────────────
 if (!document.querySelector('script[src*="lottie-player"]')) {
