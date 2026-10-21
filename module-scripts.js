@@ -1382,14 +1382,12 @@ if (currentSlug === 'score-review' && cameFrom !== 'score') {
         return;
     }
 
-    const gameMatch = currentSlug.match(/^([a-z]+)-game-(\d+)$/);
-    if (gameMatch) {
-        const theme = gameMatch[1];
-        const validPrevious = `${theme}-start`;
-        if (cameFrom !== validPrevious) {
-            window.location.replace('/' + validPrevious);
-            return;
-        }
+      if (currentSlug === 'quiz-game' || currentSlug === 'gma-game-1') {
+      const topic = sessionStorage.getItem('activeTopic');
+      if (!topic || cameFrom !== `${topic}-start`) {
+        window.location.replace(topic ? '/' + topic + '-start' : '/');
+        return;
+      }
     }
 }
 
@@ -1747,13 +1745,13 @@ window.applyGameConfig = function (topic, level) {
 // 3. FETCH AND SEED QUESTIONS RANDOMLY
 var Webflow = window.Webflow || [];
 Webflow.push(async function() {
-  if (!/-game-\d+/.test(window.location.pathname)) return;   // NEW
+  if (currentSlug !== 'quiz-game' && currentSlug !== 'gma-game-1') return;
   const cards = document.querySelectorAll('.question-card');
   if (!cards || cards.length === 0) return;
-  const path = window.location.pathname;
-  const match = path.match(/\/([a-z]+)-game-(\d+)/i);
-  const topic = match ? match[1].toLowerCase() : "science";
-  const level = match ? parseInt(match[2], 10) : 1;
+
+  const ctx = getGameContext();
+  if (!ctx) { window.location.replace('/'); return; }
+  const { topic, level } = ctx;
 
   try {
     const q = query(
@@ -1878,11 +1876,9 @@ document.addEventListener('click', async function(e) {
   if (!finishBtn) return;
   e.preventDefault();
 
-  // Extract topic & level directly from the page URL
-  const path = window.location.pathname;
-  const match = path.match(/\/([a-z]+)-game-(\d+)/i);
-  const topic = match ? match[1].toLowerCase() : "science";
-  const level = match ? parseInt(match[2], 10) : 1;
+  const ctx = getGameContext();
+  if (!ctx) { window.location.replace('/'); return; }
+  const { topic, level } = ctx;
 
   // 1. Update UI text to "Calculating..."
   const textEl = finishBtn.querySelector('div') || finishBtn;

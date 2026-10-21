@@ -334,12 +334,16 @@ document.addEventListener('DOMContentLoaded', () => {
       // Kontrollera om det är GMA-knappen vi klickade på
       const isGma = startBtn.id === 'game-start-btn-gma' || startBtn.classList.contains('game-start-btn-gma');
       let selectedTier = null;
-      let topic = "science"; // fallback
+      let topic = null;
 
       // Hämta topic från URL (fungerar för både science-start och gma-start)
       const topicMatch = currentSlug.match(/^([a-z0-9-]+)-start$/i);
       if (topicMatch) {
         topic = topicMatch[1];
+      }
+      if (!topic) {
+        console.error("Could not read topic from slug:", currentSlug);
+        return;
       }
 
       if (isGma) {
@@ -388,10 +392,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // New session created: unlock answers for the next game page
         sessionStorage.removeItem('gameFinished');
 
+        sessionStorage.setItem('activeTopic', topic);
+        sessionStorage.setItem('activeTier', String(selectedTier));
         sessionStorage.setItem('activeSessionGame', `${topic}-${selectedTier}`);
         sessionStorage.setItem('navFrom', currentSlug);
-
-        const targetUrl = `/${topic}-game-${selectedTier}`;
+        const targetUrl = isGma ? '/gma-game-1' : '/quiz-game';
 
         if (typeof window.triggerPageExit === 'function') {
           window.triggerPageExit(targetUrl);
@@ -406,6 +411,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
  });
+
+ function getGameContext() {
+  const topic = sessionStorage.getItem('activeTopic');
+  const tier = parseInt(sessionStorage.getItem('activeTier'), 10);
+  return (topic && tier) ? { topic, level: tier } : null;
+}
+
 
 // 1 BLUR TOP OF PAGE - WITH CLONE
 window.syncTopClone = window.syncClone = function() {
@@ -593,7 +605,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (startBtn && topic) {
         startBtn.dataset.level = selectedLevel;
-        startBtn.setAttribute('href', `/${topic}-game-${selectedLevel}`);
+        startBtn.setAttribute('href', '/quiz-game');
       }
 
       if (typeof window.loadGameInfo === 'function') {
@@ -901,7 +913,7 @@ Webflow.push(function() {
 
   // THE MASTER GATEKEEPER: Wait for Firebase cards to load
   document.addEventListener('corePageReady', () => {
-    if (!/-game-\d+/.test(window.location.pathname)) return;   // timer + 321-go only on game pages
+    if (window.currentSlug !== 'quiz-game' && currentSlug !== 'gma-game-1') return;   // timer + 321-go only on game pages
     
     // 1. Fire "321-go"
     setTimeout(function() {
@@ -1671,7 +1683,7 @@ if (!document.querySelector('script[src*="lottie-player"]')) {
 const LOTTIE_DELAY_MS = 1200;
 const LOTTIE_SRC = 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a159263c0394fc57a0ee84a_loading-game-2.json';
 const revealDuration = '0.8s';
-const isGamePage = /-game-\d+/.test(window.location.pathname);
+const isGamePage = /^\/(quiz-game|gma-game-1)\/?$/.test(window.location.pathname);
 const isReviewPage = /^\/score-review\/?$/.test(window.location.pathname);
 const waitsForData = isGamePage || isReviewPage;   // pages that fire 'questionsLoaded' themselves
 let lottieDelayTimeout = null;
