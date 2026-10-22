@@ -156,25 +156,15 @@ function smoothScrollToId(targetId, opts = {}) {
 
 // ─────────────  DEDICATED UI REVEAL LISTENER FOR FOUC ELEMENTS ─────────────
 // Function to reveal all anti-FOUC elements on the page
-function revealFoucElements() {
-  const elements = document.querySelectorAll('.fouc-reveal');
-
-  // Kontrollera om vi är på startsidan Lobby
-  const isLobbyPage = window.location.pathname === '/' || window.location.pathname === '';
-
-      elements.forEach(el => {
+elements.forEach(el => {
     // Om det är bakgrundsvideon och vi är på Lobbysidan: hoppa över den!
     if (isLobbyPage && el.classList.contains('bg-video-glitch')) {
-      return; 
+      el.classList.add('is-revealed', 'no-fade');
+      return;
     }
-
-      el.style.opacity = '1';
-    });
-  }
- 
-  // 1. Primary Trigger: Reveal when corePageReady fires
+});
+   // 1. Primary Trigger: Reveal when corePageReady fires
   document.addEventListener('corePageReady', revealFoucElements);
-
   // Ensure corePageReady ALWAYS fires, even on non-game pages
   document.addEventListener('DOMContentLoaded', () => {
   const isGamePage = document.querySelector('.question-card') || document.getElementById('timer-display');
@@ -182,7 +172,6 @@ function revealFoucElements() {
   if (!isGamePage) {
     document.dispatchEvent(new CustomEvent('corePageReady'));
   }
-
   // Last Global Safety Net: Force reveal after x seconds if corePageReady hung or failed
   setTimeout(() => {
     revealFoucElements();
