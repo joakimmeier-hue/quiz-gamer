@@ -155,14 +155,20 @@ function smoothScrollToId(targetId, opts = {}) {
 })();
 
 // ─────────────  DEDICATED UI REVEAL LISTENER FOR FOUC ELEMENTS ─────────────
-// Function to reveal all anti-FOUC elements on the page
-elements.forEach(el => {
-    // Om det är bakgrundsvideon och vi är på Lobbysidan: hoppa över den!
+function revealFoucElements() {
+  const elements = document.querySelectorAll('.fouc-reveal');
+
+  // Check if on Lobby
+  const isLobbyPage = window.location.pathname === '/' || window.location.pathname === '';
+  elements.forEach(el => {
+    // If bg and on Lobby = skip it
     if (isLobbyPage && el.classList.contains('bg-video-glitch')) {
       el.classList.add('is-revealed', 'no-fade');
       return;
     }
-});
+    el.classList.add('is-revealed');
+  });
+}
    // 1. Primary Trigger: Reveal when corePageReady fires
   document.addEventListener('corePageReady', revealFoucElements);
   // Ensure corePageReady ALWAYS fires, even on non-game pages
