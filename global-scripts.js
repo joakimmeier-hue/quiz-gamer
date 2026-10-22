@@ -161,7 +161,7 @@ function revealFoucElements() {
   // Check if on Lobby
   const isLobbyPage = window.location.pathname === '/' || window.location.pathname === '';
   elements.forEach(el => {
-    // If bg and on Lobby = skip it
+    // Lobby bg video: reveal without fade so it doesn't fight the Webflow intro interaction
     if (isLobbyPage && el.classList.contains('bg-video-glitch')) {
       el.classList.add('is-revealed', 'no-fade');
       return;
