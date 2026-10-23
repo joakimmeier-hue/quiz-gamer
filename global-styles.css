@@ -245,9 +245,9 @@ input, textarea, button, .w-button, #submit-btn-vanilla {
     overflow-y: scroll;
 } */
 /* Force the main html and root body to always keep the scrollbar slot open */
-html, .body-1 {
+/* html, .body-1 {
     overflow-y: scroll !important;
-}
+} */
 
 /* Lobby Games mask */
 .games-grid-clip {
