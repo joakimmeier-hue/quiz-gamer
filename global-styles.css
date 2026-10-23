@@ -225,19 +225,19 @@ input, textarea, button, .w-button, #submit-btn-vanilla {
 }
 
 /* Hide scrollbar for some classes */
-.clipping, 
-/* .games-grid-clip, */
+/* .clipping, 
+.games-grid-clip,
 .mask-middle
  {
-  -ms-overflow-style: none;  /* IE/Edge */
-  scrollbar-width: none;     /* Firefox */
+  -ms-overflow-style: none;  
+  scrollbar-width: none;     
 }
 
 .clipping::-webkit-scrollbar, 
-/* .games-grid-clip::-webkit-scrollbar, */
+.games-grid-clip::-webkit-scrollbar,
 .mask-middle::-webkit-scrollbar { 
-  display: none;             /* Chrome/Safari */
-}
+  display: none;           
+} */
 
 /* Lobby Games mask */
 .games-grid-clip {
