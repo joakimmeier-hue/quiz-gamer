@@ -54,7 +54,10 @@
     display: none;
   } */
 
-
+/* intro overlay grp */
+.intro-overlay-grp {
+    transition: none !important;
+  }
 
 /* Interpolate-size, try to autosize animations, for whole site */
 :root { interpolate-size: allow-keywords; }
