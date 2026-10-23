@@ -28,11 +28,6 @@
   transform: translate(0px, 0px) scale(1);
   transition: opacity 0.05s ease-out, transform 0.37s ease-in-out;
 }
-/* Global overflow-stopper */
-.wrapper-score,
-.about-overlay {
-  overflow-x: hidden;
-}
 
 /* ————————— UNIVERSAL ANTI-FOUC CLASS ———————— */
 .fouc-reveal {
@@ -54,11 +49,6 @@
   {
     display: none;
   } */
-
-/* intro overlay grp */
-.intro-overlay-grp {
-    transition: none !important;
-  }
 
 /* Interpolate-size, try to autosize animations, for whole site */
 :root { interpolate-size: allow-keywords; }
@@ -228,6 +218,16 @@ input, textarea, button, .w-button, #submit-btn-vanilla {
   text-rendering: optimizeLegibility;
 }
 
+/* —————— Global overflow-stopper —————— */
+.wrapper-score,
+.about-overlay {
+  overflow-x: hidden;
+}
+/* intro overlay grp */
+.intro-overlay-grp {
+    transition: none !important;
+  }
+
 /* Hide or fix scrollbar for some classes */
 .clipping, 
 .games-grid-clip,
@@ -372,13 +372,16 @@ body .games-grid-clip.is-skewed {
 .js-hover-scale.is-hovered {
   scale: 1.15;
 }
-/* ── HOVER-SCALE SYSTEM SUBTIL (1.08) ── */
+
+/* ── HOVER-SCALE SYSTEM SUBTIL (1.08) — Smoother transition for wtc-wrapper ── */
 .js-hover-scale-sm {
-  transition: scale 0.1s cubic-bezier(0.455, 0.03, 0.515, 0.955);
+    transition: scale 0.35s cubic-bezier(0.25, 1, 0.5, 1);
 }
 .js-hover-scale-sm.is-hovered {
-  scale: 1.08;
+    scale: 1.08;
 }
+
+
  /* ── PRESS-SCALE / "BLOW UP" SYSTEM (ersätter click-scale-interactions) ── */
 .js-press-scale {
   transition: scale 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* ≈ Power1 Out */
