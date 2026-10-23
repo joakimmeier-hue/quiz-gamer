@@ -225,7 +225,7 @@ input, textarea, button, .w-button, #submit-btn-vanilla {
 }
 
 /* Hide or fix scrollbar for some classes */
-.clipping, 
+/* .clipping, 
 .games-grid-clip,
 .mask-middle
  {
@@ -237,7 +237,9 @@ input, textarea, button, .w-button, #submit-btn-vanilla {
 .games-grid-clip::-webkit-scrollbar,
 .mask-middle::-webkit-scrollbar { 
   display: none;           
-}
+} */
+
+
 /* body-1 {
     scrollbar-gutter: stable;
 } */
