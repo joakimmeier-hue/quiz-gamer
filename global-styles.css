@@ -394,7 +394,7 @@ body .games-grid-clip.is-skewed {
   pointer-events: none;
 }
 /* 2. Override: Enable interaction ONLY on the lobby page */
-.body-1.lobby .player-info.username {
+.Body-1.lobby .player-info.username {
     pointer-events: auto;
 }
 
