@@ -2092,10 +2092,19 @@ const HOVER_SCALE_CLASSES = [
     'eam-cancel-btn'
 ];
 
-// Klasser som ska skalas upp till 1.08 vid hover (subtil effekt)
+// ---- wtc-wrapper fix --- skalas upp till 1.08 vid hover (subtil effekt)
 const HOVER_SCALE_CLASSES_SM = [
     'wtc-wrapper'
 ];
+// Hantera klick på wtc-wrapper för att trigga Y-rörelsen och nollställa hover
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.wtc-wrapper').forEach(el => {
+        el.addEventListener('click', () => {
+            el.classList.add('is-clicked');
+            el.classList.remove('is-hovered'); // Tar bort eventuell kvarliggande hover-skalning direkt
+        });
+    });
+});
 
 // Klasser som ska ändra scale vid press (pointerdown -> pointerup)
 const PRESS_SCALE_CLASSES = [

@@ -372,13 +372,25 @@ body .games-grid-clip.is-skewed {
 .js-hover-scale.is-hovered {
   scale: 1.15;
 }
-
+/* ───────── WTC-WRAPPER, welcome-text-container ───────── */
 /* ── HOVER-SCALE SYSTEM SUBTIL (1.08) — Smoother transition for wtc-wrapper ── */
 .js-hover-scale-sm {
     transition: scale 0.35s cubic-bezier(0.25, 1, 0.5, 1);
 }
 .js-hover-scale-sm.is-hovered {
     scale: 1.08;
+}
+
+/* Specifik styrning för wtc-wrapper som hanterar både translate och scale samtidigt */
+.wtc-wrapper {
+    transition: translate 0.86s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                scale 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    will-change: translate, scale;
+}
+.wtc-wrapper.is-clicked {
+    translate: 0 -22%;
+    scale: 1 !important;
+    pointer-events: none;
 }
 
 
