@@ -243,6 +243,37 @@ input, textarea, button, .w-button, #submit-btn-vanilla {
 /* body-1 {
     scrollbar-gutter: stable;
 } */
+ /* Permanently reserve the scrollbar space on the root so the layout never shifts sideways */
+html {
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
+}
+/* Ensure the full-screen overlay stays fixed and doesn't trigger root layout shifts */
+.rules-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100svh;
+    overflow: hidden; /* Stops the overlay itself from spawning a second window bar */
+}
+
+/* Target the inner text box inside the rules overlay where the actual scrolling happens */
+.rules-overlay .clipping, 
+.rules-overlay [class*="text"], 
+.rules-overlay .content-box {
+    overflow-y: auto;
+    scrollbar-width: none; /* Hides Firefox scrollbar */
+    -ms-overflow-style: none; /* Hides IE/Edge scrollbar */
+}
+
+/* Hides Chrome/Safari scrollbar so no ugly dark/bright bars appear */
+.rules-overlay .clipping::-webkit-scrollbar,
+.rules-overlay [class*="text"]::-webkit-scrollbar,
+.rules-overlay .content-box::-webkit-scrollbar {
+    display: none;
+}
+
 /* html {
     overflow-y: scroll;
 } */
