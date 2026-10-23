@@ -29,7 +29,8 @@
   transition: opacity 0.05s ease-out, transform 0.37s ease-in-out;
 }
 /* Global overflow-stopper */
-.wrapper-score {
+.wrapper-score,
+.about-overlay {
   overflow-x: hidden;
 }
 
