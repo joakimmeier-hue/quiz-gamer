@@ -238,9 +238,9 @@ input, textarea, button, .w-button, #submit-btn-vanilla {
 .mask-middle::-webkit-scrollbar { 
   display: none;           
 }
-body-1 {
+/* body-1 {
     scrollbar-gutter: stable;
-}
+} */
 /* html {
     overflow-y: scroll;
 } */
