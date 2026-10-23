@@ -226,7 +226,7 @@ input, textarea, button, .w-button, #submit-btn-vanilla {
 
 /* Hide scrollbar for some classes */
 .clipping, 
-.games-grid-clip,
+/* .games-grid-clip, */
 .mask-middle
  {
   -ms-overflow-style: none;  /* IE/Edge */
@@ -234,7 +234,7 @@ input, textarea, button, .w-button, #submit-btn-vanilla {
 }
 
 .clipping::-webkit-scrollbar, 
-.games-grid-clip::-webkit-scrollbar,
+/* .games-grid-clip::-webkit-scrollbar, */
 .mask-middle::-webkit-scrollbar { 
   display: none;             /* Chrome/Safari */
 }
