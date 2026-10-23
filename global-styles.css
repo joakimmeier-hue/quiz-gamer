@@ -241,6 +241,9 @@ input, textarea, button, .w-button, #submit-btn-vanilla {
 .body-1 {
     scrollbar-gutter: stable;
 }
+html {
+    overflow-y: scroll;
+}
 
 /* Lobby Games mask */
 .games-grid-clip {
