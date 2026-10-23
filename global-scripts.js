@@ -2075,6 +2075,7 @@ const HOVER_SCALE_CLASSES = [
     'share-score-btn',
     'link-score',
     'inventory-btn-wrapper',
+    'player-info.username',
     'logout-btn',
     'button.i-lobby-back',
     'cp-submit-btn',
