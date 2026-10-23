@@ -395,7 +395,7 @@ body .games-grid-clip.is-skewed {
 }
 /* 2. Override: Enable interaction ONLY on the lobby page */
 .Body-1.lobby .player-info.username {
-    pointer-events: auto;
+    pointer-events: auto !important;
 }
 
 /* ── SCROLL-PULSE SYSTEM ── */
