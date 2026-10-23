@@ -713,21 +713,21 @@ body.game-finished .alternative-row {
 
 /* ────── ABOUT contact flip ────── */
 /* Grundinställning för flip-animationen */
+/* Grundinställning för flip och förflyttning */
 .contact-wrapper {
-  /* Rotationspunkten längst ner till höger (under T:et) */
-  transform-origin: bottom right; 
-  
-  /* Startläge: 0 grader rotation */
+  transform-origin: bottom right; /* Rotationspunkt under T:et */
   rotate: 0deg;
+  translate: 0 0px;
   
-  /* 1 sekund animation med ease-out (Power 1 out motsvarighet) */
-  transition: rotate 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  
-  will-change: rotate;
+  /* Både rotation och förflyttning animeras mjukt under 1 sekund */
+  transition: rotate 1s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              translate 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+              
+  will-change: rotate, translate;
 }
 
-/* När elementet når 65%-gränsen i skärmen/overlayen */
+/* När elementet når 65%-gränsen och klassen tänds via JS */
 .contact-wrapper.is-flipped {
-  /* Rotera -90 grader moturs */
-  rotate: -90deg;
+  rotate: -90deg;       /* Roterar 90 grader moturs */
+  translate: 0 -1.6rem; /* Flyttar sig uppåt med 1.6rem samtidigt */
 }
