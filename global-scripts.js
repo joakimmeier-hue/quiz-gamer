@@ -2010,6 +2010,34 @@ setInterval(() => {
   });
 })();
 
+/* ────── ABOUT contact flip ────── */
+document.addEventListener('DOMContentLoaded', () => {
+  const contactEl = document.querySelector('.contact-wrapper');
+  if (!contactEl) return;
+
+  // Hitta den internt skrollande overlayen (about-overlay)
+  const scrollContainer = contactEl.closest('.about-overlay') || null;
+
+  const observerOptions = {
+    root: scrollContainer, // Använder overlayen som skroll-parent
+    // -35% från botten = triggarlinjen hamnar exakt 65% från toppen
+    rootMargin: '0px 0px -35% 0px', 
+    threshold: 0
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-flipped');
+      } else {
+        entry.target.classList.remove('is-flipped'); // Spelar tillbaka (reverse)
+      }
+    });
+  }, observerOptions);
+
+  observer.observe(contactEl);
+});
+
 // ── CLIPPING MIN-WIDTH LOGIK ──────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   const trigger = document.querySelector('.welcome-text-container');
