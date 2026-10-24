@@ -1940,23 +1940,25 @@ setInterval(() => {
   });
 }, 6000); 
 
-// ── AUTO-FOCUS & SCROLL-TOP FÖR OVERLAYS (STABIL VERSION) ──────────────────
 (function() {
   const isOverlayOpen = {}; // Spårning för att undvika "dubbelkörning"
+
   function fakeClick() {
     const x = window.innerWidth / 2;
     const y = window.innerHeight / 2;
     const el = document.elementFromPoint(x, y);
+
     const skipReasonEl = el ? el.closest('.pp-dropdown, .i-closer-game, .button.i-lobby-back, .profile-pic-option, .pp-grid-wrapper, .dropdown-gamelevel, .w-dropdown') : null;
 
     if (!el) return;
+
     // Hoppa över om det landar på pp-dropdown eller dess close-triggers
-    // (annars stänger detta dropdownen ~150ms efter att den öppnats)
     if (skipReasonEl) {
       return;
     }
-    // Mark that a synthetic-click sequence is running so real handlers can ignore it
+
     window.__syntheticClickRunning = true;
+
     ['mousedown', 'mouseup', 'click'].forEach(type => {
       const evt = new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y });
       evt._synthetic = true;
@@ -1966,28 +1968,39 @@ setInterval(() => {
         console.warn('fakeClick: dispatch error', err);
       }
     });
-    // Clear the flag after a short delay (handlers should check this flag)
+
     setTimeout(() => {
       window.__syntheticClickRunning = false;
     }, 80);
   }
-  // Lista över dina overlays (lägg till dina exakta klassnamn här)
+
+  // Lista över dina overlays
   const targets = ['.rules-overlay', '.inventory-overlay', '.leaderboard-overlay', '.about-overlay'];
+  
   targets.forEach(selector => {
     document.querySelectorAll(selector).forEach(overlay => {
       new MutationObserver(() => {
         const style = window.getComputedStyle(overlay);
         const isVisible = style.display !== 'none' && style.visibility !== 'hidden' && parseFloat(style.opacity) > 0;
+
         // Om den är synlig OCH vi inte redan har kört koden för denna öppning:
         if (isVisible && !isOverlayOpen[selector]) {
           isOverlayOpen[selector] = true; // Lås
-          // 1. Scrolla slidern till toppen
-          const scrollEl = document.getElementById('i-slider');
+
+          // 1. Nollställ skroll på själva overlay-fönstret (fixar rules, about, leaderboard)
+          overlay.scrollTop = 0;
+
+          // 2. Nollställ även #i-slider om det finns (för inventory)
+          const scrollEl = overlay.querySelector('#i-slider') || document.getElementById('i-slider');
           if (scrollEl) {
             scrollEl.scrollTop = 0;
           }
-          // 2. Fokus-klick (med en liten fördröjning för att vara säker)
-          if (document.body.dataset.page === 'lobby') setTimeout(fakeClick, 150);       
+
+          // 3. Fokus-klick (behåller ditt fungerande fokus)
+          if (document.body.dataset.page === 'lobby') {
+            setTimeout(fakeClick, 150);
+          }       
+
         } else if (!isVisible) {
           isOverlayOpen[selector] = false; // Lås upp när den stängs
         }
@@ -1996,11 +2009,16 @@ setInterval(() => {
   });
 })();
 
-// Auto scroll to top
+// ------- DISABLE SCROLL RESTORATION (START AT TOP) ------------
+if ('scrollRestoration' in history) { 
+  history.scrollRestoration = 'manual'; 
+}
+
+/* // Auto scroll to top
 if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
 window.addEventListener('load', function() {
   window.scrollTo(0, 0);
-});
+}); */
 
 /* ────── ABOUT contact flip ────── */
 document.addEventListener('DOMContentLoaded', () => {
