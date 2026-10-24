@@ -1949,11 +1949,9 @@ window.addEventListener('load', function() {
 (function() {
   // Lista över dina overlays
   const targets = ['.rules-overlay', '.inventory-overlay', '.leaderboard-overlay', '.about-overlay'];
-  
-  targets.forEach(selector => {
+    targets.forEach(selector => {
     document.querySelectorAll(selector).forEach(overlay => {
       let lastVisible = false; // Lokal spårning per overlay
-
       const observer = new MutationObserver(() => {
         const style = window.getComputedStyle(overlay);
         const isVisible = style.display !== 'none' && style.visibility !== 'hidden' && parseFloat(style.opacity) > 0;
@@ -1961,21 +1959,16 @@ window.addEventListener('load', function() {
         // Om den just har blivit synlig:
         if (isVisible && !lastVisible) {
           lastVisible = true;
-
-          // 1. Scrolla själva overlay-fönstret till toppen direkt
+          // 1. Nollställ skroll direkt på själva overlayen
           overlay.scrollTop = 0;
-
-          // 2. Scrolla även om det finns en intern scroll-container eller #i-slider inuti den
-          const internalScroll = overlay.querySelector('#i-slider') || overlay.querySelector('.w-slider-mask') || overlay.querySelector('[scroll-container]');
+          // 2. Om det finns en intern slider/mask (t.ex. för inventory), nollställ den med
+          const internalScroll = overlay.querySelector('.w-slider-mask');
           if (internalScroll) {
             internalScroll.scrollTop = 0;
           }
-
-          // 3. Om #i-slider ligger globalt men styrs av denna overlay
-          const globalSlider = document.getElementById('i-slider');
-          if (globalSlider) {
-            globalSlider.scrollTop = 0;
-          }
+          // 3. Ge fokus direkt till overlayen så den "vaknar" utan extraklick
+          overlay.setAttribute('tabindex', '-1');
+          overlay.focus();
 
         } else if (!isVisible) {
           lastVisible = false; // Återställ när den stängs
