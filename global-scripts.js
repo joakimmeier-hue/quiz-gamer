@@ -247,7 +247,7 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// ── MULTI-BUTTON KEY LISTENERS (ESC/ENTER) ────────────────────────────
+// ── MULTI-BUTTON KEY LISTENERS (ESC/ENTER - SÄKER VERSION) ────────────────────────────
 document.addEventListener('keydown', function(e) {
   const triggerKeys = ["Escape", "Enter"];
   if (!triggerKeys.includes(e.key)) return;
@@ -256,12 +256,18 @@ document.addEventListener('keydown', function(e) {
   const overlays = document.querySelectorAll('.rules-overlay, .leaderboard-overlay, .about-overlay, .global-info');
   for (const overlay of overlays) {
     const style = window.getComputedStyle(overlay);
-    const isOpen = style.display !== 'none' && parseFloat(style.opacity) > 0.9;
+    
+    // SÄKRARE CHECK: Måste vara synlig, helt opaik (1.0), och aktiv för klick (ej pointer-events: none)
+    const isOpen = style.display !== 'none' && 
+                   style.visibility !== 'hidden' && 
+                   parseFloat(style.opacity) > 0.99 && 
+                   style.pointerEvents !== 'none';
+
     if (isOpen) {
       if (e.key === 'Enter' && overlay.classList.contains('about-overlay')) return;
       e.preventDefault();
 
-              if (overlay.classList.contains('global-info')) {
+      if (overlay.classList.contains('global-info')) {
         // Two-choice popup: Enter = Accept, Esc = close (same as Cancel)
         const acceptBtn = Array.from(overlay.querySelectorAll('.button.accept'))
           .find(el => el.offsetParent !== null);
