@@ -1940,13 +1940,6 @@ setInterval(() => {
   });
 }, 6000); 
 
-
-// Auto scroll to top
-if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
-window.addEventListener('load', function() {
-  window.scrollTo(0, 0);
-});
-
 // ── AUTO-FOCUS & SCROLL-TOP FÖR OVERLAYS (STABIL VERSION) ──────────────────
 (function() {
   const isOverlayOpen = {}; // Spårning för att undvika "dubbelkörning"
@@ -2002,6 +1995,12 @@ window.addEventListener('load', function() {
     });
   });
 })();
+
+// Auto scroll to top
+if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
+window.addEventListener('load', function() {
+  window.scrollTo(0, 0);
+});
 
 /* ────── ABOUT contact flip ────── */
 document.addEventListener('DOMContentLoaded', () => {
