@@ -2039,7 +2039,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // does not change while the flip animation plays
   const anchor = contactEl.parentElement;
 
-  const TRIGGER = 0.65;  // trigger line, 65% from the top of the container
+  const TRIGGER = 0.58;  // trigger line, 65% from the top of the container
   const DEAD_ZONE = 60;  // px of extra scroll needed before it flips back
 
   let ticking = false;
