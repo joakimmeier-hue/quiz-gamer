@@ -1991,6 +1991,11 @@ setInterval(() => {
 
           // 1. Nollställ skroll på själva overlay-fönstret (fixar rules, about, leaderboard)
           overlay.scrollTop = 0;
+            // 1b. Reset the inner scroller (About scrolls in .about-wrapper, not in the overlay)
+          const innerScroller = overlay.querySelector('.about-wrapper');
+          if (innerScroller) {
+            innerScroller.scrollTop = 0;
+          }
 
           // 2. Nollställ även #i-slider om det finns (för inventory)
           const scrollEl = overlay.querySelector('#i-slider') || document.getElementById('i-slider');
