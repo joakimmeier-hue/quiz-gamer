@@ -2032,27 +2032,42 @@ document.addEventListener('DOMContentLoaded', () => {
   const contactEl = document.querySelector('.contact-wrapper');
   if (!contactEl) return;
 
-  // Hitta den internt skrollande overlayen i About
+  // The scrolling container inside About
   const scrollContainer = contactEl.closest('.about-wrapper') || null;
 
-  const observerOptions = {
-    root: scrollContainer, // Använder overlayen som skroll-parent
-    // -35% från botten = triggarlinjen hamnar exakt 65% från toppen
-    rootMargin: '0px 0px -35% 0px', 
-    threshold: 0
-  };
+  // Stable anchor: the parent row is never rotated, so its position
+  // does not change while the flip animation plays
+  const anchor = contactEl.parentElement;
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('is-flipped');
-      } else {
-        entry.target.classList.remove('is-flipped'); // Spelar tillbaka (reverse)
-      }
-    });
-  }, observerOptions);
+  const TRIGGER = 0.65;  // trigger line, 65% from the top of the container
+  const DEAD_ZONE = 60;  // px of extra scroll needed before it flips back
 
-  observer.observe(contactEl);
+  let ticking = false;
+
+  function update() {
+    ticking = false;
+    const rootTop = scrollContainer ? scrollContainer.getBoundingClientRect().top : 0;
+    const rootHeight = scrollContainer ? scrollContainer.clientHeight : window.innerHeight;
+    const line = rootTop + rootHeight * TRIGGER;
+    const anchorTop = anchor.getBoundingClientRect().top;
+    const isFlipped = contactEl.classList.contains('is-flipped');
+
+    if (!isFlipped && anchorTop < line) {
+      contactEl.classList.add('is-flipped');
+    } else if (isFlipped && anchorTop > line + DEAD_ZONE) {
+      contactEl.classList.remove('is-flipped'); // plays back in reverse
+    }
+  }
+
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(update);
+  }
+
+  (scrollContainer || window).addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  update();
 });
 
 // ── CLIPPING MIN-WIDTH LOGIK ──────────────────────────────────────────
