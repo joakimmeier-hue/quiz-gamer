@@ -1946,6 +1946,7 @@ setInterval(() => {
   });
 }, 6000); 
 
+// ───────── FOCUS OVERLAYS ON LOBBY ─────────
 (function() {
   const isOverlayOpen = {}; // Spårning för att undvika "dubbelkörning"
 
@@ -1953,16 +1954,13 @@ setInterval(() => {
     const x = window.innerWidth / 2;
     const y = window.innerHeight / 2;
     const el = document.elementFromPoint(x, y);
-
     const skipReasonEl = el ? el.closest('.pp-dropdown, .i-closer-game, .button.i-lobby-back, .profile-pic-option, .pp-grid-wrapper, .dropdown-gamelevel, .w-dropdown') : null;
-
     if (!el) return;
 
     // Hoppa över om det landar på pp-dropdown eller dess close-triggers
     if (skipReasonEl) {
       return;
     }
-
     window.__syntheticClickRunning = true;
 
     ['mousedown', 'mouseup', 'click'].forEach(type => {
@@ -1974,7 +1972,6 @@ setInterval(() => {
         console.warn('fakeClick: dispatch error', err);
       }
     });
-
     setTimeout(() => {
       window.__syntheticClickRunning = false;
     }, 80);
@@ -1982,8 +1979,7 @@ setInterval(() => {
 
   // Lista över dina overlays
   const targets = ['.rules-overlay', '.inventory-overlay', '.leaderboard-overlay', '.about-overlay'];
-  
-  targets.forEach(selector => {
+    targets.forEach(selector => {
     document.querySelectorAll(selector).forEach(overlay => {
       new MutationObserver(() => {
         const style = window.getComputedStyle(overlay);
@@ -2031,8 +2027,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const contactEl = document.querySelector('.contact-wrapper');
   if (!contactEl) return;
 
-  // Hitta den internt skrollande overlayen (about-overlay)
-  const scrollContainer = contactEl.closest('.about-overlay') || null;
+  // Hitta den internt skrollande overlayen i About
+  const scrollContainer = contactEl.closest('.about-wrapper') || null;
 
   const observerOptions = {
     root: scrollContainer, // Använder overlayen som skroll-parent
