@@ -915,7 +915,6 @@ function hidePPDropdown() {
 // ── TANGENTBORDS-LYSSNARE (I, TAB, ESC) ──
 document.addEventListener('keydown', (e) => {
   if (e.repeat) return; // Stoppar buggar om man håller inne knappen
-
   const key = (e.key || '').toLowerCase();
 
   // --- 1) PP-GRID-WRAPPER PRIORITY: ESC should close any open pp-grid-wrapper first ---
@@ -932,10 +931,8 @@ document.addEventListener('keydown', (e) => {
       return; // stop further handling — pp-grid-wrapper closed
     }
   }
-
   // Allow ESC to operate even if user is typing
   if (key !== 'escape' && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
-
   // --- BRILJANT SPÄRR: Kolla om någon modal/overlay ligger i vägen ---
   const blockingSelectors = [
     '.login-modal-wrapper',
@@ -943,7 +940,6 @@ document.addEventListener('keydown', (e) => {
     '.change-username',
     '.intro-overlay-grp'
   ];
-
   let visibleModal = null;
   for (let selector of blockingSelectors) {
     const el = document.querySelector(selector);
@@ -952,7 +948,6 @@ document.addEventListener('keydown', (e) => {
       break;
     }
   }
-
   if (visibleModal) {
     if (key === 'escape' && visibleModal.classList.contains('change-username')) {
       visibleModal.click();
@@ -962,7 +957,6 @@ document.addEventListener('keydown', (e) => {
     }
     return;
   }
-
   const isGameSide = document.body.dataset.page === 'game';
 
   if (isGameSide) {
@@ -974,13 +968,11 @@ document.addEventListener('keydown', (e) => {
       if (window.isGameInvAnimating) return;
 
       const isOpen = window.getComputedStyle(crossBtn).display !== 'none';
-
       const triggerClick = (btn) => {
         window.isGameInvAnimating = true;
         btn.click();
         setTimeout(() => { window.isGameInvAnimating = false; }, 150);
       };
-
       if (key === 'escape') {
         if (isOpen) {
           e.preventDefault();
@@ -1004,7 +996,6 @@ document.addEventListener('keydown', (e) => {
     showLoginModal();
     return;
   }
-
   const overlay = document.querySelector('.inventory-overlay');
 
   // Close pp-dropdown first, then toggle inventory after a short delay
@@ -2310,3 +2301,97 @@ if (currentSlug === 'score') {
     }
   });
 }
+
+// ────────────────────────────────────── LEADERBOARD LB FILTERS ──────────────────────────────────────
+// Three chained dropdowns (type → topic → tier) inside .leaderboard-overlay.
+// Everything is looked up through the overlay, never through document-wide class names,
+// so the game start dropdown on the *-start pages is never touched.
+(function initLeaderboardFilters() {
+  const LB_TYPES = { 1: 'total', 2: 'score', 3: 'unlim' };  // data-level on the type rows -> board prefix
+  const LB_STATE = { type: null, topic: null, tier: null };
+
+  function init() {
+    const overlay = document.querySelector('.leaderboard-overlay');
+    if (!overlay) return;
+
+    const roots = {};
+    overlay.querySelectorAll('[data-lb]').forEach(el => {
+      roots[el.getAttribute('data-lb')] = el.closest('.dropdown-gamelevel') || el;
+    });
+    if (!roots.type || !roots.topic || !roots.tier) {
+      console.warn('LB: missing dropdown(s):', Object.keys(roots));
+      return;
+    }
+
+    // Topic rows are generated from GAME_CONFIG ("science-l1" -> "science")
+    const topics = [...new Set(Object.keys(GAME_CONFIG).map(k => k.replace(/-l\d+$/, '')))];
+    const topicList = roots.topic.querySelector('.dropdown-gllist');
+    const template = topicList && topicList.querySelector('.game-level-option'); // first row has no lock icon
+    if (template) {
+      const rows = topics.map(t => {
+        const row = template.cloneNode(true);
+        row.removeAttribute('data-level');
+        row.dataset.topic = t;
+        row.classList.remove('is-selected');
+        const label = row.querySelector('.game-level-text');
+        if (label) label.textContent = t.charAt(0).toUpperCase() + t.slice(1);
+        return row;
+      });
+      topicList.querySelectorAll('.game-level-option').forEach(r => r.remove());
+      topicList.prepend(...rows);
+    }
+
+    const boardId = () => {
+      if (LB_STATE.type === 'total') return 'total';
+      if (!LB_STATE.type || !LB_STATE.topic || !LB_STATE.tier) return null;
+      return `${LB_STATE.type}-${LB_STATE.topic}-l${LB_STATE.tier}`; // score-science-l1 / unlim-science-l1
+    };
+
+    const loadBoard = (id) => {
+      console.log('LB board id:', id); // TODO: call getLeaderboards here
+    };
+
+    const sync = () => {
+      const hide = LB_STATE.type === 'total'; // Total Score needs no topic or tier
+      roots.topic.style.display = hide ? 'none' : '';
+      roots.tier.style.display = hide ? 'none' : '';
+      const id = boardId();
+      if (id) loadBoard(id);
+    };
+
+    Object.entries(roots).forEach(([kind, dd]) => {
+      const toggle = dd.querySelector('.dropdown-toggle-lvl');
+      const list = dd.querySelector('.dropdown-gllist');
+      if (!toggle || !list) return;
+
+      toggle.addEventListener('click', () => {
+        if (typeof playSFX === 'function') playSFX(toggle.classList.contains('w--open') ? 'back' : 'select');
+      });
+
+      list.addEventListener('click', (e) => {
+        const row = e.target.closest('.game-level-option');
+        if (!row || !list.contains(row)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof playSFX === 'function') playSFX('back');
+
+        list.querySelectorAll('.game-level-option').forEach(r => r.classList.remove('is-selected'));
+        row.classList.add('is-selected');
+
+        const labelEl = row.querySelector('.game-level-text');
+        const text = (labelEl ? labelEl.textContent : row.textContent).trim();
+        dd.querySelectorAll('.gamelvl-title:not(.arrow)').forEach(t => { t.textContent = text; });
+
+        if (kind === 'type') LB_STATE.type = LB_TYPES[row.getAttribute('data-level')] || null;
+        if (kind === 'topic') LB_STATE.topic = row.dataset.topic || null;
+        if (kind === 'tier') LB_STATE.tier = parseInt(row.getAttribute('data-level'), 10) || null;
+
+        dd.dispatchEvent(new Event('w-close'));
+        sync();
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
