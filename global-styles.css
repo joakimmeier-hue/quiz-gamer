@@ -591,7 +591,15 @@ a.button-link:hover {
               transform 0.25s 0.1s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* LB DROPDOWNS VARIANT: picked state = white box, like the start-page dropdown */
+/* LB DROPDOWNS VARIANT
+/* Snabbare animationer enbart för dropdowns inne i leaderboarden */
+.leaderboard-overlay .dropdown-gamelevel {
+  animation:
+    fadeIn 0.2s 0.05s ease-in forwards,
+    enableClicks 0s 0.25s forwards;
+}
+
+/*picked state = white box, like the start-page dropdown */
 .leaderboard-overlay .dropdown-gamelevel.is-picked .gamelevel-btn { background-color: #fff; }
 .leaderboard-overlay .dropdown-gamelevel.is-picked .gamelvl-title { color: #000; }
 .leaderboard-overlay .dropdown-gamelevel.is-picked .gamelvl-title.arrow { display: none; }
