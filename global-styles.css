@@ -678,12 +678,23 @@ a.button-link:hover {
   right: 0;
 }
 
-/* Mjuk fade-in för rader när de skapas i leaderboarden */
-.leaderboard-overlay .lb-column {
-  opacity: 1;
-  transition: opacity 0.13s ease-in-out;
+/* Skapa en mjuk animation som körs varje gång en rad (kolumn) skapas */
+@keyframes rowFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px); /* Startar 10px längre ner */
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);    /* Glider på plats */
+  }
 }
 
+/* Applicera animationen på alla kolumner i leaderboarden */
+.leaderboard-overlay .lb-column,
+.leaderboard-overlay .lb-wrapper {
+  animation: rowFadeIn 0.25s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
 
 /* GAME INFO LOAD ANIMATION */
 .game-info {
