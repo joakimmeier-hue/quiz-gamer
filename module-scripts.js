@@ -2346,10 +2346,74 @@ if (currentSlug === 'score') {
       if (!LB_STATE.type || !LB_STATE.topic || !LB_STATE.tier) return null;
       return `${LB_STATE.type}-${LB_STATE.topic}-l${LB_STATE.tier}`; // score-science-l1 / unlim-science-l1
     };
-
-    const loadBoard = (id) => {
-      console.log('LB board id:', id); // TODO: call getLeaderboards here
+    const lbCache = new Map(); // boardId -> { t, entries }
+    const LB_CACHE_MS = 90 * 1000;
+    const loadBoard = async (id) => {
+      const hit = lbCache.get(id);
+      if (hit && Date.now() - hit.t < LB_CACHE_MS) { renderBoard(hit.entries); return; }
+      try {
+        const getLeaderboardsFn = httpsCallable(functions, 'getLeaderboards');
+        const res = await getLeaderboardsFn({ boardId: id });
+        lbCache.set(id, { t: Date.now(), entries: res.data.entries });
+        if (id !== boardId()) return; // the player already picked something else
+        renderBoard(res.data.entries);
+      } catch (err) {
+        console.error('Failed to load leaderboard:', err.message);
+      }
     };
+
+// Row template: the plain .LB-columns row (not .header) is cloned once per player
+const tplRow = overlay.querySelector('.LB-columns:not(.header)');
+if (!tplRow) console.warn('LB: no template row (.LB-columns without .header)');
+const rowList = tplRow ? tplRow.parentElement : null;
+const rowTemplate = tplRow ? tplRow.cloneNode(true) : null;
+if (tplRow) tplRow.remove();
+
+const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '-';
+
+const buildRow = (entry, rank) => {
+  const row = rowTemplate.cloneNode(true);
+  row.dataset.lbRow = '1';
+  if (entry.isMe) row.dataset.me = '1';
+  const cells = row.children; // order: # / avatar / player / lvl / score / fav topic
+  cells[0].textContent = rank;
+  const img = cells[1].tagName === 'IMG' ? cells[1] : cells[1].querySelector('img');
+  if (img && entry.profilePicUrl) {
+    img.removeAttribute('srcset'); // Webflow srcset would override src
+    img.removeAttribute('sizes');
+    img.src = entry.profilePicUrl;
+    img.alt = entry.username || '';
+  }
+  cells[2].textContent = entry.username || '-';
+  cells[3].textContent = entry.level ?? '-';
+  cells[4].textContent = fmtNum(entry.score);
+  cells[5].textContent = capitalize(entry.favTopic);
+  return row;
+};
+
+const renderBoard = (entries) => {
+  if (!rowList || !rowTemplate) return;
+  rowList.querySelectorAll('[data-lb-row]').forEach(r => r.remove());
+  const frag = document.createDocumentFragment();
+  entries
+    .filter(e => e.score > 0) // players with 0 points (new accounts) are not ranked
+    .forEach((e, i) => frag.appendChild(buildRow(e, i + 1)));
+  rowList.appendChild(frag);
+};
+
+// "Find me!": highlight and scroll to the player's own row.
+// Rows are re-created on every board change, so the highlight resets itself.
+const findMeBtn = overlay.querySelector('.find-me-btn');
+if (findMeBtn) {
+  findMeBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const myRow = rowList && rowList.querySelector('[data-me]');
+    if (!myRow) return; // not on this board (or outside the top 100)
+    if (typeof playSFX === 'function') playSFX('select');
+    myRow.classList.add('is-highlight');
+    myRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+}
 
     const sync = () => {
       const hide = LB_STATE.type === 'total'; // Total Score needs no topic or tier
