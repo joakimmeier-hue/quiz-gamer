@@ -2302,7 +2302,7 @@ if (currentSlug === 'score') {
   });
 }
 
-// ────────────────────────────────────── LEADERBOARD LB FILTERS ──────────────────────────────────────
+// ────────────────────────────────────── LEADERBOARD lb FILTERS ──────────────────────────────────────
 // Three chained dropdowns (type → topic → tier) inside .leaderboard-overlay.
 // Everything is looked up through the overlay, never through document-wide class names,
 // so the game start dropdown on the *-start pages is never touched.
@@ -2319,7 +2319,7 @@ if (currentSlug === 'score') {
       roots[el.getAttribute('data-lb')] = el.closest('.dropdown-gamelevel') || el;
     });
     if (!roots.type || !roots.topic || !roots.tier) {
-      console.warn('LB: missing dropdown(s):', Object.keys(roots));
+      console.warn('lb: missing dropdown(s):', Object.keys(roots));
       return;
     }
     // Type rows: labels are set here so the text and the data-level mapping can't drift apart
@@ -2362,7 +2362,7 @@ if (currentSlug === 'score') {
         try {
           const getLeaderboardsFn = httpsCallable(functions, 'getLeaderboards');
           const res = await getLeaderboardsFn({ boardId: id });
-          console.log('LB loaded:', id, res.data); // temporary debug, remove later
+          console.log('lb loaded:', id, res.data); // temporary debug, remove later
           lbCache.set(id, { t: Date.now(), entries: res.data.entries });
           if (id !== boardId()) return; // the player already picked something else
           renderBoard(res.data.entries);
@@ -2470,10 +2470,31 @@ if (currentSlug === 'score') {
         const text = (labelEl ? labelEl.textContent : row.textContent).trim();
         dd.querySelectorAll('.gamelvl-title:not(.arrow)').forEach(t => { t.textContent = text; });
 
-        if (kind === 'type') LB_STATE.type = LB_TYPES[row.getAttribute('data-level')] || null;
+        if (kind === 'type') {
+          LB_STATE.type = LB_TYPES[row.getAttribute('data-level')] || null;
+
+          // OM ANVÄNDAREN VÄLJER TOTAL SCORE: Nollställ allt efterföljande!
+          if (LB_STATE.type === 'total') {
+            LB_STATE.topic = null;
+            LB_STATE.tier = null;
+
+            // Rensa UI och state för Topic och Tier så de blir "som nya" igen
+            ['topic', 'tier'].forEach(k => {
+              if (roots[k]) {
+                roots[k].classList.remove('is-picked');
+                roots[k].querySelectorAll('.game-level-option').forEach(r => r.classList.remove('is-selected'));
+                
+                // Sätt tillbaka ursprungstexten på knapparna
+                const defaultText = k === 'topic' ? 'Select Topic' : 'Select Tier';
+                roots[k].querySelectorAll('.gamelvl-title:not(.arrow)').forEach(t => { 
+                  t.textContent = defaultText; 
+                });
+              }
+            });
+          }
+        }
         if (kind === 'topic') LB_STATE.topic = row.dataset.topic || null;
         if (kind === 'tier') LB_STATE.tier = parseInt(row.getAttribute('data-level'), 10) || null;
-        console.log('LB pick:', kind, JSON.stringify(LB_STATE), boardId()); // temporary debug
 
         userPicked = true;
         dd.dispatchEvent(new Event('w-close'));
