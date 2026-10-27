@@ -689,11 +689,11 @@ a.button-link:hover {
     transform: translateY(0);    /* Glider på plats */
   }
 }
-
 /* Applicera animationen på alla kolumner i leaderboarden */
 .leaderboard-overlay .lb-column {
-  animation: rowFadeIn 0.25s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  animation: rowFadeIn 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
+
 
 /* GAME INFO LOAD ANIMATION */
 .game-info {
