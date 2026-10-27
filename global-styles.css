@@ -596,6 +596,23 @@ a.button-link:hover {
 .leaderboard-overlay .dropdown-gamelevel.is-picked .gamelvl-title { color: #000; }
 .leaderboard-overlay .dropdown-gamelevel.is-picked .gamelvl-title.arrow { display: none; }
 
+/* Gör så att listan flyter över elementen nedanför enbart i leaderboarden */
+.leaderboard-overlay .dropdown-gllist {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+/* Så fort någon dropdown inom denna rad har klassen .w--open, reagerar raden */
+.leaderboard-overlay .lb-row-1:has(.w--open) {
+  margin-bottom: 3rem; /* Justera detta mått om du vill ha mer/mindre luft för listan */
+  transition: margin-bottom 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+/* Grundläge med mjuk återgång */
+.leaderboard-overlay .lb-row-1 {
+  transition: margin-bottom 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
 
 
 /* GAME INFO LOAD ANIMATION */
