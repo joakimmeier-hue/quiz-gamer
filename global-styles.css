@@ -681,7 +681,7 @@ a.button-link:hover {
 /* Mjuk fade-in för rader när de skapas i leaderboarden */
 .leaderboard-overlay .lb-column {
   opacity: 1;
-  transition: opacity 0.3s ease-in-out;
+  transition: opacity 0.13s ease-in-out;
 }
 
 
