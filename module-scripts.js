@@ -2081,7 +2081,7 @@ Webflow.push(function() {
   setText('list-time', data.timeStr);
   setText('list-tier-bonus', `Tier ${data.tier} bonus: ${Number(data.tierMultiplier).toFixed(1)}x`);
   setText('list-attempts', data.attemptCount - 1);
-  setText('list-leaderboard', `#${data.leaderboardPosition}`);
+  setText('lb-position', `#${data.leaderboardPosition}`);
   setText('list-score', data.finalScore);
   setText('list-unlimited-score', data.unlimitedScore);
 
