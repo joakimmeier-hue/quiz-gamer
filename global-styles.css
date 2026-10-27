@@ -691,8 +691,7 @@ a.button-link:hover {
 }
 
 /* Applicera animationen på alla kolumner i leaderboarden */
-.leaderboard-overlay .lb-column,
-.leaderboard-overlay .lb-wrapper {
+.leaderboard-overlay .lb-column {
   animation: rowFadeIn 0.25s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
