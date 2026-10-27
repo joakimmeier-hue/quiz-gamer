@@ -591,6 +591,13 @@ a.button-link:hover {
               transform 0.25s 0.1s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
+/* LB DROPDOWNS VARIANT: picked state = white box, like the start-page dropdown */
+.leaderboard-overlay .dropdown-gamelevel.is-picked .gamelevel-btn { background-color: #fff; }
+.leaderboard-overlay .dropdown-gamelevel.is-picked .gamelvl-title { color: #000; }
+.leaderboard-overlay .dropdown-gamelevel.is-picked .gamelvl-title.arrow { display: none; }
+
+
+
 /* GAME INFO LOAD ANIMATION */
 .game-info {
   opacity: 0;

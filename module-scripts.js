@@ -2370,9 +2370,9 @@ if (currentSlug === 'score') {
       }
     };
 
-// Row template: the plain .LB-column row (not .header) is cloned once per player
-const tplRow = overlay.querySelector('.LB-column:not(.header)');
-if (!tplRow) console.warn('LB: no template row (.LB-column without .header)');
+// Row template: the plain .lb-column row (not .header) is cloned once per player
+const tplRow = overlay.querySelector('.lb-column:not(.header)');
+if (!tplRow) console.warn('lb: no template row (.lb-column without .header)');
 const rowList = tplRow ? tplRow.parentElement : null;
 const rowTemplate = tplRow ? tplRow.cloneNode(true) : null;
 if (tplRow) tplRow.remove();
@@ -2400,7 +2400,7 @@ const buildRow = (entry, rank) => {
 };
 
 // Intro/default heading row fades out once a board has loaded
-const introRow = overlay.querySelector('.LB-row-1.hide');
+const introRow = overlay.querySelector('.lb-row-1.hide');
 const hideIntro = () => {
   if (!introRow || introRow.dataset.gone) return;
   introRow.dataset.gone = '1';
@@ -2459,6 +2459,7 @@ if (findMeBtn) {
 
         list.querySelectorAll('.game-level-option').forEach(r => r.classList.remove('is-selected'));
         row.classList.add('is-selected');
+        dd.classList.add('is-picked');
 
         const labelEl = row.querySelector('.game-level-text');
         const text = (labelEl ? labelEl.textContent : row.textContent).trim();
