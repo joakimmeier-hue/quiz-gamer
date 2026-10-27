@@ -604,16 +604,29 @@ a.button-link:hover {
   right: 0;
   z-index: 100;
 }
-/* Så fort någon dropdown inom denna rad har klassen .w--open, reagerar raden */
-.leaderboard-overlay .lb-row-1:has(.w--open) {
-  margin-bottom: 3rem; /* Justera detta mått om du vill ha mer/mindre luft för listan */
-  transition: margin-bottom 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-}
-/* Grundläge med mjuk återgång */
-.leaderboard-overlay .lb-row-1 {
+/* 1. Dippa ner raden när en dropdown öppnas */
+.leaderboard-overlay .lb-row-1.select-lb:has(.w--open) {
+  margin-bottom: 3rem;
   transition: margin-bottom 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
+.leaderboard-overlay .lb-row-1.select-lb {
+  transition: margin-bottom 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+/* 2. BLUR when dropdown happens */
+.leaderboard-overlay:has(.select-lb .w--open) {
+.lb-row-1.blur,
+.lb-row-1.hide  {
+  -webkit-filter: blur(5px);
+  filter: blur(5px);
+  transition: filter 100ms ease-in;
+}
+}
+/* Mjuk återgång när man stänger menyn igen */
+.lb-row-1.blur,
+.lb-row-1.hide {
+  transition: filter 200ms ease-out;
+}
 
 /* GAME INFO LOAD ANIMATION */
 .game-info {
