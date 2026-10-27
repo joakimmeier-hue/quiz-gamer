@@ -2413,8 +2413,10 @@ if (currentSlug === 'score') {
         if (!rowList || !rowTemplate) return;
         rowList.querySelectorAll('[data-lb-row]').forEach(r => r.remove());
         const frag = document.createDocumentFragment();
+        // Sortera alltid så att högst poäng kommer först, uavsett ordning i DB
         entries
-          .filter(e => e.score > 0) // players with 0 points (new accounts) are not ranked
+          .filter(e => e.score > 0)
+          .sort((a, b) => b.score - a.score) // <-- Lägg till denna rad!
           .forEach((e, i) => frag.appendChild(buildRow(e, i + 1)));
         rowList.appendChild(frag);
         if (userPicked) hideIntro();
