@@ -628,7 +628,20 @@ a.button-link:hover {
 }
 /* FAKE SQUARES CORNERS Find me is-highlight */
 .lb-column.is-highlight {
-  /* Skär av mitten och behåll 10% i topp och botten på ramarna */
+  position: relative; /* Krävs för att pseudo-elementen ska hamna rätt */
+}
+
+/* Skapa vänster- och högerramen via CSS */
+.lb-column.is-highlight::before,
+.lb-column.is-highlight::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 6px; /* Tjockleken på din ram */
+  background-color: var(--yellow, #ffcb6b);
+  
+  /* Masken som klipper av mitten (behåller 10% i topp och botten) */
   -webkit-mask-image: linear-gradient(
     to bottom, 
     black 0%, 
@@ -647,6 +660,14 @@ a.button-link:hover {
     black 90%, 
     black 100%
   );
+}
+
+/* Placera ut dem till vänster respektive höger */
+.lb-column.is-highlight::before {
+  left: 0;
+}
+.lb-column.is-highlight::after {
+  right: 0;
 }
 
 
