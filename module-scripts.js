@@ -2308,7 +2308,7 @@ if (currentSlug === 'score') {
 // so the game start dropdown on the *-start pages is never touched.
 (function initLeaderboardFilters() {
   const LB_TYPES = { 1: 'total', 2: 'score', 3: 'unlim' };  // data-level on the type rows -> board prefix
-  const LB_STATE = { type: null, topic: null, tier: null };
+  const LB_STATE = { type: 'total', topic: null, tier: null }; //and this goes here or over the sync block?
 
   function init() {
     const overlay = document.querySelector('.leaderboard-overlay');
@@ -2322,7 +2322,7 @@ if (currentSlug === 'score') {
       console.warn('LB: missing dropdown(s):', Object.keys(roots));
       return;
     }
-  // Type rows: labels are set here so the text and the data-level mapping can't drift apart
+    // Type rows: labels are set here so the text and the data-level mapping can't drift apart
     const LB_TYPE_LABELS = { 1: 'Total Score', 2: 'Highscore', 3: 'Unlimited' };
     roots.type.querySelectorAll('.game-level-option').forEach(row => {
       const label = row.querySelector('.game-level-text');
@@ -2348,95 +2348,97 @@ if (currentSlug === 'score') {
       topicList.prepend(...rows);
     }
 
-    const boardId = () => {
-      if (LB_STATE.type === 'total') return 'total';
-      if (!LB_STATE.type || !LB_STATE.topic || !LB_STATE.tier) return null;
-      return `${LB_STATE.type}-${LB_STATE.topic}-l${LB_STATE.tier}`; // score-science-l1 / unlim-science-l1
-    };
-    const lbCache = new Map(); // boardId -> { t, entries }
-    const LB_CACHE_MS = 90 * 1000;
-    const loadBoard = async (id) => {
-      const hit = lbCache.get(id);
-      if (hit && Date.now() - hit.t < LB_CACHE_MS) { renderBoard(hit.entries); return; }
-      try {
-        const getLeaderboardsFn = httpsCallable(functions, 'getLeaderboards');
-        const res = await getLeaderboardsFn({ boardId: id });
-        console.log('LB loaded:', id, res.data); // temporary debug, remove later
-        lbCache.set(id, { t: Date.now(), entries: res.data.entries });
-        if (id !== boardId()) return; // the player already picked something else
-        renderBoard(res.data.entries);
-      } catch (err) {
-        console.error('Failed to load leaderboard:', err.message);
+      const boardId = () => {
+        if (LB_STATE.type === 'total') return 'total';
+        if (!LB_STATE.type || !LB_STATE.topic || !LB_STATE.tier) return null;
+        return `${LB_STATE.type}-${LB_STATE.topic}-l${LB_STATE.tier}`; // score-science-l1 / unlim-science-l1
+      };
+      const lbCache = new Map(); // boardId -> { t, entries }
+      let userPicked = false;
+      const LB_CACHE_MS = 90 * 1000;
+      const loadBoard = async (id) => {
+        const hit = lbCache.get(id);
+        if (hit && Date.now() - hit.t < LB_CACHE_MS) { renderBoard(hit.entries); return; }
+        try {
+          const getLeaderboardsFn = httpsCallable(functions, 'getLeaderboards');
+          const res = await getLeaderboardsFn({ boardId: id });
+          console.log('LB loaded:', id, res.data); // temporary debug, remove later
+          lbCache.set(id, { t: Date.now(), entries: res.data.entries });
+          if (id !== boardId()) return; // the player already picked something else
+          renderBoard(res.data.entries);
+        } catch (err) {
+          console.error('Failed to load leaderboard:', err.message);
+        }
+      };
+
+        // Row template: the plain .lb-column row (not .header) is cloned once per player
+        const tplRow = overlay.querySelector('.lb-column:not(.header)');
+        if (!tplRow) console.warn('lb: no template row (.lb-column without .header)');
+        const rowList = tplRow ? tplRow.parentElement : null;
+        const rowTemplate = tplRow ? tplRow.cloneNode(true) : null;
+        if (tplRow) tplRow.remove();
+
+      const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '-';
+
+      const buildRow = (entry, rank) => {
+      const row = rowTemplate.cloneNode(true);
+      row.dataset.lbRow = '1';
+      if (entry.isMe) row.dataset.me = '1';
+      const cells = row.children; // order: # / avatar / player / lvl / score / fav topic
+      cells[0].textContent = rank;
+      const img = cells[1].tagName === 'IMG' ? cells[1] : cells[1].querySelector('img');
+      if (img && entry.profilePicUrl) {
+        img.removeAttribute('srcset'); // Webflow srcset would override src
+        img.removeAttribute('sizes');
+        img.src = entry.profilePicUrl;
+        img.alt = entry.username || '';
       }
+      cells[2].textContent = entry.username || '-';
+      cells[3].textContent = entry.level ?? '-';
+      cells[4].textContent = fmtNum(entry.score);
+      cells[5].textContent = capitalize(entry.favTopic);
+      return row;
     };
 
-// Row template: the plain .lb-column row (not .header) is cloned once per player
-const tplRow = overlay.querySelector('.lb-column:not(.header)');
-if (!tplRow) console.warn('lb: no template row (.lb-column without .header)');
-const rowList = tplRow ? tplRow.parentElement : null;
-const rowTemplate = tplRow ? tplRow.cloneNode(true) : null;
-if (tplRow) tplRow.remove();
+      // Intro/default heading row fades out once a board has loaded
+      const introRow = overlay.querySelector('.lb-row-1.hide');
+      const hideIntro = () => {
+        if (!introRow || introRow.dataset.gone) return;
+        introRow.dataset.gone = '1';
+        introRow.style.transition = 'opacity 0.4s ease';
+        introRow.style.opacity = '0';
+        setTimeout(() => { introRow.style.display = 'none'; }, 400);
+      };
+      const renderBoard = (entries) => {
+        if (!rowList || !rowTemplate) return;
+        rowList.querySelectorAll('[data-lb-row]').forEach(r => r.remove());
+        const frag = document.createDocumentFragment();
+        entries
+          .filter(e => e.score > 0) // players with 0 points (new accounts) are not ranked
+          .forEach((e, i) => frag.appendChild(buildRow(e, i + 1)));
+        rowList.appendChild(frag);
+        if (userPicked) hideIntro();
+      };
 
-const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '-';
+      // "Find me!": highlight and scroll to the player's own row.
+      // Rows are re-created on every board change, so the highlight resets itself.
+      const findMeBtn = overlay.querySelector('.find-me-btn');
+      if (findMeBtn) {
+        findMeBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          const myRow = rowList && rowList.querySelector('[data-me]');
+          if (!myRow) return; // not on this board (or outside the top 100)
+          if (typeof playSFX === 'function') playSFX('select');
+          myRow.classList.add('is-highlight');
+          myRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+      }
 
-const buildRow = (entry, rank) => {
-  const row = rowTemplate.cloneNode(true);
-  row.dataset.lbRow = '1';
-  if (entry.isMe) row.dataset.me = '1';
-  const cells = row.children; // order: # / avatar / player / lvl / score / fav topic
-  cells[0].textContent = rank;
-  const img = cells[1].tagName === 'IMG' ? cells[1] : cells[1].querySelector('img');
-  if (img && entry.profilePicUrl) {
-    img.removeAttribute('srcset'); // Webflow srcset would override src
-    img.removeAttribute('sizes');
-    img.src = entry.profilePicUrl;
-    img.alt = entry.username || '';
-  }
-  cells[2].textContent = entry.username || '-';
-  cells[3].textContent = entry.level ?? '-';
-  cells[4].textContent = fmtNum(entry.score);
-  cells[5].textContent = capitalize(entry.favTopic);
-  return row;
-};
-
-// Intro/default heading row fades out once a board has loaded
-const introRow = overlay.querySelector('.lb-row-1.hide');
-const hideIntro = () => {
-  if (!introRow || introRow.dataset.gone) return;
-  introRow.dataset.gone = '1';
-  introRow.style.transition = 'opacity 0.4s ease';
-  introRow.style.opacity = '0';
-  setTimeout(() => { introRow.style.display = 'none'; }, 400);
-};
-const renderBoard = (entries) => {
-  if (!rowList || !rowTemplate) return;
-  rowList.querySelectorAll('[data-lb-row]').forEach(r => r.remove());
-  const frag = document.createDocumentFragment();
-  entries
-    .filter(e => e.score > 0) // players with 0 points (new accounts) are not ranked
-    .forEach((e, i) => frag.appendChild(buildRow(e, i + 1)));
-  rowList.appendChild(frag);
-  hideIntro();
-};
-
-// "Find me!": highlight and scroll to the player's own row.
-// Rows are re-created on every board change, so the highlight resets itself.
-const findMeBtn = overlay.querySelector('.find-me-btn');
-if (findMeBtn) {
-  findMeBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    const myRow = rowList && rowList.querySelector('[data-me]');
-    if (!myRow) return; // not on this board (or outside the top 100)
-    if (typeof playSFX === 'function') playSFX('select');
-    myRow.classList.add('is-highlight');
-    myRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  });
-}
-
-    const sync = () => {
-      const hide = LB_STATE.type === 'total'; // Total Score needs no topic or tier
-      roots.topic.style.display = hide ? 'none' : '';
-      roots.tier.style.display = hide ? 'none' : '';
+        const sync = () => {
+      const showTopic = !!LB_STATE.type && LB_STATE.type !== 'total'; // Total Score needs no topic or tier
+      const showTier = showTopic && !!LB_STATE.topic;
+      roots.topic.style.display = showTopic ? '' : 'none';
+      roots.tier.style.display = showTier ? '' : 'none';
       const id = boardId();
       if (id) loadBoard(id);
     };
@@ -2449,7 +2451,8 @@ if (findMeBtn) {
       toggle.addEventListener('click', () => {
         if (typeof playSFX === 'function') playSFX(toggle.classList.contains('w--open') ? 'back' : 'select');
       });
-
+      
+      // Click handler
       list.addEventListener('click', (e) => {
         const row = e.target.closest('.game-level-option');
         if (!row || !list.contains(row)) return;
@@ -2470,10 +2473,13 @@ if (findMeBtn) {
         if (kind === 'tier') LB_STATE.tier = parseInt(row.getAttribute('data-level'), 10) || null;
         console.log('LB pick:', kind, JSON.stringify(LB_STATE), boardId()); // temporary debug
 
+        userPicked = true;
         dd.dispatchEvent(new Event('w-close'));
         sync();
+        
       });
     });
+    sync(); // initial state: only the type dropdown visible, Total Score board loaded
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
