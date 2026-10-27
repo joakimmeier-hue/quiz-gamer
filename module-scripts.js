@@ -2362,9 +2362,9 @@ if (currentSlug === 'score') {
       }
     };
 
-// Row template: the plain .LB-columns row (not .header) is cloned once per player
-const tplRow = overlay.querySelector('.LB-columns:not(.header)');
-if (!tplRow) console.warn('LB: no template row (.LB-columns without .header)');
+// Row template: the plain .LB-column row (not .header) is cloned once per player
+const tplRow = overlay.querySelector('.LB-column:not(.header)');
+if (!tplRow) console.warn('LB: no template row (.LB-column without .header)');
 const rowList = tplRow ? tplRow.parentElement : null;
 const rowTemplate = tplRow ? tplRow.cloneNode(true) : null;
 if (tplRow) tplRow.remove();
