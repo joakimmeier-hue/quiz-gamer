@@ -2322,6 +2322,13 @@ if (currentSlug === 'score') {
       console.warn('LB: missing dropdown(s):', Object.keys(roots));
       return;
     }
+  // Type rows: labels are set here so the text and the data-level mapping can't drift apart
+    const LB_TYPE_LABELS = { 1: 'Total Score', 2: 'Highscore', 3: 'Unlimited' };
+    roots.type.querySelectorAll('.game-level-option').forEach(row => {
+      const label = row.querySelector('.game-level-text');
+      const txt = LB_TYPE_LABELS[row.getAttribute('data-level')];
+      if (label && txt) label.textContent = txt;
+    });
 
     // Topic rows are generated from GAME_CONFIG ("science-l1" -> "science")
     const topics = [...new Set(Object.keys(GAME_CONFIG).map(k => k.replace(/-l\d+$/, '')))];
@@ -2354,6 +2361,7 @@ if (currentSlug === 'score') {
       try {
         const getLeaderboardsFn = httpsCallable(functions, 'getLeaderboards');
         const res = await getLeaderboardsFn({ boardId: id });
+        console.log('LB loaded:', id, res.data); // temporary debug, remove later
         lbCache.set(id, { t: Date.now(), entries: res.data.entries });
         if (id !== boardId()) return; // the player already picked something else
         renderBoard(res.data.entries);
@@ -2391,6 +2399,15 @@ const buildRow = (entry, rank) => {
   return row;
 };
 
+// Intro/default heading row fades out once a board has loaded
+const introRow = overlay.querySelector('.LB-row-1.hide');
+const hideIntro = () => {
+  if (!introRow || introRow.dataset.gone) return;
+  introRow.dataset.gone = '1';
+  introRow.style.transition = 'opacity 0.4s ease';
+  introRow.style.opacity = '0';
+  setTimeout(() => { introRow.style.display = 'none'; }, 400);
+};
 const renderBoard = (entries) => {
   if (!rowList || !rowTemplate) return;
   rowList.querySelectorAll('[data-lb-row]').forEach(r => r.remove());
@@ -2399,6 +2416,7 @@ const renderBoard = (entries) => {
     .filter(e => e.score > 0) // players with 0 points (new accounts) are not ranked
     .forEach((e, i) => frag.appendChild(buildRow(e, i + 1)));
   rowList.appendChild(frag);
+  hideIntro();
 };
 
 // "Find me!": highlight and scroll to the player's own row.
@@ -2449,6 +2467,7 @@ if (findMeBtn) {
         if (kind === 'type') LB_STATE.type = LB_TYPES[row.getAttribute('data-level')] || null;
         if (kind === 'topic') LB_STATE.topic = row.dataset.topic || null;
         if (kind === 'tier') LB_STATE.tier = parseInt(row.getAttribute('data-level'), 10) || null;
+        console.log('LB pick:', kind, JSON.stringify(LB_STATE), boardId()); // temporary debug
 
         dd.dispatchEvent(new Event('w-close'));
         sync();
