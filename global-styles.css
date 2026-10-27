@@ -677,6 +677,10 @@ a.button-link:hover {
 .lb-column.is-highlight::after {
   right: 0;
 }
+/* Player outside the top 100: gap above the extra row */
+.lb-column.is-outside {
+  margin-top: 2rem;
+}
 
 /* Skapa en mjuk animation som körs varje gång en rad (kolumn) skapas */
 @keyframes rowFadeIn {

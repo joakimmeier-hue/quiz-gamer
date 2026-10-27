@@ -2355,17 +2355,18 @@ if (currentSlug === 'score') {
       };
       const lbCache = new Map(); // boardId -> { t, entries }
       let userPicked = false;
+      let myOutside = null; // the player's own entry when not in the top 100
       const LB_CACHE_MS = 90 * 1000;
       const loadBoard = async (id) => {
         const hit = lbCache.get(id);
-        if (hit && Date.now() - hit.t < LB_CACHE_MS) { renderBoard(hit.entries); return; }
+        if (hit && Date.now() - hit.t < LB_CACHE_MS) { renderBoard(hit.entries, hit.me); return; }
         try {
           const getLeaderboardsFn = httpsCallable(functions, 'getLeaderboards');
           const res = await getLeaderboardsFn({ boardId: id });
           console.log('lb loaded:', id, res.data); // temporary debug, remove later
-          lbCache.set(id, { t: Date.now(), entries: res.data.entries });
+          lbCache.set(id, { t: Date.now(), entries: res.data.entries, me: res.data.me || null });
           if (id !== boardId()) return; // the player already picked something else
-          renderBoard(res.data.entries);
+          renderBoard(res.data.entries, res.data.me);
         } catch (err) {
           console.error('Failed to load leaderboard:', err.message);
         }
@@ -2409,7 +2410,8 @@ if (currentSlug === 'score') {
         introRow.style.opacity = '0';
         setTimeout(() => { introRow.style.display = 'none'; }, 400);
       };
-      const renderBoard = (entries) => {
+      const renderBoard = (entries, me) => {
+        myOutside = me || null;
         if (!rowList || !rowTemplate) return;
         rowList.querySelectorAll('[data-lb-row]').forEach(r => r.remove());
         const frag = document.createDocumentFragment();
@@ -2422,18 +2424,22 @@ if (currentSlug === 'score') {
         if (userPicked) hideIntro();
       };
 
-      // "Find me!": highlight and scroll to the player's own row.
+      // "Find me!" -Handler: highlight and scroll to the player's own row.
       // Rows are re-created on every board change, so the highlight resets itself.
       const findMeBtn = overlay.querySelector('.find-me-btn');
       if (findMeBtn) {
         findMeBtn.addEventListener('click', (e) => {
           e.preventDefault();
-          const myRow = rowList && rowList.querySelector('[data-me]');
+          let myRow = rowList && rowList.querySelector('[data-me]');
+          if (!myRow && myOutside && rowList && rowTemplate) {
+            myRow = buildRow({ ...myOutside, isMe: true }, '100+');
+            myRow.classList.add('is-outside');
+            rowList.appendChild(myRow);
+          }
             if (!myRow) {
             if (typeof window.showGlobalInfo === 'function') window.showGlobalInfo(window.INFO_MESSAGES.NO_LB_RECORD); // not on this board (or outside the top 100)
             return;
           }
-
 
           if (typeof playSFX === 'function') playSFX('select');
           myRow.classList.add('is-highlight');
@@ -2441,7 +2447,7 @@ if (currentSlug === 'score') {
         });
       }
 
-        const sync = () => {
+      const sync = () => {
       const showTopic = !!LB_STATE.type && LB_STATE.type !== 'total'; // Total Score needs no topic or tier
       const showTier = showTopic && !!LB_STATE.topic;
       roots.topic.style.display = showTopic ? '' : 'none';
