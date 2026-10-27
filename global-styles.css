@@ -678,6 +678,12 @@ a.button-link:hover {
   right: 0;
 }
 
+/* Mjuk fade-in för rader när de skapas i leaderboarden */
+.leaderboard-overlay .lb-column {
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+
 
 /* GAME INFO LOAD ANIMATION */
 .game-info {

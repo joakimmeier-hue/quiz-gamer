@@ -193,7 +193,7 @@ const INFO_MESSAGES = {
   // Score page
   REVIEW_COST: "Cost for review is 15% of the Final Score. Affecting your global score but not your Highscore.",
     // LB
-  NO_LB_RECORD: "Oops, no record for you here. Think you can make the top 100? Go play!"
+  NO_LB_RECORD: "Oops, no record for you in this leaderboard. Think you can make the top 100? Go play!"
 };
 
 // Global info helper
@@ -230,7 +230,7 @@ function hideGlobalInfo() {
  window.showGlobalInfo = showGlobalInfo;
   window.hideGlobalInfo = hideGlobalInfo;
   window.INFO_MESSAGES = INFO_MESSAGES;
-  
+
 // Global click handler: backdrop & OK button dismissal
 document.addEventListener('click', (e) => {
   const globalInfo = document.querySelector('.global-info');
