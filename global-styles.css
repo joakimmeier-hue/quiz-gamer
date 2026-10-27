@@ -609,7 +609,6 @@ a.button-link:hover {
   margin-bottom: 3rem;
   transition: margin-bottom 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
-
 .leaderboard-overlay .lb-row-1.select-lb {
   transition: margin-bottom 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -627,6 +626,29 @@ a.button-link:hover {
 .lb-row-1.hide {
   transition: filter 200ms ease-out;
 }
+/* FAKE SQUARES CORNERS Find me is-highlight */
+.lb-column.is-highlight {
+  /* Skär av mitten och behåll 10% i topp och botten på ramarna */
+  -webkit-mask-image: linear-gradient(
+    to bottom, 
+    black 0%, 
+    black 10%, 
+    transparent 10%, 
+    transparent 90%, 
+    black 90%, 
+    black 100%
+  );
+  mask-image: linear-gradient(
+    to bottom, 
+    black 0%, 
+    black 10%, 
+    transparent 10%, 
+    transparent 90%, 
+    black 90%, 
+    black 100%
+  );
+}
+
 
 /* GAME INFO LOAD ANIMATION */
 .game-info {
