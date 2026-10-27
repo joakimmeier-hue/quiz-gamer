@@ -2429,10 +2429,12 @@ if (currentSlug === 'score') {
         findMeBtn.addEventListener('click', (e) => {
           e.preventDefault();
           const myRow = rowList && rowList.querySelector('[data-me]');
-          if (!myRow) {
-            if (typeof showGlobalInfo === 'function') showGlobalInfo(INFO_MESSAGES.NO_LB_RECORD); // not on this board (or outside the top 100)
+            if (!myRow) {
+            if (typeof window.showGlobalInfo === 'function') window.showGlobalInfo(window.INFO_MESSAGES.NO_LB_RECORD); // not on this board (or outside the top 100)
             return;
           }
+
+
           if (typeof playSFX === 'function') playSFX('select');
           myRow.classList.add('is-highlight');
           myRow.scrollIntoView({ behavior: 'smooth', block: 'center' });

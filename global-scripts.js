@@ -227,7 +227,10 @@ function hideGlobalInfo() {
     }
   }, 200);
 }
-
+ window.showGlobalInfo = showGlobalInfo;
+  window.hideGlobalInfo = hideGlobalInfo;
+  window.INFO_MESSAGES = INFO_MESSAGES;
+  
 // Global click handler: backdrop & OK button dismissal
 document.addEventListener('click', (e) => {
   const globalInfo = document.querySelector('.global-info');
