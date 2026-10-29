@@ -723,6 +723,15 @@ a.button-link:hover {
   animation: rowFadeIn 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
+/* Special hover LB Ppic */
+.leaderboard-overlay .ppic-lb {
+  transition: scale 0.25s ease; /* Gör hoovringen mjuk och snygg */
+  transform-origin: 0% 80%; /* Sätter ankarpunkten nere till vänster (eller 'left bottom') */
+}
+
+.leaderboard-overlay .ppic-lb:hover {
+  scale: 2.5;
+}
 
 /* GAME INFO LOAD ANIMATION */
 .game-info {
