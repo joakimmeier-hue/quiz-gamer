@@ -1274,7 +1274,7 @@ async function loadUserData(uid) {
     console.error("Failed to save profile picture to database:", error);
   }
 }
-window.saveUserAvatar = saveUserAvatar; 
+window.saveUserAvatar = saveUserAvatar;  // remove later
 
 // ── GLOBAL STATE FOR UI SCRIPTS ──
 window.currentUserData = null; // <-- ADDED 1: Initialize global variable
@@ -2474,6 +2474,11 @@ if (currentSlug === 'score') {
       const showTier = showTopic && !!LB_STATE.topic;
       roots.topic.style.display = showTopic ? '' : 'none';
       roots.tier.style.display = showTier ? '' : 'none';
+      // NEW: bob every visible dropdown that has not been picked yet
+      const visible = { type: true, topic: showTopic, tier: showTier };
+      Object.entries(roots).forEach(([k, dd]) => {
+        dd.classList.toggle('hint-bob', visible[k] && !dd.classList.contains('is-picked'));
+      });
       const id = boardId();
       if (id) loadBoard(id);
     };
