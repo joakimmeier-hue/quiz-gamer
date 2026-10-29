@@ -1493,15 +1493,45 @@ toggleBtn.addEventListener('click', (e) => {
 // SKIP INTRO LOBBY
 (function() {
   if (currentSlug !== 'lobby') return; // this whole thing is Lobby-only behavior
+  console.log('[wake]', { discarded: document.wasDiscarded, nav: performance.getEntriesByType('navigation')[0]?.type });
   function hideIntro() {
     const el = document.querySelector('.intro-overlay-grp');
     if (el) el.style.display = 'none';
   }
+    //NEW HELPER TO PREVENT INVISIBLE PAGE AFTER LONG SLEEP
+    function waitFor(cond, timeoutMs = 8000, every = 100) {
+    return new Promise(resolve => {
+      const t0 = Date.now();
+      (function check() {
+        if (cond()) return resolve(true);
+        if (Date.now() - t0 > timeoutMs) return resolve(false);
+        setTimeout(check, every);
+      })();
+    });
+  }
+function isLobbyRevealed() {
+  const g = document.querySelector('.games-grid-clip');
+  return !g || parseFloat(getComputedStyle(g).opacity) > 0.5;
+}
+function fireSkip() {
+  const trigger = document.querySelector('.welcome-text-container');
+  if (trigger) {
+    window.isSfxLocked = true;      // sätt precis innan
+    trigger.click();
+    window.isSfxLocked = false;     // släpp direkt efteråt (synkront, så click-lyssnaren hinner se true)
+  }
+  if (window.gsap) gsap.globalTimeline.seek(9999, false);
+}
+function forceReveal() {
+  if (window.gsap) gsap.set('.games-grid-clip', { opacity: 1, clearProps: 'transform' });
+}
+
   function runSkip(isFromBack = false) {
     sessionStorage.removeItem('skipIntro');
     hideIntro();
     let fadeScreen = null;
     if (!isFromBack) {
+      // OR ADD LOG HERE?
       const savedColor = sessionStorage.getItem('exitColor');
       const themeColor = document.body.getAttribute('data-theme') === 'light' ? '#ffffff' : '#000000';
       const bgColor = savedColor || themeColor;
@@ -1509,25 +1539,27 @@ toggleBtn.addEventListener('click', (e) => {
       fadeScreen.style.cssText = `position:fixed;inset:0;z-index:1000005;background:${bgColor};transition:opacity 0.9s ease;opacity:1;pointer-events:none;`;
       document.body.appendChild(fadeScreen);
     }
+    waitFor(() => document.readyState === 'complete' && window.gsap).then(() => {
       setTimeout(function() {
-      if (window.startMusic) {
-        window.startMusic();
-      }
-      const trigger = document.querySelector('.welcome-text-container');
-      if (trigger) {
-      window.isSfxLocked = true;      // sätt precis innan
-      trigger.click();
-      window.isSfxLocked = false;     // släpp direkt efteråt (synkront, så click-lyssnaren hinner se true)
-  }
-
-      if (window.gsap) gsap.globalTimeline.seek(9999, false);
-      if (fadeScreen) {
-        requestAnimationFrame(() => {
-          fadeScreen.style.opacity = '0';
-        });
-        setTimeout(() => { fadeScreen.remove(); }, 950);
-      }
-    }, 300); 
+        if (window.startMusic) {
+          window.startMusic();
+        }
+        fireSkip();
+        // watchdog: retry if the reveal didn't happen, then force it
+        let tries = 0;
+        const wd = setInterval(() => {
+          if (isLobbyRevealed()) return clearInterval(wd);
+          if (++tries > 5) { clearInterval(wd); forceReveal(); return; }
+          fireSkip();
+        }, 700);
+        if (fadeScreen) {
+          requestAnimationFrame(() => {
+            fadeScreen.style.opacity = '0';
+          });
+          setTimeout(() => { fadeScreen.remove(); }, 950);
+        }
+      }, 300);
+    });
   }
 
   function showBackOverlay() {
@@ -1667,6 +1699,15 @@ document.addEventListener("visibilitychange", function() {
     document.querySelectorAll('video').forEach(v => {
       if (v.hasAttribute('autoplay')) v.play().catch(() => {});
     });
+  }
+});
+
+// This covers a tab that stayed alive but was hidden for a long time
+let hiddenAt = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { hiddenAt = Date.now(); return; }
+  if (hiddenAt && Date.now() - hiddenAt > 30 * 60 * 1000 && !isGamePage && !isReviewPage) {
+    location.reload();   // a fresh load beats a half-asleep page
   }
 });
 
