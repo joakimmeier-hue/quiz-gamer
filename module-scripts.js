@@ -1508,8 +1508,8 @@ function focusContentEditableAtEnd(el) {
 function validateUsernameRules(rawName) {
     let errors = [];
     const letterCount = (rawName.match(/[a-zA-ZåäöÅÄÖ]/g) || []).length;
-    if (rawName.length < 3 || letterCount < 1) {
-        errors.push("Minimum 3 characters including 1 letter");
+    if (rawName.length < 1 || letterCount < 1) {
+        errors.push("Minimum 1 letter");
     }
     if (rawName.length > 14) errors.push("Maximum 14 characters");
     const spaceCount = (rawName.match(/ /g) || []).length;
@@ -2541,7 +2541,7 @@ if (currentSlug === 'score') {
       first.classList.remove('hint-bob');
     }, { once: true });
   }
-  
+
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initHint);
   else initHint();
 })();
