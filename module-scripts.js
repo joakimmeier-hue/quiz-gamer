@@ -2414,11 +2414,20 @@ if (currentSlug === 'score') {
 
       // Intro/default heading row fades out once a board has loaded
       const introRow = overlay.querySelector('.lb-row-1.hide');
-      const hideIntro = () => {
+            const hideIntro = () => {
         if (!introRow || introRow.dataset.gone) return;
         introRow.dataset.gone = '1';
-        introRow.style.transition = 'opacity 0.4s ease';
+        introRow.style.height = introRow.offsetHeight + 'px';   // lock current height so it can animate
+        introRow.offsetHeight;                                  // force a reflow so the browser registers it
+        introRow.style.transition = 'opacity 0.4s ease, transform 0.4s ease, height 0.4s ease, padding 0.4s ease, margin 0.4s ease';
         introRow.style.opacity = '0';
+        introRow.style.transform = 'translateY(-50%)';
+        introRow.style.height = '0';
+        introRow.style.paddingTop = '0';
+        introRow.style.paddingBottom = '0';
+        introRow.style.marginTop = '0';
+        introRow.style.marginBottom = '0';
+        introRow.style.overflow = 'hidden';
         setTimeout(() => { introRow.style.display = 'none'; }, 400);
       };
       const renderBoard = (entries, me) => {
