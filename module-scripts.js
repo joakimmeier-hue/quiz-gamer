@@ -2487,6 +2487,7 @@ if (currentSlug === 'score') {
       const toggle = dd.querySelector('.dropdown-toggle-lvl');
       const list = dd.querySelector('.dropdown-gllist');
       if (!toggle || !list) return;
+            dd.addEventListener('pointerdown', () => dd.classList.remove('hint-bob'));
 
       toggle.addEventListener('click', () => {
         if (typeof playSFX === 'function') playSFX(toggle.classList.contains('w--open') ? 'back' : 'select');
@@ -2545,19 +2546,5 @@ if (currentSlug === 'score') {
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
-})();
-
-// LB hint: first dropdown bobs until it is pressed
-(function () {
-  function initHint() {
-    const first = document.querySelector('.leaderboard-overlay .dropdown-gamelevel');
-    if (!first) return;
-    first.classList.add('hint-bob');
-    first.addEventListener('pointerdown', () => {
-      first.classList.remove('hint-bob');
-    }, { once: true });
-  }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initHint);
-  else initHint();
-})();
+})
+();
