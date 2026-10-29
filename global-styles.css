@@ -481,7 +481,7 @@ a.button-link:hover {
   pointer-events: none !important;
 }
 
-/* MASK-TOP-CLONE */
+/* --------- MASK-TOP-CLONE ------------- */
 /* Mask Top - Disable pointer events and CSS transition delays */
 .mask-top,
 .mask-top * {
@@ -502,6 +502,10 @@ a.button-link:hover {
   opacity: 1 !important;
   visibility: visible !important;
 }
+
+.mask-top .loading-gi { display: none !important; }
+/* ------------------------------------------------------- */
+
 
 /* ---- COMPONENT .dropdown-gamelevel ---- */
 .dropdown-gamelevel {

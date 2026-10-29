@@ -32,9 +32,11 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const functions = getFunctions(app);
+
 // ── CALLABLE FUNCTIONS ──
 const completeProfileFn = httpsCallable(functions, "completeProfile");
 const changeUsernameFn = httpsCallable(functions, "changeUsername");
+const getGameInfoFn = httpsCallable(functions, "getGameInfo");
 const startGameFn = httpsCallable(functions, "startGame");
 const gradeGameFn = httpsCallable(functions, "gradeGame");
 const getReviewFn = httpsCallable(functions, 'getReview');
@@ -1521,9 +1523,13 @@ function validateUsernameRules(rawName) {
 
 // ────────────────────────────────────── GAME START ──────────────────────────────────────
 // ── GAME INFO PANEL ───
+let gameInfoLoadId = 0;
 window.loadGameInfo = async function(topic, level) {
   window.applyGameConfig(topic, level); 
   if (!currentUser) return;
+
+  const myLoad = ++gameInfoLoadId;
+  setGameInfoLoading(true);
 
   const gameId = `${topic}-l${level}`;
 
@@ -1545,12 +1551,14 @@ window.loadGameInfo = async function(topic, level) {
 
   // 2. Fetch Leaderboard Stats
   try {
-    const getGameInfoFn = httpsCallable(functions, "getGameInfo");
     const result = await getGameInfoFn({ topic, level: parseInt(level, 10) });
     lbHighscore = result.data.lbHighscore || 0;
   } catch (err) {
     console.error("Failed to load leaderboard highscore:", err.message);
   }
+
+  // a newer tier was selected while we were waiting: drop this result
+  if (myLoad !== gameInfoLoadId) return;
 
   // 3. Format numbers with fmtNum and update the DOM
   const preAttemptsEl = document.getElementById('pre-attempts');
@@ -1560,6 +1568,7 @@ window.loadGameInfo = async function(topic, level) {
   if (preAttemptsEl) preAttemptsEl.textContent = fmtNum(preAttempts);
   if (highscoreEl) highscoreEl.textContent = fmtNum(highscore);
   if (lbHighscoreEl) lbHighscoreEl.textContent = fmtNum(lbHighscore);
+  setGameInfoLoading(false);
 
   // 4. Sync the top clone
   if (typeof window.syncTopClone === 'function') {
@@ -1578,13 +1587,8 @@ window.loadGameInfo = async function(topic, level) {
       setTimeout(tryInitialLoad, 200);
       return;
     }
-        (function initGameInfoPanel() {
-      const gameMatch = currentSlug.match(/^([a-z0-9-]+)-start$/i);
-      if (!gameMatch) return;
       window.resetGameInfoPanel();
-    })();
-  };
-  
+    };
   tryInitialLoad();
 })();
 
@@ -1704,9 +1708,16 @@ function setText(id, value) {
   if (el) el.textContent = value;
 }
 
+// Loading lottie
+function setGameInfoLoading(on) {
+const el = document.querySelector(".mask-middle .loading-gi");
+if (el) el.style.display = on ? "flex" : "none";
+}
+
 window.resetGameInfoPanel = function () {
   setText("questions-qty", "-");
   setText("time-limit", "-");
+  setGameInfoLoading(false);
   ratingState.diff = 0;
   ratingState.bonus = 0;
   playRating("diff", 0, "empty");
