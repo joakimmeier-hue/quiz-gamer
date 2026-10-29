@@ -711,7 +711,11 @@ a.button-link:hover {
 @keyframes rowFadeIn {
   0% {
     opacity: 0;
+<<<<<<< HEAD
+    transform: translateY(10px); /* Startar 20px längre ner */
+=======
     transform: translateY(20px); /* Startar 10px längre ner */
+>>>>>>> 44256c17d7fc01ac13b88ed564d9ce9f46d06a2f
   }
   100% {
     opacity: 1;
