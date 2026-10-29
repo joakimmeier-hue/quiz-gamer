@@ -1263,6 +1263,7 @@ async function loadUserData(uid) {
 
 // SAVE PROFILE PICTURE
   async function saveUserAvatar(avatarUrl) {
+    window.saveUserAvatar = saveUserAvatar;
   if (!currentUser) return;
   try {
     const userDocRef = doc(db, "users", currentUser.uid);
