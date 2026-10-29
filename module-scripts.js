@@ -1263,7 +1263,7 @@ async function loadUserData(uid) {
 
 // SAVE PROFILE PICTURE
   async function saveUserAvatar(avatarUrl) {
-    window.saveUserAvatar = saveUserAvatar;
+    
   if (!currentUser) return;
   try {
     const userDocRef = doc(db, "users", currentUser.uid);
@@ -1274,6 +1274,7 @@ async function loadUserData(uid) {
     console.error("Failed to save profile picture to database:", error);
   }
 }
+window.saveUserAvatar = saveUserAvatar; 
 
 // ── GLOBAL STATE FOR UI SCRIPTS ──
 window.currentUserData = null; // <-- ADDED 1: Initialize global variable
