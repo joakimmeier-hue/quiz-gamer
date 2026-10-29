@@ -2530,3 +2530,15 @@ if (currentSlug === 'score') {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();
+
+// LB hint: first dropdown bobs until it is pressed
+(function () {
+  const first = document.querySelector('.leaderboard-overlay .dropdown-gamelevel');
+  if (!first) return;
+  first.classList.add('hint-bob');
+  first.addEventListener('pointerdown', () => {
+    first.classList.remove('hint-bob');
+  }, { once: true });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initHint);
+  else initHint();
+})();

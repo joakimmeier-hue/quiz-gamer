@@ -638,6 +638,23 @@ a.button-link:hover {
 .lb-row-1.hide {
   transition: filter 200ms ease-out;
 }
+
+/* LB HINT: first dropdown bobs until the player clicks it */
+@keyframes hintBob {
+  0%    { transform: translateY(0); }
+  14.3% { transform: translateY(-30%); }
+  28.6% { transform: translateY(0); }
+  42.9% { transform: translateY(-30%); }
+  57.1% { transform: translateY(0); }
+  100%  { transform: translateY(0); }   /* 0.6s pause */
+}
+.leaderboard-overlay .dropdown-gamelevel.hint-bob {
+  animation:
+    fadeIn 0.2s 0.05s ease-in forwards,
+    enableClicks 0s 0.25s forwards,
+    hintBob 1.4s 0.5s ease-in-out infinite;
+}
+
 /* FAKE SQUARES CORNERS Find me is-highlight */
 .lb-column.is-highlight {
   position: relative; /* Krävs för att pseudo-elementen ska hamna rätt */
