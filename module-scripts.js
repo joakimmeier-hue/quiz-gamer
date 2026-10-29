@@ -1261,7 +1261,7 @@ async function loadUserData(uid) {
    }
 }
 
-// SPARA PROFILBILD
+// SAVE PROFILE PICTURE
   async function saveUserAvatar(avatarUrl) {
   if (!currentUser) return;
   try {
