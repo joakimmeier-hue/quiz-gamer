@@ -44,6 +44,100 @@
   from { opacity: 0; }
 }
 
+/* —————— Global overflow-stopper —————— */
+.wrapper-score,
+.about-wrapper,
+.games-grid-clip
+.intro-overlay-grp {
+  overflow-x: hidden;
+}
+
+.intro-overlay-grp {
+    transition: none !important;
+  }
+
+/* Hide or fix scrollbar for some classes */
+.clipping, 
+.games-grid-clip,
+.mask-middle
+ {
+  -ms-overflow-style: none;  
+  scrollbar-width: none;     
+}
+.clipping::-webkit-scrollbar, 
+.games-grid-clip::-webkit-scrollbar,
+.mask-middle::-webkit-scrollbar { 
+  display: none;           
+}
+
+/* Tvingar bort de blå linjerna på sidorna i Webflow-formulär */
+  .w-input:focus, 
+  .w-input[data-name]:focus,
+  .w-select:focus,
+  .submit-button:focus-visible {
+    border-color: var(--yellow, #ffcb6b) !important; /* Ändra färg eller osynlig */
+    box-shadow: none !important;               /* Tar bort eventuell blå glöd */
+  }
+  
+  /* 2. Change the text selection highlight color site-wide */
+  ::selection {
+    background-color: var(--yellow, #ffcb6b);
+    color: #111111; /* Makes the text dark when highlighted so it's readable against the yellow/orange */
+  }
+
+  /* Fallback for older Firefox browsers */
+  ::-moz-selection {
+    background-color: var(--yellow, #ffcb6b);
+    color: #111111;
+  }
+  
+/* Disable text selection everywhere by default */
+* {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Remove default browser focus outline globally */
+*:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Re-enable selection/interaction only where it makes sense */
+input,
+textarea,
+[contenteditable],
+.w-input,
+.w-select,
+.form-block-contact,
+
+.submit-button {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  /* pointer-events: auto !important; */
+}
+
+/* Tvinga knappar och inputs att alltid fungera*/
+input, textarea, button, .w-button, #submit-btn-vanilla {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+/*   pointer-events: auto !important; */
+}
+  
+/* 1. Avstavning och Mobil-fixar */
+* {
+  -webkit-hyphens: auto;
+  -ms-hyphens: auto;
+  hyphens: auto;
+  -webkit-tap-highlight-color: transparent;
+
+  /* Tvingar fram mjukare text i Chrome på 1080p-skärmar */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+
 /* —————————— Gömmer enbart inventory-overlay i lobby-varianten vid start */
 /*   .lobby .inventory-overlay,
   {
@@ -151,98 +245,7 @@
     cursor: pointer; /* Acts as a failsafe for iOS Safari to register tap events */
 } 
 
-/* Tvingar bort de blå linjerna på sidorna i Webflow-formulär */
-  .w-input:focus, 
-  .w-input[data-name]:focus,
-  .w-select:focus,
-  .submit-button:focus-visible {
-    border-color: var(--yellow, #ffcb6b) !important; /* Ändra färg eller osynlig */
-    box-shadow: none !important;               /* Tar bort eventuell blå glöd */
-  }
-  
-  /* 2. Change the text selection highlight color site-wide */
-  ::selection {
-    background-color: var(--yellow, #ffcb6b);
-    color: #111111; /* Makes the text dark when highlighted so it's readable against the yellow/orange */
-  }
 
-  /* Fallback for older Firefox browsers */
-  ::-moz-selection {
-    background-color: var(--yellow, #ffcb6b);
-    color: #111111;
-  }
-  
-/* Disable text selection everywhere by default */
-* {
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-/* Remove default browser focus outline globally */
-*:focus {
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-/* Re-enable selection/interaction only where it makes sense */
-input,
-textarea,
-[contenteditable],
-.w-input,
-.w-select,
-.form-block-contact,
-
-.submit-button {
-  user-select: text !important;
-  -webkit-user-select: text !important;
-  /* pointer-events: auto !important; */
-}
-
-/* Tvinga knappar och inputs att alltid fungera*/
-input, textarea, button, .w-button, #submit-btn-vanilla {
-  user-select: text !important;
-  -webkit-user-select: text !important;
-/*   pointer-events: auto !important; */
-}
-  
-/* 1. Avstavning och Mobil-fixar */
-* {
-  -webkit-hyphens: auto;
-  -ms-hyphens: auto;
-  hyphens: auto;
-  -webkit-tap-highlight-color: transparent;
-
-  /* Tvingar fram mjukare text i Chrome på 1080p-skärmar */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
-
-/* —————— Global overflow-stopper —————— */
-.wrapper-score,
-.about-wrapper,
-.games-grid-clip
-.intro-overlay-grp {
-  overflow-x: hidden;
-}
-
-.intro-overlay-grp {
-    transition: none !important;
-  }
-
-/* Hide or fix scrollbar for some classes */
-.clipping, 
-.games-grid-clip,
-.mask-middle
- {
-  -ms-overflow-style: none;  
-  scrollbar-width: none;     
-}
-.clipping::-webkit-scrollbar, 
-.games-grid-clip::-webkit-scrollbar,
-.mask-middle::-webkit-scrollbar { 
-  display: none;           
-}
 
 /* Lobby Games mask */
 .games-grid-clip {
