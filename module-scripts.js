@@ -2450,8 +2450,7 @@ if (currentSlug === 'score') {
 
 /* Abbreviate large numbers in Score column */
       const lbWrapper = overlay.querySelector('.lb-wrapper');
-      const SCORE_STEPS = [Infinity, 1000000, 100000]; // abbreviate scores >= this
-      const lbLang = (document.documentElement.lang || 'en').split('-')[0];
+      const SCORE_STEPS = [Infinity, 1000000, 100000, 10000]; // abbreviate scores >= this      const lbLang = (document.documentElement.lang || 'en').split('-')[0];
       const compactFmt = new Intl.NumberFormat(lbLang, { notation: 'compact', maximumFractionDigits: 1 });
 
       const fitScores = () => {
