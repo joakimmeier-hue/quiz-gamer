@@ -59,14 +59,16 @@
 /* Hide or fix scrollbar for some classes */
 .clipping, 
 .games-grid-clip,
-.mask-middle
+.mask-middle,
+.intro-overlay-grp
  {
   -ms-overflow-style: none;  
   scrollbar-width: none;     
 }
 .clipping::-webkit-scrollbar, 
 .games-grid-clip::-webkit-scrollbar,
-.mask-middle::-webkit-scrollbar { 
+.mask-middle::-webkit-scrollbar,
+.intro-overlay-grp { 
   display: none;           
 }
 
