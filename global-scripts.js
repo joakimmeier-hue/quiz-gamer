@@ -725,7 +725,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 4 ARROW ANCHOR BOUNCE— exact SVG bezier curve replay
 document.addEventListener('DOMContentLoaded', () => {
-  const arrowWrapper = document.querySelector('.arrow-anchor-wrapper');
+  const arrowWrapper = document.querySelector('.arrow-anchor');
   if (!arrowWrapper) return;
 
   // Your exact Webflow IX3 bezier path, parsed into segments.
