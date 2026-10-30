@@ -2315,19 +2315,14 @@ if (currentSlug === 'score') {
   });
 }
 
-/* ----- Score - lb link, text link ------ */
+/* ----- Score Page - text link to LB ------ */
 // Open the leaderboard overlay when arriving via /lobby#leaderboard
-console.log('lb deep link, hash:', location.hash);
 if (location.hash === '#leaderboard') {
   history.replaceState(null, '', location.pathname + location.search);
-  let done = false;
   window.Webflow = window.Webflow || [];
   window.Webflow.push(() => {
-    if (done) return;
-    done = true;
-    setTimeout(() => {
-      document.querySelector('.burger-links.leaderboard')?.click();
-    }, 600);
+    const ix3 = Webflow.require('ix3');
+    ix3.ready().then(() => ix3.emit('lb-open'));
   });
 }
 
