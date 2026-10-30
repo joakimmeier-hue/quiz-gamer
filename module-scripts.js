@@ -2319,16 +2319,19 @@ if (currentSlug === 'score') {
 // Open the leaderboard overlay when arriving via /lobby#leaderboard
 if (location.hash === '#leaderboard') {
   history.replaceState(null, '', location.pathname + location.search);
-  console.log('lb deep link: waiting for ix3');
   window.Webflow = window.Webflow || [];
   window.Webflow.push(() => {
     const ix3 = Webflow.require('ix3');
-    console.log('lb ix3 module:', ix3);
+    let fired = false;
+    const openLb = () => {
+      if (fired) return;
+      fired = true;
+      ix3.emit('lb-open');
+    };
     ix3.ready().then(() => {
-      setTimeout(() => {
-        console.log('lb emit');
-        ix3.emit('lb-open');
-      }, 3000);
+      if (window.lobbySkipDone) openLb();
+      else document.addEventListener('lobbySkipDone', openLb, { once: true });
+      setTimeout(openLb, 5000); // safety net if the skip never runs on this visit
     });
   });
 }

@@ -1525,7 +1525,10 @@ function fireSkip() {
 function forceReveal() {
   if (window.gsap) gsap.set('.games-grid-clip', { opacity: 1, clearProps: 'transform' });
 }
-
+function lobbySkipFinished() {
+  window.lobbySkipDone = true;
+  document.dispatchEvent(new CustomEvent('lobbySkipDone'));
+}
   function runSkip(isFromBack = false) {
     sessionStorage.removeItem('skipIntro');
     hideIntro();
@@ -1548,7 +1551,7 @@ function forceReveal() {
         // watchdog: retry if the reveal didn't happen, then force it
         let tries = 0;
         const wd = setInterval(() => {
-          if (isLobbyRevealed()) return clearInterval(wd);
+          if (isLobbyRevealed()) { clearInterval(wd); lobbySkipFinished(); return; }
           if (++tries > 5) { clearInterval(wd); forceReveal(); return; }
           fireSkip();
         }, 700);
