@@ -53,23 +53,24 @@
 }
 
 .intro-overlay-grp {
-    transition: none !important;
-  }
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transition: none !important;
+}
 
 /* Hide or fix scrollbar for some classes */
-.clipping, 
+.clipping,
 .games-grid-clip,
 .mask-middle,
-.intro-overlay-grp
- {
-  -ms-overflow-style: none;  
-  scrollbar-width: none;     
+.intro-overlay-grp {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
-.clipping::-webkit-scrollbar, 
+.clipping::-webkit-scrollbar,
 .games-grid-clip::-webkit-scrollbar,
 .mask-middle::-webkit-scrollbar,
-.intro-overlay-grp { 
-  display: none;           
+.intro-overlay-grp::-webkit-scrollbar {
+  display: none;
 }
 
 /* Tvingar bort de blå linjerna på sidorna i Webflow-formulär */
