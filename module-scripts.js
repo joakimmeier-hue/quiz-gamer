@@ -2328,7 +2328,7 @@ if (location.hash === '#leaderboard') {
       setTimeout(() => {
         console.log('lb emit');
         ix3.emit('lb-open');
-      }, 1400);
+      }, 3000);
     });
   });
 }
