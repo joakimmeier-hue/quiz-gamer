@@ -2317,7 +2317,8 @@ if (currentSlug === 'score') {
 
 /* ----- Score Page - text link to LB ------ */
 // Open the leaderboard overlay when arriving via /lobby#leaderboard
-if (location.hash === '#leaderboard') {
+setTimeout(() => 
+    if (location.hash === '#leaderboard') {
   history.replaceState(null, '', location.pathname + location.search);
   window.Webflow = window.Webflow || [];
   window.Webflow.push(() => {
@@ -2325,6 +2326,8 @@ if (location.hash === '#leaderboard') {
     ix3.ready().then(() => ix3.emit('lb-open'));
   });
 }
+, 400)
+
 
 // ────────────────────────────────────── LEADERBOARD lb FILTERS ──────────────────────────────────────
 // Three chained dropdowns (type → topic → tier) inside .leaderboard-overlay.
