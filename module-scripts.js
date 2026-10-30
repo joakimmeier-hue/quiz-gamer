@@ -2317,16 +2317,21 @@ if (currentSlug === 'score') {
 
 /* ----- Score Page - text link to LB ------ */
 // Open the leaderboard overlay when arriving via /lobby#leaderboard
-setTimeout(() => 
-    if (location.hash === '#leaderboard') {
+if (location.hash === '#leaderboard') {
   history.replaceState(null, '', location.pathname + location.search);
+  console.log('lb deep link: waiting for ix3');
   window.Webflow = window.Webflow || [];
   window.Webflow.push(() => {
     const ix3 = Webflow.require('ix3');
-    ix3.ready().then(() => ix3.emit('lb-open'));
+    console.log('lb ix3 module:', ix3);
+    ix3.ready().then(() => {
+      setTimeout(() => {
+        console.log('lb emit');
+        ix3.emit('lb-open');
+      }, 400);
+    });
   });
 }
-, 400)
 
 
 // ────────────────────────────────────── LEADERBOARD lb FILTERS ──────────────────────────────────────
