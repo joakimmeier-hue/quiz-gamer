@@ -736,9 +736,10 @@ a.button-link:hover {
   transition: scale 0.25s ease; /* Gör hoovringen mjuk och snygg */
   transform-origin: 0% 80%; /* Sätter ankarpunkten nere till vänster (eller 'left bottom') */
 }
-
 .leaderboard-overlay .ppic-lb:hover {
   scale: 3;
+  position: relative;
+  z-index: 20;
 }
 
 /* GAME INFO LOAD ANIMATION */
