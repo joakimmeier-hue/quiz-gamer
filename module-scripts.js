@@ -2317,11 +2317,16 @@ if (currentSlug === 'score') {
 
 /* ----- Score - lb link, text link ------ */
 // Open the leaderboard overlay when arriving via /lobby#leaderboard
+console.log('lb deep link, hash:', location.hash);
 if (location.hash === '#leaderboard') {
-  history.replaceState(null, '', location.pathname + location.search); // so a reload doesn't reopen it
+  history.replaceState(null, '', location.pathname + location.search);
   window.Webflow = window.Webflow || [];
   window.Webflow.push(() => {
-    document.querySelector('.burger-links.leaderboard')?.click();
+    setTimeout(() => {
+      const el = document.querySelector('.burger-links.leaderboard');
+      console.log('lb trigger found:', el);
+      el?.click();
+    }, 1000);
   });
 }
 
@@ -2458,7 +2463,7 @@ if (location.hash === '#leaderboard') {
         if (userPicked) hideIntro();
       };
 
-/* Abbreviate large numbers in Score column */
+      /* Abbreviate large numbers in Score column */
       const lbWrapper = overlay.querySelector('.lb-wrapper');
       const SCORE_STEPS = [Infinity, 1000000, 100000, 10000]; // abbreviate scores >= this   
       const lbLang = (document.documentElement.lang || 'en').split('-')[0];
