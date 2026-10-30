@@ -2320,13 +2320,14 @@ if (currentSlug === 'score') {
 console.log('lb deep link, hash:', location.hash);
 if (location.hash === '#leaderboard') {
   history.replaceState(null, '', location.pathname + location.search);
+  let done = false;
   window.Webflow = window.Webflow || [];
   window.Webflow.push(() => {
+    if (done) return;
+    done = true;
     setTimeout(() => {
-      const el = document.querySelector('.burger-links.leaderboard');
-      console.log('lb trigger found:', el);
-      el?.click();
-    }, 1000);
+      document.querySelector('.burger-links.leaderboard')?.click();
+    }, 600);
   });
 }
 
