@@ -2410,6 +2410,8 @@ if (currentSlug === 'score') {
       cells[2].textContent = entry.username || '-';
       cells[3].textContent = entry.level ?? '-';
       cells[4].textContent = fmtNum(entry.score);
+      cells[4].textContent = fmtNum(entry.score);
+      cells[4].dataset.score = entry.score;
       cells[5].textContent = capitalize(entry.favTopic);
       return row;
     };
@@ -2445,6 +2447,26 @@ if (currentSlug === 'score') {
         rowList.appendChild(frag);
         if (userPicked) hideIntro();
       };
+
+/* Abbreviate large numbers in Score column */
+      const lbWrapper = overlay.querySelector('.lb-wrapper');
+      const SCORE_STEPS = [Infinity, 1000000, 100000]; // abbreviate scores >= this
+      const lbLang = (document.documentElement.lang || 'en').split('-')[0];
+      const compactFmt = new Intl.NumberFormat(lbLang, { notation: 'compact', maximumFractionDigits: 1 });
+
+      const fitScores = () => {
+        if (!lbWrapper) return;
+        const cells = lbWrapper.querySelectorAll('[data-lb-row] > :nth-child(5)');
+        for (const limit of SCORE_STEPS) {
+          cells.forEach(c => {
+            if (!c.dataset.score) return;
+            const n = Number(c.dataset.score);
+            c.textContent = n >= limit ? compactFmt.format(n) : fmtNum(n);
+          });
+          if (lbWrapper.scrollWidth <= lbWrapper.clientWidth) break;
+        }
+      };
+      window.addEventListener('resize', fitScores);
 
       // "Find me!" -Handler: highlight and scroll to the player's own row.
       // Rows are re-created on every board change, so the highlight resets itself.

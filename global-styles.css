@@ -607,7 +607,7 @@ a.button-link:hover {
 .leaderboard-overlay .dropdown-gamelevel.is-picked .gamelevel-btn { background-color: #fff; }
 .leaderboard-overlay .dropdown-gamelevel.is-picked .gamelvl-title { color: #000; }
 .leaderboard-overlay .dropdown-gamelevel.is-picked .gamelvl-title.arrow { display: none; }
-/* NEW: lighter text in the white picked state on tablet and mobile */
+/* Heavier text in the white picked state on tablet and mobile */
 @media (max-width: 991px) {
   .leaderboard-overlay .dropdown-gamelevel.is-picked .gamelvl-title {
     font-weight: 400;
