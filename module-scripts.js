@@ -2315,6 +2315,16 @@ if (currentSlug === 'score') {
   });
 }
 
+/* ----- Score - lb link, text link ------ */
+// Open the leaderboard overlay when arriving via /lobby#leaderboard
+if (location.hash === '#leaderboard') {
+  history.replaceState(null, '', location.pathname + location.search); // so a reload doesn't reopen it
+  window.Webflow = window.Webflow || [];
+  window.Webflow.push(() => {
+    document.querySelector('.burger-links.leaderboard')?.click();
+  });
+}
+
 // ────────────────────────────────────── LEADERBOARD lb FILTERS ──────────────────────────────────────
 // Three chained dropdowns (type → topic → tier) inside .leaderboard-overlay.
 // Everything is looked up through the overlay, never through document-wide class names,
