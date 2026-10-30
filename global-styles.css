@@ -221,12 +221,11 @@ input, textarea, button, .w-button, #submit-btn-vanilla {
 /* —————— Global overflow-stopper —————— */
 .wrapper-score,
 .about-wrapper,
-.games-grid-clip
-/* .intro-overlay-grp */
- {
+.games-grid-clip,
+.intro-overlay-grp {
   overflow-x: hidden;
 }
-/* intro overlay grp */
+
 .intro-overlay-grp {
     transition: none !important;
   }
