@@ -222,7 +222,7 @@ input, textarea, button, .w-button, #submit-btn-vanilla {
 .wrapper-score,
 .about-wrapper,
 .games-grid-clip
-/* .intro-overlay-grp */ {
+.intro-overlay-grp {
   overflow-x: hidden;
 }
 
