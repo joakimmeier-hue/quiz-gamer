@@ -2410,7 +2410,6 @@ if (currentSlug === 'score') {
       cells[2].textContent = entry.username || '-';
       cells[3].textContent = entry.level ?? '-';
       cells[4].textContent = fmtNum(entry.score);
-      cells[4].textContent = fmtNum(entry.score);
       cells[4].dataset.score = entry.score;
       cells[5].textContent = capitalize(entry.favTopic);
       return row;
@@ -2445,6 +2444,7 @@ if (currentSlug === 'score') {
           .sort((a, b) => b.score - a.score) // <-- Lägg till denna rad!
           .forEach((e, i) => frag.appendChild(buildRow(e, i + 1)));
         rowList.appendChild(frag);
+        fitScores();
         if (userPicked) hideIntro();
       };
 
@@ -2479,6 +2479,7 @@ if (currentSlug === 'score') {
             myRow = buildRow({ ...myOutside, isMe: true }, '100+');
             myRow.classList.add('is-outside');
             rowList.appendChild(myRow);
+            fitScores();
           }
             if (!myRow) {
             if (typeof window.showGlobalInfo === 'function') window.showGlobalInfo(window.INFO_MESSAGES.NO_LB_RECORD); // not on this board (or outside the top 100)
