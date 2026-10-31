@@ -616,6 +616,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const session = await window.triggerStartGame(topic, selectedTier);
         sessionStorage.setItem('activeSessionId', session.sessionId);
+        sessionStorage.setItem('activeQuestions', JSON.stringify(session.questions || []));
         // New session created: unlock answers for the next game page
         sessionStorage.removeItem('gameFinished');
         sessionStorage.setItem('activeTopic', topic);

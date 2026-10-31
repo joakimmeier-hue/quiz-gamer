@@ -1758,22 +1758,55 @@ Webflow.push(async function() {
   const { topic, level } = ctx;
 
   try {
-    const q = query(
-      collection(db, "questions"), 
-      where("topic", "==", topic), 
-      where("level", "==", level)
-    );
-    const snapshot = await getDocs(q);
+        const gameKey = `${topic}-${level}`;
+    let sessionId = (sessionStorage.getItem('activeSessionGame') === gameKey)
+      ? sessionStorage.getItem('activeSessionId')
+      : null;
+    let serverQuestions = null;
 
-    // FIX 1: If snapshot is empty, dispatch event so overlay unlocks cleanly
-    if (snapshot.empty) {
-      console.warn(`No questions found in Firestore for topic: ${topic}, level: ${level}`);
+    if (sessionId) {
+      // Start button already created the session, reuse its question set
+      try { serverQuestions = JSON.parse(sessionStorage.getItem('activeQuestions') || 'null'); } catch (e) {}
+    } else {
+      // Player arrived without the start button (typed URL etc.): start a session now
+      try {
+        const startResp = await startGameFn({ topic, level });
+        sessionId = startResp?.data?.sessionId || null;
+        serverQuestions = startResp?.data?.questions || null;
+        if (sessionId) {
+          sessionStorage.setItem('activeSessionId', sessionId);
+          sessionStorage.setItem('activeSessionGame', gameKey);
+          sessionStorage.setItem('activeQuestions', JSON.stringify(serverQuestions || []));
+        }
+      } catch (err) {
+        console.warn('Failed to start game session:', err);
+      }
+    }
+    if (sessionId) window.currentSession = sessionId;
+
+    let shuffledDocs; // plain objects: { id, text, alternatives, ... }
+    if (Array.isArray(serverQuestions) && serverQuestions.length > 0) {
+      shuffledDocs = serverQuestions.slice(0, cards.length);   // server's set, in server's order
+    } else {
+      // Game without a server-picked set (e.g. GMA): old behaviour
+      const q = query(
+        collection(db, "questions"),
+        where("topic", "==", topic),
+        where("level", "==", level)
+      );
+      const snapshot = await getDocs(q);
+      shuffledDocs = snapshot.docs
+        .sort(() => 0.5 - Math.random())
+        .slice(0, cards.length)
+        .map((d) => ({ id: d.id, ...d.data() }));
+    }
+
+    // FIX 1: If nothing was found, dispatch event so overlay unlocks cleanly
+    if (shuffledDocs.length === 0) {
+      console.warn(`No questions found for topic: ${topic}, level: ${level}`);
       document.dispatchEvent(new CustomEvent('questionsLoaded'));
       return;
     }
-    const shuffledDocs = snapshot.docs
-      .sort(() => 0.5 - Math.random())
-      .slice(0, cards.length);
 
     // FIX 2: Loop through ALL DOM cards to either populate or hide excess ones
     cards.forEach((card, index) => {
@@ -1786,7 +1819,7 @@ Webflow.push(async function() {
       }
 
       card.style.display = ''; // Ensure card is visible wrapper
-      const data = docSnap.data();
+      const data = docSnap;
       const titleEl = card.querySelector('.q-title');
       if (titleEl) titleEl.textContent = `Question ${index + 1}`;
       card.setAttribute('data-question-id', docSnap.id);
@@ -1813,13 +1846,7 @@ Webflow.push(async function() {
       }
     });
 
-  // --- Session: normally already started by the start button handler (window.triggerStartGame)
-        const storedSessionId = (sessionStorage.getItem('activeSessionGame') === `${topic}-${level}`)
-      ? sessionStorage.getItem('activeSessionId')
-      : null;
-    if (storedSessionId) window.currentSession = storedSessionId;
-
-    // 1. Reveal populated cards in DOM
+     // 1. Reveal populated cards in DOM
     cards.forEach((card, index) => {
       // Only animate cards that have actual data
       if (index < shuffledDocs.length) {
@@ -1831,23 +1858,7 @@ Webflow.push(async function() {
       document.dispatchEvent(new CustomEvent('questionsLoaded'));
     }
 
-    // --- Fallback: player arrived without the start button (typed URL etc.), so start a session now
-    if (!storedSessionId) {
-      try {
-        const startResp = await startGameFn({ topic, level });
-        const sessionId = startResp?.data?.sessionId;
-        if (sessionId) {
-          window.currentSession = sessionId;
-          sessionStorage.setItem('activeSessionId', sessionId);
-          console.log('Started game session:', sessionId);
-        } else {
-          console.warn('startGame returned no sessionId');
-        }
-      } catch (err) {
-        console.warn('Failed to start game session:', err);
-      }
-    }
-  } catch (error) {
+   } catch (error) {
     console.error("Error fetching/seeding questions:", error);
     document.dispatchEvent(new CustomEvent('questionsLoaded'));
   }
@@ -1924,6 +1935,7 @@ document.addEventListener('click', async function(e) {
     sessionStorage.setItem('scoreAuthorized', 'true');
         // Session is used up, don't let it be reused
     sessionStorage.removeItem('activeSessionId');
+    sessionStorage.removeItem('activeQuestions');
     window.currentSession = null;
 
     // 5. Exit page transition
@@ -2094,7 +2106,7 @@ Webflow.push(function() {
   setText('list-time', data.timeStr);
   setText('list-tier-bonus', `Tier ${data.tier} bonus: ${Number(data.tierMultiplier).toFixed(1)}x`);
   setText('list-attempts', data.attemptCount - 1);
-  setText('lb-position', `#${data.leaderboardPosition}`);
+  setText('lb-position', data.leaderboardPosition ? `#${data.leaderboardPosition}` : '–');
   setText('list-score', data.finalScore);
   setText('list-unlimited-score', data.unlimitedScore);
 
