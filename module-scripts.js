@@ -1578,6 +1578,21 @@ window.loadGameInfo = async function(topic, level) {
   }
 };
 
+// GMA start page is hardcoded in Webflow: only fill in the player's own numbers
+async function loadGmaPanel() {
+  try {
+    const snap = await getDoc(doc(db, "users", currentUser.uid, "attempts", "gma-l1"));
+    if (!snap.exists()) return;
+    const preAttemptsEl = document.getElementById('pre-attempts');
+    const highscoreEl = document.getElementById('highscore');
+    if (preAttemptsEl) preAttemptsEl.textContent = fmtNum(snap.data().attemptCount || 0);
+    if (highscoreEl) highscoreEl.textContent = fmtNum(snap.data().bestScore || 0);
+    if (typeof window.syncTopClone === 'function') window.syncTopClone();
+  } catch (err) {
+    console.error("Failed to load GMA stats:", err.message);
+  }
+}
+
 // ── Initial Page Load Trigger (Defaults to Level 1) ───
 (function initGameInfoPanel() {
   const gameMatch = currentSlug.match(/^([a-z0-9-]+)-start$/i);
@@ -1590,6 +1605,7 @@ window.loadGameInfo = async function(topic, level) {
       return;
     }
       window.resetGameInfoPanel();
+      if (topic === "gma") loadGmaPanel();
     };
   tryInitialLoad();
 })();
