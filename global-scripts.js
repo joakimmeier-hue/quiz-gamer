@@ -817,7 +817,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     arrowWrapper.classList.add('is-loaded');
     startArrowAnimation(arrowWrapper);
-  }, 2200);
+  }, 2000);
 });
 
 // ────────────────── GAME RUNNING ──────────────────
