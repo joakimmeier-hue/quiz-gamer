@@ -487,6 +487,12 @@ a.button-link:hover {
   opacity: 0 !important;
   pointer-events: none !important;
 }
+/* Make click hitbox larger with a psudeo element */
+.arrow-anchor-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: -4rem;         /* extra clickable area on every side */
+}
 
 /* --------- MASK-TOP-CLONE ------------- */
 /* Mask Top - Disable pointer events and CSS transition delays */
