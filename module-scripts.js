@@ -1839,6 +1839,9 @@ Webflow.push(async function() {
       const titleEl = card.querySelector('.q-title');
       if (titleEl) titleEl.textContent = `Question ${index + 1}`;
       card.setAttribute('data-question-id', docSnap.id);
+      //Attach elite icon to question
+      const eliteEl = card.querySelector('.q-elite');
+      if (eliteEl) eliteEl.style.display = data.tag === 'elite' ? '' : 'none';
 
       const textEl = card.querySelector('.q-text');
       if (textEl && data.text) textEl.textContent = data.text;
