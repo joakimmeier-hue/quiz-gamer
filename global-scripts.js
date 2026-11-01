@@ -1224,9 +1224,19 @@ window.startMusic = function(forceInstant = false) {
                     }
                 }, 20);
             }
-        }).catch(() => {
+                }).catch(() => {
             console.log("Autoplay blockerat. Väntar på interaktion.");
-        });    
+            if (window.musicRetryArmed) return;
+            window.musicRetryArmed = true;
+            const retry = (e) => {
+                // Esc never counts as a user gesture, so ignore it
+                if (e.type === 'keydown' && e.key === 'Escape') return;
+                window.musicRetryArmed = false;
+                ['pointerdown', 'keydown'].forEach(t => document.removeEventListener(t, retry, true));
+                window.startMusic(forceInstant);
+            };
+            ['pointerdown', 'keydown'].forEach(t => document.addEventListener(t, retry, true));
+        });   
       }
  }
 
