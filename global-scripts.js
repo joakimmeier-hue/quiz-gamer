@@ -553,6 +553,103 @@ document.addEventListener('DOMContentLoaded', () => {
   }, true);
 });
 
+// 4 ARROW ANCHOR BOUNCE— exact SVG bezier curve replay
+document.addEventListener('DOMContentLoaded', () => {
+  const arrowWrapper = document.querySelector('.arrow-anchor-wrapper');
+  if (!arrowWrapper) return;
+
+  // Your exact Webflow IX3 bezier path, parsed into segments.
+  // Each segment: [P0, C1, C2, P1] as {x, y} points, taken directly from the path data.
+  const rawPath = "M0,161 C14,160 30,-31 47,71 C64,173 65,101 70,24 C76,-114 75,-10 84,-1 C92,4 105,-5 120,10 C135,25 136,159 160,160";
+
+  function parseBezierPath(d) {
+    const nums = d.match(/-?\d*\.?\d+/g).map(Number);
+    const points = [];
+    for (let i = 0; i < nums.length; i += 2) {
+      points.push({ x: nums[i], y: nums[i + 1] });
+    }
+    // points[0] is M (start). Then every 3 points after that = one C segment (C1, C2, end)
+    const segments = [];
+    let prev = points[0];
+    for (let i = 1; i < points.length; i += 3) {
+      segments.push({
+        p0: prev,
+        c1: points[i],
+        c2: points[i + 1],
+        p1: points[i + 2],
+      });
+      prev = points[i + 2];
+    }
+    return segments;
+  }
+
+  const segments = parseBezierPath(rawPath);
+  const totalDuration = segments[segments.length - 1].p1.x; // 160 -> total "time" units in the path
+  const startY = segments[0].p0.y; // baseline Y (161)
+
+  // Cubic bezier evaluation at parameter u (0-1) for a single axis
+  function cubicAt(u, p0, c1, c2, p1) {
+    const mu = 1 - u;
+    return (
+      mu * mu * mu * p0 +
+      3 * mu * mu * u * c1 +
+      3 * mu * u * u * c2 +
+      u * u * u * p1
+    );
+  }
+
+  // Given target X (time), find u along the correct segment via binary search on X,
+  // then return that segment's Y at that u.
+  function evaluateY(targetX) {
+    for (const seg of segments) {
+      if (targetX >= seg.p0.x && targetX <= seg.p1.x) {
+        // binary search for u where cubicAt(u, x-coords) == targetX
+        let lo = 0, hi = 1, u = 0.5;
+        for (let iter = 0; iter < 20; iter++) {
+          u = (lo + hi) / 2;
+          const x = cubicAt(u, seg.p0.x, seg.c1.x, seg.c2.x, seg.p1.x);
+          if (x < targetX) lo = u; else hi = u;
+        }
+        return cubicAt(u, seg.p0.y, seg.c1.y, seg.c2.y, seg.p1.y);
+      }
+    }
+    return segments[segments.length - 1].p1.y;
+  }
+
+  function startArrowAnimation(element) {
+  const duration = 1870;
+  let startTime = null;
+
+  // Tweak these two to taste:
+  const DIRECTION = -1;   // 1 = as-parsed, -1 = reversed
+  const SCALE = 0.5;      // 1 = full movement, 0.5 = half, etc.
+
+  function animate(currentTime) {
+    if (element.classList.contains('is-hidden')) {
+      startTime = null;
+      requestAnimationFrame(animate);
+      return;
+    }
+    if (!startTime) startTime = currentTime;
+    const elapsed = currentTime - startTime;
+    const progress = (elapsed % duration) / duration;
+
+    const targetX = progress * totalDuration;
+    const y = evaluateY(targetX);
+    const offsetPercent = (y - startY) * DIRECTION * SCALE;
+
+    element.style.transform = `translateY(${offsetPercent}%)`;
+    requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+}
+
+  setTimeout(() => {
+    arrowWrapper.classList.add('is-loaded');
+    startArrowAnimation(arrowWrapper);
+  }, 1800);
+});
+
 // 3 COMPONENT game-start-btn
 // ── START BUTTON HANDLER game start pages ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -724,103 +821,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     lastScrollPos = currentScrollPos;
   }, { passive: true });
-});
-
-// 4 ARROW ANCHOR BOUNCE— exact SVG bezier curve replay
-document.addEventListener('DOMContentLoaded', () => {
-  const arrowWrapper = document.querySelector('.arrow-anchor-wrapper');
-  if (!arrowWrapper) return;
-
-  // Your exact Webflow IX3 bezier path, parsed into segments.
-  // Each segment: [P0, C1, C2, P1] as {x, y} points, taken directly from the path data.
-  const rawPath = "M0,161 C14,160 30,-31 47,71 C64,173 65,101 70,24 C76,-114 75,-10 84,-1 C92,4 105,-5 120,10 C135,25 136,159 160,160";
-
-  function parseBezierPath(d) {
-    const nums = d.match(/-?\d*\.?\d+/g).map(Number);
-    const points = [];
-    for (let i = 0; i < nums.length; i += 2) {
-      points.push({ x: nums[i], y: nums[i + 1] });
-    }
-    // points[0] is M (start). Then every 3 points after that = one C segment (C1, C2, end)
-    const segments = [];
-    let prev = points[0];
-    for (let i = 1; i < points.length; i += 3) {
-      segments.push({
-        p0: prev,
-        c1: points[i],
-        c2: points[i + 1],
-        p1: points[i + 2],
-      });
-      prev = points[i + 2];
-    }
-    return segments;
-  }
-
-  const segments = parseBezierPath(rawPath);
-  const totalDuration = segments[segments.length - 1].p1.x; // 160 -> total "time" units in the path
-  const startY = segments[0].p0.y; // baseline Y (161)
-
-  // Cubic bezier evaluation at parameter u (0-1) for a single axis
-  function cubicAt(u, p0, c1, c2, p1) {
-    const mu = 1 - u;
-    return (
-      mu * mu * mu * p0 +
-      3 * mu * mu * u * c1 +
-      3 * mu * u * u * c2 +
-      u * u * u * p1
-    );
-  }
-
-  // Given target X (time), find u along the correct segment via binary search on X,
-  // then return that segment's Y at that u.
-  function evaluateY(targetX) {
-    for (const seg of segments) {
-      if (targetX >= seg.p0.x && targetX <= seg.p1.x) {
-        // binary search for u where cubicAt(u, x-coords) == targetX
-        let lo = 0, hi = 1, u = 0.5;
-        for (let iter = 0; iter < 20; iter++) {
-          u = (lo + hi) / 2;
-          const x = cubicAt(u, seg.p0.x, seg.c1.x, seg.c2.x, seg.p1.x);
-          if (x < targetX) lo = u; else hi = u;
-        }
-        return cubicAt(u, seg.p0.y, seg.c1.y, seg.c2.y, seg.p1.y);
-      }
-    }
-    return segments[segments.length - 1].p1.y;
-  }
-
-  function startArrowAnimation(element) {
-  const duration = 1870;
-  let startTime = null;
-
-  // Tweak these two to taste:
-  const DIRECTION = -1;   // 1 = as-parsed, -1 = reversed
-  const SCALE = 0.5;      // 1 = full movement, 0.5 = half, etc.
-
-  function animate(currentTime) {
-    if (element.classList.contains('is-hidden')) {
-      startTime = null;
-      requestAnimationFrame(animate);
-      return;
-    }
-    if (!startTime) startTime = currentTime;
-    const elapsed = currentTime - startTime;
-    const progress = (elapsed % duration) / duration;
-
-    const targetX = progress * totalDuration;
-    const y = evaluateY(targetX);
-    const offsetPercent = (y - startY) * DIRECTION * SCALE;
-
-    element.style.transform = `translateY(${offsetPercent}%)`;
-    requestAnimationFrame(animate);
-  }
-  requestAnimationFrame(animate);
-}
-
-  setTimeout(() => {
-    arrowWrapper.classList.add('is-loaded');
-    startArrowAnimation(arrowWrapper);
-  }, 1800);
 });
 
 // ────────────────── GAME RUNNING ──────────────────
