@@ -1195,7 +1195,6 @@ window.fadeOutMusic = function() {
         }, 20);
     }
 };
-
 function seekWhenReady(t) {
     if (audio.readyState >= 1) {
         audio.currentTime = t;
@@ -1203,7 +1202,6 @@ function seekWhenReady(t) {
         audio.addEventListener('loadedmetadata', () => { audio.currentTime = t; }, { once: true });
     }
 }
-
 window.startMusic = function(forceInstant = false) {
     if (!audio.paused || !currentConfig.url) return; 
     let playPromise = audio.play();
@@ -1662,13 +1660,17 @@ window.addEventListener('pageshow', (event) => {
     // Hantera tider när man navigerar runt (länk eller backa) — ONLY for non-lobby or when NOT skipping
     if (currentTopicId === 'lobby' || currentTopicId === 'uc') {
         const baseStart = currentConfig.startTime || 19.64;
-        
-        // Om det INTE är en helt ren förstahandsladdning (t.ex. vid backning/historik)
-        if (event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward" || performance.getEntriesByType("navigation")[0].type === "navigate") {
-            // Lägg på dina extra 8 sekunders skip! (19.64 + 8 = 27.482s)
-            audio.currentTime = baseStart + 8;
+
+        // Extra skip only when returning from inside the site, never on a fresh visit
+        const isInternalReturn =
+            event.persisted ||
+            navEntry?.type === "back_forward" ||
+            (navEntry?.type === "navigate" && sessionStorage.getItem('navFrom'));
+
+        if (isInternalReturn) {
+            seekWhenReady(baseStart + 8);
         } else {
-            audio.currentTime = baseStart;
+            seekWhenReady(baseStart);
         }
     }
     // Starta musiken direkt om vi backat eller hoppat via länk
@@ -1895,18 +1897,6 @@ window.addEventListener('pageshow', (e) => {
 
 // ── GLOBAL EXIT FUNCTION (STANDARD LINKS) ─────────────────────────────
 window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false) {
-    const isInternalReturn =
-      event.persisted ||
-      navEntry?.type === "back_forward" ||
-      (navEntry?.type === "navigate" && sessionStorage.getItem('navFrom'));
-
-      if (isInternalReturn) {
-          seekWhenReady(baseStart + 8);
-      } else {
-          seekWhenReady(baseStart);
-      }
-
-
     if (isExiting) return;
     isExiting = true;
     if (typeof currentSlug !== 'undefined') sessionStorage.setItem('navFrom', currentSlug);
