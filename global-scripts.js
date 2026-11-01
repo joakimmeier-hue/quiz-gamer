@@ -1989,9 +1989,14 @@ document.addEventListener("keydown", function(e) {
   if (e.key === "Enter" || e.key === " ") {
     const welcomeTarget = document.querySelector(".welcome-text-container");
     if (!welcomeTarget) return;
-    if (welcomeTarget.offsetWidth === 0 && welcomeTarget.offsetHeight === 0) return;
-    const style = window.getComputedStyle(welcomeTarget);
-    if (style.display === 'none' || parseFloat(style.opacity) < 0.1) return;
+    const welcomeTarget = document.querySelector(".welcome-text-container");
+    if (!welcomeTarget) return;
+
+    // Only while the intro is still showing, and never while typing in a field
+    const intro = document.querySelector('.intro-overlay-grp');
+    if (!intro || window.getComputedStyle(intro).display === 'none') return;
+    if (window.lobbySkipDone) return;
+    if (e.target.closest('input, textarea, [contenteditable="true"]')) return;
     
     triggered = true;
     e.preventDefault();
