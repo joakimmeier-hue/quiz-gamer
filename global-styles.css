@@ -735,7 +735,7 @@ a.button-link:hover {
 .leaderboard-overlay .ppic-lb:hover {
   scale: 3;
   position: relative;
-  z-index: 99;
+  z-index: 10;
 }
 .leaderboard-overlay .lb-column:has(.ppic-lb:hover) {
   position: relative;
