@@ -287,6 +287,8 @@ document.addEventListener('keydown', function(e) {
     }
   }
 
+  // Esc is not a valid user gesture, so on a fresh visit it must not start the page (and the music)
+  if (e.key === 'Escape' && navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
   // Fallback for visible buttons
   const visibleWrapperBtn = Array.from(
     document.querySelectorAll('.button-wrapper .button, .button-wrapper .button-link')
@@ -1270,11 +1272,15 @@ const sfxCtx = new AudioContext({
   const sfxBuffers = {}; 	
 // Mobiler (särskilt iOS) blockerar ljudmotorn tills användaren rör skärmen.
 // Det här låser upp ljudmotorn vid allra första klicket/touchen.
-['mousedown', 'touchstart', 'keydown'].forEach(event => {
-    document.body.addEventListener(event, () => {
+(function() {
+    const types = ['mousedown', 'touchstart', 'keydown'];
+    function unlock(e) {
+        if (e.type === 'keydown' && e.key === 'Escape') return; // Esc doesn't count as a gesture
         if (sfxCtx.state === 'suspended') sfxCtx.resume();
-    }, { once: true });
-});
+        types.forEach(t => document.body.removeEventListener(t, unlock));
+    }
+    types.forEach(t => document.body.addEventListener(t, unlock));
+})();
 // Funktion för att i bakgrunden hämta och spara ljudet direkt i RAM-minnet
 async function preloadBuffer(key, url) {
     try {
