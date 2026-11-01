@@ -12,22 +12,7 @@
   --dark-grey: #181717;
 }
 
-/* —————————————— SCORE PAGE ————————————— */
-.score-title-3 {
-  opacity: 0;
-  transform: translate(var(--title-x, 0px), var(--title-y, 0px)) scale(1.5);
-}
 
-.score-title-3.title-show {
-  opacity: 1;
-  transition: opacity 0.05s ease-out;
-}
-
-.score-title-3.title-move {
-  opacity: 1;
-  transform: translate(0px, 0px) scale(1);
-  transition: opacity 0.05s ease-out, transform 0.37s ease-in-out;
-}
 
 /* ————————— UNIVERSAL ANTI-FOUC CLASS ———————— */
 .fouc-reveal {
@@ -47,7 +32,7 @@
 /* —————— Global overflow-stopper —————— */
 .wrapper-score,
 .about-wrapper,
-.games-grid-clip
+.games-grid-clip,
 .intro-overlay-grp {
   overflow-x: hidden;
 }
@@ -850,6 +835,23 @@ a.button-link:hover {
 /* ── Game finished: answers locked until next game ── */
 body.game-finished .alternative-row {
   pointer-events: none !important;
+}
+
+/* —————————————— SCORE PAGE ————————————— */
+.score-title-3 {
+  opacity: 0;
+  transform: translate(var(--title-x, 0px), var(--title-y, 0px)) scale(1.5);
+}
+
+.score-title-3.title-show {
+  opacity: 1;
+  transition: opacity 0.05s ease-out;
+}
+
+.score-title-3.title-move {
+  opacity: 1;
+  transform: translate(0px, 0px) scale(1);
+  transition: opacity 0.05s ease-out, transform 0.37s ease-in-out;
 }
 
 /* ────── Score Review mode ────── */
