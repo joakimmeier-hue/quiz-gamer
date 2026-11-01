@@ -735,7 +735,7 @@ a.button-link:hover {
 .leaderboard-overlay .ppic-lb:hover {
   scale: 3;
   position: relative;
-  z-index: 20;
+  z-index: 9999;
 }
 
 /* GAME INFO LOAD ANIMATION */
