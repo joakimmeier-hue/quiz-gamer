@@ -1169,6 +1169,7 @@ const currentConfig = TOPICS[currentTopicId];
 const audioKey = currentTopicId + 'AudioTime';
 // Initiera Audio
 const audio = new Audio(currentConfig.url);
+audio.preload = 'auto';
 window.bgMusic = audio; 
 audio.loop = true;
 let isMuted = false; 
@@ -1194,6 +1195,15 @@ window.fadeOutMusic = function() {
         }, 20);
     }
 };
+
+function seekWhenReady(t) {
+    if (audio.readyState >= 1) {
+        audio.currentTime = t;
+    } else {
+        audio.addEventListener('loadedmetadata', () => { audio.currentTime = t; }, { once: true });
+    }
+}
+
 window.startMusic = function(forceInstant = false) {
     if (!audio.paused || !currentConfig.url) return; 
     let playPromise = audio.play();
@@ -1418,7 +1428,7 @@ function initAudio() {
     // TIDSHANTERING VID VANLIG PAGE LOAD (Från början)
     if (currentTopicId === 'lobby' || currentTopicId === 'uc') {
         // Första gången sidan laddas -> Kör vanliga startTime (19.64s)
-        audio.currentTime = currentConfig.startTime || 19.64;
+        seekWhenReady(currentConfig.startTime || 19.64);
     } else {
         const isInternalNavigation = savedTime && (!fromTopic || fromTopic === currentTopicId);
         if (isInternalNavigation) {
@@ -1885,6 +1895,18 @@ window.addEventListener('pageshow', (e) => {
 
 // ── GLOBAL EXIT FUNCTION (STANDARD LINKS) ─────────────────────────────
 window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false) {
+    const isInternalReturn =
+      event.persisted ||
+      navEntry?.type === "back_forward" ||
+      (navEntry?.type === "navigate" && sessionStorage.getItem('navFrom'));
+
+      if (isInternalReturn) {
+          seekWhenReady(baseStart + 8);
+      } else {
+          seekWhenReady(baseStart);
+      }
+
+
     if (isExiting) return;
     isExiting = true;
     if (typeof currentSlug !== 'undefined') sessionStorage.setItem('navFrom', currentSlug);
