@@ -1989,9 +1989,6 @@ document.addEventListener("keydown", function(e) {
   if (e.key === "Enter" || e.key === " ") {
     const welcomeTarget = document.querySelector(".welcome-text-container");
     if (!welcomeTarget) return;
-    const welcomeTarget = document.querySelector(".welcome-text-container");
-    if (!welcomeTarget) return;
-
     // Only while the intro is still showing, and never while typing in a field
     const intro = document.querySelector('.intro-overlay-grp');
     if (!intro || window.getComputedStyle(intro).display === 'none') return;
