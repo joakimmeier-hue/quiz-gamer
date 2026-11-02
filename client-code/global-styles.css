@@ -64,12 +64,12 @@
   .w-select:focus,
   .submit-button:focus-visible {
     border-color: var(--yellow, #ffcb6b) !important; /* Ändra färg eller osynlig */
-    /* box-shadow: none !important;  */              /* Tar bort eventuell blå glöd */
+    box-shadow: none !important;               /* Tar bort eventuell blå glöd */
   }
   
   /* 2. Change the text selection highlight color site-wide */
   ::selection {
-    background-color: var(--yellow, #ffcb6b);
+    background-color: var(--yellow, #1efd74);
     color: #111111; /* Makes the text dark when highlighted so it's readable against the yellow/orange */
   }
 
