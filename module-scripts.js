@@ -220,7 +220,6 @@ document.getElementById('email-auth-modal')?.addEventListener('click', function(
   }
 });
 
-
 // ———————————— EMAIL AUTH MODAL POPUP ————————————
 const emailAuthModal = document.getElementById('email-auth-modal');
 const emailAuthEmail = document.getElementById('email-auth-email');
@@ -469,7 +468,6 @@ function showCreateProfile() {
     });
   }
 }
-
 
 function hideCreateProfile() {
   const createProfileEl = document.getElementById('create-profile') || document.querySelector('.create-profile');
@@ -1387,19 +1385,18 @@ if (currentSlug === 'score-review' && cameFrom !== 'score') {
 }
 
 // ==========================================
-// ── 1. DELAD KOMPONENT FÖR TEXTFÄLT ──
+// ── 1. SHARED COMPONENT FOR TEXT INPUT ──
 // ==========================================
-// Denna funktion fungerar som en komponent. Den ger båda fälten exakt samma beteende.
 function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
     if (!inputEl || !btnEl) return;
     // store placeholder on element so focus helper can detect it reliably
     inputEl.dataset.defaultPlaceholder = defaultPlaceholder;
-    // -- START-UTSEENDE --
+    // -- START-FEATURE --
     if (inputEl.textContent.trim() === defaultPlaceholder || inputEl.textContent.trim() === "") {
         inputEl.textContent = defaultPlaceholder;
         inputEl.style.color = "rgba(255, 255, 255, 0.35)";
     }
-    // -- FOKUS --
+    // -- FOCUS --
     inputEl.addEventListener('focus', () => {
         if (inputEl.textContent.trim() === defaultPlaceholder) {
             inputEl.textContent = "";
