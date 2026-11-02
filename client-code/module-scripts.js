@@ -1516,7 +1516,7 @@ function validateUsernameRules(rawName) {
     if (rawName.length > 14) errors.push("Maximum 14 characters");
     const spaceCount = (rawName.match(/ /g) || []).length;
     if (spaceCount > 1) errors.push("Only one space allowed");
-    const invalidCharRegex = /[^a-zA-Z0-9åäöÅÄÖ\-_ ]/; 
+    const invalidCharRegex = /[^a-zA-Z0-9åäöÅÄÖ\-_. ]/; 
     if (rawName.length > 0 && invalidCharRegex.test(rawName)) {
         errors.push("Ops, invalid character");
     }
