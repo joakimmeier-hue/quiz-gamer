@@ -1,0 +1,335 @@
+[
+  {
+    "id": "science-l1-q001",
+    "topic": "science",
+    "level": 1,
+    "text": "What's the distance between the Earth and the Sun?",
+    "alternatives": { "1": "5 AU", "2": "384,000 km", "3": "1 light-minute", "4": "1/5 of the distance to Jupiter" },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l1-q002",
+    "topic": "science",
+    "level": 1,
+    "text": "What's the most abundant element in our atmosphere?",
+    "alternatives": { "1": "Hydrogen", "2": "Helium", "3": "Nitrogen", "4": "Silicon" },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l1-q003",
+    "topic": "science",
+    "level": 1,
+    "text": "Who formulated the Theory of Evolution?",
+    "alternatives": { "1": "Jesus", "2": "Charles Darwin", "3": "Isaac Newton", "4": "Pol Pot" },
+    "correctChoice": 2
+  },
+  {
+    "id": "science-l1-q004",
+    "topic": "science",
+    "level": 1,
+    "text": "Which gas is required for fire to burn?",
+    "alternatives": { "1": "Nitrogen", "2": "Oxygen", "3": "Argon", "4": "Carbon dioxide" },
+    "correctChoice": 2
+  },
+  {
+    "id": "science-l1-q005",
+    "topic": "science",
+    "level": 1,
+    "text": "When did the 'Age of Dinosaurs' end?",
+    "alternatives": { "1": "10,000 years ago", "2": "66,000 years ago", "3": "66 million years ago", "4": "252 million years ago" },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l1-q006",
+    "topic": "science",
+    "level": 1,
+    "text": "What was Marie Curie the first woman to do?",
+    "alternatives": { "1": "Walk on the Moon", "2": "Win a Nobel Prize", "3": "Enter the French Academy", "4": "Fly an airplane" },
+    "correctChoice": 2
+  },
+  {
+    "id": "science-l1-q007",
+    "topic": "science",
+    "level": 1,
+    "text": "What is the approximate orbital speed of a Low Earth satellite?",
+    "alternatives": { "1": "8 km/s", "2": "80 km/s", "3": "800 km/s", "4": "Speed of sound" },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l1-q008",
+    "topic": "science",
+    "level": 1,
+    "text": "When was the first full-sized electric car built?",
+    "alternatives": { "1": "1880s", "2": "1950s", "3": "1990s", "4": "2008" },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l1-q009",
+    "topic": "science",
+    "level": 1,
+    "text": "Which scientist stared directly at the Sun until he went temporarily blind?",
+    "alternatives": { "1": "Neil deGrasse Tyson", "2": "Hypatia", "3": "Isaac Newton", "4": "Nikola Tesla" },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l1-q010",
+    "topic": "science",
+    "level": 1,
+    "text": "What is the speed of light in a vacuum?",
+    "alternatives": { "1": "Infinite", "2": "100,000 km/s", "3": "1,000 km/s", "4": "300,000 km/s" },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l1-q011",
+    "topic": "science",
+    "level": 1,
+    "text": "How many liters of water fit inside 1 cubic meter?",
+    "alternatives": { "1": "100 liters", "2": "1,000 liters", "3": "10,000 liters", "4": "1,000,000 liters" },
+    "correctChoice": 2
+  },
+  {
+    "id": "science-l1-q012",
+    "topic": "science",
+    "level": 1,
+    "text": "Can you hear a massive explosion in outer space?",
+    "alternatives": { "1": "Yes, if close by", "2": "No, space is a vacuum", "3": "Only with radio headphones", "4": "Yes, but delayed" },
+    "correctChoice": 2
+  },
+  {
+    "id": "science-l1-q013",
+    "topic": "science",
+    "level": 1,
+    "text": "At what temperature does water boil on top of Mount Everest?",
+    "alternatives": { "1": "100°C", "2": "70°C", "3": "120°C", "4": "It cannot boil" },
+    "correctChoice": 2
+  },
+  {
+    "id": "science-l1-q014",
+    "topic": "science",
+    "level": 1,
+    "text": "On which planets does atmosphere pressure cause it to rain diamonds?",
+    "alternatives": { "1": "Mars & Venus", "2": "Neptune & Uranus", "3": "Mercury & Moon", "4": "Earth & Saturn" },
+    "correctChoice": 2
+  },
+  {
+    "id": "science-l1-q015",
+    "topic": "science",
+    "level": 1,
+    "text": "Roughly how much does a typical fluffy white cumulus cloud weigh?",
+    "alternatives": { "1": "5 kg", "2": "500 kg", "3": "500,000 kg", "4": "0 kg" },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l1-q016",
+    "topic": "science",
+    "level": 1,
+    "text": "How old is planet Earth?",
+    "alternatives": { "1": "∿6,000 years", "2": "∿4.5 million years", "3": "∿4.5 billion years", "4": "∿13.8 billion years" },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l1-q017",
+    "topic": "science",
+    "level": 1,
+    "text": "What is Absolute Zero (the coldest possible temperature)?",
+    "alternatives": { "1": "-100°C", "2": "0°C", "3": "-500°C", "4": "-273°C" },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l1-q018",
+    "topic": "science",
+    "level": 1,
+    "text": "Which everyday fruit is naturally slightly radioactive due to high potassium?",
+    "alternatives": { "1": "Apple", "2": "Banana", "3": "Watermelon", "4": "Strawberry" },
+    "correctChoice": 2
+  },
+   {
+    "id": "science-l1-q019",
+    "topic": "science",
+    "level": 1,
+    "text": "What is the mathematical number Pi (ℼ) approximately equal to?",
+    "alternatives": { "1": "0", "2": "1.618", "3": "2.718", "4": "3.14" },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l1-q020",
+    "topic": "science",
+    "level": 1,
+    "text": "Which astronomer famously created and hosted the original 'Cosmos' TV series?",
+    "alternatives": { "1": "Carl Sagan", "2": "Stephen Hawking", "3": "Bill Nye", "4": "Edwin Hubble" },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l1-q021",
+    "topic": "science",
+    "level": 1,
+    "text": "How long does light from the Sun take to reach Earth?",
+    "alternatives": { "1": "Instant", "2": "∿8 seconds", "3": "∿8 minutes", "4": "24 hours" },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l1-q022",
+    "topic": "science",
+    "level": 1,
+    "text": "What is the hardest naturally occurring substance on Earth?",
+    "alternatives": { "1": "Titanium", "2": "Quartz", "3": "Diamond", "4": "Graphene" },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l1-q023",
+    "topic": "science",
+    "level": 1,
+    "text": "If you weigh 60 kg on Earth, roughly how much do you weigh on the Moon?",
+    "alternatives": { "1": "10 kg", "2": "30 kg", "3": "60 kg", "4": "0 kg" },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l1-q024",
+    "topic": "science",
+    "level": 1,
+    "text": "What metal is liquid at standard room temperature?",
+    "alternatives": { "1": "Mercury", "2": "Lead", "3": "Copper", "4": "Aluminum" },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l1-q025",
+    "topic": "science",
+    "level": 1,
+    "text": "Which planet in our solar system has the most moons?",
+    "alternatives": { "1": "Earth", "2": "Mars", "3": "Saturn", "4": "Venus" },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l1-q026",
+    "topic": "science",
+    "level": 1,
+    "text": "What is the primary element that makes up the Sun?",
+    "alternatives": { "1": "Oxygen", "2": "Carbon", "3": "Helium", "4": "Hydrogen" },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l1-q027",
+    "topic": "science",
+    "level": 1,
+    "text": "How many states of matter commonly exist in daily life?",
+    "alternatives": { "1": "2", "2": "3", "3": "5", "4": "10" },
+    "correctChoice": 2
+  },
+  {
+    "id": "science-l1-q028",
+    "topic": "science",
+    "level": 1,
+    "text": "What force holds galaxies, stars, and planets together?",
+    "alternatives": { "1": "Magnetism", "2": "Gravity", "3": "Friction", "4": "Static charge" },
+    "correctChoice": 2
+  },
+  {
+    "id": "science-l1-q029",
+    "topic": "science",
+    "level": 1,
+    "text": "In the film Interstellar, 1 hour on Miller's ocean planet equals how long on Earth?",
+    "alternatives": { "1": "1 day", "2": "1 month", "3": "1 year", "4": "7 years" },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l1-q030",
+    "topic": "science",
+    "level": 1,
+    "text": "Where does crude oil primarily originate from?",
+    "alternatives": { "1": "Dinosaur bones", "2": "Volcanic magma", "3": "Rotting trees", "4": "Microscopic marine life" },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l1-q031",
+    "topic": "science",
+    "level": 1,
+    "text": "Why did dead trees turn into massive coal deposits during the Carboniferous Period?",
+    "alternatives": { "1": "Extreme cold", "2": "Lack of sunlight", "3": "Meteor strikes", "4": "Fungi hadn't evolved to digest wood" },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l1-q032",
+    "topic": "science",
+    "level": 1,
+    "text": "What is the most common chemical element in the observable universe?",
+    "alternatives": { "1": "Carbon", "2": "Oxygen", "3": "Helium", "4": "Hydrogen" },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l1-q033",
+    "topic": "science",
+    "level": 1,
+    "text": "Which part of an atom carries a negative electrical charge?",
+    "alternatives": { "1": "Proton", "2": "Neutron", "3": "Nucleus", "4": "Electron" },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l1-q034",
+    "topic": "science",
+    "level": 1,
+    "text": "What unit measures electrical resistance in a circuit?",
+    "alternatives": { "1": "Volt", "2": "Watt", "3": "Ampere", "4": "Ohm" },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l1-q035",
+    "topic": "science",
+    "level": 1,
+    "text": "What prevents a satellite from falling straight down into Earth?",
+    "alternatives": { "1": "High sideways orbital speed", "2": "Solar radiation", "3": "Magnetic shield", "4": "Zero gravity" },
+    "correctChoice": 1
+  },
+   {
+    "id": "science-l1-q036",
+    "topic": "science",
+    "level": 1,
+    "text": "Why does coal even exist today?",
+    "alternatives": { "1": "Higher oxygen levels in prehistoric times", "2": "The ozone layer was thicker than today", "3": "Fungi ∿300 million years ago couldn't digest wood", "4": "Continuous underground volcanic activity" },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l1-q037",
+    "topic": "science",
+    "level": 1,
+    "text": "What is the square root of (100 / 3)?",
+    "alternatives": { "1": "∿5.77", "2": "∿2.67", "3": "21", "4": "33" },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l1-q038",
+    "topic": "science",
+    "level": 1,
+    "text": "Max height a suction pump can lift water?",
+    "alternatives": { "1": "∿100m", "2": "∿101m", "3": "∿9m", "4": "∿10m" },
+    "correctChoice": 4,
+    "tag": "elite"
+  },
+  {
+    "id": "science-l1-q039",
+    "topic": "science",
+    "level": 1,
+    "text": "On the moment magnitude scale for earthquakes, how much more energy is released by a magnitude 7.0 quake compared to a 6.0?",
+    "alternatives": { "1": "Exactly 10 times", "2": "Exactly 100 times", "3": "∿31.6 times", "4": "∿1,000 times" },
+    "correctChoice": 3,
+    "tag": "elite"
+  },
+  {
+    "id": "science-l1-q040",
+    "topic": "science",
+    "level": 1,
+    "text": "Why does the water around a nuclear reactor core emit an eerie blue Cherenkov glow?",
+    "alternatives": { "1": "Radioactive decay directly creates blue photons", "2": "Particles travel faster than the speed of light in that medium", "3": "Ionization of hydrogen isotopes",  "4": "Thermal blackbody radiation from cooling pipes"},
+    "correctChoice": 2,
+    "tag": "elite"
+  },
+{
+    "id": "science-l1-q041",
+    "topic": "science",
+    "level": 1,
+    "text": "If a pure sound wave's frequency is doubled, what musical interval does it shift up by?",
+    "alternatives": { "1": "A perfect fifth", "2": "An octave", "3": "A major third", "4": "A semitone" },
+    "correctChoice": 2,
+    "tag": "elite"
+  }
+
+]

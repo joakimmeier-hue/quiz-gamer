@@ -1,0 +1,21 @@
+[
+  {
+    "id": "science-l2-q001",
+    "topic": "science",
+    "level": 2,
+    "text": "What is the most common type of star in the Milky Way galaxy?",
+    "alternatives": { "1": "Red dwarf", "2": "Yellow dwarf", "3": "Blue giant", "4": "White dwarf" },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l2-q002",
+    "topic": "math",
+    "level": 1,
+    "text": "What is the decimal equivalent of the hexadecimal byte 'FF' (binary 11111111)?",
+    "alternatives": { "1": "127", "2": "255", "3": "512", "4": "1024" },
+    "correctChoice": 2,
+    "type": "elite"
+  }
+
+
+  ]

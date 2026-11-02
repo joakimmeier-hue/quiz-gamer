@@ -1,0 +1,2476 @@
+// ─────────────────── GLOBAL INPUT PROTECTION & BUTTON SHIELD ──────────────────────
+['pointerdown', 'mousedown', 'mouseup', 'click', 'auxclick', 'contextmenu'].forEach(eventType => {
+  document.addEventListener(eventType, (e) => {
+
+    // 1. GLOBAL PROTECTION: Stop middle-mouse clicks (e.button === 1) anywhere on the app
+    /* if (e.button === 1 && (eventType === 'auxclick' || eventType === 'pointerdown' || eventType === 'mousedown')) {
+      e.preventDefault();
+    } */
+
+    // 2. COMPONENT SHIELD: Check if click happened inside protected UI elements
+    const shieldedElement = e.target.closest(
+      '.dropdown-gamelevel, .game-start-btn-wrapper, [data-left-click-only], .js-left-click-only'
+    );
+
+    if (!shieldedElement) return;
+
+    // Block all non-left clicks (e.button !== 0), right-clicks, and context menus
+    if (e.button !== 0 || eventType === 'contextmenu' || eventType === 'auxclick') {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+
+      // Immediately strip focus so Webflow's script doesn't open on right/middle click
+      if (e.target && typeof e.target.blur === 'function') {
+        e.target.blur();
+      }
+      if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
+      }
+    }
+  }, true); // Capture phase
+});
+// ─────────────────── Make number separator like 1,000 / 1 000 ───────────
+function fmtNum(n) {
+  if (isNaN(n) || n === null || n === undefined) return n; // Safely returns "..." without turning into NaN!
+  const lang = document.documentElement.lang || 'en';
+  return new Intl.NumberFormat(lang).format(Number(n));
+}
+
+// ROBUST SMOOTH SCROLL TO ELEMENT ID (cancelable)
+// Finds the nearest scrollable ancestor, or null if the page itself scrolls
+function getScrollParent(el) {
+  let node = el.parentElement;
+  while (node && node !== document.body) {
+    const style = window.getComputedStyle(node);
+    const overflowY = style.overflowY;
+    if ((overflowY === 'auto' || overflowY === 'scroll') && node.scrollHeight > node.clientHeight) {
+      return node;
+    }
+    node = node.parentElement;
+  }
+  return null; // no scrollable ancestor found -> use window
+}
+
+function smoothScrollToId(targetId, opts = {}) {
+  const duration = opts.duration ?? 1000;
+  const topOffsetPercent = opts.topOffsetPercent ?? (window.innerWidth < 600 ? 0.12 : 0.2);
+  const target = document.getElementById(targetId);
+  if (!target) return Promise.resolve(false);
+
+  // explicit container wins; otherwise auto-detect; otherwise fall back to window
+  const container = opts.container instanceof Element
+    ? opts.container
+    : (opts.containerSelector ? document.querySelector(opts.containerSelector) : null)
+      || getScrollParent(target);
+
+  const isWindow = !container;
+  const scroller = {
+    get pos() {
+      return isWindow ? window.scrollY : container.scrollTop;
+    },
+    set pos(v) {
+      if (isWindow) window.scrollTo(0, v);
+      else container.scrollTop = v;
+    },
+    get viewportHeight() {
+      return isWindow
+        ? (window.visualViewport ? window.visualViewport.height : window.innerHeight)
+        : container.clientHeight;
+    },
+    addEvt(type, fn, opts2) {
+      (isWindow ? window : container).addEventListener(type, fn, opts2);
+    },
+    removeEvt(type, fn) {
+      (isWindow ? window : container).removeEventListener(type, fn);
+    }
+  };
+  const targetRect = target.getBoundingClientRect();
+  const baseRect = isWindow ? { top: 0 } : container.getBoundingClientRect();
+  const elementTop = targetRect.top - baseRect.top + scroller.pos;
+  const targetPos = Math.max(0, Math.round(elementTop - scroller.viewportHeight * topOffsetPercent));
+
+  let start = scroller.pos;
+  const distance = targetPos - start;
+  let startTime = null;
+  let rafId = null;
+  let canceled = false;
+
+  const cancelOnUser = () => { canceled = true; cleanup(); };
+  scroller.addEvt('wheel', cancelOnUser, { passive: true, once: true });
+  scroller.addEvt('touchstart', cancelOnUser, { passive: true, once: true });
+  window.addEventListener('keydown', cancelOnUser, { once: true });
+
+  function easeInOut(t) {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+  }
+  function step(ts) {
+    if (canceled) return;
+    if (!startTime) startTime = ts;
+    const progress = Math.min((ts - startTime) / duration, 1);
+    scroller.pos = Math.round(start + distance * easeInOut(progress));
+    if (progress < 1) {
+      rafId = requestAnimationFrame(step);
+    } else {
+      cleanup();
+    }
+  }
+  function cleanup() {
+    if (rafId) cancelAnimationFrame(rafId);
+    try {
+      scroller.removeEvt('wheel', cancelOnUser);
+      scroller.removeEvt('touchstart', cancelOnUser);
+      window.removeEventListener('keydown', cancelOnUser);
+    } catch (e) {}
+  }
+  return new Promise((resolve) => {
+    rafId = requestAnimationFrame(step);
+    const finishCheck = setInterval(() => {
+      if (canceled || scroller.pos === targetPos) {
+        clearInterval(finishCheck);
+        cleanup();
+        resolve(!canceled);
+      }
+    }, 50);
+  });
+}
+
+// Attach handlers — unchanged, just stop passing a hardcoded containerSelector
+(function attachDataScrollHandlers() {
+  const triggers = document.querySelectorAll('[data-scroll-to]');
+  triggers.forEach(trigger => {
+    trigger.addEventListener('click', function (e) {
+      e.preventDefault();
+      const cs = window.getComputedStyle(this);
+      if (cs.pointerEvents === 'none' || parseFloat(cs.opacity) === 0) return;
+      const id = this.getAttribute('data-scroll-to');
+      if (!id) return;
+      smoothScrollToId(id, {
+        duration: 900,
+        topOffsetPercent: window.innerWidth < 600 ? 0.12 : 0.20
+        // no containerSelector needed — auto-detects .mask-middle here,
+        // falls back to window on normal pages
+      });
+    });
+  });
+})();
+
+// ─────────────  DEDICATED UI REVEAL LISTENER FOR FOUC ELEMENTS ─────────────
+function revealFoucElements() {
+  const elements = document.querySelectorAll('.fouc-reveal');
+
+  // Check if on Lobby
+  const isLobbyPage = window.location.pathname === '/' || window.location.pathname === '';
+  elements.forEach(el => {
+    // Lobby bg video: reveal without fade so it doesn't fight the Webflow intro interaction
+    if (isLobbyPage && el.classList.contains('bg-video-glitch')) {
+      el.classList.add('is-revealed', 'no-fade');
+      return;
+    }
+    el.classList.add('is-revealed');
+  });
+}
+   // 1. Primary Trigger: Reveal when corePageReady fires
+  document.addEventListener('corePageReady', revealFoucElements);
+  // Ensure corePageReady ALWAYS fires, even on non-game pages
+  document.addEventListener('DOMContentLoaded', () => {
+  const isGamePage = document.querySelector('.question-card') || document.getElementById('timer-display');
+  // If there are no game components on this page, release corePageReady immediately
+  if (!isGamePage) {
+    document.dispatchEvent(new CustomEvent('corePageReady'));
+  }
+  // Last Global Safety Net: Force reveal after x seconds if corePageReady hung or failed
+  setTimeout(() => {
+    revealFoucElements();
+  }, 7500);
+});
+
+// ──────────────── REUSABLE GLOBAL INFO POP  ───────────────────────────────────────
+// Pop up message dictionary 
+const INFO_MESSAGES = {
+  // Start Page / Tier Selection
+  NO_TIER_SELECTED: "Please select a tier!",
+  LEVEL_TOO_LOW: (reqLvl) => `Progress to level ${reqLvl} to play this tier!`,
+  // Score page
+  REVIEW_COST: "Cost for review is 15% of the Final Score. Affecting your global score but not your Highscore.",
+    // LB
+  NO_LB_RECORD: "Oops, no record for you in this leaderboard. Think you can make the top 100? Go play!"
+};
+
+// Global info helper
+function showGlobalInfo(text) {
+  const globalInfo = document.querySelector('.global-info');
+  const giText = document.querySelector('.gi-text');
+  if (!globalInfo) return;
+
+  if (giText) { giText. textContent = text; }
+
+  // Make flex first
+  globalInfo.style.display = 'flex';
+
+  // Force a browser reflow/repaint so backdrop-filter initializes before opacity transitions
+  void globalInfo.offsetWidth;
+
+  requestAnimationFrame(() => {
+    globalInfo.classList.add('is-visible');
+  });
+}
+
+function hideGlobalInfo() {
+  const globalInfo = document.querySelector('.global-info');
+  if (!globalInfo) return;
+
+  globalInfo.classList.remove('is-visible');
+
+  setTimeout(() => {
+    if (!globalInfo.classList.contains('is-visible')) {
+      globalInfo.style.display = 'none';
+    }
+  }, 200);
+}
+ window.showGlobalInfo = showGlobalInfo;
+  window.hideGlobalInfo = hideGlobalInfo;
+  window.INFO_MESSAGES = INFO_MESSAGES;
+
+// Global click handler: backdrop & OK button dismissal
+document.addEventListener('click', (e) => {
+  const globalInfo = document.querySelector('.global-info');
+  if (!globalInfo || globalInfo.style.display === 'none') return;
+
+  // 1. Click outside .container-borders (backdrop)
+  const container = globalInfo.querySelector('.container-borders');
+  if (container && !container.contains(e.target) && globalInfo.contains(e.target)) {
+    hideGlobalInfo();
+    return;
+  }
+
+  // 2. Click OK button inside .global-info
+  if (e.target.closest('.global-info .button')) {
+    e.preventDefault();
+    hideGlobalInfo();
+  }
+});
+
+// ── MULTI-BUTTON KEY LISTENERS (ESC/ENTER - SÄKER VERSION) ────────────────────────────
+document.addEventListener('keydown', function(e) {
+  const triggerKeys = ["Escape", "Enter"];
+  if (!triggerKeys.includes(e.key)) return;
+
+  // Includes .global-info alongside other overlays
+  const overlays = document.querySelectorAll('.rules-overlay, .leaderboard-overlay, .about-overlay, .global-info');
+  for (const overlay of overlays) {
+    const style = window.getComputedStyle(overlay);
+    
+    // SÄKRARE CHECK: Måste vara synlig, helt opaik (1.0), och aktiv för klick (ej pointer-events: none)
+    const isOpen = style.display !== 'none' && 
+                   style.visibility !== 'hidden' && 
+                   parseFloat(style.opacity) > 0.99 && 
+                   style.pointerEvents !== 'none';
+
+    if (isOpen) {
+      if (e.key === 'Enter' && overlay.classList.contains('about-overlay')) return;
+      e.preventDefault();
+
+      if (overlay.classList.contains('global-info')) {
+        // Two-choice popup: Enter = Accept, Esc = close (same as Cancel)
+        const acceptBtn = Array.from(overlay.querySelectorAll('.button.accept'))
+          .find(el => el.offsetParent !== null);
+        if (e.key === 'Enter' && acceptBtn && !e.repeat) {
+          acceptBtn.click();
+        } else {
+          hideGlobalInfo();
+        }
+      } else {
+        const btn = overlay.querySelector('.button');
+        if (btn) btn.click();
+      }
+      return;
+    }
+  }
+
+  // Esc is not a valid user gesture, so on a fresh visit it must not start the page (and the music)
+  if (e.key === 'Escape' && navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
+  // Fallback for visible buttons
+  const visibleWrapperBtn = Array.from(
+    document.querySelectorAll('.button-wrapper .button, .button-wrapper .button-link')
+    ).find(el => el.offsetParent !== null && !el.closest('.global-info'));
+
+  if (visibleWrapperBtn) {
+    e.preventDefault();
+    visibleWrapperBtn.click();
+  }
+});
+
+// ────────────────── GAME-START PAGES ──────────────────
+
+// ── TIER LEVEL REQUIREMENTS ──────────────────────────────────────────
+const TIER_REQUIREMENTS = {
+  1: 1,   // Tier 1 -> Player Lvl 1
+  2: 10,  // Tier 2 -> Player Lvl 10
+  3: 20,  // Tier 3 -> Player Lvl 20
+  4: 25   // Tier 4 -> Player Lvl 25
+};
+// Hide lock symbols on tiers accordingly
+function updateTierLocks(playerLevel = 1) {
+  // Query all level options in the dropdown
+  const options = document.querySelectorAll('.game-level-option');
+
+  options.forEach(option => {
+    // Read the tier level from the row (e.g. data-level="2")
+    const tier = parseInt(option.getAttribute('data-level') || '1', 10);
+    const requiredLevel = TIER_REQUIREMENTS[tier] || 1;
+
+    // Find the lock image inside this row or check data-locked-tier
+    const lockImg = option.querySelector('.lock-game, [data-locked-tier]');
+
+    if (lockImg) {
+      if (playerLevel >= requiredLevel) {
+        lockImg.style.display = 'none'; // Unlocked
+      } else {
+        lockImg.style.display = '';     // Locked (default state)
+      }
+    }
+  });
+
+  // Re-sync top header clone so it reflects updated lock visibility
+  if (typeof window.syncTopClone === 'function') {
+    window.syncTopClone();
+  }
+}
+
+// 1 BLUR TOP OF PAGE - WITH CLONE
+window.syncTopClone = window.syncClone = function() {
+  const real = document.querySelector('.mask-middle .vertical-center');
+  const dummySlot = document.querySelector('.mask-top .game-v-clone');
+
+  if (!real || !dummySlot) return;
+
+  dummySlot.innerHTML = '';
+  const clone = real.cloneNode(true);
+
+  // Strip duplicate IDs
+  clone.removeAttribute('id');
+  clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+
+  // Force link colors inside clone
+  clone.querySelectorAll('a').forEach(el => { el.style.color = 'white'; });
+    // Lotties in the clone: empty + hide from Webflow, module paints them later
+  clone.querySelectorAll('.game-rating-diff, .game-rating-bonus').forEach(el => {
+    el.innerHTML = '';
+    ['data-animation-type', 'data-src', 'data-loading', 'data-autoplay']
+      .forEach(a => el.removeAttribute(a));
+  });
+
+  // Strip hover/interactive classes
+  const interactiveClasses = ['hover-scale', 'js-press-scale', 'is-hovered'];
+  interactiveClasses.forEach(cls => {
+    clone.classList.remove(cls);
+    clone.querySelectorAll('.' + cls).forEach(el => el.classList.remove(cls));
+  });
+
+// 1. Force game-info elements to opacity 1 so they show up in the clone
+  const gameInfoEls = clone.querySelectorAll('.game-info, .game-info *');
+  gameInfoEls.forEach(el => {
+    if (el.closest('.game-rating-diff, .game-rating-bonus')) return;
+    if (el.classList.contains('small-square')) return;
+    el.style.opacity = '1';
+    el.style.transform = 'translateY(0%)'; 
+    el.style.transition = 'none';
+    el.style.animation = 'none';
+  });
+
+  // 2. Handle dropdowns separately WITHOUT touching their opacity or animation,
+  // allowing your CSS fadeIn animation to work smoothly!
+  const dropdownEls = clone.querySelectorAll('.dropdown-gamelevel, .dropdown-gamelevel *, .dropdown-gllist, .dropdown-toggle-lvl, .w-dropdown-list, .w-dropdown-toggle');
+  dropdownEls.forEach(el => {
+    if (el.classList.contains('small-square')) return;
+    el.style.transform = 'translateY(0%)'; 
+    el.style.transition = 'none';
+    // Notice we DO NOT touch opacity or animation here!
+  });
+
+  dummySlot.appendChild(clone);
+    if (typeof window.paintCloneRatings === 'function') window.paintCloneRatings();
+};
+
+// DOM listener for initial layout setup & scroll sync
+document.addEventListener('DOMContentLoaded', () => {
+  const scrollSource = document.querySelector('.mask-middle');
+  const scrollSlave = document.querySelector('.mask-top');
+
+  var Webflow = window.Webflow || [];
+  Webflow.push(function () {
+    if (typeof window.syncTopClone === 'function') {
+      window.syncTopClone();
+    }
+  });
+
+  if (scrollSource && scrollSlave) {
+    scrollSource.addEventListener('scroll', () => {
+      requestAnimationFrame(() => {
+        scrollSlave.scrollTop = scrollSource.scrollTop;
+      });
+    }, { passive: true });
+  }
+
+  // Run initial sync on load
+  window.syncTopClone();
+
+  // ➕ ADD THIS: Auto-sync after the 1.75s CSS animation delay completes
+  setTimeout(() => {
+    if (typeof window.syncTopClone === 'function') {
+      window.syncTopClone();
+    }
+  }, 1800);
+});
+
+// 2 COMPONENT .dropdown-gamelevel
+document.addEventListener('DOMContentLoaded', () => {
+  const dropdownComponent = document.querySelector('.mask-middle .dropdown-gamelevel');
+  const dropdownToggle = document.querySelector('.mask-middle .dropdown-toggle-lvl');
+  const dropdownList = document.querySelector('.mask-middle .dropdown-gllist');
+  const gamelvlBtn = document.querySelector('.mask-middle .gamelevel-btn');
+  const levelRows = Array.from(document.querySelectorAll('.mask-middle .game-level-option'));
+  const startBtn = document.querySelector('.mask-middle .game-start-btn');
+
+  // ──────────── ADD THIS: Observer.. re-syncs the clone when w--open changes ──
+  if (dropdownToggle) {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          // Whenever Webflow natively adds/removes 'w--open', re-sync the clone
+          if (typeof window.syncTopClone === 'function') {
+            setTimeout(window.syncTopClone, 50); // 50ms delay lets Webflow finish its DOM updates first
+          }
+        }
+      });
+    });
+    
+    // Start watching the toggle for class attribute changes
+    observer.observe(dropdownToggle, { attributes: true, attributeFilter: ['class'] });
+  }
+  //──────────────
+
+  if (!dropdownToggle || !dropdownList || !gamelvlBtn || !levelRows.length) return;
+
+  // force close .dropdown-gamelevel
+    const forceClosed = () => {
+    dropdownComponent.dispatchEvent(new Event('w-close'));
+    [dropdownToggle, dropdownList].forEach(el => el.classList.remove('w--open'));
+    dropdownToggle.setAttribute('aria-expanded', 'false');
+    if (typeof window.syncTopClone === 'function') window.syncTopClone();
+  };
+  window.Webflow = window.Webflow || [];
+  window.Webflow.push(() => setTimeout(forceClosed, 0)); // end force close
+  
+  levelRows.forEach(row => { row.__originalNextSibling = row.nextSibling; });
+
+  const slug = (typeof currentSlug !== 'undefined' && currentSlug) || window.location.pathname.split('/').pop();
+  const startMatch = slug.match(/^([a-z0-9-]+)-start$/i);
+  const topic = startMatch ? startMatch[1].toLowerCase() : null;
+
+  let currentlyShown = null;
+  let isProgrammaticClose = false;
+
+  // 1. Listen for clicks on the toggle to play native open/close sounds
+  dropdownToggle.addEventListener('click', () => {
+    if (isProgrammaticClose) return; // Prevent double sound when script forces menu shut
+
+    // If Webflow hasn't added w--open yet, it's opening
+    const isOpening = !dropdownToggle.classList.contains('w--open');
+    if (isOpening) {
+      if (typeof playSFX === 'function') playSFX('select');
+    } else {
+      if (typeof playSFX === 'function') playSFX('back');
+    }
+
+    if (typeof window.syncTopClone === 'function') setTimeout(window.syncTopClone, 50);
+  });
+
+  // 2. Handle selecting a level
+  levelRows.forEach(row => {
+    row.addEventListener('click', (e) => {
+      // CASE A: It's sitting at the top acting as the toggle
+      if (row.parentElement !== dropdownList) {
+        return; // Do nothing! Let the click bubble up and trigger the dropdownToggle natively
+      }
+
+      // CASE B: It's clicked INSIDE the dropdown list
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (typeof playSFX === 'function') playSFX('back');
+
+      // Update Selection States
+      levelRows.forEach(r => r.classList.remove('is-selected'));
+      row.classList.add('is-selected');
+      if (dropdownComponent) dropdownComponent.classList.add('has-selection');
+
+      // Swap elements
+      if (currentlyShown) {
+        dropdownList.insertBefore(currentlyShown, currentlyShown.__originalNextSibling);
+      }
+      gamelvlBtn.insertAdjacentElement('beforebegin', row);
+      gamelvlBtn.style.display = 'none';
+      currentlyShown = row;
+
+      row.style.width = getComputedStyle(dropdownToggle).width;
+
+      // Game logic update
+      const labelEl = row.querySelector('.game-level');
+      const selectedText = (labelEl ? labelEl.textContent : row.textContent).trim();
+      const levelMatch = selectedText.match(/\d+/);
+      const selectedLevel = levelMatch ? levelMatch[0] : '1';
+
+      if (startBtn && topic) {
+        startBtn.dataset.level = selectedLevel;
+        startBtn.setAttribute('href', '/quiz-game');
+      }
+
+      if (typeof window.loadGameInfo === 'function') {
+        const preAttemptsEl = document.getElementById('pre-attempts');
+        if (preAttemptsEl) preAttemptsEl.textContent = "...";
+
+        window.loadGameInfo(topic, selectedLevel);
+      }
+
+      // Force Webflow's internal script to close the dropdown natively
+      dropdownComponent.dispatchEvent(new Event('w-close'));
+
+      if (typeof window.syncTopClone === 'function') window.syncTopClone();
+    });
+  });
+    // Enter = START, but only after a tier is selected and nothing else is open
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' || e.repeat || !startBtn) return;
+    if (!document.querySelector('.mask-middle .game-level-option.is-selected')) return;
+    if (dropdownToggle.classList.contains('w--open')) return;   // dropdown open: Enter belongs to it
+    const info = document.querySelector('.global-info');
+    if (info && getComputedStyle(info).display !== 'none') return;   // popup open: its own Enter handler
+    e.preventDefault();
+    e.stopPropagation();   // capture phase below: we go first, so no other Enter handler also fires
+    if (typeof playSFX === 'function') playSFX('select');
+    startBtn.click();      // click the child link: plays the select sound and bubbles up to the start handler
+  }, true);
+});
+
+// 4 ARROW ANCHOR BOUNCE— exact SVG bezier curve replay
+document.addEventListener('DOMContentLoaded', () => {
+  const arrowWrapper = document.querySelector('.arrow-anchor-wrapper');
+  if (!arrowWrapper) return;
+
+  // Your exact Webflow IX3 bezier path, parsed into segments.
+  // Each segment: [P0, C1, C2, P1] as {x, y} points, taken directly from the path data.
+  const rawPath = "M0,161 C14,160 30,-31 47,71 C64,173 65,101 70,24 C76,-114 75,-10 84,-1 C92,4 105,-5 120,10 C135,25 136,159 160,160";
+
+  function parseBezierPath(d) {
+    const nums = d.match(/-?\d*\.?\d+/g).map(Number);
+    const points = [];
+    for (let i = 0; i < nums.length; i += 2) {
+      points.push({ x: nums[i], y: nums[i + 1] });
+    }
+    // points[0] is M (start). Then every 3 points after that = one C segment (C1, C2, end)
+    const segments = [];
+    let prev = points[0];
+    for (let i = 1; i < points.length; i += 3) {
+      segments.push({
+        p0: prev,
+        c1: points[i],
+        c2: points[i + 1],
+        p1: points[i + 2],
+      });
+      prev = points[i + 2];
+    }
+    return segments;
+  }
+
+  const segments = parseBezierPath(rawPath);
+  const totalDuration = segments[segments.length - 1].p1.x; // 160 -> total "time" units in the path
+  const startY = segments[0].p0.y; // baseline Y (161)
+
+  // Cubic bezier evaluation at parameter u (0-1) for a single axis
+  function cubicAt(u, p0, c1, c2, p1) {
+    const mu = 1 - u;
+    return (
+      mu * mu * mu * p0 +
+      3 * mu * mu * u * c1 +
+      3 * mu * u * u * c2 +
+      u * u * u * p1
+    );
+  }
+
+  // Given target X (time), find u along the correct segment via binary search on X,
+  // then return that segment's Y at that u.
+  function evaluateY(targetX) {
+    for (const seg of segments) {
+      if (targetX >= seg.p0.x && targetX <= seg.p1.x) {
+        // binary search for u where cubicAt(u, x-coords) == targetX
+        let lo = 0, hi = 1, u = 0.5;
+        for (let iter = 0; iter < 20; iter++) {
+          u = (lo + hi) / 2;
+          const x = cubicAt(u, seg.p0.x, seg.c1.x, seg.c2.x, seg.p1.x);
+          if (x < targetX) lo = u; else hi = u;
+        }
+        return cubicAt(u, seg.p0.y, seg.c1.y, seg.c2.y, seg.p1.y);
+      }
+    }
+    return segments[segments.length - 1].p1.y;
+  }
+
+  function startArrowAnimation(element) {
+  const duration = 1870;
+  let startTime = null;
+
+  // Tweak these two to taste:
+  const DIRECTION = -1;   // 1 = as-parsed, -1 = reversed
+  const SCALE = 0.5;      // 1 = full movement, 0.5 = half, etc.
+
+  function animate(currentTime) {
+    if (element.classList.contains('is-hidden')) {
+      startTime = null;
+      requestAnimationFrame(animate);
+      return;
+    }
+    if (!startTime) startTime = currentTime;
+    const elapsed = currentTime - startTime;
+    const progress = (elapsed % duration) / duration;
+
+    const targetX = progress * totalDuration;
+    const y = evaluateY(targetX);
+    const offsetPercent = (y - startY) * DIRECTION * SCALE;
+
+    element.style.transform = `translateY(${offsetPercent}%)`;
+    requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+}
+
+  setTimeout(() => {
+    arrowWrapper.classList.add('is-loaded');
+    startArrowAnimation(arrowWrapper);
+  }, 1800);
+});
+
+// 3 COMPONENT game-start-btn
+// ── START BUTTON HANDLER game start pages ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Leta efter BÅDE standard-knapparna och GMA-knappen
+  const startBtns = document.querySelectorAll('.mask-middle .game-start-btn-wrapper, #game-start-btn-gma, .game-start-btn-gma');
+    if (startBtns.length === 0) return;
+  startBtns.forEach(startBtn => {
+    startBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Kontrollera om det är GMA-knappen vi klickade på
+      const isGma = startBtn.id === 'game-start-btn-gma' || startBtn.classList.contains('game-start-btn-gma');
+      let selectedTier = null;
+      let topic = null;
+
+      // Hämta topic från URL (fungerar för både science-start och gma-start)
+      const topicMatch = currentSlug.match(/^([a-z0-9-]+)-start$/i);
+      if (topicMatch) {
+        topic = topicMatch[1];
+      }
+      if (!topic) {
+        console.error("Could not read topic from slug:", currentSlug);
+        return;
+      }
+      if (isGma) {
+        // SPECIAL FÖR GMA: Eftersom GMA saknar dropdown, låtsas vi att användaren valde Level 1
+        selectedTier = 1;
+        topic = "gma"; 
+      } else {
+        // 1. Identify selected tier (DITT VANLIGA SYSTEM)
+        const activeOption = document.querySelector('.mask-middle .game-level-option.is-selected') 
+                           || document.querySelector('.mask-middle .gamelevel-btn');
+                if (activeOption) {
+          const dataLvl = activeOption.getAttribute('data-level');
+          if (dataLvl) {
+            selectedTier = parseInt(dataLvl, 10);
+          } else {
+            const match = activeOption.textContent.match(/(?:Tier|Level)\s*(\d+)/i);
+            if (match) selectedTier = parseInt(match[1], 10);
+          }
+        }
+        // SCENARIO 1: No tier selected
+        if (!selectedTier) {
+          showGlobalInfo(INFO_MESSAGES.NO_TIER_SELECTED);
+          return;
+        }
+        // SCENARIO 2: Player level too low
+        const playerLevel = window.currentUserData?.level || 1;
+        const requiredLevel = TIER_REQUIREMENTS[selectedTier] || 1;
+        if (playerLevel < requiredLevel) {
+          showGlobalInfo(INFO_MESSAGES.LEVEL_TOO_LOW(requiredLevel));
+          return;
+        }
+      }
+            // Already starting a game (double click / Enter + click): ignore the second one
+      const nowMs = Date.now();
+      if (nowMs - (window.lastStartAttempt || 0) < 3000) return;
+      window.lastStartAttempt = nowMs;
+      // 2. FADE OUT IMMEDIATELY (also starts the 1.2s Lottie timer)
+      window.showGameLoadingOverlay('0.5s', true);
+      // 3. Call Backend Function
+      try {
+        const session = await window.triggerStartGame(topic, selectedTier);
+        sessionStorage.setItem('activeSessionId', session.sessionId);
+        sessionStorage.setItem('activeQuestions', JSON.stringify(session.questions || []));
+        // New session created: unlock answers for the next game page
+        sessionStorage.removeItem('gameFinished');
+        sessionStorage.setItem('activeTopic', topic);
+        sessionStorage.setItem('activeTier', String(selectedTier));
+        sessionStorage.setItem('activeSessionGame', `${topic}-${selectedTier}`);
+        sessionStorage.setItem('navFrom', currentSlug);
+        const targetUrl = isGma ? '/gma-game-1' : '/quiz-game';
+
+        if (typeof window.triggerPageExit === 'function') {
+          window.triggerPageExit(targetUrl);
+        } else {
+          setTimeout(() => { window.location.href = targetUrl; }, 300);
+        }
+
+      } catch (err) {
+        console.error("Failed to start game session:", err);
+        window.hideGameLoadingOverlay();    
+      }
+    });
+  });
+ });
+
+ function getGameContext() {
+  const topic = sessionStorage.getItem('activeTopic');
+  const tier = parseInt(sessionStorage.getItem('activeTier'), 10);
+  return (topic && tier) ? { topic, level: tier } : null;
+}
+
+// SCROLL: GAME-START-BTN-WRAPPER visibility + arrow hide/show
+document.addEventListener('DOMContentLoaded', () => {
+  const scrollContainer = document.querySelector('.mask-middle');
+  const targetWrappers = document.querySelectorAll('.mask-middle .game-start-btn-wrapper, .game-start-btn-gma');
+  const arrowWrapper = document.querySelector('.arrow-anchor-wrapper');
+
+  if (targetWrappers.length === 0) return;
+  function showButton(wrapper) {
+    if (wrapper) wrapper.classList.add('is-visible');
+    if (arrowWrapper) arrowWrapper.classList.add('is-hidden');
+  }
+  function hideButton(wrapper) {
+    if (wrapper) wrapper.classList.remove('is-visible');
+    if (arrowWrapper) arrowWrapper.classList.remove('is-hidden');
+  }
+
+  // --- 1. INTERSECTION OBSERVER ---
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        // Target the WRAPPER inside the intersecting row
+        const wrapper = entry.target.querySelector('.game-start-btn-wrapper, .game-start-btn-gma');
+        if (!wrapper) return;
+
+        if (entry.isIntersecting) {
+          showButton(wrapper);
+        } else {
+          if (!isAtBottom()) {
+            hideButton(wrapper);
+          }
+        }
+      });
+    },
+    {
+      root: scrollContainer,
+      threshold: 0.1,
+      rootMargin: "0px 0px -35% 0px"
+    }
+  );
+  targetWrappers.forEach((wrapper) => {
+    const parentRow = wrapper.closest('.row-gamestart, .row-2');
+    if (parentRow) observer.observe(parentRow);
+  });
+
+  // --- 2. DYNAMIC BOTTOM SAFETY NET ---
+  function isAtBottom() {
+    if (scrollContainer) {
+      return scrollContainer.scrollHeight - scrollContainer.scrollTop <= scrollContainer.clientHeight + 5;
+    } else {
+      return window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 5;
+    }
+  }
+  const scrollTarget = scrollContainer || window;
+  let lastScrollPos = 0;
+
+  scrollTarget.addEventListener('scroll', () => {
+    const currentScrollPos = scrollContainer ? scrollContainer.scrollTop : window.scrollY;
+    const scrollingUp = currentScrollPos < lastScrollPos;
+
+    if (isAtBottom() && !scrollingUp) {
+      targetWrappers.forEach((wrapper) => showButton(wrapper));
+    } else if (scrollingUp && !isAtBottom()) {
+      targetWrappers.forEach((wrapper) => {
+        const parentRow = wrapper.closest('.row-gamestart, .row-2');
+        if (parentRow) {
+          const rect = parentRow.getBoundingClientRect();
+          const containerRect = scrollContainer ? scrollContainer.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
+          
+          if (rect.top > containerRect.bottom || rect.bottom < containerRect.top) {
+            hideButton(wrapper);
+          }
+        }
+      });
+    }
+
+    lastScrollPos = currentScrollPos;
+  }, { passive: true });
+});
+
+// ────────────────── GAME RUNNING ──────────────────
+  // 1 Banner-responsive
+  document.addEventListener("DOMContentLoaded", function() {
+  const banner = document.querySelector('.banner-responsive');
+  if(!banner) return;
+
+  // 1. Variabler för skroll (Scrub)
+  let lastScrollY = window.scrollY;
+  let baseY = 0; // Skrollens position (0 till -77)
+  const maxScrub = 77; // Max scrub percentage
+  
+  // 2. Variabler för Border Fade
+  // Sätt RGB-värdet för din 'grey' färg (t.ex. 128, 128, 128 för grå eller 255, 255, 255 för vit)
+  const borderRGB = '128, 128, 128'; 
+  const startAlpha = 1.0; // Fullt synlig vid scroll 0
+  const endAlpha = 0.0;   // Helt osynlig när den når -77%
+
+  // 3. Variabler för Ambient Animation
+  const ambientDelayMs = 1500;
+  const cycleDurationMs = 3000;
+  const ambientAmplitude = 7;
+  const startTime = performance.now() + ambientDelayMs;
+
+  // Lyssna på skroll-hjulet och räkna ut "Base Y"
+  window.addEventListener('scroll', () => {
+      let currentScrollY = window.scrollY;
+      let scrollDelta = currentScrollY - lastScrollY;
+      
+      if (currentScrollY <= 0) {
+          baseY = 0;
+      } else {
+          let scrubDistance = window.innerHeight * 0.20; 
+          let percentPerPixel = maxScrub / scrubDistance; 
+          baseY -= (scrollDelta * percentPerPixel);
+          
+          // Kläm fast skrollet mellan -maxScrub% och 0%
+          if (baseY < -maxScrub) baseY = -maxScrub;
+          if (baseY > 0) baseY = 0;
+      }
+      lastScrollY = currentScrollY;
+  });
+
+  // Själva "Motorn" som uppdaterar skärmen (Render Loop)
+  function renderLoop(currentTime) {
+      let ambientY = 0;
+      if (currentTime > startTime) {
+          let elapsed = currentTime - startTime;
+          let cycleProgress = (elapsed % cycleDurationMs) / cycleDurationMs;
+          let waveFactor = (1 - Math.cos(cycleProgress * Math.PI * 2)) / 2;
+          ambientY = waveFactor * -ambientAmplitude; 
+      }
+
+      // 1. Beräkna Y-position
+      let totalY = baseY + ambientY;
+      banner.style.transform = `translateY(${totalY}%)`;
+
+      // 2. Beräkna synkad Border Alpha utifrån skroll-progress (0 till 1)
+      let progress = Math.abs(baseY) / maxScrub; // 0 i toppen, 1 vid full scrub
+      let currentAlpha = startAlpha - (progress * (startAlpha - endAlpha));
+      
+      // Applicera färg och alpha på kanten
+      banner.style.borderColor = `rgba(${borderRGB}, ${currentAlpha})`;
+
+      requestAnimationFrame(renderLoop);
+  }
+  // Starta motorn!
+  requestAnimationFrame(renderLoop);
+});
+
+// 2 TIMER DISPLAY
+var Webflow = window.Webflow || [];
+Webflow.push(function() {
+  if (!document.getElementById('timer-display')) return;
+
+  let timerInterval = null;
+  let clientStartTime = null;
+  
+  window.FinalTimeStr = "00:00"; 
+  window.FinalTimeSecs = 0;      
+  window.TimerRunning = false;
+
+  const displayElInit = document.getElementById('timer-display');
+  if (displayElInit) displayElInit.innerText = "00:00";
+
+  // HELPER FUNCTION: Safely emit Webflow IX3 / IX2 custom events
+  function emitWebflowEvent(eventName) {
+    const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
+    if (wfIx) {
+      wfIx.emit(eventName);
+      console.log(`Webflow Event Emitted: ${eventName}`);
+    } else {
+      console.warn(`Webflow IX engine not ready for event: ${eventName}`);
+    }
+  }
+
+  // THE MASTER GATEKEEPER: Wait for Firebase cards to load
+  document.addEventListener('corePageReady', () => {
+    if (!/^\/(quiz-game|gma-game-1)\/?$/.test(window.location.pathname)) return;   // timer + 321-go only on game pages
+    
+    // 1. Fire "321-go"
+    setTimeout(function() {
+      if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
+      emitWebflowEvent("321-go");
+    }, 1300); 
+
+    // 2. Start stopwatch Lottie
+    setTimeout(function() {
+      if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
+      emitWebflowEvent("start-stopwatch");
+    }, 2400); 
+
+    // 3. Start running numbers
+    setTimeout(function() {
+      if (window.FinalTimeSecs > 0 || window.FinalTimeStr !== "00:00") return;
+      window.TimerRunning = true;
+      
+      clientStartTime = Date.now();
+      
+      timerInterval = setInterval(function() {
+        const elapsedMs = Date.now() - clientStartTime;
+        const currentSeconds = Math.floor(elapsedMs / 1000);
+        
+        let minutes = Math.floor(currentSeconds / 60);
+        let seconds = currentSeconds % 60;
+        let minStr = String(minutes).padStart(2, '0');
+        let secStr = String(seconds).padStart(2, '0');
+        
+        const displayEl = document.getElementById('timer-display');
+        if (displayEl) displayEl.innerText = minStr + ':' + secStr;
+
+        if (minutes >= 99 && seconds >= 59) {
+          const finishBtn = document.getElementById('finish-btn');
+          if (finishBtn) finishBtn.click(); 
+        }
+      }, 250);
+    }, 3400);
+
+  });
+
+  // 4. FINISH LISTENER
+  function setupFinishListener() {
+    const finishBtn = document.getElementById('finish-btn');
+    
+    if (finishBtn) {
+      finishBtn.addEventListener('click', function() {
+        clearInterval(timerInterval);
+        window.TimerRunning = false; 
+          // Lock all answers immediately, and remember it for back-navigation
+        document.body.classList.add('game-finished');
+        sessionStorage.setItem('gameFinished', 'true');
+
+        if (clientStartTime) {
+          const elapsedMs = Date.now() - clientStartTime;
+          window.FinalTimeSecs = Math.max(elapsedMs / 1000, 1);
+        }
+
+        const lottieContainer = document.getElementById('stopwatch-lottie');
+        if (lottieContainer) {
+          const frozenSVG = lottieContainer.innerHTML;
+          const frozenDiv = document.createElement('div');
+          frozenDiv.className = lottieContainer.className;
+          frozenDiv.innerHTML = frozenSVG;
+          lottieContainer.parentNode.replaceChild(frozenDiv, lottieContainer);
+        }
+
+        const finalDisplay = document.getElementById('timer-display');
+        if (finalDisplay) window.FinalTimeStr = finalDisplay.innerText;
+
+        console.log("Finished! Sluttid:", window.FinalTimeStr, "| Sekunder:", window.FinalTimeSecs);
+      });
+    } else {
+      setTimeout(setupFinishListener, 200);
+    }
+  }
+  setupFinishListener();
+});
+
+// 5 GAME ALTERNATIVE-ROW - Click animation
+document.addEventListener("DOMContentLoaded", function() {
+      // If the game was already finished (e.g. user came back with the browser's back button), keep answers locked
+  if (sessionStorage.getItem('gameFinished') === 'true') {
+    document.body.classList.add('game-finished');
+  }
+
+  const scrollDuration = 400; 
+  const topOffsetPercent = window.innerWidth < 600 ? 0.16 : 0.20;
+  const animationDelay = 450;  // Väntar tills keyframe-animationen är klar
+
+  const alternativeRows = document.querySelectorAll('.alternative-row');
+
+  // ── LOCK: no answers selectable for the first 2s after page load ──
+  alternativeRows.forEach(row => {
+    row.style.pointerEvents = 'none';
+  });
+  setTimeout(() => {
+    alternativeRows.forEach(row => {
+      row.style.pointerEvents = 'auto';
+    });
+  }, 2000);
+
+  alternativeRows.forEach(row => {
+    // VIKTIGT: Vi lyssnar på 'mousedown' precis som ditt SFX-script! 
+    // Då sker båda exakt samtidigt.
+row.addEventListener('pointerdown', function(e) {
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  const currentQuestionWrapper = this.closest('.question-wrapper');
+  if (!currentQuestionWrapper) return;
+
+  const clickedCheckbox = this.querySelector('.checkbox');
+  const wasAlreadyActive = clickedCheckbox && clickedCheckbox.classList.contains('is-active');
+
+  // 1. Nollställ ALLA checkboxar
+  const allCheckboxesInQuestion = currentQuestionWrapper.querySelectorAll('.checkbox');
+  allCheckboxesInQuestion.forEach(cb => {
+    cb.classList.remove('is-active');
+  });
+
+ if (clickedCheckbox) {
+  if (wasAlreadyActive) {
+    // Snap instantly to the "off" look (no transition), reflow, then
+    // re-enable the transition and animate back in — otherwise start
+    // and end values are identical and nothing visibly moves.
+    clickedCheckbox.classList.add('no-transition');
+    clickedCheckbox.classList.remove('is-active');
+    void clickedCheckbox.offsetWidth;
+    clickedCheckbox.classList.remove('no-transition');
+    void clickedCheckbox.offsetWidth;
+    clickedCheckbox.classList.add('is-active');
+  } else {
+    void clickedCheckbox.offsetWidth;
+    clickedCheckbox.classList.add('is-active');
+  }
+}
+
+  // 3. Skip the scroll-to-next logic entirely if this answer was already selected —
+  //    just replay the graphic, no navigation.
+  if (wasAlreadyActive) return;
+
+  if (currentQuestionWrapper.scrollTimeout) {
+    clearTimeout(currentQuestionWrapper.scrollTimeout);
+  }
+  const currentTableRow = this.closest('.question-card');
+  if (!currentTableRow) return;
+
+  const nextTableRow = currentTableRow.nextElementSibling;
+
+  if (nextTableRow) {
+    currentQuestionWrapper.scrollTimeout = setTimeout(() => {
+      const start = window.scrollY;
+      const end = nextTableRow.getBoundingClientRect().top + window.scrollY - (window.innerHeight * topOffsetPercent);
+      const distance = end - start;
+      let startTime = null;
+
+      function easeInOut(t) {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      }
+      function smoothScrollStep(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const progress = Math.min((timestamp - startTime) / scrollDuration, 1);
+        window.scrollTo(0, start + distance * easeInOut(progress));
+
+        if (progress < 1) {
+          requestAnimationFrame(smoothScrollStep);
+        }
+      }
+
+      requestAnimationFrame(smoothScrollStep);
+    }, animationDelay);
+  }
+});
+});
+});
+
+/* // --- HINDRA CTRL + SCROLL ZOOM ---
+window.addEventListener('wheel', function(e) {
+  if (e.ctrlKey) { e.preventDefault(); }
+}, { passive: true }); */
+
+
+
+// ── KATEGORI / ÄMNES-SYSTEM FÖR MUSIK & FÄRGER ────────────────────────
+const TOPICS = {
+    gma: { 
+        url: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a184d4a7db7a603d72f42db_gma-music.mp3',
+        volume: 0.6, 
+        startTime: 0,
+        fadeColor: '#ffffff'
+    },
+    science: {
+        url: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a9ca192f2ca5d16042302f8_SunoAI-chrome-lotus-run.mp3', 
+        volume: 0.6,
+        startTime: 0,
+        fadeColor: '#000000'
+    },
+    cars: {
+        url: '', 
+        volume: 0.6,
+        startTime: 0,
+        fadeColor: '#000000'
+    },
+    history: { 
+        url: '', 
+        volume: 0.6, 
+        startTime: 0,
+        fadeColor: '#000000'
+    },
+    uc: { 
+        url: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69b08a22396c27a611026d0c_The%20end%20of%20tyreen%20remix.mp3',
+        volume: 0.6, 
+        startTime: 19.64,
+        fadeColor: '#000000'
+    },
+    lobby: { 
+        url: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69b08a22396c27a611026d0c_The%20end%20of%20tyreen%20remix.mp3',
+        volume: 0.6, 
+        startTime: 19.64,
+        fadeColor: '#000000'
+    },
+    terms: { 
+        url: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69b08a22396c27a611026d0c_The%20end%20of%20tyreen%20remix.mp3',
+        volume: 0.0, 
+        startTime: 19.64,
+        fadeColor: '#000000'
+    },
+    privacy: { 
+        url: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69b08a22396c27a611026d0c_The%20end%20of%20tyreen%20remix.mp3',
+        volume: 0.0, 
+        startTime: 19.64,
+        fadeColor: '#000000'
+    }
+};
+function getTopicFromUrl(url) {
+    const lowerUrl = url.toLowerCase();
+    if (lowerUrl.includes('science')) return 'science';
+    if (lowerUrl.includes('gma')) return 'gma';
+    if (lowerUrl.includes('cars')) return 'cars';
+    if (lowerUrl.includes('history')) return 'history';
+    if (lowerUrl.includes('uc')) return 'uc';
+    if (lowerUrl.includes('terms')) return 'terms';  
+    if (lowerUrl.includes('privacy')) return 'privacy';
+    return 'lobby'; // If not in list, fallback to Lobby
+}
+const currentTopicId = getTopicFromUrl(window.location.pathname);
+const currentSlug = window.location.pathname.split('/').filter(Boolean).pop() || 'lobby';
+const currentConfig = TOPICS[currentTopicId];
+const audioKey = currentTopicId + 'AudioTime';
+// Initiera Audio
+const audio = new Audio(currentConfig.url);
+audio.preload = 'auto';
+window.bgMusic = audio; 
+audio.loop = true;
+let isMuted = false; 
+// ── FADE LOGIK ────────────────────────────────────────────────────────
+window.forceAudioUnmute = function() {
+    if (isMuted) {
+        const toggleBtn = document.getElementById('toggle-audio-lobby');
+        if (toggleBtn) toggleBtn.click(); 
+    }
+};
+window.fadeOutMusic = function() {
+    if (audio && audio.volume > 0 && !isMuted) {
+        const startVol = audio.volume;
+        const steps = 50; 
+        const stepAmount = startVol / steps;
+        let fadeOut = setInterval(() => {
+            if (audio.volume - stepAmount > 0) { 
+                audio.volume -= stepAmount; 
+            } else { 
+                audio.volume = 0; 
+                clearInterval(fadeOut); 
+            }
+        }, 20);
+    }
+};
+function seekWhenReady(t) {
+    if (audio.readyState >= 1) {
+        audio.currentTime = t;
+    } else {
+        audio.addEventListener('loadedmetadata', () => { audio.currentTime = t; }, { once: true });
+    }
+}
+window.startMusic = function(forceInstant = false) {
+    if (!audio.paused || !currentConfig.url) return; 
+    let playPromise = audio.play();
+    
+    if (playPromise !== undefined) {
+        playPromise.then(() => {
+            if (forceInstant) {
+                audio.volume = currentConfig.volume;
+            } else {
+                audio.volume = 0; 
+                const targetVol = currentConfig.volume;
+                const steps = 50; 
+                const stepAmount = targetVol / steps;
+                   let fadeIn = setInterval(() => {
+                    if (audio.volume + stepAmount < targetVol) { 
+                        audio.volume += stepAmount; 
+                    } else { 
+                        audio.volume = targetVol;
+                        clearInterval(fadeIn); 
+                    }
+                }, 20);
+            }
+                }).catch(() => {
+            console.log("Autoplay blockerat. Väntar på interaktion.");
+            if (window.musicRetryArmed) return;
+            window.musicRetryArmed = true;
+            const retry = (e) => {
+                // Esc never counts as a user gesture, so ignore it
+                if (e.type === 'keydown' && e.key === 'Escape') return;
+                window.musicRetryArmed = false;
+                ['pointerdown', 'keydown'].forEach(t => document.removeEventListener(t, retry, true));
+                window.startMusic(forceInstant);
+            };
+            ['pointerdown', 'keydown'].forEach(t => document.addEventListener(t, retry, true));
+        });   
+      }
+ }
+
+const MUTE_KEY = 'audioMuted';
+let muteTimer = null;
+function applyMuteState(muted, save = true, sfxDelayMs = 0) {
+    isMuted = muted;
+    clearTimeout(muteTimer);          // cancel a pending delayed mute
+    audio.muted = muted;              // music: immediate
+    const setSfx = () => {
+        if (window.sfxMaster) window.sfxMaster.gain.setTargetAtTime(muted ? 0 : 1, sfxCtx.currentTime, 0.01);
+    };
+    if (muted && sfxDelayMs > 0) muteTimer = setTimeout(setSfx, sfxDelayMs);
+    else setSfx();
+    if (save) { try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch (e) {} }
+    const toggleBtn = document.getElementById('toggle-audio-lobby');
+    if (toggleBtn) toggleBtn.classList.toggle('is-muted', muted);
+}
+
+  // ── WEB AUDIO API: 0 MS FÖRDRÖJNING (RAM-BUFFER) ──
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+// Vi låser sampleRate till 44100 Hz, vilket alla Bluetooth-lurar fixar utan att krascha
+const sfxCtx = new AudioContext({
+    latencyHint: 'interactive',
+    sampleRate: 44100
+});
+  const sfxMaster = sfxCtx.createGain();
+  sfxMaster.connect(sfxCtx.destination);
+  window.sfxMaster = sfxMaster;
+  sfxMaster.gain.value = isMuted ? 0 : 1;   // in case mute was applied before this line ran
+  const sfxBuffers = {}; 	
+// Mobiler (särskilt iOS) blockerar ljudmotorn tills användaren rör skärmen.
+// Det här låser upp ljudmotorn vid allra första klicket/touchen.
+(function() {
+    const types = ['mousedown', 'touchstart', 'keydown'];
+    function unlock(e) {
+        if (e.type === 'keydown' && e.key === 'Escape') return; // Esc doesn't count as a gesture
+        if (sfxCtx.state === 'suspended') sfxCtx.resume();
+        types.forEach(t => document.body.removeEventListener(t, unlock));
+    }
+    types.forEach(t => document.body.addEventListener(t, unlock));
+})();
+// Funktion för att i bakgrunden hämta och spara ljudet direkt i RAM-minnet
+async function preloadBuffer(key, url) {
+    try {
+        const res = await fetch(url);
+        const arrayBuffer = await res.arrayBuffer();
+        sfxBuffers[key] = await sfxCtx.decodeAudioData(arrayBuffer);
+    } catch (e) {
+        console.log("Kunde inte buffra SFX:", key);
+    }
+}
+// ── SFX KONFIGURATION ──
+const SFX_CONFIG = {
+    finish: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a1a2dff7a1f0df596ecc446_bd746b87bc96d389d43e488276181697_finish-magic-1.ogg',
+    select: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a1a2dffba03ba59ac3cf57e_fbdab5a348821e99033e07ea1d05fe36_click-btn-select.ogg',
+    back: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a1a2dffc231e9d57618b399_5b327d85abc436094132122fc0bebd69_click-btn-back.ogg',
+    qalt1: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a9ddb46f90085c11e4abbe6_qalt-wave-001.ogg',
+    qalt2: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a9ddb466752a64faa2e9c8a_qalt-wave-002.ogg',
+    qalt3: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a9ddb468b1a0a8fdca1c45c_qalt-wave-003.ogg',
+    qalt4: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a9ddb45dc2eadae3b74007a_qalt-wave-004.ogg',
+    qalt5: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a9ddb458b1a0a8fdca1c43c_qalt-wave-005.ogg',
+    deny: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a1af8aa81c60eedf18e0c0f_a7982f0695a5917df328945f1a32c008_deny.ogg',
+    scoreFlash: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6ac4f01d1b08cc98e6778d48_d40f31f1284edad04844d3286edf94ce_score-flash.ogg',
+    finalScore: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6ac4e2072ebe3b1a3f994b43_b708d5dedbc863182a6f21715776a86f_final-score.ogg',
+    levelUp: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6ac4e2072759160b75a1fbbf_level-up.ogg'
+
+};
+// ── SFX VOLYMER (per ljud) ──
+const SFX_VOLUMES = {
+    finish: 0.9,
+    select: 0.5,
+    back: 0.9,
+    qalt1: 0.5,
+    qalt2: 0.5,
+    qalt3: 0.5,
+    qalt4: 0.5,
+    qalt5: 0.5,
+    deny: 0.9,
+    scoreFlash: 0.9,
+    finalScore: 0.9,
+    levelUp: 0.9
+};
+// ── QALT CYCLE CONFIG ──
+let qaltIndex = 0; 
+// Här sparar vi *namnet* på egenskapen (key) istället för url:en
+const qaltKeys = ['qalt1', 'qalt2', 'qalt3', 'qalt4', 'qalt5'];
+// Sätt igång buffringen för alla ljud i SFX_CONFIG omedelbart
+Object.entries(SFX_CONFIG).forEach(([key, url]) => preloadBuffer(key, url));
+// ── BLIXTSNABB UPPSPELNING ──
+function playSFX(type, vol) {
+    if (sfxCtx.state === 'suspended') sfxCtx.resume();
+    let bufferKey = type;
+    // Snurra index för qalt-ljuden
+    if (type === 'qalt') {
+        bufferKey = qaltKeys[qaltIndex];
+        qaltIndex = (qaltIndex + 1) % qaltKeys.length;
+    }
+    const finalVol = vol !== undefined ? vol : (SFX_VOLUMES[bufferKey] ?? 0.9);
+    const buffer = sfxBuffers[bufferKey];
+    if (buffer) {
+        const source = sfxCtx.createBufferSource();
+        const gainNode = sfxCtx.createGain();
+        
+        source.buffer = buffer;
+        gainNode.gain.value = finalVol;
+        
+        source.connect(gainNode);
+          gainNode.connect(sfxMaster);
+        
+        source.start(0); // 0 ms fördröjning
+    } else {
+        console.log("Ljudet buffras fortfarande i bakgrunden...");
+    }
+}
+
+// ── 1. KEYBOARD CONTROLS (Enter, Space, Escape) ──
+let lastActualKeyPressTime = 0;
+
+window.addEventListener('keydown', (e) => {
+    if (["Enter", "Escape", " "].includes(e.key)) {
+        lastActualKeyPressTime = Date.now();
+    }
+    // Play 'back' sound instantly whenever ESC is pressed to close modals/inventory
+/*     if (e.key === "Escape") {
+        playSFX('back');
+    }
+ */
+}, true);
+
+function playButtonSoundHandler(e) {
+    const btn = e.target.closest('[class*="play-sfx-"], .alternative-row, .profile-pic-option');
+        if (btn) {
+        let type;
+        if (btn.classList.contains('profile-pic-option')) {
+            type = 'back';
+        } else if (btn.classList.contains('alternative-row')) {
+            type = 'qalt';
+        } else {
+            const className = Array.from(btn.classList).find(c => c.startsWith('play-sfx-'));
+            if (className) {
+                type = className.split('-')[2];
+            }
+        }
+        if (type) playSFX(type);
+    }
+}
+// ── 2. POINTER DOWN: Triggers INSTANTLY for .alternative-row ──
+document.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return; // Primary click/touch only
+
+    const rowBtn = e.target.closest('.alternative-row');
+    if (rowBtn) {
+        playSFX('qalt');
+    }
+});
+// ── 3. POINTER UP: Handles mouse/touch clicks for profile pics & buttons ──
+document.addEventListener('pointerup', (e) => {
+    if (e.button !== 0) return; // Primary click/touch only
+
+    const btn = e.target.closest('[class*="play-sfx-"], .profile-pic-option');
+    if (btn) {
+        playButtonSoundHandler(e);
+    }
+});
+// ── 4. CLICK: Handles Keyboard-triggered clicks (Enter / Space) & Script Clicks ──
+document.addEventListener('click', (e) => {
+   if (window.isSfxLocked) return;   // ← ny rad
+    // Keyboard clicks (Enter/Space on focused elements) have detail === 0 or pointerType === ""
+    const isKeyboardClick = e.detail === 0 || e.pointerType === "";
+    if (isKeyboardClick) {
+        playButtonSoundHandler(e);
+        return;
+    }
+    // Handles programmatic script clicks triggered within 100ms of keypress
+    if (!e.isTrusted && (Date.now() - lastActualKeyPressTime < 100)) {
+        playButtonSoundHandler(e);
+    }
+});
+
+// ── HUVUDFUNKTION FÖR LJUD-INITIALISERING ──────────────────────
+function initAudio() {
+    const enterBtn  = document.getElementById('enter-btn-lobby');
+    const startBtnTopic = document.getElementById('start-btn-' + currentTopicId) || document.getElementById('start-btn-gma');
+    const toggleBtn = document.getElementById('toggle-audio-lobby');
+    
+    const fromTopic = sessionStorage.getItem('fromTopic');
+    sessionStorage.removeItem('fromTopic');
+    const savedTime = sessionStorage.getItem(audioKey);
+    const isTopicPage = currentTopicId !== 'lobby';
+    // Stenhård återställning av mute-variabeln och ikonen direkt vid laddning
+        let storedMute = false;
+    try { storedMute = localStorage.getItem(MUTE_KEY) === '1'; } catch (e) {}
+    applyMuteState(storedMute, false);
+    // FIXA HOVER & KLICK-ZONER DIREKT I JS FÖR ATT SLIPPA SLÖHET
+    if (toggleBtn) {
+     // Säkerställ att ALLA barn till knappen (ikoner/divar) har pointer-events none
+        const children = toggleBtn.querySelectorAll('*');
+        children.forEach(child => child.style.pointerEvents = 'none');
+    }
+    // TIDSHANTERING VID VANLIG PAGE LOAD (Från början)
+    if (currentTopicId === 'lobby' || currentTopicId === 'uc') {
+        // Första gången sidan laddas -> Kör vanliga startTime (19.64s)
+        seekWhenReady(currentConfig.startTime || 19.64);
+    } else {
+        const isInternalNavigation = savedTime && (!fromTopic || fromTopic === currentTopicId);
+        if (isInternalNavigation) {
+            audio.currentTime = parseFloat(savedTime);
+            window.startMusic(true); 
+        } else {
+            audio.currentTime = currentConfig.startTime || 0;
+        }
+    }
+    // Startknappar
+    if (isTopicPage && startBtnTopic) {
+        startBtnTopic.addEventListener('click', () => window.startMusic(false));
+    }
+    if (enterBtn && !isTopicPage) {
+        enterBtn.addEventListener('click', () => window.startMusic(false));
+    }
+
+ // ── INTRO & VISIBILITETS-LOGIK ──
+    if (toggleBtn) {
+        const isLobby = currentTopicId === 'lobby';
+        const introOverlay = document.querySelector('.intro-overlay-grp');
+        const isIntroActive = introOverlay && introOverlay.style.display !== 'none';
+        if (isLobby && isIntroActive) {
+            toggleBtn.classList.remove('is-visible');
+            
+            // Hitta welcome-containern och starta timern först NÄR man interagerar (klick eller Enter/Space)
+            const welcomeTarget = document.querySelector(".welcome-text-container");
+            if (welcomeTarget) {
+                welcomeTarget.addEventListener('click', () => {
+                    setTimeout(() => {
+                        toggleBtn.classList.add('is-visible');
+                    }, 6800);
+                });
+            } else {
+                // Fallback om välkomsttexten inte hittas
+                setTimeout(() => {
+                    toggleBtn.classList.add('is-visible');
+                }, 6800);
+            }
+        } else {
+            // En fördröjning på 50ms så att webbläsaren hinner starta opacity-transitionen på undersidor!
+            setTimeout(() => {
+                toggleBtn.classList.add('is-visible');
+            }, 50);
+        }
+// DET ENDA KLICK-EVENTET FÖR AUDIO TOGGLE LOBBY -KNAPPEN
+toggleBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    
+    // 1. Om vi redan animerar, gör inget (förhindrar spam)
+    if (toggleBtn.classList.contains('is-animating')) return;
+  // 2. BYT BILD/STATUS DIREKT OCH SPELA RÄTT LJUD
+          if (!isMuted) {
+              if (typeof playSFX === 'function') playSFX('back'); // Spela "Av"-ljudet
+              applyMuteState(true, true, 400); // Mute click
+          } else {
+              applyMuteState(false); // Höj volymen igen
+              // window.startMusic(false); <-- Denna kan du kommentera bort/ta bort om den försöker starta om en låt som redan spelar!
+              if (typeof playSFX === 'function') playSFX('select'); // Spela "På"-ljudet
+          }
+    // 3. Trigger Klick-stretch och Noise-animation
+    toggleBtn.classList.add('is-clicked');
+    toggleBtn.classList.add('is-animating');
+    // 4. Städa upp animationerna efter 600ms (utan att röra statusen!)
+    setTimeout(() => {
+        toggleBtn.classList.remove('is-clicked');
+        toggleBtn.classList.remove('is-animating');
+    }, 600);  
+	});
+  }
+}
+
+// SKIP INTRO LOBBY
+(function() {
+  if (currentSlug !== 'lobby') return; // this whole thing is Lobby-only behavior
+  console.log('[wake]', { discarded: document.wasDiscarded, nav: performance.getEntriesByType('navigation')[0]?.type });
+  function hideIntro() {
+    const el = document.querySelector('.intro-overlay-grp');
+    if (el) el.style.display = 'none';
+  }
+    //NEW HELPER TO PREVENT INVISIBLE PAGE AFTER LONG SLEEP
+    function waitFor(cond, timeoutMs = 8000, every = 100) {
+    return new Promise(resolve => {
+      const t0 = Date.now();
+      (function check() {
+        if (cond()) return resolve(true);
+        if (Date.now() - t0 > timeoutMs) return resolve(false);
+        setTimeout(check, every);
+      })();
+    });
+  }
+function isLobbyRevealed() {
+  const g = document.querySelector('.games-grid-clip');
+  return !g || parseFloat(getComputedStyle(g).opacity) > 0.5;
+}
+function fireSkip() {
+  const trigger = document.querySelector('.welcome-text-container');
+  if (trigger) {
+    window.isSfxLocked = true;      // sätt precis innan
+    trigger.click();
+    window.isSfxLocked = false;     // släpp direkt efteråt (synkront, så click-lyssnaren hinner se true)
+  }
+  if (window.gsap) gsap.globalTimeline.seek(9999, false);
+}
+function forceReveal() {
+  if (window.gsap) gsap.set('.games-grid-clip', { opacity: 1, clearProps: 'transform' });
+}
+function lobbySkipFinished() {
+  window.lobbySkipDone = true;
+  document.dispatchEvent(new CustomEvent('lobbySkipDone'));
+}
+  function runSkip(isFromBack = false) {
+    sessionStorage.removeItem('skipIntro');
+    hideIntro();
+    let fadeScreen = null;
+    if (!isFromBack) {
+      // OR ADD LOG HERE?
+      const savedColor = sessionStorage.getItem('exitColor');
+      const themeColor = document.body.getAttribute('data-theme') === 'light' ? '#ffffff' : '#000000';
+      const bgColor = savedColor || themeColor;
+      fadeScreen = document.createElement('div');
+      fadeScreen.style.cssText = `position:fixed;inset:0;z-index:1000005;background:${bgColor};transition:opacity 0.9s ease;opacity:1;pointer-events:none;`;
+      document.body.appendChild(fadeScreen);
+    }
+    waitFor(() => document.readyState === 'complete' && window.gsap).then(() => {
+      setTimeout(function() {
+        if (window.startMusic) {
+          window.startMusic();
+        }
+        fireSkip();
+        // watchdog: retry if the reveal didn't happen, then force it
+        let tries = 0;
+        const wd = setInterval(() => {
+          if (isLobbyRevealed()) { clearInterval(wd); lobbySkipFinished(); return; }
+          if (++tries > 5) { clearInterval(wd); forceReveal(); return; }
+          fireSkip();
+        }, 700);
+        if (fadeScreen) {
+          requestAnimationFrame(() => {
+            fadeScreen.style.opacity = '0';
+          });
+          setTimeout(() => { fadeScreen.remove(); }, 950);
+        }
+      }, 300);
+    });
+  }
+
+  function showBackOverlay() {
+    hideIntro();
+    if (document.getElementById('back-overlay')) return;
+    const themeColor = document.body.getAttribute('data-theme') === 'light' ? '#ffffff' : '#000000';
+    const textColor = document.body.getAttribute('data-theme') === 'light' ? '#000000' : '#ffffff';
+    const overlay = document.createElement('div');
+    overlay.id = 'back-overlay';
+    overlay.style.cssText = `position:fixed;inset:0;z-index:1000000;background:${themeColor};display:flex;align-items:center;justify-content:center;cursor:pointer;transition:opacity 1.0s ease;opacity:1;`;
+    overlay.innerHTML = `<style>@keyframes softBlink {0%,100%{opacity:0;}50%{opacity:1;}}</style>
+      <span style="font-size:1rem;color:${textColor};text-transform:uppercase;letter-spacing:0.08em;animation:softBlink 1.5s ease-in-out infinite;">Click to continue</span>`;
+    
+    const closeOverlay = function(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation(); 
+      }
+      if (document.activeElement && document.activeElement !== document.body) {
+        document.activeElement.blur();
+      }
+      window.removeEventListener('keydown', blockAndClose, true);
+        overlay.style.opacity = '0';
+        setTimeout(function() {
+        overlay.remove();
+        runSkip(true);
+      }, 1000); 
+    };
+    const blockAndClose = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      overlay.click(); 
+    };
+    window.addEventListener('keydown', blockAndClose, { capture: true, once: true });
+    overlay.onclick = closeOverlay;
+    document.body.appendChild(overlay);
+  }
+      const navTypeAtLoad = performance.getEntriesByType('navigation')[0]?.type;
+    if (sessionStorage.getItem('skipIntro') === 'true') {
+    hideIntro();
+    if (navTypeAtLoad !== 'back_forward') {   // Back gets the click-to-continue overlay, which runs the skip
+      if (document.readyState === 'complete') { runSkip(false); } 
+      else { window.addEventListener('load', function() { runSkip(false); }); }
+    }
+  }
+
+  window.addEventListener('pageshow', function(event) {
+    const navEntry = performance.getEntriesByType('navigation')[0];
+    const isBack = (navEntry && navEntry.type === 'back_forward') || event.persisted;
+    if (isBack) {
+      sessionStorage.removeItem('skipIntro');
+      showBackOverlay();
+    }
+  });
+})();
+  
+// ── SFX GRACE PERIOD VID SIDLADDNING & BACKNING ──
+window.addEventListener('pageshow', () => {
+    window.isSfxLocked = true; // Lås ljudet direkt
+    // Släpp låset efter 1 sekund (Då har skip-intro och alla overlay-spökklick kört klart)
+    setTimeout(() => {
+        window.isSfxLocked = false;
+    }, 1000); 
+});
+  
+window.addEventListener('DOMContentLoaded', initAudio);
+// Skottsäker bfcache-fix för BACK/FORWARD-knapparna!
+// ── BACK BUTTON: Skip intro on return to lobby ────────────────────
+window.addEventListener('pageshow', (event) => {
+    // Läs sparat mute-läge (translated: read the saved mute state) so icon and sound match after back/forward
+    let storedMute = false;
+    try { storedMute = localStorage.getItem(MUTE_KEY) === '1'; } catch (e) {}
+    applyMuteState(storedMute, false);
+    
+    // Only handle intro skip on lobby
+    const isLobby = currentTopicId === 'lobby';
+    const navEntry = performance.getEntriesByType("navigation")[0];
+    const isBack = (navEntry && navEntry.type === "back_forward") || event.persisted;
+    
+    if (isLobby && isBack && sessionStorage.getItem('skipIntro') === 'true') {
+        // Intro overlay is already hidden by the skipIntro flag
+        sessionStorage.removeItem('skipIntro'); // Clear it so it doesn't re-fire
+        return; // Skip audio timing logic below
+    }
+    
+    // Hantera tider när man navigerar runt (länk eller backa) — ONLY for non-lobby or when NOT skipping
+    if (currentTopicId === 'lobby' || currentTopicId === 'uc') {
+        const baseStart = currentConfig.startTime || 19.64;
+
+        // Extra skip only when returning from inside the site, never on a fresh visit
+        const isInternalReturn =
+            event.persisted ||
+            navEntry?.type === "back_forward" ||
+            (navEntry?.type === "navigate" && sessionStorage.getItem('navFrom'));
+
+        if (isInternalReturn) {
+            seekWhenReady(baseStart + 8);
+        } else {
+            seekWhenReady(baseStart);
+        }
+    }
+    // Starta musiken direkt om vi backat eller hoppat via länk
+    const introOverlay = document.querySelector('.intro-overlay-grp');
+    const isIntroActive = introOverlay && introOverlay.style.display !== 'none';
+    
+    if (currentTopicId !== 'lobby' || !isIntroActive) {
+        window.startMusic(true);
+    }
+});
+
+window.addEventListener('storage', (e) => {
+    if (e.key === MUTE_KEY) applyMuteState(e.newValue === '1', false);
+});
+
+// Spara tid när man lämnar en undersida
+window.addEventListener('beforeunload', () => {
+    if (!audio.paused && currentTopicId !== 'lobby' && currentTopicId !== 'uc') {
+        sessionStorage.setItem(audioKey, audio.currentTime);
+    }
+});
+  
+// ── MASTER SWITCH (AUTO PAUSE/PLAY VID TAB-BYTE) ──────────────────────
+document.addEventListener("visibilitychange", function() {
+  if (document.hidden) {
+    if (!audio.paused && !isMuted) {
+      audio.dataset.wasPlaying = "true";
+      audio.pause();
+    }
+    document.querySelectorAll('video').forEach(v => v.pause());
+  } else {
+    if (audio.dataset.wasPlaying === "true" && !isMuted) {
+      audio.volume = 0;
+      audio.play().catch(() => {});
+      const steps = 50, stepAmount = currentConfig.volume / steps;
+      let fadeIn = setInterval(() => {
+          if (audio.volume + stepAmount < currentConfig.volume) { audio.volume += stepAmount; }
+          else { audio.volume = currentConfig.volume; clearInterval(fadeIn); }
+      }, 20);
+      audio.dataset.wasPlaying = "false";
+    }
+    document.querySelectorAll('video').forEach(v => {
+      if (v.hasAttribute('autoplay')) v.play().catch(() => {});
+    });
+  }
+});
+
+// This covers a tab that stayed alive but was hidden for a long time
+let hiddenAt = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { hiddenAt = Date.now(); return; }
+  if (hiddenAt && Date.now() - hiddenAt > 30 * 60 * 1000 && !isGamePage && !isReviewPage) {
+    location.reload();   // a fresh load beats a half-asleep page
+  }
+});
+
+// ────────────────── REUSABLE TRANSITION COLOR OVERLAY & LOTTIE MANAGER ────────────────────────────────
+ // LOTTIE PLAYER NEEDED FOR TRANSITION LOADING SCREEN
+  // ── LADDA LOTTIE-SPELAREN ─────────────────────────────────────────────
+if (!document.querySelector('script[src*="lottie-player"]')) {
+    const script = document.createElement('script');
+    script.src = "https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js";
+    document.head.appendChild(script);
+}
+// 1. SETTINGS
+const LOTTIE_DELAY_MS = 1200;
+const LOTTIE_SRC = 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a159263c0394fc57a0ee84a_loading-game-2.json';
+const revealDuration = '0.8s';
+const isGamePage = /^\/(quiz-game|gma-game-1)\/?$/.test(window.location.pathname);
+const isReviewPage = /^\/score-review\/?$/.test(window.location.pathname);
+const waitsForData = isGamePage || isReviewPage;   // pages that fire 'questionsLoaded' themselves
+let lottieDelayTimeout = null;
+let cleanupTimeout = null;
+let isExiting = false;
+
+// 2. ONE TIMER ACROSS PAGES (start time lives in sessionStorage)
+function startLottieTimer() {
+  clearTimeout(lottieDelayTimeout);
+  let start = parseInt(sessionStorage.getItem('transitionStart'), 10);
+  if (!start || Date.now() - start > 15000) {   // missing or stale
+    start = Date.now();
+    sessionStorage.setItem('transitionStart', start);
+  }
+  const remaining = Math.max(LOTTIE_DELAY_MS - (Date.now() - start), 0);
+  lottieDelayTimeout = setTimeout(() => window.injectLottiePlayer(remaining === 0), remaining);
+}
+
+window.injectLottiePlayer = function(instant = false) {
+  const overlay = document.getElementById('global-transition-overlay');
+  if (!overlay || overlay.querySelector('lottie-player')) return;
+  // The previous page may already have shown the Lottie (start button waiting for the backend).
+  // Then continue from where it was instead of restarting from frame 0.
+  const shownAt = parseInt(sessionStorage.getItem('lottieShownAt'), 10);
+  const offsetMs = (shownAt && Date.now() - shownAt < 20000) ? Date.now() - shownAt : 0;
+  if (!offsetMs) sessionStorage.setItem('lottieShownAt', Date.now());
+  if (offsetMs) instant = true;   // already visible on the previous page, so no fade-in blink
+  console.log('[lottie] injected', { page: location.pathname, instant, offsetMs, t: Math.round(performance.now()) });
+
+  const wrap = document.createElement('div');
+  wrap.className = 'lottie-wrapper-inner';
+  wrap.style.cssText = `display:flex;justify-content:center;align-items:center;height:100svh;width:100vw;opacity:${instant ? 1 : 0};transition:opacity 0.3s ease;`;
+  // white (or near-white) overlay: flip the Lottie so it stays visible
+  const bg = (getComputedStyle(overlay).backgroundColor.match(/[\d.]+/g) || [0, 0, 0]).map(Number);
+  const brightness = 0.299 * bg[0] + 0.587 * bg[1] + 0.114 * bg[2];   // standard perceived brightness, 0-255
+  if (brightness > 245) wrap.style.filter = 'invert(1)';
+
+  wrap.innerHTML = `
+    <style>
+      .transition-lottie { width: 8rem; height: 8rem; }
+      @media (max-width: 991px) { .transition-lottie { width: 7rem; height: 7rem; } }
+    </style>
+    <lottie-player class="transition-lottie" src="${LOTTIE_SRC}"
+      background="transparent" speed="1" ${offsetMs ? '' : 'autoplay'}></lottie-player>`;
+  overlay.appendChild(wrap);
+  const player = wrap.querySelector('lottie-player');
+  if (offsetMs) {
+    player.addEventListener('ready', () => {
+      const anim = player.getLottie && player.getLottie();
+      if (anim) anim.goToAndPlay(offsetMs, false);   // continue; past the end it stays on the last frame
+    });
+  }
+
+  if (!instant) requestAnimationFrame(() => requestAnimationFrame(() => { wrap.style.opacity = '1'; }));
+};
+// 3. SHOW / HIDE (both global, usable for the # navigation too)
+window.showGameLoadingOverlay = function(speed = '0.5s', enableLottieDelay = true) {
+  fetch(LOTTIE_SRC).catch(() => {});
+  const overlay = document.getElementById('global-transition-overlay');
+  if (!overlay) return;
+
+  clearTimeout(cleanupTimeout);   // <-- kills the race from point 2
+
+  const currentTheme = document.body.getAttribute('data-theme');
+  overlay.style.background = currentTheme === 'light' ? '#ffffff' : '#000000';
+  overlay.style.pointerEvents = 'all';
+  overlay.style.cursor = 'default';
+
+  if (overlay.style.display === 'none') {
+    overlay.style.opacity = '0';
+    overlay.style.display = 'block';
+    void overlay.offsetWidth;
+  }
+  overlay.style.transition = `opacity ${speed} ease`;
+  overlay.style.opacity = '1';
+
+    if (!sessionStorage.getItem('transitionStart')) {
+    // count from when the screen is fully covered, not from the click
+    sessionStorage.setItem('transitionStart', Date.now() + parseFloat(speed) * 1000);
+  }
+  clearTimeout(lottieDelayTimeout);
+  if (enableLottieDelay) startLottieTimer();
+};
+
+window.hideGameLoadingOverlay = function() {
+  const overlay = document.getElementById('global-transition-overlay');
+  if (!overlay) return;
+
+  clearTimeout(lottieDelayTimeout);
+  lottieDelayTimeout = null;
+  sessionStorage.removeItem('transitionStart');
+  sessionStorage.removeItem('lottieShownAt');
+  overlay.style.opacity = '0';
+  overlay.style.pointerEvents = 'none';
+  overlay.style.cursor = 'auto';
+
+  clearTimeout(cleanupTimeout);
+  cleanupTimeout = setTimeout(() => {
+    if (overlay.style.opacity !== '0') return;  // a new transition has started, leave it alone
+    overlay.style.display = 'none';
+    overlay.innerHTML = '';
+  }, parseFloat(revealDuration) * 1000 + 50);
+};
+
+// ── TRANSITION OVERLAY INITIALIZATION ON PAGE LOAD ─────────────────────────────────
+const overlay = document.createElement('div');
+overlay.id = 'global-transition-overlay';
+
+overlay.style.cssText = `position:fixed;inset:0;z-index:999999;pointer-events:none;transition:opacity ${revealDuration} ease;opacity:1;display:block;`;
+
+const savedColor = sessionStorage.getItem('exitColor');
+const bodyTheme  = document.body.getAttribute('data-theme');
+const initColor  = savedColor || (bodyTheme === 'light' ? '#ffffff' : '#000000');
+
+overlay.style.background = initColor;
+document.body.appendChild(overlay);
+
+// If we arrived via a transition (or this is a game page), continue the SAME timer
+if (waitsForData || sessionStorage.getItem('transitionStart')) startLottieTimer();
+
+let pageShown = false;
+let questionsReady = !waitsForData;
+let arrivalRevealed = false;
+function revealArrival(fromBfcache) {
+  if (arrivalRevealed) return;
+  arrivalRevealed = true;
+  window.hideGameLoadingOverlay();
+
+  if (!fromBfcache) {
+    document.dispatchEvent(new CustomEvent('corePageReady'));
+    if (typeof currentTopicId !== 'undefined') {
+      const isTopicPage = currentTopicId !== 'lobby';
+      if (isTopicPage && typeof audio !== 'undefined' && audio.paused) window.startMusic(false);
+    }
+  }
+}
+function tryReveal(fromBfcache) { if (pageShown && questionsReady) revealArrival(fromBfcache); }
+
+// Listen from the start, NOT inside pageshow, so the event can't be missed
+document.addEventListener('questionsLoaded', () => { questionsReady = true; tryReveal(); }, { once: true });
+setTimeout(() => { questionsReady = true; tryReveal(); }, isReviewPage ? 10000 : 2500); // fallback, measured from script start
+
+window.addEventListener('pageshow', (e) => {
+  sessionStorage.removeItem('exitColor');
+  isExiting = false;
+  pageShown = true;
+  if (e.persisted) {    // back button / bfcache: nothing reloads
+    arrivalRevealed = false;
+    questionsReady = true;
+    tryReveal(true);
+  } else {
+    tryReveal();
+  }
+});
+
+// ── GLOBAL EXIT FUNCTION (STANDARD LINKS) ─────────────────────────────
+window.triggerPageExit = function(url, isSlowFinish = false, isFinishBtn = false) {
+    if (isExiting) return;
+    isExiting = true;
+    if (typeof currentSlug !== 'undefined') sessionStorage.setItem('navFrom', currentSlug);
+    
+    if (isFinishBtn || /^\/score\/?$/.test(url)) {
+    sessionStorage.setItem('scoreAuthorized', 'true');
+    }
+    sessionStorage.setItem('skipIntro', 'true');
+    let isLeavingLobby = false;
+
+    if (typeof getTopicFromUrl === 'function' && typeof currentTopicId !== 'undefined') {
+        const targetTopicId = getTopicFromUrl(url);
+        const changingTopic = currentTopicId !== targetTopicId;
+        isLeavingLobby = currentTopicId === 'lobby' && targetTopicId !== 'lobby';
+
+        if (changingTopic) {
+            sessionStorage.setItem('fromTopic', currentTopicId);
+            if (window.fadeOutMusic) window.fadeOutMusic();
+        } else {
+            sessionStorage.removeItem('fromTopic');
+        }
+    }
+
+    let durationMs = 500;                 
+    if (isSlowFinish)   durationMs = 800;  
+    if (isLeavingLobby) durationMs = 1000; 
+    const fadeSpeedStr = `${(durationMs / 1000).toFixed(1)}s`;
+    window.showGameLoadingOverlay(fadeSpeedStr, true);
+        setTimeout(() => {
+        clearTimeout(lottieDelayTimeout);   // never start a Lottie on a page that is already leaving
+        window.location.href = url;
+    }, durationMs);
+};
+
+// ── CLICK HANDLER FÖR LÄNKAR ──────────────────────────────────────────
+document.addEventListener('click', function(e) {
+    const link = e.target.closest('a');
+    if (!link || link.target === '_blank' || e.metaKey || e.ctrlKey) return;
+    const href = link.getAttribute('href');
+    if (!href || href === '#' || href.startsWith('#') || link.classList.contains('is-password') || link.closest('.pp-dropdown, .i-closer-game, .button.i-lobby-back, .games-link-block')) return;
+    e.preventDefault();
+
+    // Check if the user is clicking the finish button / navigating to the score page
+    const isHeadingToScore = href.includes('score') || link.classList.contains('finish-btn');
+
+    if (link.id === 'boss-level-game-1') {
+        setTimeout(() => window.triggerPageExit(href, false), 1000);
+    } else {
+        setTimeout(() => window.triggerPageExit(href, isHeadingToScore, isHeadingToScore), 200);
+    }
+});
+
+// ── KEYBOARD LISTENER FÖR INTRO (ENTER/SPACE) ─────────────────────────
+let triggered = false;
+document.addEventListener("keydown", function(e) {
+  if (triggered) return;
+  
+  // NEW: Block if any modal is open (create-profile, login, etc)
+  const blockingModals = [
+    '.login-modal-wrapper',
+    '.create-profile',
+    '.change-username'
+  ];
+  
+  for (let selector of blockingModals) {
+    const modal = document.querySelector(selector);
+    if (modal && window.getComputedStyle(modal).display !== 'none') {
+      return; // Exit early - don't trigger intro
+    }
+  }
+  
+  if (document.getElementById('back-overlay')) return; 
+  
+  if (e.key === "Enter" || e.key === " ") {
+    const welcomeTarget = document.querySelector(".welcome-text-container");
+    if (!welcomeTarget) return;
+    // Only while the intro is still showing, and never while typing in a field
+    const intro = document.querySelector('.intro-overlay-grp');
+    if (!intro || window.getComputedStyle(intro).display === 'none') return;
+    if (window.lobbySkipDone) return;
+    if (e.target.closest('input, textarea, [contenteditable="true"]')) return;
+    
+    triggered = true;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    welcomeTarget.click();
+  }
+});
+
+// ── STRÖMSPAR-FUNKTIONER (VIDEO) ──────────────────────────────────────
+const powerSaveVideos = () => {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const video = entry.target;
+      if (entry.isIntersecting) { video.play().catch(() => {}); } 
+      else { video.pause(); }
+    });
+  }, { threshold: 0.9 }); 
+  document.querySelectorAll('video').forEach(v => observer.observe(v));
+};
+if (document.readyState === 'complete') { powerSaveVideos(); } 
+else { window.addEventListener('load', powerSaveVideos); }
+setInterval(() => {
+  document.querySelectorAll('video').forEach(v => {
+    const style = window.getComputedStyle(v);
+    const isHidden = (v.offsetWidth === 0 && v.offsetHeight === 0) || style.opacity === '0' || style.visibility === 'hidden';                    
+    if (isHidden && !v.paused) { v.pause(); } 
+    else if (!isHidden && v.paused && v.hasAttribute('autoplay')) { v.play().catch(() => {}); }
+  });
+}, 6000); 
+
+// ───────── FOCUS OVERLAYS ON LOBBY ─────────
+(function() {
+  const isOverlayOpen = {}; // Spårning för att undvika "dubbelkörning"
+
+  function fakeClick() {
+    const x = window.innerWidth / 2;
+    const y = window.innerHeight / 2;
+    const el = document.elementFromPoint(x, y);
+    const skipReasonEl = el ? el.closest('.pp-dropdown, .i-closer-game, .button.i-lobby-back, .profile-pic-option, .pp-grid-wrapper, .dropdown-gamelevel, .w-dropdown') : null;
+    if (!el) return;
+
+    // Hoppa över om det landar på pp-dropdown eller dess close-triggers
+    if (skipReasonEl) {
+      return;
+    }
+    window.__syntheticClickRunning = true;
+
+    ['mousedown', 'mouseup', 'click'].forEach(type => {
+      const evt = new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y });
+      evt._synthetic = true;
+      try {
+        el.dispatchEvent(evt);
+      } catch (err) {
+        console.warn('fakeClick: dispatch error', err);
+      }
+    });
+    setTimeout(() => {
+      window.__syntheticClickRunning = false;
+    }, 80);
+  }
+
+  // Lista över dina overlays
+  const targets = ['.rules-overlay', '.inventory-overlay', '.leaderboard-overlay', '.about-overlay'];
+    targets.forEach(selector => {
+    document.querySelectorAll(selector).forEach(overlay => {
+      new MutationObserver(() => {
+        const style = window.getComputedStyle(overlay);
+        const isVisible = style.display !== 'none' && style.visibility !== 'hidden' && parseFloat(style.opacity) > 0;
+
+        // Om den är synlig OCH vi inte redan har kört koden för denna öppning:
+        if (isVisible && !isOverlayOpen[selector]) {
+          isOverlayOpen[selector] = true; // Lås
+
+          // 1. Nollställ skroll på själva overlay-fönstret (fixar rules, about, leaderboard)
+          overlay.scrollTop = 0;
+            // 1b. Reset the inner scroller (About scrolls in .about-wrapper, not in the overlay)
+          const innerScroller = overlay.querySelector('.about-wrapper');
+          if (innerScroller) {
+            innerScroller.scrollTop = 0;
+          }
+
+          // 2. Nollställ även #i-slider om det finns (för inventory)
+          const scrollEl = overlay.querySelector('#i-slider') || document.getElementById('i-slider');
+          if (scrollEl) {
+            scrollEl.scrollTop = 0;
+          }
+
+          // 3. Fokus-klick (behåller ditt fungerande fokus)
+          if (document.body.dataset.page === 'lobby') {
+            setTimeout(fakeClick, 150);
+          }       
+
+        } else if (!isVisible) {
+          isOverlayOpen[selector] = false; // Lås upp när den stängs
+        }
+      }).observe(overlay, { attributes: true, attributeFilter: ['style', 'class'] });
+    });
+  });
+})();
+
+// ------- DISABLE SCROLL RESTORATION (START AT TOP) ------------
+if ('scrollRestoration' in history) { 
+  history.scrollRestoration = 'manual'; 
+}
+
+/* // Auto scroll to top
+if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
+window.addEventListener('load', function() {
+  window.scrollTo(0, 0);
+}); */
+
+/* ────── ABOUT contact flip ────── */
+document.addEventListener('DOMContentLoaded', () => {
+  const contactEl = document.querySelector('.contact-wrapper');
+  if (!contactEl) return;
+
+  // The scrolling container inside About
+  const scrollContainer = contactEl.closest('.about-wrapper') || null;
+
+  // Stable anchor: the parent row is never rotated, so its position
+  // does not change while the flip animation plays
+  const anchor = contactEl.parentElement;
+
+  const TRIGGER = 0.58;  // trigger line, 65% from the top of the container
+  const DEAD_ZONE = 60;  // px of extra scroll needed before it flips back
+
+  let ticking = false;
+
+  function update() {
+    ticking = false;
+    const rootTop = scrollContainer ? scrollContainer.getBoundingClientRect().top : 0;
+    const rootHeight = scrollContainer ? scrollContainer.clientHeight : window.innerHeight;
+    const line = rootTop + rootHeight * TRIGGER;
+    const anchorTop = anchor.getBoundingClientRect().top;
+    const isFlipped = contactEl.classList.contains('is-flipped');
+
+    if (!isFlipped && anchorTop < line) {
+      contactEl.classList.add('is-flipped');
+    } else if (isFlipped && anchorTop > line + DEAD_ZONE) {
+      contactEl.classList.remove('is-flipped'); // plays back in reverse
+    }
+  }
+
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(update);
+  }
+
+  (scrollContainer || window).addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  update();
+});
+
+// ── CLIPPING MIN-WIDTH LOGIK ──────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const trigger = document.querySelector('.welcome-text-container');
+  const target = document.querySelector('.clipping');
+  if (!trigger || !target) return;
+  function applyMinWidth() {
+    if (window.innerWidth > 991) { target.style.setProperty('min-width', '38rem', 'important'); } 
+    else { target.style.removeProperty('min-width'); }
+  }
+  let hasClicked = false;
+  if (window.innerWidth > 991) {
+    trigger.addEventListener('click', () => {
+      setTimeout(() => { hasClicked = true; applyMinWidth(); }, 2400);
+    });
+  }
+  window.addEventListener('resize', () => { if (hasClicked) applyMinWidth(); });
+});
+// ── GLOBAL CLICK DELAY prevents double-clicking and spamming buttons  ────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  let locked = false;
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('a, input, textarea, select, .pp-dropdown, .i-closer-game, .button.i-lobby-back, .profile-pic-option, .pp-grid-wrapper')) return;
+    if (e._synthetic) return; 
+    if (locked) { e.stopPropagation(); e.preventDefault(); return; }
+    locked = true;
+    setTimeout(() => { locked = false; }, 500);
+  }, true);
+});
+
+// ── GLOBALT STOPP FÖR STANDARD TAB-FOKUS ────────────────────────────
+window.addEventListener('keydown', function(e) {
+    if (e.key !== 'Tab') return;
+          
+    if (e.target.closest('.form-block-contact, .email-auth-modal')) {
+            return; // innuti, gör inget, låt Tab bete sig normalt
+        }
+        e.preventDefault(); // utanför formuläret: blockera Tab helt
+     
+}, true); // 'true' gör att den fångar tangenten direkt innan något annat händer
+
+// ══════════════════════════════════════════════════════════════════════
+// GENERISKT HOVER- & PRESS-SCALE-SYSTEM
+// Ersätter individuella Webflow IX2 hover/click-scale-interactions.
+// Lägg bara till/ta bort klassnamn i listorna nedan - ingen ny IX2 behövs
+// för nya element, bara lägg till klassen i rätt lista här.
+// ══════════════════════════════════════════════════════════════════════
+ 
+// Klasser som ska skalas upp till 1.15 vid hover (stor effekt)
+const HOVER_SCALE_CLASSES = [
+    'cp-exit',
+    'games-link-block',
+    'games-link-block-gma',
+    'link-to-lobby',
+    'q-logo',
+    'burger-links',
+    'fat-cat-logo',
+    'submit-button',
+    'button',
+    'button-link',
+    'exit-cross',
+    'game-start-btn-gma',
+    'game-start-btn',
+    'finish-btn',    
+    'share-score-btn',
+    'link-score',
+    'text-link',
+    'inventory-btn-wrapper',
+    'player-info.username',
+    'logout-btn',
+    'button.i-lobby-back',
+    'cp-submit-btn',
+    'profile-pic-option',
+    'current-profile-pic',
+    'login-modal-btn',
+    'gamelevel-btn',
+    'game-level-option', 
+    'merge-google-btn',
+    'cancel-merge-btn',
+    'eam-submit-btn',
+    'email-auth-toggle-link',
+    'eam-cancel-btn',
+    'find-me-btn'
+];
+
+// ---- wtc-wrapper fix --- skalas upp till 1.08 vid hover (subtil effekt)
+const HOVER_SCALE_CLASSES_SM = [
+    'wtc-wrapper'
+];
+// Hantera klick på wtc-wrapper för att trigga Y-rörelsen och nollställa hover
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.wtc-wrapper').forEach(el => {
+        el.addEventListener('click', () => {
+            el.classList.add('is-clicked');
+            el.classList.remove('is-hovered'); // Tar bort eventuell kvarliggande hover-skalning direkt
+        });
+    });
+});
+
+// Klasser som ska ändra scale vid press (pointerdown -> pointerup)
+const PRESS_SCALE_CLASSES = [
+    'cp-exit',
+    'games-link-block',
+    'games-link-block-gma',
+    'link-to-lobby',
+    'q-logo',
+    'burger-links',
+    'fat-cat-logo',
+    'submit-button',
+    'button',
+    'button-link',
+    'exit-cross',
+    'game-start-btn-gma',
+    'game-start-btn',
+    'finish-btn',    
+    'share-score-btn',
+    'link-score',
+    'text-link',
+    'logout-btn',
+    'button.i-lobby-back',
+    'cp-submit-btn',
+    'profile-pic-option',
+    'current-profile-pic',
+    'login-modal-btn',
+    'gamelevel-btn',
+    'game-level-option',
+    'merge-google-btn',
+    'cancel-merge-btn',
+    'eam-submit-btn',
+    'eam-cancel-btn',
+    'find-me-btn'
+];
+
+const supportsRealHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+// scaleClass = 'js-hover-scale' (1.15) eller 'js-hover-scale-sm' (1.08)
+function initHoverScale(classList, scaleClass) {
+    classList.forEach(cls => {
+        document.querySelectorAll('.' + cls).forEach(el => {
+            el.classList.add(scaleClass);
+
+            el.addEventListener('mouseenter', () => {
+                if (!el.classList.contains('is-click-blocked')) {
+                    el.classList.add('is-hovered');
+                }
+            });
+
+            el.addEventListener('mouseleave', () => {
+                el.classList.remove('is-hovered');
+                el.classList.remove('is-click-blocked');
+            });
+        });
+    });
+}
+// Hur länge (minst) press-effekten ska synas, även vid ett blixtsnabbt klick
+const MIN_PRESS_VISIBLE_MS = 140;
+function initPressScale(classList) {
+    classList.forEach(cls => {
+        document.querySelectorAll('.' + cls).forEach(el => {
+            el.classList.add('js-press-scale');
+            let pressStartTime = 0;
+            let releaseTimeoutId = null;
+            el.addEventListener('pointerdown', (e) => {
+                // Om ett tidigare, väntande release inte hunnit köra - avbryt det, ny press har börjat
+                if (releaseTimeoutId) {
+                    clearTimeout(releaseTimeoutId);
+                    releaseTimeoutId = null;
+                }
+                pressStartTime = performance.now();
+                if (e.pointerType === 'mouse') {
+                    el.classList.add('is-pressed-down'); // Mus -> skala NER
+                } else {
+                    el.classList.add('is-pressed-up');   // Touch/penna -> skala UPP
+                }
+            });
+            // Den faktiska återställningen - körs antingen direkt eller efter fördröjning
+            const CLICK_BLOCK_DURATION_MS = 350; // safety auto-clear window
+
+            const doRelease = () => {
+            el.classList.remove('is-pressed-down');
+            el.classList.remove('is-pressed-up');
+            el.classList.remove('is-hovered');
+            el.classList.add('is-click-blocked');
+            releaseTimeoutId = null;
+
+            // NEW: guarantee this clears itself even if mouseleave never fires
+            if (el._clickBlockTimeout) clearTimeout(el._clickBlockTimeout);
+            el._clickBlockTimeout = setTimeout(() => {
+                el.classList.remove('is-click-blocked');
+            }, CLICK_BLOCK_DURATION_MS);
+};
+            const release = () => {
+                const elapsed = performance.now() - pressStartTime;
+                const remaining = MIN_PRESS_VISIBLE_MS - elapsed;
+                if (remaining > 0) {
+                    // Trycket var kortare än minimitiden - vänta ut resten innan vi återställer
+                    releaseTimeoutId = setTimeout(doRelease, remaining);
+                } else {
+                    // Trycket varade redan längre än minimitiden - återställ direkt
+                    doRelease();
+                }
+            };
+            el.addEventListener('pointerup', release);
+            el.addEventListener('pointercancel', release);
+            el.addEventListener('pointerleave', release);
+        });
+    });
+}
+document.addEventListener('DOMContentLoaded', () => {
+    if (supportsRealHover) {
+        initHoverScale(HOVER_SCALE_CLASSES, 'js-hover-scale');
+        initHoverScale(HOVER_SCALE_CLASSES_SM, 'js-hover-scale-sm');
+    }
+    initPressScale(PRESS_SCALE_CLASSES);
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// SCROLL-PULSE SYSTEM (FÖR CUSTOM <LOTTIE-PLAYER>)
+// ══════════════════════════════════════════════════════════════════════
+
+const SCROLL_PULSE_DELAY_MS = 700;
+const pulsePendingTimeouts = new Map();
+
+function startSnake(wrapperEl) {
+    const snake = wrapperEl.querySelector('lottie-player.return-snake');
+    if (!snake) return;
+    
+    // Använd Lottie-spelarens inbyggda metoder
+    if (typeof snake.seek === 'function') snake.seek(0);
+    if (typeof snake.play === 'function') snake.play();
+}
+
+function stopSnake(wrapperEl) {
+    const snake = wrapperEl.querySelector('lottie-player.return-snake');
+    if (!snake) return;
+    
+    // Stoppa och backa snabbt till början
+    if (typeof snake.stop === 'function') snake.stop();
+    if (typeof snake.seek === 'function') snake.seek(0);
+}
+
+function resetPulse(wrapperEl) {
+    if (pulsePendingTimeouts.has(wrapperEl)) {
+        clearTimeout(pulsePendingTimeouts.get(wrapperEl));
+        pulsePendingTimeouts.delete(wrapperEl);
+    }
+    wrapperEl.querySelectorAll('.button, .button-link').forEach(btn => btn.classList.remove('is-pulsing'));
+    stopSnake(wrapperEl);
+}
+
+function startPulse(wrapperEl) {
+    if (pulsePendingTimeouts.has(wrapperEl)) return;
+    const timeoutId = setTimeout(() => {
+        pulsePendingTimeouts.delete(wrapperEl);
+        wrapperEl.querySelectorAll('.button, .button-link').forEach(btn => btn.classList.add('is-pulsing'));
+        startSnake(wrapperEl);
+    }, SCROLL_PULSE_DELAY_MS);
+    pulsePendingTimeouts.set(wrapperEl, timeoutId);
+}
+
+function initScrollPulse() {
+    const wrappers = document.querySelectorAll('.button-wrapper');
+    if (!wrappers.length) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) startPulse(entry.target);
+            else resetPulse(entry.target);
+        });
+    }, { threshold: 0.2 });
+
+    wrappers.forEach(w => {
+        observer.observe(w);
+        // Reset via knappklick inuti wrappern
+        w.querySelectorAll('.button, .button-link').forEach(btn => {
+            btn.addEventListener('click', () => resetPulse(w));
+        });
+    });
+
+    // Reset via klick på burgarmenyn (för overlays)
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.burger-links')) return;
+        wrappers.forEach(resetPulse);
+    });
+}
+
+// Ladda scriptet när Lottie-biblioteket är redo
+if (customElements.get('lottie-player')) {
+    document.addEventListener('DOMContentLoaded', initScrollPulse);
+} else {
+    customElements.whenDefined('lottie-player').then(() => {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initScrollPulse);
+        } else {
+            initScrollPulse();
+        }
+    });
+}
+
+// Stäng flik för terms and privacy
+document.addEventListener("click", (e) => {
+  // Leta efter klick på din komboklass (eller något inuti den)
+  const closeBtn = e.target.closest(".button-link.close-tab");
+  
+  if (closeBtn) {
+    e.preventDefault();
+    
+    // 1. Försök stänga fliken
+    window.close();
+    
+    // 2. Fallback: Om fliken fortfarande är öppen efter 200ms, backa eller gå till länk
+    setTimeout(() => {
+      if (history.length > 1) {
+        history.back();
+      } else {
+        window.location.href = closeBtn.getAttribute("href") || "/";
+      }
+    }, 200);
+  }
+});
+
+//temporary skip intro debug log
+/* window.addEventListener('pageshow', (e) => console.log('[pageshow]', {
+  persisted: e.persisted,
+  navType: performance.getEntriesByType('navigation')[0]?.type,
+  skipIntro: sessionStorage.getItem('skipIntro')
+})); */
