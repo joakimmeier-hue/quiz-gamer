@@ -1,0 +1,2624 @@
+import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-functions.js";
+import { 
+  getAuth, 
+  GoogleAuthProvider, 
+  OAuthProvider,
+  signInWithPopup, 
+  // Delete these 3:
+  /* sendSignInLinkToEmail,
+  isSignInWithEmailLink,
+  signInWithEmailLink, */
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  linkWithCredential,
+  onAuthStateChanged, 
+  signOut
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAfZQM3H5XAYkEt2ARInoA1Xs-Qd1DXL_s",
+  authDomain: "quizgamer-web-app.firebaseapp.com",
+  projectId: "quizgamer-web-app",
+  storageBucket: "quizgamer-web-app.firebasestorage.app",
+  messagingSenderId: "229730753032",
+  appId: "1:229730753032:web:723d0c4334058a47084fbd",
+  measurementId: "G-TNBLZFSFG6"
+};
+
+// ── INITIALIZE FIREBASE ──
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const functions = getFunctions(app);
+
+// ── CALLABLE FUNCTIONS ──
+const completeProfileFn = httpsCallable(functions, "completeProfile");
+const changeUsernameFn = httpsCallable(functions, "changeUsername");
+const getGameInfoFn = httpsCallable(functions, "getGameInfo");
+const startGameFn = httpsCallable(functions, "startGame");
+const gradeGameFn = httpsCallable(functions, "gradeGame");
+const getReviewFn = httpsCallable(functions, 'getReview');
+const payForReviewFn = httpsCallable(functions, "payForReview");
+
+// ── SETUP PROVIDERS ──
+const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+const microsoftProvider = new OAuthProvider('microsoft.com');
+microsoftProvider.setCustomParameters({ prompt: 'select_account' });
+
+let currentUser = null;
+let pendingAction = null; 
+let isAuthenticating = false; // NYTT: skydd mot dubbla samtidiga inloggningsförsök
+let profileCompleteResolver = null;
+
+
+// ── DOM ELEMENTS ──
+const loginModal = document.getElementById('login-modal');
+const googleLoginBtn = document.getElementById('google-login-btn');
+const microsoftLoginBtn = document.getElementById('microsoft-login-btn'); // Fixed variable name
+const userDisplayName = document.getElementById('user-display-name');
+const userLevelEl = document.getElementById('user-level');
+const levelBarEl = document.querySelector('.level-bar');
+const userScoreEl = document.getElementById('user-total-score');
+const userRankEl = document.getElementById('user-rank');
+
+// ───── Make number separator like 1,000 ─────
+function fmtNum(n) {
+  const lang = document.documentElement.lang || 'en';
+  // If you want eng separator 10,000 disregarding region, use this instead:
+  /* const lang = (document.documentElement.lang || 'en').split('-')[0]; // "en-SE" → "en" */
+  return new Intl.NumberFormat(lang).format(n);
+}
+
+// Ensure currentSlug exists for routing (must be defined before routeGuard runs)
+if (typeof currentSlug === 'undefined') {
+  let derived = (window.location.pathname || '/').replace(/^\/+|\/+$/g, '');
+  if (!derived) {
+    // default for root
+    derived = 'lobby';
+  } else {
+    // take the last path segment and strip .html if present
+    derived = derived.split('/').pop().replace(/\.html$/i, '');
+  }
+  // expose as globals so existing code that uses `currentSlug` works
+  window.currentSlug = derived;
+  currentSlug = derived;
+}
+
+// Expose callable Start Game trigger to global scope
+window.triggerStartGame = async function(topic, tierLevel) {
+  try {
+    const result = await startGameFn({ topic, level: tierLevel });
+    return result.data; // Returns { sessionId }
+  } catch (err) {
+    console.error("Start Game Error:", err);
+
+    // If client was modified in DevTools and server rejected request, display server message
+    if (typeof showGlobalInfo === 'function') {
+      showGlobalInfo(err.message || "Failed to start game session.");
+    }
+    throw err;
+  }
+};
+
+function updateAuthUI(user) {
+  if (user) {
+    // ANVÄNDARE ÄR INLOGGAD
+    document.body.classList.add("user-logged-in");
+    if (userDisplayName) userDisplayName.textContent = user.displayName || user.email;
+    
+  } else {
+    // ANVÄNDARE ÄR UTLOGGAD
+    document.body.classList.remove("user-logged-in");
+    
+    // 🆕 Reset avatar on logout
+    const defaultAvatar = "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a43d799e6705e122388ffdc_ppic0.svg";
+    const currentAvatars = document.querySelectorAll('.current-profile-pic');
+    currentAvatars.forEach(img => img.src = defaultAvatar);
+
+    // Stäng inventoryt omedelbart om det råkar vara öppet när man loggar ut
+    const overlay = document.querySelector('.inventory-overlay');
+    if (overlay && window.lobbyInvOpen) {
+        closeLobbyInventory(overlay);
+    }
+  }
+}
+
+function showLoginModal() {
+  window.selectedOnboardingAvatar = null;  // 🆕 Reset avatar
+  if (currentUser) return; // NYTT: redan inloggad - visa aldrig login-modalen igen
+  if (loginModal) {
+    loginModal.style.display = 'flex';
+    loginModal.style.opacity = '0';
+    loginModal.style.transition = 'opacity 250ms ease-out';
+    
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        loginModal.style.opacity = '1';
+      });
+    });
+  }
+}
+
+function hideLoginModal() {
+  if (loginModal) {
+    loginModal.style.transition = 'opacity 250ms ease-out';
+    loginModal.style.opacity = '0';
+    
+    setTimeout(() => {
+      if (loginModal.style.opacity === '0') {
+        loginModal.style.display = 'none';
+      }
+    }, 250);
+  }
+}
+
+// ———————————————————————— LOGIN. AUTH. MERGE EMAIL ————————————————————————
+// ── EMAIL AUTH MODAL -- ISOLATE FROM GLOBAL SHORTCUTS (.email-auth-modal) ──
+window.addEventListener('keydown', function(e) {
+  const modal = document.getElementById('email-auth-modal');
+  const emailAuthSubmit = document.getElementById('email-auth-submit');
+  
+  // Check if modal exists and is currently displayed
+  if (!modal || modal.style.display === 'none' || getComputedStyle(modal).display === 'none') {
+    return; // Modal closed: do nothing, let all other page shortcuts run normal
+  }
+
+  // GUARD: Prevent crash if e.key is undefined (browser autofill / IME inputs)
+  if (!e.key) return;
+
+  const isInsideModal = e.target.closest('#email-auth-modal');
+
+  // 1. Completely hijack the Enter key
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    e.stopPropagation(); // CRITICAL: Completely kills the event so it never reaches the game
+
+    // Only click if submit button has your valid 'is-active' class
+    if (emailAuthSubmit && emailAuthSubmit.classList.contains('is-active')) {
+      emailAuthSubmit.click();
+    }
+    return;
+  }
+
+  // 2. Close modal on Escape key press
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    e.stopPropagation(); // Kill the event here too just in case
+    document.getElementById('email-auth-cancel-btn')?.click();
+    return;
+  }
+
+  // 3. Allow standard typing keys and Tabbing ONLY inside the modal fields
+  if (isInsideModal) {
+    // Let standard text editing, navigation, and Tab work normally
+    if (e.key === 'Tab' || e.key === 'Backspace' || e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key.length === 1) {
+      e.stopPropagation(); // Stops external game/page shortcuts from capturing keystrokes
+      return;
+    }
+  }
+
+  // 4. Block all other global keys (spacebars, game hotkeys, page scrolling) while modal is open
+  e.preventDefault();
+  e.stopPropagation();
+}, true); // 'true' = Capture phase (intercepts keys before any other listeners)
+
+// ── CLOSE MODAL ON OUTSIDE CLICK ──
+document.getElementById('email-auth-modal')?.addEventListener('click', function(e) {
+  // If the click happened on the modal background, but NOT inside the .cp-container1 box
+  if (!e.target.closest('.cp-container1')) {
+    e.preventDefault(); // Stop any rogue clicks
+    
+    // Trigger the cancel button exactly like the Escape key does
+    const cancelBtn = document.getElementById('email-auth-cancel-btn');
+    if (cancelBtn) {
+      cancelBtn.click();
+    }
+  }
+});
+
+// ———————————— EMAIL AUTH MODAL POPUP ————————————
+const emailAuthModal = document.getElementById('email-auth-modal');
+const emailAuthEmail = document.getElementById('email-auth-email');
+const emailAuthPassword = document.getElementById('email-auth-password');
+const emailAuthSubmit = document.getElementById('email-auth-submit');
+const emailAuthTitle = document.getElementById('email-auth-title');
+const emailAuthToggleText = document.getElementById('email-auth-toggle-text');
+const emailAuthToggleLink = document.getElementById('email-auth-toggle-link');
+const emailAuthCancelBtn = document.getElementById('email-auth-cancel-btn');
+const emailAuthError = document.getElementById('email-auth-error');
+
+let emailAuthMode = 'signin'; // or 'create'
+
+// ── 1. HELPER FUNCTIONS (Safe top-level declarations) ──
+function validateEmailAuthInputs() {
+  if (!emailAuthEmail || !emailAuthPassword) return;
+
+  const email = emailAuthEmail.value.trim();
+  const password = emailAuthPassword.value;
+
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isPasswordValid = password.length >= 6;
+  const isValid = isEmailValid && isPasswordValid;
+
+  if (emailAuthSubmit) {
+    emailAuthSubmit.classList.toggle('is-active', isValid);
+    emailAuthSubmit.disabled = !isValid; 
+  }
+}
+
+function updateEmailAuthUI() {
+  if (!emailAuthTitle || !emailAuthSubmit || !emailAuthToggleText || !emailAuthToggleLink) return;
+
+  if (emailAuthMode === 'signin') {
+    emailAuthTitle.textContent = 'Sign in with Email';
+    emailAuthSubmit.value = 'Sign In';
+    emailAuthToggleText.textContent = 'New here?';
+    emailAuthToggleLink.textContent = 'Create an account';
+  } else {
+    emailAuthTitle.textContent = 'Create your account';
+    emailAuthSubmit.value = 'Create Account';
+    emailAuthToggleText.textContent = 'Already have an account?';
+    emailAuthToggleLink.textContent = 'Sign in instead';
+  }
+}
+
+function showEmailAuthModal() {
+  if (!emailAuthModal) return;
+
+  emailAuthMode = 'signin';
+  updateEmailAuthUI();
+
+  if (emailAuthEmail) emailAuthEmail.value = '';
+  if (emailAuthPassword) emailAuthPassword.value = '';
+  if (emailAuthError) emailAuthError.style.display = 'none';
+
+  validateEmailAuthInputs();
+
+  emailAuthModal.style.display = 'flex';
+
+  requestAnimationFrame(() => {
+    if (emailAuthEmail) emailAuthEmail.focus();
+  });
+}
+
+// ── 2. LAUNCHER LISTENER ──
+document.getElementById('email-login-btn')?.addEventListener('click', showEmailAuthModal);
+
+// ── 3. INPUT & MODAL LISTENERS (Safe initialization) ──
+if (emailAuthModal) {
+  emailAuthEmail?.addEventListener('input', validateEmailAuthInputs);
+  emailAuthPassword?.addEventListener('input', validateEmailAuthInputs);
+
+  emailAuthToggleLink?.addEventListener('click', (e) => {
+    e.preventDefault();
+    emailAuthMode = emailAuthMode === 'signin' ? 'create' : 'signin';
+    updateEmailAuthUI();
+    if (emailAuthError) emailAuthError.style.display = 'none';
+  });
+
+  emailAuthCancelBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    emailAuthModal.style.display = 'none';
+  });
+
+  emailAuthSubmit?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (!emailAuthEmail || !emailAuthPassword) return;
+
+    const email = emailAuthEmail.value.trim();
+    const password = emailAuthPassword.value;
+    if (emailAuthError) emailAuthError.style.display = 'none';
+
+    if (!email || !password) {
+      if (emailAuthError) {
+        emailAuthError.textContent = 'Please fill in both fields.';
+        emailAuthError.style.display = 'block';
+      }
+      return;
+    }
+
+    emailAuthSubmit.value = emailAuthMode === 'signin' ? 'Signing in...' : 'Creating...';
+    emailAuthSubmit.disabled = true;
+
+    try {
+      if (emailAuthMode === 'signin') {
+        await signInWithEmailAndPassword(auth, email, password);
+      } else {
+        await createUserWithEmailAndPassword(auth, email, password);
+      }
+      emailAuthModal.style.display = 'none';
+      if (typeof hideLoginModal === 'function') hideLoginModal();
+
+    } catch (error) {
+      console.error("Email auth error:", error);
+      if (emailAuthError) {
+        if (error.code === 'auth/email-already-in-use') {
+          emailAuthError.textContent = 'This email already has an account. Try continuing with Google or Microsoft instead.';
+        } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+          emailAuthError.textContent = 'Could not sign in. Check your password, or try continuing with Google or Microsoft if that is how you signed up.';
+        } else if (error.code === 'auth/weak-password') {
+          emailAuthError.textContent = 'Password must be at least 6 characters.';
+        } else if (error.code === 'auth/invalid-email') {
+          emailAuthError.textContent = 'Please enter a valid email address.';
+        } else {
+          emailAuthError.textContent = 'Something went wrong. Please try again.';
+        }
+        emailAuthError.style.display = 'block';
+      }
+      emailAuthSubmit.value = emailAuthMode === 'signin' ? 'Sign In' : 'Create Account';
+      emailAuthSubmit.disabled = false;
+    }
+  });
+}
+
+// ── LOGIN HANDLER (Popup-Blocker Safe) ──
+async function handleLogin(provider) {
+  if (isAuthenticating) return;
+  isAuthenticating = true;
+  
+  try {
+    const result = await signInWithPopup(auth, provider);
+    if (typeof hideLoginModal === 'function') hideLoginModal();
+        
+  } catch (error) {
+    console.error("Login error object:", error);
+
+    // ── COLLISION DETECTED ──
+    if (error.code === 'auth/account-exists-with-different-credential') {
+      const email = error.customData?.email;
+      const pendingCred = OAuthProvider.credentialFromError(error) || GoogleAuthProvider.credentialFromError(error);
+
+      if (email && pendingCred) {
+        const mergeDiv = document.createElement('div');
+        mergeDiv.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; z-index:99999; backdrop-filter: blur(4px);';
+        
+        mergeDiv.innerHTML = `
+          <div style="padding: 2rem 4rem; text-align:center; max-width:25rem; color:white; border-right: var(--stroke) solid var(--grey-stroke); border-left: var(--stroke) solid var(--grey-stroke);">
+            <h3 style="margin-top:0; margin-bottom: 1rem; font-size: 1.3rem;">Account Already Exists</h3>
+            <p style="margin-bottom:1rem; font-size: 0.9rem; line-height: 1.4;">The email <b>${email}</b> is already registered with another provider.</p>
+            <p style="margin-bottom: 2rem; font-size: 0.9rem; line-height: 1.4;">Please verify your identity with Google to link your accounts.</p>
+            
+            <button id="merge-google-btn" class="merge-google-btn" style="background:white; color:var(--dark-grey); padding:0.8rem 1rem; border:none; cursor:pointer; width:13rem; font-family: inherit; font-size: 1rem; font-weight: bold;">
+              Verify with Google
+            </button>
+            
+            <button id="cancel-merge-btn" class="cancel-merge-btn" style="background:transparent; color:#fff; padding:0.8rem; border:none; cursor:pointer; margin-top:0.8rem; width:100%; font-family: inherit; font-size: 0.9rem;">
+              Cancel
+            </button>
+          </div>
+        `;
+        document.body.appendChild(mergeDiv);
+
+        if (typeof initHoverScale === 'function') initHoverScale(['merge-google-btn', 'cancel-merge-btn'], 'js-hover-scale');
+        if (typeof initPressScale === 'function') initPressScale(['merge-google-btn', 'cancel-merge-btn'], 'js-press-scale');
+
+        // Handle Google Verification Click
+        document.getElementById('merge-google-btn')?.addEventListener('click', async () => {
+          const btn = document.getElementById('merge-google-btn');
+          if (btn) btn.innerText = "Verifying...";
+          
+          try {
+            const verifyResult = await signInWithPopup(auth, googleProvider);
+            await linkWithCredential(verifyResult.user, pendingCred);
+            
+            document.body.removeChild(mergeDiv);
+            if (typeof hideLoginModal === 'function') hideLoginModal();
+            
+            if (typeof window.resolvePendingAction === 'function') {
+              window.resolvePendingAction();
+            }
+          } catch (mergeError) {
+            console.error("Merge error:", mergeError);
+            if (mergeError.code !== 'auth/popup-closed-by-user') {
+              alert("Account linking failed: " + mergeError.message);
+            }
+            if (btn) btn.innerText = "Verify with Google";
+          }
+        });
+
+        // Handle Cancel
+        document.getElementById('cancel-merge-btn')?.addEventListener('click', () => {
+          document.body.removeChild(mergeDiv);
+        });
+
+      } else {
+        alert("Could not extract linking data. Please log in with your original method.");
+      }
+    } else if (error.code !== 'auth/popup-closed-by-user') {
+      alert("Login failed: " + error.message);
+    }
+  } finally {
+    isAuthenticating = false;
+  }
+}
+
+// ── ATTACH EVENT LISTENERS ──
+if (typeof googleLoginBtn !== 'undefined' && googleLoginBtn) {
+  googleLoginBtn.addEventListener('click', () => handleLogin(googleProvider));
+}
+if (typeof microsoftLoginBtn !== 'undefined' && microsoftLoginBtn) {
+  microsoftLoginBtn.addEventListener('click', () => handleLogin(microsoftProvider));
+}
+
+// ── CREATE PROFILE (First-time users) ──
+function showCreateProfile() {
+  const createProfileEl = document.getElementById('create-profile') || document.querySelector('.create-profile');
+  if (createProfileEl) {
+    createProfileEl.style.display = 'flex';
+    createProfileEl.style.opacity = '0';
+    createProfileEl.style.transition = 'opacity 250ms ease-out';
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        createProfileEl.style.opacity = '1';
+
+        setTimeout(() => {
+          try {
+            if (typeof createUsernameInput !== 'undefined' && createUsernameInput) {
+              createUsernameInput.blur();
+            }
+          } catch (err) { /* non-fatal */ }
+        }, 0);
+
+      });
+    });
+  }
+}
+
+function hideCreateProfile() {
+  const createProfileEl = document.getElementById('create-profile') || document.querySelector('.create-profile');
+  if (createProfileEl) {
+    createProfileEl.style.transition = 'opacity 250ms ease-out';
+    createProfileEl.style.opacity = '0';
+    
+    setTimeout(() => {
+      if (createProfileEl.style.opacity === '0') {
+        createProfileEl.style.display = 'none';
+
+        window.selectedOnboardingAvatar = null;
+        const defaultAvatar = "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a43d799e6705e122388ffdc_ppic0.svg";
+        // 🔧 scoped to the modal only — not the whole page
+        const modalAvatars = createProfileEl.querySelectorAll('.current-profile-pic');
+        modalAvatars.forEach(img => img.src = defaultAvatar);
+
+       // Återställ fältet till placeholder för nästa användare
+        if (typeof createUsernameInput !== 'undefined' && createUsernameInput) {
+            createUsernameInput.textContent = createDefaultPlaceholder;
+            createUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
+        }
+        if (typeof createProfileSubmitBtn !== 'undefined' && createProfileSubmitBtn) {
+            createProfileSubmitBtn.classList.remove('is-active');
+            createProfileSubmitBtn.style.pointerEvents = 'none';
+        }
+        if (typeof errorMsgEl !== 'undefined' && errorMsgEl) {
+            errorMsgEl.style.display = 'none';
+            errorMsgEl.innerHTML = "";
+        }
+      }
+    }, 250);
+  }
+}
+ 
+// Görs tillgänglig globalt så att create-profile-flödets "klar/spara"-knapp
+// (var den nu ligger) kan anropa hideCreateProfile() + resolvePendingAction()
+// när användaren är klar med sin profil.
+window.hideCreateProfile = hideCreateProfile;
+window.resolvePendingAction = resolvePendingAction;
+
+// ==========================================
+// ── 2. CREATE PROFILE LOGIC ──
+// ==========================================
+const createProfileSubmitBtn = document.getElementById('cp-create-btn'); 
+const createUsernameInput = document.getElementById('cp-username-input'); 
+const errorMsgEl = document.getElementById('cp-error-msg');
+const createDefaultPlaceholder = "Mr Smart";
+// Make sure the create input is focusable (fallback if Webflow didn't add tabindex)
+if (typeof createUsernameInput !== 'undefined' && createUsernameInput && !createUsernameInput.hasAttribute('tabindex')) {
+  createUsernameInput.setAttribute('tabindex', '0');
+}
+
+// Ensure single-tap focus on mobile/desktop: only focus when the user actually taps/clicks.
+// We add touchstart and mousedown handlers which call the same focus helper used elsewhere.
+if (typeof createUsernameInput !== 'undefined' && createUsernameInput) {
+  const cpUserFirstInteraction = (e) => {
+    // If already focused, do nothing
+    if (document.activeElement === createUsernameInput) return;
+    // Focus and place caret at end (also clears placeholder if matches)
+    focusContentEditableAtEnd(createUsernameInput);
+    // Let the browser continue; do NOT preventDefault here — we want normal input behavior afterwards.
+  };
+
+  // touchstart ensures immediate focus on mobile; mousedown helps desktop first-click cases.
+  createUsernameInput.addEventListener('touchstart', cpUserFirstInteraction, { passive: true });
+  createUsernameInput.addEventListener('mousedown', cpUserFirstInteraction);
+  // as a fallback, ensure click also focuses if nothing else did
+  createUsernameInput.addEventListener('click', (e) => {
+    if (document.activeElement !== createUsernameInput) focusContentEditableAtEnd(createUsernameInput);
+  });
+}
+
+
+if (createProfileSubmitBtn && createUsernameInput) {
+  
+  // 1. Koppla fältet till vår nya gemensamma funktion
+  setupUsernameInput(createUsernameInput, createProfileSubmitBtn, createDefaultPlaceholder);
+
+// 2. Klick på Create
+// ── GATE for waiting on profile completion ──
+
+// ── UPDATE THE CREATE PROFILE SUBMIT HANDLER ──
+createProfileSubmitBtn.addEventListener('click', async (e) => {
+  e.preventDefault();
+  
+  if (errorMsgEl) {
+    errorMsgEl.style.display = 'none';
+    errorMsgEl.innerHTML = "";
+  }
+  let errors = [];
+
+    // NEW: Safety check - ensure user is authenticated
+    if (!currentUser || !currentUser.uid) {
+        console.error("❌ User not authenticated!");
+        if (errorMsgEl) {
+            errorMsgEl.innerHTML = "■ Authentication error. Please log in again.";
+            errorMsgEl.style.display = 'block';
+        }
+        return;
+    }
+
+    // -- PROFILBILDS-KOLL --
+    const currentAvatarSrc = document.querySelector('.current-profile-pic')?.src || "";
+    const defaultAvatarUrl = "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a43d799e6705e122388ffdc_ppic0.svg";
+    if (currentAvatarSrc.includes("ppic0.svg") || currentAvatarSrc === defaultAvatarUrl || currentAvatarSrc === "") {
+        errors.push("Please select a profile picture");
+    }
+
+    let rawName = (createUsernameInput.textContent || "").replace(/\u00A0/g, ' ').trim();
+    if (rawName === createDefaultPlaceholder) rawName = "";
+    
+    // -- KÖR DELAD VALIDERING --
+    errors = errors.concat(validateUsernameRules(rawName));
+
+    // -- VISA FELMEDDELANDEN (client-side instant feedback) --
+    if (errors.length > 0) {
+       if (errorMsgEl) {
+         errorMsgEl.innerHTML = "■ " + errors.join("<br>■ ");
+         errorMsgEl.style.display = 'block';
+       }
+       return; 
+    }
+
+    // -- ALLT GODKÄNT - SPARA (server-side via Cloud Function) --
+try {
+  createProfileSubmitBtn.textContent = "Saving...";
+  createProfileSubmitBtn.style.pointerEvents = 'none';
+
+  console.log("DEBUG: About to call completeProfileFn with:", { username: rawName, profilePicUrl: currentAvatarSrc });
+  const result = await completeProfileFn({
+    username: rawName,
+    profilePicUrl: currentAvatarSrc
+  });
+  console.log("DEBUG: completeProfileFn returned:", result);
+
+    // After Cloud Function returns successfully
+console.log("Cloud function succeeded. Waiting for Firestore sync...");
+
+// Force a Firestore read to ensure data is there
+const freshUserDoc = await getDoc(doc(db, "users", currentUser.uid));
+console.log("Fresh user doc exists:", freshUserDoc.exists());
+
+if (typeof loadUserData === 'function' && currentUser) {
+  await loadUserData(currentUser.uid);
+}
+
+    // Update UI after profile is confirmed complete
+    if (typeof loadUserData === 'function' && currentUser) {
+      await loadUserData(currentUser.uid);
+    }
+
+  createProfileSubmitBtn.textContent = "Create";
+  createProfileSubmitBtn.style.pointerEvents = 'auto';
+  
+  const savedName = result.data.username;
+  const uiNameElements = document.querySelectorAll('.player-info.username');
+  uiNameElements.forEach(el => el.textContent = savedName);
+  if (typeof userDisplayName !== 'undefined' && userDisplayName) userDisplayName.textContent = savedName;
+  
+/*   // Save avatar to Firestore BEFORE closing the modal
+  if (typeof saveUserAvatar === 'function') {
+    const currentAvatarSrc = document.querySelector('.current-profile-pic')?.src || "";
+    await saveUserAvatar(currentAvatarSrc);
+    console.log("Avatar saved to Firestore, waiting before reload...");
+  }
+  
+ // NOW load fresh data from Firestore
+  if (typeof loadUserData === 'function' && currentUser) {
+    await loadUserData(currentUser.uid);
+    console.log("User data reloaded after avatar save");
+  } */
+
+  if (typeof hideCreateProfile === 'function') hideCreateProfile();
+  // ✅ NOW safe to resolve — profile definitely exists in Firestore
+  if (typeof resolvePendingAction === 'function') resolvePendingAction();
+    
+    } catch (error) {
+      console.error("Gick inte att spara profilen:", error.message);
+      if (errorMsgEl) {
+         errorMsgEl.innerHTML = "■ " + (error.message || "Database error. Please try again.");
+         errorMsgEl.style.display = 'block';
+      }
+      createProfileSubmitBtn.textContent = "Create";
+      createProfileSubmitBtn.style.pointerEvents = 'auto';
+    }
+  });
+}
+
+// ==========================================
+// ── 3. CHANGE USERNAME LOGIC ──
+// ==========================================
+const changeProfileSubmitBtn = document.getElementById('cp-change-btn'); 
+const changeUsernameInput = document.getElementById('change-username-input'); 
+// Ensure changeUsernameInput exists and is focusable if needed
+if (changeUsernameInput) {
+  if (!changeUsernameInput.hasAttribute('tabindex')) {
+    changeUsernameInput.setAttribute('tabindex', '0');
+  }
+
+  const chUserFirstInteraction = (e) => {
+    // If the field is locked (contenteditable false) or explicitly flagged as locked, do nothing.
+    if (changeUsernameInput.getAttribute('contenteditable') === 'false' || changeUsernameInput.dataset.locked === 'true') return;
+    // If already focused, nothing to do
+    if (document.activeElement === changeUsernameInput) return;
+    // Otherwise focus & place caret
+    focusContentEditableAtEnd(changeUsernameInput);
+  };
+
+  changeUsernameInput.addEventListener('touchstart', chUserFirstInteraction, { passive: true });
+  changeUsernameInput.addEventListener('mousedown', chUserFirstInteraction);
+  changeUsernameInput.addEventListener('click', (e) => {
+    if (changeUsernameInput.getAttribute('contenteditable') === 'false' || changeUsernameInput.dataset.locked === 'true') return;
+    if (document.activeElement !== changeUsernameInput) focusContentEditableAtEnd(changeUsernameInput);
+  });
+}
+
+const changeErrorMsgEl = document.getElementById('cp-error-msg-change');
+const changeInfoText = document.getElementById('cp-change-info'); 
+const changeDefaultPlaceholder = "New username";
+
+function lockOutNameChangeUI() {
+    if (changeUsernameInput) {
+        // Make non-editable and non-interactive
+        changeUsernameInput.setAttribute('contenteditable', 'false');
+        changeUsernameInput.style.pointerEvents = 'none';
+        changeUsernameInput.textContent = changeDefaultPlaceholder;
+        changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
+
+        // Ensure it cannot be focused (remove tabindex), blur if focused,
+        // and mark it so handlers can quickly short-circuit.
+        try {
+          changeUsernameInput.blur();
+        } catch (err) { /* ignore */ }
+        changeUsernameInput.removeAttribute('tabindex');
+        changeUsernameInput.dataset.locked = 'true';
+    }
+    if (changeInfoText) {
+        changeInfoText.textContent = "Username already changed once, sorry!";
+    }
+    if (changeProfileSubmitBtn) {
+        changeProfileSubmitBtn.textContent = "Change";
+        changeProfileSubmitBtn.classList.remove('is-active');
+        changeProfileSubmitBtn.style.pointerEvents = 'none';
+    }
+}
+
+if (changeProfileSubmitBtn && changeUsernameInput) {
+  
+  // 1. Koppla fältet till vår nya gemensamma funktion (samma som för Create!)
+  setupUsernameInput(changeUsernameInput, changeProfileSubmitBtn, changeDefaultPlaceholder);
+
+  // 2. Klick på Change
+  changeProfileSubmitBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    
+    if (changeErrorMsgEl) {
+        changeErrorMsgEl.style.display = 'none';
+        changeErrorMsgEl.innerHTML = "";
+    }
+
+    let rawName = (changeUsernameInput.textContent || "").replace(/\u00A0/g, ' ').trim();
+    if (rawName === changeDefaultPlaceholder) rawName = "";
+    
+    // -- KÖR DELAD VALIDERING (client-side instant feedback) --
+    let errors = validateUsernameRules(rawName);
+
+    // -- VISA FELMEDDELANDEN --
+    if (errors.length > 0) {
+       if (changeErrorMsgEl) {
+         changeErrorMsgEl.innerHTML = "■ " + errors.join("<br>■ ");
+         changeErrorMsgEl.style.display = 'block';
+       }
+       return; 
+    }
+
+    // -- ALLT GODKÄNT - SPARA (server-side via Cloud Function) --
+    try {
+      changeProfileSubmitBtn.textContent = "Saving...";
+      changeProfileSubmitBtn.style.pointerEvents = 'none';
+
+      const result = await changeUsernameFn({ username: rawName });
+
+      lockOutNameChangeUI();
+
+      setTimeout(() => {
+        const changeModal = document.querySelector('.change-username');
+        if (changeModal) {
+            changeModal.style.transition = 'opacity 200ms ease';
+            changeModal.style.opacity = '0';
+            setTimeout(() => {
+                changeModal.style.display = 'none';
+            }, 200);
+        }
+        const savedName = result.data.username;
+        const uiNameElements = document.querySelectorAll('.player-info.username');
+        uiNameElements.forEach(el => el.textContent = savedName);
+        if (typeof userDisplayName !== 'undefined' && userDisplayName) userDisplayName.textContent = savedName;
+      }, 1000);
+
+    } catch (error) {
+      console.error("Gick inte att spara nya namnet:", error.message);
+      if (changeErrorMsgEl) {
+         changeErrorMsgEl.innerHTML = "■ " + (error.message || "Database error. Please try again.");
+         changeErrorMsgEl.style.display = 'block';
+      }
+      changeProfileSubmitBtn.textContent = "Change";
+      changeProfileSubmitBtn.style.pointerEvents = 'auto';
+    }
+  });
+}
+
+// ── LÖS DET SOM ANVÄNDAREN FÖRSÖKTE GÖRA INNAN INLOGGNING KRÄVDES ──
+function resolvePendingAction() {
+  console.log("resolvePendingAction() utlöst. Aktiv handling:", pendingAction);
+  if (!pendingAction) {
+    console.log("Ingen handling låg i kö.");
+    return;
+  }
+
+  if (pendingAction === 'INVENTORY') { 
+    const overlay = document.querySelector('.inventory-overlay');
+    console.log("Försöker öppna inventory-overlay:", overlay);
+    if (overlay && !window.lobbyInvOpen) {
+      openLobbyInventory(overlay);
+    }
+  } else {
+    // pendingAction är en URL (spel-länk)
+    console.log("Navigerar vidare till spel-länk:", pendingAction);
+
+    // Klistra in detta: Sätt rätt navFrom i sessionStorage så Route Guarden godkänner spelet direkt
+    const gameMatch = pendingAction.match(/([a-z]+)-game-\d+/);
+    if (gameMatch) {
+      const theme = gameMatch[1];
+      sessionStorage.setItem('navFrom', `${theme}-start`);
+    }
+
+    if (typeof window.triggerPageExit === 'function') {
+      window.triggerPageExit(pendingAction, false);
+    } else {
+      window.location.href = pendingAction;
+    }
+  }
+
+  pendingAction = null;
+}
+
+// Robust close for the profile-pic dropdown / pp-grid-wrapper (Silent Version)
+function hidePPDropdown() {
+  try {
+    if (window.__ppDropdownClosing) return;
+    window.__ppDropdownClosing = true;
+
+    const openGrid = Array.from(document.querySelectorAll('.pp-grid-wrapper')).find(el => {
+      const style = window.getComputedStyle(el);
+      const rect = el.getBoundingClientRect();
+      return style.display !== 'none' && (rect.width > 0 || rect.height > 0);
+    });
+
+    const dropdown = openGrid ? openGrid.closest('.pp-dropdown') : document.querySelector('.pp-dropdown');
+
+    if (dropdown && dropdown.dataset.ppClosing === 'true') {
+      setTimeout(() => { window.__ppDropdownClosing = false; }, 300);
+      return;
+    }
+    if (dropdown) dropdown.dataset.ppClosing = 'true';
+
+    const clearGuards = () => {
+      window.__ppDropdownClosing = false;
+      if (dropdown) delete dropdown.dataset.ppClosing;
+    };
+
+    if (openGrid) {
+      const onEnd = (e) => {
+        openGrid.removeEventListener('transitionend', onEnd);
+        clearGuards();
+      };
+      openGrid.addEventListener('transitionend', onEnd, { once: true });
+      setTimeout(clearGuards, 900);
+    } else {
+      setTimeout(clearGuards, 300);
+    }
+
+    // 1) Try native closer click
+    if (openGrid && dropdown) {
+      const closer = dropdown.querySelector('.pp-dropdown-closer');
+      if (closer && window.getComputedStyle(closer).display !== 'none') {
+        closer.click();
+        return;
+      }
+    }
+
+    // 2) Try Webflow ix3 custom event
+    try {
+      if (window.Webflow && typeof Webflow.require === 'function') {
+        const wfx = Webflow.require('ix3');
+        if (wfx && typeof wfx.emit === 'function') {
+          wfx.emit('pp-dropdown-hide');
+          return;
+        }
+      }
+    } catch (err) {}
+
+    // 3) Last-resort fallback
+    const anyGrid = document.querySelector('.pp-grid-wrapper');
+    if (anyGrid) {
+      anyGrid.style.display = 'none';
+    }
+  } catch (err) {
+    window.__ppDropdownClosing = false;
+    try { 
+      const dropdown = document.querySelector('.pp-dropdown'); 
+      if (dropdown) delete dropdown.dataset.ppClosing; 
+    } catch(e){}
+  }
+}
+
+// ── STATE TRACKERS ──
+  window.lobbyInvOpen = false; 
+  window.isGameInvAnimating = false;
+
+  // ── BARA FÖR LOBBYN: Animationer ──
+  function openLobbyInventory(overlay) {
+    // Close any open profile-pic dropdowns first, so inventory opens in a clean state
+    hidePPDropdown();
+      window.lobbyInvOpen = true;
+      overlay.style.transition = 'none';
+      overlay.style.opacity = '0';
+      overlay.style.display = 'flex';
+      requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+              overlay.style.transition = 'opacity 160ms ease-out';
+              overlay.style.opacity = '1';
+          });
+      });
+  }
+ function closeLobbyInventory(overlay) {
+  window.lobbyInvOpen = false;
+  overlay.style.transition = 'opacity 160ms ease-out';
+  overlay.style.opacity = '0';
+  setTimeout(() => {
+      if (!window.lobbyInvOpen) overlay.style.display = 'none';
+  }, 200);
+}
+// ── TANGENTBORDS-LYSSNARE (I, TAB, ESC) ──
+document.addEventListener('keydown', (e) => {
+  if (e.repeat) return; // Stoppar buggar om man håller inne knappen
+  const key = (e.key || '').toLowerCase();
+
+  // --- 1) PP-GRID-WRAPPER PRIORITY: ESC should close any open pp-grid-wrapper first ---
+  if (key === 'escape') {
+    const openGrid = Array.from(document.querySelectorAll('.pp-grid-wrapper')).find(el => {
+      const style = window.getComputedStyle(el);
+      const rect = el.getBoundingClientRect();
+      return style.display !== 'none' && (rect.width > 0 || rect.height > 0);
+    });
+    if (openGrid) {
+      e.preventDefault();
+      e.stopPropagation();
+      hidePPDropdown();
+      return; // stop further handling — pp-grid-wrapper closed
+    }
+  }
+  // Allow ESC to operate even if user is typing
+  if (key !== 'escape' && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+  // --- BRILJANT SPÄRR: Kolla om någon modal/overlay ligger i vägen ---
+  const blockingSelectors = [
+    '.login-modal-wrapper',
+    '.create-profile',
+    '.change-username',
+    '.intro-overlay-grp'
+  ];
+  let visibleModal = null;
+  for (let selector of blockingSelectors) {
+    const el = document.querySelector(selector);
+    if (el && window.getComputedStyle(el).display !== 'none') {
+      visibleModal = el;
+      break;
+    }
+  }
+  if (visibleModal) {
+    if (key === 'escape' && visibleModal.classList.contains('change-username')) {
+      visibleModal.click();
+    }
+    if (key === 'escape' && visibleModal.classList.contains('login-modal-wrapper')) {
+      hideLoginModal();
+    }
+    return;
+  }
+  const isGameSide = document.body.dataset.page === 'game';
+
+  if (isGameSide) {
+    if (key === 'i' || key === 'tab' || key === 'escape') {
+      const arrowBtn = document.querySelector('.i-btn-arrow');
+      const crossBtn = document.querySelector('.i-btn-cross');
+
+      if (!arrowBtn || !crossBtn) return;
+      if (window.isGameInvAnimating) return;
+
+      const isOpen = window.getComputedStyle(crossBtn).display !== 'none';
+      const triggerClick = (btn) => {
+        window.isGameInvAnimating = true;
+        btn.click();
+        setTimeout(() => { window.isGameInvAnimating = false; }, 150);
+      };
+      if (key === 'escape') {
+        if (isOpen) {
+          e.preventDefault();
+          e.stopPropagation();
+          triggerClick(crossBtn);
+        }
+        return;
+      } else if (key === 'i' || key === 'tab') {
+        e.preventDefault();
+        if (isOpen) triggerClick(crossBtn);
+        else triggerClick(arrowBtn);
+      }
+    }
+    return;
+  } else {
+   if (key === 'i' || key === 'tab') {
+  e.preventDefault();
+
+  if (!currentUser) {
+    pendingAction = 'INVENTORY';
+    showLoginModal();
+    return;
+  }
+  const overlay = document.querySelector('.inventory-overlay');
+
+  // Close pp-dropdown first, then toggle inventory after a short delay
+  hidePPDropdown();
+  setTimeout(() => {
+    if (window.lobbyInvOpen) {
+      if (overlay) closeLobbyInventory(overlay);
+    } else {
+      if (overlay) openLobbyInventory(overlay);
+    }
+  }, 40);
+}
+
+    if (key === 'escape') {
+      if (window.lobbyInvOpen) {
+        e.preventDefault();
+        const overlay = document.querySelector('.inventory-overlay');
+        if (overlay) closeLobbyInventory(overlay);
+      }
+    }
+  }
+}, true);
+
+// ── GOOGLE LOGIN ──
+if (googleLoginBtn) {
+  googleLoginBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (isAuthenticating) return; // Skydd mot dubbla samtidiga inloggningsförsök
+    isAuthenticating = true;
+    
+    try {
+      console.log("Initierar Google Sign-In Popup...");
+      const result = await signInWithPopup(auth, googleProvider);
+      currentUser = result.user; 
+      console.log("Inloggning lyckades för:", currentUser.displayName);
+      
+      hideLoginModal(); 
+
+      // 🛑 DELETED the manual Firestore check and if/else block here!
+      // onAuthStateChanged will instantly detect the login and perfectly route 
+      // the user to showCreateProfile() OR resolvePendingAction().
+
+    } catch (error) {
+      console.error("Inloggning avbruten eller misslyckades helt:", error.message);
+    } finally {
+      isAuthenticating = false; 
+    }
+  });
+}
+
+  // ── GLOBAL KLICKLYSSNARE ──
+  document.addEventListener('click', async (e) => {
+    const isGameSide = document.body.dataset.page === 'game';
+   
+    // -- ÖPPNA CHANGE USERNAME MODAL --
+    const usernameLabel = e.target.closest('.player-info.username');
+    if (usernameLabel) {
+        const changeModal = document.querySelector('.change-username');
+        if (changeModal) {
+            changeModal.style.display = 'flex';
+            changeModal.style.opacity = '0';
+            // Liten delay så display:flex hinner registreras innan opacity animeras
+            setTimeout(() => {
+              changeModal.style.transition = 'opacity 200ms ease';
+              changeModal.style.opacity = '1';
+          }, 10);
+        }
+        return;
+    }
+
+    // -- STÄNG CHANGE USERNAME MODAL (Klick på bakgrunden) --
+    const changeModalTarget = e.target.closest('.change-username');
+    if (changeModalTarget && e.target === changeModalTarget) {
+        changeModalTarget.style.transition = 'opacity 200ms ease';
+        changeModalTarget.style.opacity = '0';
+        setTimeout(() => {
+            changeModalTarget.style.display = 'none';
+            
+            // POINT 1: Återställ fältet när modalen stängs (om de inte är permanent låsta)
+            if (changeUsernameInput && changeUsernameInput.getAttribute('contenteditable') !== 'false') {
+                changeUsernameInput.textContent = changeDefaultPlaceholder;
+                changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
+                
+                if (changeProfileSubmitBtn) {
+                    changeProfileSubmitBtn.classList.remove('is-active');
+                    changeProfileSubmitBtn.style.pointerEvents = 'none';
+                }
+                if (changeErrorMsgEl) {
+                    changeErrorMsgEl.style.display = 'none';
+                    changeErrorMsgEl.innerHTML = "";
+                }
+            }
+        }, 200);
+        return;
+    }
+        // 1. LOGGA UT
+    const logoutBtn = e.target.closest('#logout-btn, .logout-btn');
+    if (logoutBtn) {
+      e.preventDefault();
+      try {
+        await signOut(auth);
+      } catch (error) {
+        console.error("Fel vid utloggning:", error);
+      }
+      return; 
+    }
+
+// 3. BYT PROFILBILD (Uppdaterad för att vara kraschsäker)
+const option = e.target.closest('.profile-pic-option');
+if (option && !isGameSide) {
+  const selectedSrc = option.src;
+  const currentAvatars = document.querySelectorAll('.current-profile-pic');
+
+  if (window.__syntheticClickRunning) {
+    console.log('pp-option: ignoring click because synthetic click is running');
+    return;
+  }
+  if (event && (event._synthetic || event.isTrusted === false)) {
+    console.log('pp-option: ignoring synthetic/untrusted event', event);
+    return;
+  }
+
+  if (selectedSrc && currentAvatars.length > 0) {
+    // Uppdatera ALLA profilbilder i UI direkt (Lobby, dropdown, etc.)
+    currentAvatars.forEach(img => img.src = selectedSrc);
+
+    // --- KRASCHSÄKER KONTROLL ---
+    // BYT UT '.put-your-real-class-here' MOT KLASSEN PÅ DIN SKAPA PROFIL-MODAL
+    const profileModal = document.querySelector('.create-profile');
+    
+    // Om modalen finns OCH den är synlig, är det en ny användare. Annars false.
+    const isNewUser = profileModal ? getComputedStyle(profileModal).display !== 'none' : false;
+    
+    if (!isNewUser) {
+      // User is fully registered, safe to update DB directly
+      saveUserAvatar(selectedSrc).catch(err => console.error("Unable to save avatar:", err));
+    } else {
+      // User is in onboarding. Save it to a global variable so your completeProfile function can use it.
+      window.selectedOnboardingAvatar = selectedSrc;
+      console.log("Avatar selected for new profile, waiting for form submit...");
+    }
+
+    // Close the pp-dropdown if still open
+    if (typeof hidePPDropdown === 'function') hidePPDropdown();
+  }
+
+  // Stop further click handling for this event
+  return;
+}
+
+    // 4. GATEKEEPER FÖR SPEL-LÄNKAR
+    // OBS: .games-link-block är nu undantagen i global-scripts.js:s egna
+    // länk/transition-hanterare, så ALL navigation för dessa länkar sköts härifrån.
+    const gameBtn = e.target.closest('.games-link-block');
+    if (gameBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (!currentUser) {
+        pendingAction = gameBtn.href;
+        showLoginModal();
+      } else {
+        if (typeof window.triggerPageExit === 'function') {
+          window.triggerPageExit(gameBtn.href, false);
+        } else {
+          window.location.href = gameBtn.href;
+        }
+      }
+      return;
+    }
+
+    // 5. GATEKEEPER & ÖPPNA FÖR LOBBY INVENTORY
+    const invBtn = e.target.closest('#lobby-inventory-btn');
+    if (invBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      if (!currentUser) {
+        pendingAction = 'INVENTORY';
+        showLoginModal();
+      } else {
+        const overlay = document.querySelector('.inventory-overlay');
+        if (overlay && !window.lobbyInvOpen) {
+            openLobbyInventory(overlay);
+        }
+      }
+      return;
+    }
+
+    // 5b. STÄNG-KNAPP FÖR LOBBY INVENTORY
+    const closeBtn = e.target.closest('#i-lobby-back');
+    if (closeBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const overlay = document.querySelector('.inventory-overlay');
+      if (overlay && window.lobbyInvOpen) {
+          closeLobbyInventory(overlay);
+      }
+      return;
+    }
+  }); 
+
+// HÄMTA DATA (BILD + STATS)
+async function loadUserData(uid) {
+   const currentAvatars = document.querySelectorAll('.current-profile-pic');
+   const defaultAvatar = "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a43d799e6705e122388ffdc_ppic0.svg";
+   
+   // 🆕 Paint instantly from cache, before the network call even starts
+  const cached = localStorage.getItem('cachedAvatar_' + uid);
+  if (cached && currentAvatars.length > 0) {
+    currentAvatars.forEach(img => img.src = cached);
+  }
+
+   try {
+    const userDocRef = doc(db, "users", uid);
+    const userDoc = await getDoc(userDocRef);
+    if (userDoc.exists()) {
+      const data = userDoc.data();
+      if (currentAvatars.length > 0) {
+        const finalSrc = data.profilePicUrl || defaultAvatar;
+        currentAvatars.forEach(img => img.src = finalSrc);
+        if (data.profilePicUrl) localStorage.setItem('cachedAvatar_' + uid, data.profilePicUrl); // keep cache fresh
+        }
+       
+       // Uppdatera resten av UI med sparad data
+       if (userLevelEl) userLevelEl.textContent = "Level " + (data.level || 1);
+       if (levelBarEl) levelBarEl.style.width = ((data.levelProgress || 0) * 100) + "%";
+       if (userScoreEl) userScoreEl.textContent = fmtNum(data.totalScore || 0);
+       if (userRankEl) userRankEl.textContent = fmtNum(data.rank || 0);
+       if (userDisplayName) userDisplayName.textContent = data.username || "Player";
+       // NYTT: Tvinga ut namnet till alla UI-element när sidan laddas
+        const uiNameElements = document.querySelectorAll('.player-info.username');
+        uiNameElements.forEach(el => {
+            el.textContent = data.username || "Player";
+        });
+       
+
+       // NYTT: Kolla om användaren redan bytt namn en gång
+       if (data.hasChangedUsername) {
+           lockOutNameChangeUI(); // Låser UI:t (funktionen skapar vi längre ner)
+       }
+
+    } else {
+      // 2. HELT NY SPELARE
+      if (currentAvatars.length > 0) {
+      currentAvatars.forEach(img => img.src = defaultAvatar);
+      }
+      
+      if (userLevelEl) userLevelEl.textContent = "Level 1";
+      if (levelBarEl) levelBarEl.style.width = "0%";
+      if (userScoreEl) userScoreEl.textContent = "0";
+      if (userRankEl) userRankEl.textContent = "0";
+      
+      if (userDisplayName) userDisplayName.textContent = "New Player";
+      
+      console.log("Ny användare detekterad. Vänter på profilskapare...");
+    }
+   } catch (error) {
+     console.error("Failed to load user data:", error);
+   }
+}
+
+// SAVE PROFILE PICTURE
+  async function saveUserAvatar(avatarUrl) {
+    
+  if (!currentUser) return;
+  try {
+    const userDocRef = doc(db, "users", currentUser.uid);
+    await setDoc(userDocRef, { profilePicUrl: avatarUrl, updatedAt: new Date() }, { merge: true });
+    localStorage.setItem('cachedAvatar_' + currentUser.uid, avatarUrl); // 🆕
+    console.log("Profile picture successfully saved!");
+  } catch (error) {
+    console.error("Failed to save profile picture to database:", error);
+  }
+}
+window.saveUserAvatar = saveUserAvatar;  // remove later
+
+// ── GLOBAL STATE FOR UI SCRIPTS ──
+window.currentUserData = null; // <-- ADDED 1: Initialize global variable
+
+// ── FIREBASE AUTH OBSERVER ── & ── INCOMPLETE ACCOUNT RECOVERY ──
+// ── UPDATE onAuthStateChanged to RESOLVE when profile is complete ──
+  onAuthStateChanged(auth, async (user) => {
+  currentUser = user;
+  updateAuthUI(user);
+
+  // 1. LOGGED OUT STATE
+  if (!user) {
+    window.currentUserData = null;
+    updateTierLocks(1); // <-- Resets lock icons to default (locked) for guests
+    routeGuard(false);
+    return;
+  }
+
+  try {
+    const userDocRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
+
+    if (!userDoc.exists()) {
+      console.log("🔴 NEW USER - Showing create profile");
+      hideLoginModal();
+      showCreateProfile();
+      updateTierLocks(1); // New user has no doc yet -> fallback to level 1
+      routeGuard(false);
+      return;
+    }
+
+    const userData = userDoc.data();
+    window.currentUserData = userData;
+
+    // 2. LOGGED IN STATE - Unlock tiers based on actual level from Firestore
+    updateTierLocks(userData?.level || 1); // <-- PLACED HERE (after userData is loaded)
+
+    const hasUsername = userData.username && userData.username.trim() !== "";
+    const hasProfilePic = userData.profilePicUrl && userData.profilePicUrl !== "";
+
+    if (!hasUsername || !hasProfilePic) {
+      console.log("🟡 INCOMPLETE PROFILE - Forcing create profile");
+      hideLoginModal();
+      showCreateProfile();
+      routeGuard(false);
+      return;
+    }
+
+    // ✅ User is complete!
+    hideLoginModal();
+    loadUserData(user.uid);
+    routeGuard(true);
+    
+    // ✅ RESOLVE the pending action gate if waiting
+    if (profileCompleteResolver) {
+      profileCompleteResolver();
+      profileCompleteResolver = null;
+    }
+
+    // Existing user: safe to resolve their pending action immediately
+    if (typeof window.resolvePendingAction === 'function') {
+      window.resolvePendingAction();
+    }
+    
+  } catch (err) {
+    console.warn("Firestore error:", err.message || err);
+    showCreateProfile();
+    updateTierLocks(1);
+    routeGuard(false);
+  }
+});
+
+// ── ROUTE GUARD SYSTEM ──────────────────────────────────────────────
+let routeGuardHasRun = false;
+
+function routeGuard(isLoggedIn) {
+    if (routeGuardHasRun) return;
+
+    const PUBLIC_PAGES = ['lobby', 'terms', 'privacy'];
+    if (!isLoggedIn && !PUBLIC_PAGES.includes(currentSlug)) {
+        window.location.replace('/');
+        return;
+    }
+    if (!isLoggedIn) return;
+
+    routeGuardHasRun = true;
+
+    const cameFrom = sessionStorage.getItem('navFrom');
+    sessionStorage.removeItem('navFrom');
+    if (currentSlug === 'score') {
+    const authorized = sessionStorage.getItem('scoreAuthorized') === 'true';
+    sessionStorage.removeItem('scoreAuthorized');
+    if (!authorized && cameFrom !== 'score-review') {
+        window.location.replace('/');
+        return;
+    }
+}
+if (currentSlug === 'score-review' && cameFrom !== 'score') {
+        window.location.replace('/');
+        return;
+    }
+
+      if (currentSlug === 'quiz-game' || currentSlug === 'gma-game-1') {
+      const topic = sessionStorage.getItem('activeTopic');
+      if (!topic || cameFrom !== `${topic}-start`) {
+        window.location.replace(topic ? '/' + topic + '-start' : '/');
+        return;
+      }
+    }
+}
+
+// ==========================================
+// ── 1. SHARED COMPONENT FOR TEXT INPUT ──
+// ==========================================
+function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
+    if (!inputEl || !btnEl) return;
+    // store placeholder on element so focus helper can detect it reliably
+    inputEl.dataset.defaultPlaceholder = defaultPlaceholder;
+    // -- START-FEATURE --
+    if (inputEl.textContent.trim() === defaultPlaceholder || inputEl.textContent.trim() === "") {
+        inputEl.textContent = defaultPlaceholder;
+        inputEl.style.color = "rgba(255, 255, 255, 0.35)";
+    }
+    // -- FOCUS --
+    inputEl.addEventListener('focus', () => {
+        if (inputEl.textContent.trim() === defaultPlaceholder) {
+            inputEl.textContent = "";
+        }
+        inputEl.style.color = "rgba(255, 255, 255, 1)";
+    });
+    // -- BLUR --
+    inputEl.addEventListener('blur', () => {
+        inputEl.textContent = inputEl.textContent.trim();
+        if (inputEl.textContent === "") {
+            inputEl.textContent = defaultPlaceholder;
+            inputEl.style.color = "rgba(255, 255, 255, 0.35)";
+        }
+    });
+    // -- TANGENTTRYCK (Enter, Mellanslag, Max 14) --
+    inputEl.addEventListener('keydown', (e) => {
+        e.stopPropagation();
+        const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
+        const currentText = inputEl.textContent || "";
+        const selection = window.getSelection().toString(); 
+        
+        // ENTER: Hindra radbyte och klicka på fältets tillhörande knapp
+        if (e.key === 'Enter') { 
+            e.preventDefault(); 
+            const btnStyle = window.getComputedStyle(btnEl);    
+            if (btnStyle.pointerEvents !== 'none') {
+                btnEl.click(); 
+            }
+            return; 
+        }
+        // MELLANSLAG: Stoppa endast om det är det allra första tecknet. 
+        if (e.key === ' ' && currentText.length === 0) {
+            e.preventDefault(); 
+            return; 
+        }
+        
+        // MAX 14 TECKEN (Fysisk spärr, tillåter navigering/radering)
+        if (currentText.length >= 14 && selection.length === 0 && !allowedKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
+            e.preventDefault(); 
+        }
+    });
+    // -- KLISTRA IN (Tvätta bort radbrytningar) --
+    inputEl.addEventListener('paste', (e) => {
+        e.preventDefault();
+        let pasteText = (e.clipboardData || window.clipboardData).getData('text');
+        pasteText = pasteText.replace(/[\r\n]+/g, '');
+        document.execCommand('insertText', false, pasteText);
+    });
+    // -- VÄCK KNAPPEN NÄR MAN SKRIVER --
+    inputEl.addEventListener('input', () => {
+    let rawText = inputEl.textContent || "";
+
+    // Select/change username, clear input field
+    if (rawText !== defaultPlaceholder && rawText.includes(defaultPlaceholder)) {
+        const cleaned = rawText.split(defaultPlaceholder).join('');
+        inputEl.textContent = cleaned;
+        inputEl.style.color = "rgba(255, 255, 255, 1)";
+
+        try {
+            const range = document.createRange();
+            const sel = window.getSelection();
+            range.selectNodeContents(inputEl);
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
+        } catch (err) { /* non-fatal */ }
+
+        rawText = cleaned;
+    }
+
+    if (rawText.trim().length > 0 && rawText.trim() !== defaultPlaceholder) {
+        btnEl.classList.add('is-active');
+        btnEl.style.pointerEvents = 'auto';
+    } else {
+        btnEl.classList.remove('is-active');
+        btnEl.style.pointerEvents = 'none';
+    }
+  });
+}
+// helper: focus a contenteditable and place caret at end
+// Also clears a stored data-default-placeholder if the element currently contains it.
+function focusContentEditableAtEnd(el) {
+  if (!el) return;
+  try {
+    // Ensure element is focusable
+    if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
+
+    // If the element contains the stored placeholder text, clear it now
+    const storedPlaceholder = el.dataset.defaultPlaceholder;
+    if (storedPlaceholder && el.textContent.trim() === storedPlaceholder) {
+      el.textContent = "";
+      el.style.color = "rgba(255, 255, 255, 1)";
+    }
+
+    el.focus();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false); // caret at end
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  } catch (err) {
+    // non-fatal, fail silently
+    console.warn('focusContentEditableAtEnd error', err);
+  }
+}
+// -- DELAD VALIDERINGS-KOMPONENT --
+function validateUsernameRules(rawName) {
+    let errors = [];
+    const letterCount = (rawName.match(/[a-zA-ZåäöÅÄÖ]/g) || []).length;
+    if (rawName.length < 1 || letterCount < 1) {
+        errors.push("Minimum 1 letter");
+    }
+    if (rawName.length > 14) errors.push("Maximum 14 characters");
+    const spaceCount = (rawName.match(/ /g) || []).length;
+    if (spaceCount > 1) errors.push("Only one space allowed");
+    const invalidCharRegex = /[^a-zA-Z0-9åäöÅÄÖ\-_ ]/; 
+    if (rawName.length > 0 && invalidCharRegex.test(rawName)) {
+        errors.push("Ops, invalid character");
+    }
+    return errors;
+}
+
+// ────────────────────────────────────── GAME START ──────────────────────────────────────
+// ── GAME INFO PANEL ───
+let gameInfoLoadId = 0;
+window.loadGameInfo = async function(topic, level) {
+  window.applyGameConfig(topic, level); 
+  if (!currentUser) return;
+
+  const myLoad = ++gameInfoLoadId;
+  setGameInfoLoading(true);
+
+  const gameId = `${topic}-l${level}`;
+
+  let preAttempts = 0;
+  let highscore = 0;
+  let lbHighscore = 0;
+
+  // 1. Fetch User Stats
+  try {
+    const attemptRef = doc(db, "users", currentUser.uid, "attempts", gameId);
+    const attemptSnap = await getDoc(attemptRef);
+    if (attemptSnap.exists()) {
+      preAttempts = attemptSnap.data().attemptCount || 0;
+      highscore = attemptSnap.data().bestScore || 0;
+    }
+  } catch (err) {
+    console.error("Failed to load attempt data:", err.message);
+  }
+
+  // 2. Fetch Leaderboard Stats
+  try {
+    const result = await getGameInfoFn({ topic, level: parseInt(level, 10) });
+    lbHighscore = result.data.lbHighscore || 0;
+  } catch (err) {
+    console.error("Failed to load leaderboard highscore:", err.message);
+  }
+
+  // a newer tier was selected while we were waiting: drop this result
+  if (myLoad !== gameInfoLoadId) return;
+
+  // 3. Format numbers with fmtNum and update the DOM
+  const preAttemptsEl = document.getElementById('pre-attempts');
+  const highscoreEl = document.getElementById('highscore');
+  const lbHighscoreEl = document.getElementById('lb-highscore');
+
+  if (preAttemptsEl) preAttemptsEl.textContent = fmtNum(preAttempts);
+  if (highscoreEl) highscoreEl.textContent = fmtNum(highscore);
+  if (lbHighscoreEl) lbHighscoreEl.textContent = fmtNum(lbHighscore);
+  setGameInfoLoading(false);
+
+  // 4. Sync the top clone
+  if (typeof window.syncTopClone === 'function') {
+    window.syncTopClone();
+  }
+};
+
+// GMA start page is hardcoded in Webflow: only fill in the player's own numbers
+async function loadGmaPanel() {
+  try {
+    const snap = await getDoc(doc(db, "users", currentUser.uid, "attempts", "gma-l1"));
+    if (!snap.exists()) return;
+    const preAttemptsEl = document.getElementById('pre-attempts');
+    const highscoreEl = document.getElementById('highscore');
+    if (preAttemptsEl) preAttemptsEl.textContent = fmtNum(snap.data().attemptCount || 0);
+    if (highscoreEl) highscoreEl.textContent = fmtNum(snap.data().bestScore || 0);
+    if (typeof window.syncTopClone === 'function') window.syncTopClone();
+  } catch (err) {
+    console.error("Failed to load GMA stats:", err.message);
+  }
+}
+
+// ── Initial Page Load Trigger (Defaults to Level 1) ───
+(function initGameInfoPanel() {
+  const gameMatch = currentSlug.match(/^([a-z0-9-]+)-start$/i);
+  if (!gameMatch) return;
+  const topic = gameMatch[1];
+
+  const tryInitialLoad = () => {
+    if (!currentUser) {
+      setTimeout(tryInitialLoad, 200);
+      return;
+    }
+      window.resetGameInfoPanel();
+      if (topic === "gma") loadGmaPanel();
+    };
+  tryInitialLoad();
+})();
+
+
+// ───────────────── DYNAMIC GAME RATING SYSTEM (DIFF & BONUS LOTTIES) ──────────────────────────────
+const RATING_URLS = { // ── RATINGS DATA ─────────────────────────────────────
+  1: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3a01ff91c4daae84ea_1f8fa74613944f5a9ac25e2aac7b6051_game-rating-1.json",
+  2: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3aacb1ae9005246beb_a3cf25b733cc7e02dee51b452032b1e3_game-rating-2.json",
+  3: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3a01ff91c4daae84ef_134ebc6a9f4fd5ca311b1a4f5fe69112_game-rating-3.json",
+  4: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3a18793645ec4b0cf8_5baa664b38d30c21cff231395a48efd4_game-rating-4.json",
+  5: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3a729f5fafbcaa9390_2618b717e5ef44cc5a9868485966b1fd_game-rating-5.json",
+ };
+
+// 'topic-l LEVEL': { diff, bonus (1–5), questions, time }
+const GAME_CONFIG = {
+  // Science
+  "science-l1": { diff: 2, bonus: 2, questions: 10, time: "none" },
+  "science-l2": { diff: 3, bonus: 3, questions: 10, time: "none" },
+  "science-l3": { diff: 4, bonus: 3, questions: 10, time: "none" },
+  "science-l4": { diff: 5, bonus: 2, questions: 10, time: "none" },
+  // History
+  "history-l1": { diff: 1, bonus: 2, questions: 10, time: "none" },
+  "history-l2": { diff: 2, bonus: 3, questions: 10, time: "none" },
+  "history-l3": { diff: 3, bonus: 3, questions: 10, time: "none" },
+  "history-l4": { diff: 4, bonus: 4, questions: 10, time: "none" },
+  // ...movies, puzzle same pattern
+};
+
+const BONUS_DELAY_MS = 800;
+const ratingCache = {};
+const ratingTokens = new Map();
+let bonusTimer = null;
+let lottiePromise = null;
+
+function getLottieLib() {
+  const wf = window.Webflow?.require?.("lottie")?.lottie;
+  if (wf) return Promise.resolve(wf);
+  if (!lottiePromise) {
+    lottiePromise = new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = "https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js";
+      s.onload = () => resolve(window.lottie);
+      s.onerror = () => reject(new Error("lottie-web failed to load"));
+      document.head.appendChild(s);
+    });
+  }
+  return lottiePromise;
+}
+
+function getRatingData(n) {
+  if (!ratingCache[n]) {
+    ratingCache[n] = fetch(RATING_URLS[n]).then((r) => r.json());
+  }
+  return ratingCache[n];
+}
+
+const ratingState = { diff: 0, bonus: 0 };   // what should be shown (final state)
+const RATING_SELECTORS = { diff: ".game-rating-diff", bonus: ".game-rating-bonus" };
+
+// stop Webflow from (re)initialising this element on its own
+function neutralize(el) {
+  ["data-animation-type", "data-src", "data-loading", "data-autoplay"]
+    .forEach((a) => el.removeAttribute(a));
+}
+
+// mode: "play" | "empty" | "final"
+async function renderRating(el, n, mode) {
+  const token = (ratingTokens.get(el) || 0) + 1;
+  ratingTokens.set(el, token);
+
+  const lottie = await getLottieLib();
+  const data = await getRatingData(RATING_URLS[n] ? n : 1);
+  if (!el.isConnected || ratingTokens.get(el) !== token) return;
+
+  neutralize(el);
+  lottie.getRegisteredAnimations().forEach((a) => {
+    if (a.wrapper === el) a.destroy();
+  });
+  el.innerHTML = "";
+
+  const hasRating = !!RATING_URLS[n];
+  const anim = lottie.loadAnimation({
+    container: el,
+    renderer: "svg",
+    loop: false,
+    autoplay: mode === "play" && hasRating,
+    animationData: structuredClone(data),
+  });
+  if (mode === "empty" || !hasRating) anim.goToAndStop(0, true);
+  else if (mode === "final") anim.goToAndStop(anim.totalFrames - 1, true);
+}
+
+// real elements only
+function playRating(key, n, mode = "play") {
+  const el = document.querySelector(".mask-middle " + RATING_SELECTORS[key]);
+  if (el) renderRating(el, n, mode);
+  else console.warn("no rating element for", key);
+}
+
+// called by syncTopClone (global-scripts) after it builds the clone
+window.paintCloneRatings = function () {
+  Object.keys(RATING_SELECTORS).forEach((key) => {
+    const el = document.querySelector(".mask-top " + RATING_SELECTORS[key]);
+    const n = ratingState[key];
+    if (el) renderRating(el, n, n ? "final" : "empty");
+  });
+  // destroy animations whose clone was thrown away
+  getLottieLib().then((l) =>
+    l.getRegisteredAnimations().forEach((a) => {
+      if (!a.wrapper.isConnected) a.destroy();
+    })
+  );
+};
+
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
+
+// Loading lottie
+function setGameInfoLoading(on) {
+const el = document.querySelector(".mask-middle .loading-gi");
+if (el) el.style.display = on ? "flex" : "none";
+}
+
+window.resetGameInfoPanel = function () {
+  setText("questions-qty", "-");
+  setText("time-limit", "-");
+  setGameInfoLoading(false);
+  ratingState.diff = 0;
+  ratingState.bonus = 0;
+  playRating("diff", 0, "empty");
+  playRating("bonus", 0, "empty");
+};
+
+window.applyGameConfig = function (topic, level) {
+  const cfg = GAME_CONFIG[`${topic}-l${level}`] || {};
+  setText("questions-qty", cfg.questions ?? "-");
+  setText("time-limit", cfg.time ?? "-");
+
+  ratingState.diff = cfg.diff || 0;
+  ratingState.bonus = cfg.bonus || 0;
+
+  playRating("diff", ratingState.diff);
+  clearTimeout(bonusTimer);
+  playRating("bonus", 0, "empty");   // empty boxes during the delay
+  bonusTimer = setTimeout(
+    () => playRating("bonus", ratingState.bonus),
+    BONUS_DELAY_MS
+  );
+};
+
+
+
+// ────────────────────────────────────── GAME RUNNING ──────────────────────────────────────
+// 3. FETCH AND SEED QUESTIONS RANDOMLY
+var Webflow = window.Webflow || [];
+Webflow.push(async function() {
+  if (currentSlug !== 'quiz-game' && currentSlug !== 'gma-game-1') return;
+  const cards = document.querySelectorAll('.question-card');
+  if (!cards || cards.length === 0) return;
+
+  const ctx = getGameContext();
+  if (!ctx) { window.location.replace('/'); return; }
+  const { topic, level } = ctx;
+
+  try {
+        const gameKey = `${topic}-${level}`;
+    let sessionId = (sessionStorage.getItem('activeSessionGame') === gameKey)
+      ? sessionStorage.getItem('activeSessionId')
+      : null;
+    let serverQuestions = null;
+
+    if (sessionId) {
+      // Start button already created the session, reuse its question set
+      try { serverQuestions = JSON.parse(sessionStorage.getItem('activeQuestions') || 'null'); } catch (e) {}
+    } else {
+      // Player arrived without the start button (typed URL etc.): start a session now
+      try {
+        const startResp = await startGameFn({ topic, level });
+        sessionId = startResp?.data?.sessionId || null;
+        serverQuestions = startResp?.data?.questions || null;
+        if (sessionId) {
+          sessionStorage.setItem('activeSessionId', sessionId);
+          sessionStorage.setItem('activeSessionGame', gameKey);
+          sessionStorage.setItem('activeQuestions', JSON.stringify(serverQuestions || []));
+        }
+      } catch (err) {
+        console.warn('Failed to start game session:', err);
+      }
+    }
+    if (sessionId) window.currentSession = sessionId;
+
+    let shuffledDocs; // plain objects: { id, text, alternatives, ... }
+    if (Array.isArray(serverQuestions) && serverQuestions.length > 0) {
+      shuffledDocs = serverQuestions.slice(0, cards.length);   // server's set, in server's order
+    } else {
+      // Game without a server-picked set (e.g. GMA): old behaviour
+      const q = query(
+        collection(db, "questions"),
+        where("topic", "==", topic),
+        where("level", "==", level)
+      );
+      const snapshot = await getDocs(q);
+      shuffledDocs = snapshot.docs
+        .sort(() => 0.5 - Math.random())
+        .slice(0, cards.length)
+        .map((d) => ({ id: d.id, ...d.data() }));
+    }
+
+    // FIX 1: If nothing was found, dispatch event so overlay unlocks cleanly
+    if (shuffledDocs.length === 0) {
+      console.warn(`No questions found for topic: ${topic}, level: ${level}`);
+      document.dispatchEvent(new CustomEvent('questionsLoaded'));
+      return;
+    }
+
+    // FIX 2: Loop through ALL DOM cards to either populate or hide excess ones
+    cards.forEach((card, index) => {
+      const docSnap = shuffledDocs[index];
+
+      // If Firestore returned fewer questions than DOM cards, hide the extra cards
+      if (!docSnap) {
+        card.style.display = 'none';
+        return;
+      }
+
+      card.style.display = ''; // Ensure card is visible wrapper
+      const data = docSnap;
+      const titleEl = card.querySelector('.q-title');
+      if (titleEl) titleEl.textContent = `Question ${index + 1}`;
+      card.setAttribute('data-question-id', docSnap.id);
+      //Attach elite icon to question
+      const eliteEl = card.querySelector('.q-elite');
+      if (eliteEl) eliteEl.style.display = data.tag === 'elite' ? '' : 'none';
+
+      const textEl = card.querySelector('.q-text');
+      if (textEl && data.text) textEl.textContent = data.text;
+      for (let i = 1; i <= 4; i++) {
+        const row = card.querySelector(`[data-choice="${i}"]`);
+        
+        if (row) {
+          const altTextEl = row.querySelector('.qalt-text');
+          const rawAlt = data.alternatives ? data.alternatives[i] : null;
+          const altText = typeof rawAlt === 'string' ? rawAlt.trim() : '';
+          const isValidAlt = altText !== '' && altText !== '...';
+
+          if (isValidAlt) {
+            if (altTextEl) altTextEl.textContent = altText;
+            row.style.display = ''; 
+          } else {
+            if (altTextEl) altTextEl.textContent = ''; 
+            row.style.display = 'none'; 
+          }
+        }
+      }
+    });
+
+     // 1. Reveal populated cards in DOM
+    cards.forEach((card, index) => {
+      // Only animate cards that have actual data
+      if (index < shuffledDocs.length) {
+        card.style.transition = 'opacity 0.1s ease';
+        card.style.opacity = '1';
+      }
+    });
+    if (shuffledDocs.length > 0) {
+      document.dispatchEvent(new CustomEvent('questionsLoaded'));
+    }
+
+   } catch (error) {
+    console.error("Error fetching/seeding questions:", error);
+    document.dispatchEvent(new CustomEvent('questionsLoaded'));
+  }
+});
+
+// ──────────── COLLECT USER ANSWERS ────────────
+window.collectUserAnswers = function collectUserAnswers() {
+  const cards = document.querySelectorAll('.question-card');
+  const answers = [];
+  cards.forEach(card => {
+    const qid = card.getAttribute('data-question-id');
+    if (!qid) return;
+    const activeCheckbox = card.querySelector('.checkbox.is-active');
+    let choice = null;
+    if (activeCheckbox) {
+      const row = activeCheckbox.closest('[data-choice]');
+      if (row) {
+        const c = parseInt(row.getAttribute('data-choice'), 10);
+        if (!isNaN(c)) choice = c;
+      }
+    }
+    answers.push({ questionId: qid, choice: choice });
+  });
+  return answers;
+};
+
+// ────────────── FINISH BUTTON INTERCEPTOR & CALCULATOR ──────────────────────────
+document.addEventListener('click', async function(e) {
+  const finishBtn = e.target.closest('.finish-btn');
+  if (!finishBtn) return;
+  e.preventDefault();
+
+  const ctx = getGameContext();
+  if (!ctx) { window.location.replace('/'); return; }
+  const { topic, level } = ctx;
+
+  // 1. Update UI text to "Calculating..."
+  const textEl = finishBtn.querySelector('div') || finishBtn;
+  if (textEl) textEl.textContent = "Calculating...";
+  finishBtn.style.pointerEvents = 'none';
+
+  try {
+    // 2. Gather user answers from page (with validation)
+    const answers = (typeof window.collectUserAnswers === 'function') ? window.collectUserAnswers() : [];
+    const sessionId = window.currentSession || sessionStorage.getItem('activeSessionId') || null;
+
+    // Client-side validation before calling gradeGame
+    if (!Array.isArray(answers) || answers.length === 0) {
+      console.error('Cannot grade: answers missing or not an array', answers);
+      alert('No answers found. Please answer at least one question before finishing.');
+      if (textEl) textEl.textContent = "Finish!";
+      finishBtn.style.pointerEvents = 'auto';
+      return;
+    }
+    if (typeof sessionId !== 'string' || sessionId.trim() === '') {
+      console.error('Cannot grade: sessionId missing', sessionId);
+      alert('Session id missing — the game was not started properly. Please restart the game.');
+      if (textEl) textEl.textContent = "Finish!";
+      finishBtn.style.pointerEvents = 'auto';
+      return;
+    }
+
+    // 3. Send topic, level, sessionId, answers, AND visual timer to gradeGame
+    const response = await gradeGameFn({
+      topic: topic,
+      level: level,
+      sessionId: sessionId,
+      answers: answers,
+      clientTimeSecs: window.FinalTimeSecs || 1 // 👈 Passed directly to server
+    });
+
+    // 4. Save response for the score card
+    sessionStorage.setItem('lastGameResult', JSON.stringify(response.data));
+    sessionStorage.setItem('scoreAuthorized', 'true');
+        // Session is used up, don't let it be reused
+    sessionStorage.removeItem('activeSessionId');
+    sessionStorage.removeItem('activeQuestions');
+    window.currentSession = null;
+
+    // 5. Exit page transition
+    if (window.triggerPageExit) {
+      window.triggerPageExit('/score', true, true);
+    } else {
+      setTimeout(() => { window.location.href = '/score'; }, 2000);
+    }
+  } catch (err) {
+    console.error("Failed to grade game:", err);
+    alert("Error calculating score. Please try again.");
+    finishBtn.style.pointerEvents = 'auto';
+    if (textEl) textEl.textContent = "Finish!";
+    // let the player edit answers and retry
+    document.body.classList.remove('game-finished');
+    sessionStorage.removeItem('gameFinished');
+  }
+});
+
+// ──────────── SCORE PAGE: DISPLAY RESULTS + LEVEL UP ────────────
+// Move score-title animation helper
+const setTitleStart = () => {
+  const title = document.querySelector('.score-title-3');
+  if (!title) return;
+
+ // Revisit: show the title at its final position instantly (no fly-in, no scale/fade transition)
+  if (isScoreRevisit) {
+    title.style.transition = 'none';
+    title.style.opacity = '1';
+    title.style.transform = 'translate(0px, 0px) scale(1)';
+    return;
+  }
+
+  // Offset from the title's own position to the screen center
+  const rect = title.getBoundingClientRect();
+  const startX = window.innerWidth / 2 - (rect.left + rect.width / 2);
+  const startY = window.innerHeight / 2 - (rect.top + rect.height / 2) - 120;
+
+  // Only store the values, CSS does the actual animation
+  title.style.setProperty('--title-x', startX + 'px');
+  title.style.setProperty('--title-y', startY + 'px');
+};
+// END- Move score-title animation helper
+
+var Webflow = window.Webflow || [];
+let justTriggeredThisLoad = false;
+let isScoreRevisit = false;
+
+// Säker formatteringsfunktion om fmtNum saknas i globalt scope
+const safeFmtNum = (val) => (typeof fmtNum === 'function' ? fmtNum(val) : val);
+
+function showLevelUpPopup() {
+  const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10);
+  if (remaining <= 0) return;
+
+  const targetLevel = parseInt(sessionStorage.getItem('pendingLevelUpTarget') || '0', 10);
+  const currentLevelShown = targetLevel - remaining + 1;
+  const levelTextEl = document.getElementById('lvlup-text');
+
+  if (levelTextEl) {
+    levelTextEl.textContent = `Congratulations, you have reached level ${currentLevelShown}!`;
+  }
+
+// 1. Återställ båda elementen innan start
+  const linesEl = document.querySelector('.lines-radiate');
+  if (linesEl) {
+    linesEl.classList.remove('animate-radiate');
+    linesEl.style.opacity = '0';
+  }
+
+  const flashEl = document.querySelector('.level-up .flash');
+  if (flashEl) {
+    flashEl.classList.remove('animate-screen-flash');
+    flashEl.style.opacity = '0';
+  }
+
+  // 2. Göm sprinkles direkt innan animationen börjar
+  const sprinklesEl = document.querySelector('.square-sprinkles.lvlup');
+  if (sprinklesEl) {
+    sprinklesEl.style.display = 'none';
+  }
+    // Trigga Webflow Interaction
+  const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
+  if (wfIx) wfIx.emit("lvlup");
+
+  // 🔊 SPELA LEVEL UP SFX HÄR (eller inuti setTimeout nedanför)
+  playSFX('levelUp');
+
+  // ⚡ TIMING 1: Skärm-flash (efter 100 ms)
+  setTimeout(() => {
+    if (flashEl) {
+      flashEl.classList.add('animate-screen-flash');
+    }
+  }, 100);
+
+  // 🎆 TIMING 2: Strålande linjer (efter 300 ms)
+  setTimeout(() => {
+    if (linesEl) {
+      linesEl.classList.add('animate-radiate');
+    }
+  }, 300);
+
+  // ✨ TIMING 3: Sprinkles & Lottie
+  setTimeout(() => {
+    if (sprinklesEl) {
+      sprinklesEl.style.display = 'flex';
+
+      const wfLottie = Webflow.require('lottie');
+      if (wfLottie) {
+        const anims = wfLottie.getAnim ? wfLottie.getAnim(sprinklesEl) : null;
+        if (anims && anims.length > 0) {
+          anims[0].goToAndPlay(0, true);
+        } else if (typeof wfLottie.init === 'function') {
+          wfLottie.init();
+        }
+      }
+    }
+  }, 600);
+}
+
+function tryShowLevelUpPopup(attempts = 0, maxAttempts = 8) {
+  showLevelUpPopup();
+  setTimeout(() => {
+    const levelUpEl = document.querySelector('.level-up');
+    const isOpen = levelUpEl && window.getComputedStyle(levelUpEl).display !== 'none';
+    const stillPending = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10) > 0;
+    if (isOpen || !stillPending || attempts >= maxAttempts) return;
+    tryShowLevelUpPopup(attempts + 1, maxAttempts);
+  }, 500);
+}
+
+// Exponera för test i DevTools-konsolen
+window.showLevelUpPopup = showLevelUpPopup;
+window.tryShowLevelUpPopup = tryShowLevelUpPopup;
+
+// ────────── READ AND SHOW GAME RESULT ──────────────
+Webflow.push(function() {
+  // Fresh result from a just-finished game, or a saved copy when coming back from the review page
+  const isFreshResult = !!sessionStorage.getItem('lastGameResult');
+      // Revisit = back from the review page (link flag or browser back/forward), never for a fresh result
+  const navType = performance.getEntriesByType('navigation')[0]?.type;
+  isScoreRevisit = !isFreshResult &&
+    (sessionStorage.getItem('scoreRevisit') === 'true' || navType === 'back_forward');
+  sessionStorage.removeItem('scoreRevisit');
+    // New game result: the review of this game has not been paid for yet
+  if (isFreshResult) sessionStorage.removeItem('reviewPaid');
+
+  const resultDataRaw = sessionStorage.getItem('lastGameResult')
+                     || sessionStorage.getItem('lastGameResultView');
+  if (!resultDataRaw) return;
+
+  let data;
+  try {
+    data = JSON.parse(resultDataRaw);
+  } catch (err) {
+    console.error("Couldn't interpret the game result:", err);
+    return;
+  }
+
+  const setText = (id, value) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = typeof value === 'number' ? safeFmtNum(value) : value;
+  };
+
+  setText('list-game', data.topic ? data.topic.toUpperCase() : '');
+  setText('list-result', `${data.correctCount}/${data.totalQuestions}`);
+  setText('list-time', data.timeStr);
+  setText('list-tier-bonus', `Tier ${data.tier} bonus: ${Number(data.tierMultiplier).toFixed(1)}x`);
+  setText('list-attempts', data.attemptCount - 1);
+  setText('lb-position', data.leaderboardPosition ? `#${data.leaderboardPosition}` : '–');
+  setText('list-score', data.finalScore);
+  setText('list-unlimited-score', data.unlimitedScore);
+
+  const barEl = document.querySelector('.level-bar');
+  if (barEl) barEl.style.width = ((data.levelProgress || 0) * 100) + "%";
+
+    // Level-up popup only for a fresh result, never when the saved copy is shown again
+  const levelsGained = isFreshResult ? (data.levelsGained || 0) : 0;
+  // Keep a copy so the score page can be shown again from the review page
+  sessionStorage.setItem('lastGameResultView', resultDataRaw);
+  sessionStorage.removeItem('lastGameResult');
+
+  if (levelsGained > 0) {
+    sessionStorage.setItem('pendingLevelUps', levelsGained);
+    sessionStorage.setItem('pendingLevelUpTarget', data.newLevel);
+    justTriggeredThisLoad = true;
+
+    const triggerEl = document.querySelector('.sub-result-2.init-lvlup');
+    const levelUpEl = document.querySelector('.level-up');
+
+    if (triggerEl && levelUpEl) {
+      const observer = new MutationObserver(() => {
+        if (window.getComputedStyle(triggerEl).display === 'none') {
+          observer.disconnect();
+          tryShowLevelUpPopup();
+        }
+      });
+      observer.observe(triggerEl, { attributes: true, attributeFilter: ['style', 'class'] });
+    }
+  }
+});
+
+
+window.Webflow = window.Webflow || [];
+window.Webflow.push(setTitleStart);
+
+// ── START SCORE INTRO (custom event "score-page") ──
+Webflow.push(function() {
+  if (currentSlug !== 'score') return;
+  const startIntro = () => {
+    const wfIx = Webflow.require("ix3") || Webflow.require("ix2");
+    if (wfIx) wfIx.emit("score-page");
+    // Revisit: let the intro start, then jump the whole GSAP timeline to its end (same trick as SKIP INTRO LOBBY)
+    if (isScoreRevisit && window.gsap) {
+      setTimeout(() => gsap.globalTimeline.seek(9999, false), 100);
+    }
+  };
+  if (document.readyState === 'complete') startIntro();
+  else window.addEventListener('load', startIntro, { once: true });
+});
+
+// ── SCORE SFX ──
+document.addEventListener('DOMContentLoaded', () => {
+  const soundTriggers = [
+    // Lyssna BARA på flashen inuti .level-up popupen
+    { selector: '.level-up .flash', sfxKey: 'scoreFlash', threshold: 0.9, hasFired: false },
+    { selector: '.wrapper-score .flash', sfxKey: 'scoreFlash', threshold: 0.9, hasFired: false },
+    { selector: '.final-score', sfxKey: 'finalScore', threshold: 0.1, hasFired: false }
+  ];
+  soundTriggers.forEach((config) => {
+    const targetEl = document.querySelector(config.selector);
+    if (!targetEl) return;
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+          if (mutation.attributeName === 'style' && !isScoreRevisit) {
+          const opacity = parseFloat(window.getComputedStyle(targetEl).opacity);
+          
+          if (opacity >= config.threshold && !config.hasFired) {
+            config.hasFired = true;
+            playSFX(config.sfxKey);
+          } else if (opacity === 0) {
+            config.hasFired = false;
+          }
+        }
+      });
+    });
+    observer.observe(targetEl, { attributes: true });
+  });
+});
+
+// ── LEVEL UP: DISMISS HANDLER ──
+Webflow.push(function() {
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.level-up .button');
+    if (!btn) return;
+
+    // 1. Clean up radiate animation
+    const linesEl = document.querySelector('.lines-radiate');
+    if (linesEl) {
+      linesEl.classList.remove('animate-flash');
+      linesEl.style.opacity = '0';
+    }
+
+    // 2. Decrement or clear pending level ups
+    const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10) - 1;
+    if (remaining > 0) {
+      sessionStorage.setItem('pendingLevelUps', remaining);
+      setTimeout(() => tryShowLevelUpPopup(), 500);
+    } else {
+      sessionStorage.removeItem('pendingLevelUps');
+      sessionStorage.removeItem('pendingLevelUpTarget');
+      
+      // Ensure popup hides if Webflow interaction doesn't close it instantly
+      const levelUpEl = document.querySelector('.level-up');
+      if (levelUpEl) levelUpEl.style.display = 'none';
+    }
+  });
+});
+
+// ── LEVEL UP: RE-SHOW ON LOAD ──
+Webflow.push(function() {
+  const remaining = parseInt(sessionStorage.getItem('pendingLevelUps') || '0', 10);
+  if (justTriggeredThisLoad || remaining <= 0) return;
+  tryShowLevelUpPopup();
+});
+
+/* ──────────────────────────────── SCORE REVIEW ──────────────────────────────── */
+const REVIEW_SLUG = 'score-review';
+
+async function initReviewPage() {
+  document.body.classList.add('review-mode');
+  const template = document.querySelector('.question-card');
+  if (!template) return;
+
+  try {
+    const { data } = await getReviewFn({});
+    let prev = template;
+
+    const timeEl = document.querySelector('#timer-text, #timer-display'); // whichever element holds the digits
+    if (timeEl) timeEl.textContent = data.timeStr;
+
+    data.questions.forEach((q, i) => {    
+      const card = template.cloneNode(true);
+      card.style.display = '';
+      card.style.opacity = '1';
+      card.setAttribute('data-question-id', q.id);
+      card.querySelector('.q-title').textContent = `Question ${i + 1}`;
+      card.querySelector('.q-text').textContent = q.text;
+      const eliteEl = card.querySelector('.q-elite');
+      if (eliteEl) eliteEl.style.display = q.tag === 'elite' ? '' : 'none';
+
+      for (let c = 1; c <= 4; c++) {
+        const row = card.querySelector(`[data-choice="${c}"]`);
+        if (!row) continue;
+        const raw = q.alternatives ? q.alternatives[c] : null;
+        const alt = typeof raw === 'string' ? raw.trim() : '';
+        if (!alt || alt === '...') { row.style.display = 'none'; continue; }
+        row.style.display = '';
+        row.querySelector('.qalt-text').textContent = alt;
+
+        const cb = row.querySelector('.checkbox');
+        cb.classList.remove('is-active', 'no-transition');
+        if (q.picked === c) cb.classList.add('is-active', 'no-transition');
+        row.classList.toggle('is-correct-choice', q.correct === c);
+        row.classList.toggle('is-wrong-choice', q.picked === c && q.picked !== q.correct);
+      }
+      prev.after(card);
+      prev = card;
+    });
+
+    template.remove();
+    freezeTimerLottie();
+    document.dispatchEvent(new CustomEvent('questionsLoaded')); // see section 1 first
+  } catch (err) {
+    console.error('Review failed:', err);
+    window.location.replace('/');
+  }
+}
+
+function freezeTimerLottie(tries = 0) {
+  const lot = window.Webflow?.require?.('lottie')?.lottie;
+  const anims = lot?.getRegisteredAnimations?.() || [];
+  if (!anims.length) { if (tries < 20) setTimeout(() => freezeTimerLottie(tries + 1), 250); return; }
+    anims.forEach(a => {
+    if (a.wrapper?.closest?.('.timer-wrapper')) a.goToAndStop(Math.floor(Math.random() * a.totalFrames), true);
+  });
+}
+
+if (currentSlug === REVIEW_SLUG) {
+  Webflow.push(initReviewPage);
+    // Back to Score: tell the score page to skip its intro
+    const back = document.querySelector('a[href="/score"]');
+    if (back) back.addEventListener('click', () => {
+      sessionStorage.setItem('scoreRevisit', 'true');
+    });
+}
+
+// Score page: Review link asks for payment first
+let pendingReviewPayment = false;
+if (currentSlug === 'score') {
+  const reviewLink = document.querySelector('a[href="/' + REVIEW_SLUG + '"]');
+  if (reviewLink) reviewLink.addEventListener('click', (e) => {
+    // Already paid for this game: let the link work normally
+    if (sessionStorage.getItem('reviewPaid') === 'true') return;
+    e.preventDefault();
+    e.stopPropagation();
+    pendingReviewPayment = true;
+    showGlobalInfo(INFO_MESSAGES.REVIEW_COST);
+  });
+
+  document.addEventListener('click', async (e) => {
+    if (!pendingReviewPayment) return;
+    if (e.target.closest('.global-info .button.cancel')) { pendingReviewPayment = false; return; }
+    if (!e.target.closest('.global-info .button.accept')) return;
+
+        pendingReviewPayment = false;   // also stops double clicks
+    if (window.showGameLoadingOverlay) window.showGameLoadingOverlay('0.8s', true);   // fade in right away
+    try {
+      await payForReviewFn({});     // no amount is sent, the server decides the cost
+      sessionStorage.setItem('reviewPaid', 'true');
+      if (window.triggerPageExit) window.triggerPageExit('/' + REVIEW_SLUG, true, true);
+      else window.location.href = '/' + REVIEW_SLUG;
+    } catch (err) {
+      console.error('Review payment failed:', err);
+      if (window.hideGameLoadingOverlay) window.hideGameLoadingOverlay();   // payment failed: lift the overlay again
+      pendingReviewPayment = true;  // Accept can retry
+      showGlobalInfo('Something went wrong. Try again?');
+    }
+  });
+}
+
+/* ----- Score Page - text link to LB ------ */
+// Open the leaderboard overlay when arriving via /lobby#leaderboard
+if (location.hash === '#leaderboard') {
+  history.replaceState(null, '', location.pathname + location.search);
+  window.Webflow = window.Webflow || [];
+  window.Webflow.push(() => {
+    const ix3 = Webflow.require('ix3');
+    let fired = false;
+    const openLb = () => {
+      if (fired) return;
+      fired = true;
+      ix3.emit('lb-open');
+    };
+    ix3.ready().then(() => {
+      if (window.lobbySkipDone) openLb();
+      else document.addEventListener('lobbySkipDone', openLb, { once: true });
+      setTimeout(openLb, 5000); // safety net if the skip never runs on this visit
+    });
+  });
+}
+
+
+// ────────────────────────────────────── LEADERBOARD lb FILTERS ──────────────────────────────────────
+// Three chained dropdowns (type → topic → tier) inside .leaderboard-overlay.
+// Everything is looked up through the overlay, never through document-wide class names,
+// so the game start dropdown on the *-start pages is never touched.
+(function initLeaderboardFilters() {
+  const LB_TYPES = { 1: 'total', 2: 'score', 3: 'unlim' };  // data-level on the type rows -> board prefix
+  const LB_STATE = { type: 'total', topic: null, tier: null }; //and this goes here or over the sync block?
+
+  function init() {
+    const overlay = document.querySelector('.leaderboard-overlay');
+    if (!overlay) return;
+
+    const roots = {};
+    overlay.querySelectorAll('[data-lb]').forEach(el => {
+      roots[el.getAttribute('data-lb')] = el.closest('.dropdown-gamelevel') || el;
+    });
+    if (!roots.type || !roots.topic || !roots.tier) {
+      console.warn('lb: missing dropdown(s):', Object.keys(roots));
+      return;
+    }
+    // Type rows: labels are set here so the text and the data-level mapping can't drift apart
+    const LB_TYPE_LABELS = { 1: 'Total Score', 2: 'Highscore', 3: 'Unlimited' };
+    roots.type.querySelectorAll('.game-level-option').forEach(row => {
+      const label = row.querySelector('.game-level-text');
+      const txt = LB_TYPE_LABELS[row.getAttribute('data-level')];
+      if (label && txt) label.textContent = txt;
+    });
+
+    // Topic rows are generated from GAME_CONFIG ("science-l1" -> "science")
+    const topics = [...new Set(Object.keys(GAME_CONFIG).map(k => k.replace(/-l\d+$/, '')))];
+    const topicList = roots.topic.querySelector('.dropdown-gllist');
+    const template = topicList && topicList.querySelector('.game-level-option'); // first row has no lock icon
+    if (template) {
+      const rows = topics.map(t => {
+        const row = template.cloneNode(true);
+        row.removeAttribute('data-level');
+        row.dataset.topic = t;
+        row.classList.remove('is-selected');
+        const label = row.querySelector('.game-level-text');
+        if (label) label.textContent = t.charAt(0).toUpperCase() + t.slice(1);
+        return row;
+      });
+      topicList.querySelectorAll('.game-level-option').forEach(r => r.remove());
+      topicList.prepend(...rows);
+    }
+
+      const boardId = () => {
+        if (LB_STATE.type === 'total') return 'total';
+        if (!LB_STATE.type || !LB_STATE.topic || !LB_STATE.tier) return null;
+        return `${LB_STATE.type}-${LB_STATE.topic}-l${LB_STATE.tier}`; // score-science-l1 / unlim-science-l1
+      };
+      const lbCache = new Map(); // boardId -> { t, entries }
+      let userPicked = false;
+      let myOutside = null; // the player's own entry when not in the top 100
+      const LB_CACHE_MS = 90 * 1000;
+      const loadBoard = async (id) => {
+        const hit = lbCache.get(id);
+        if (hit && Date.now() - hit.t < LB_CACHE_MS) { renderBoard(hit.entries, hit.me); return; }
+        try {
+          const getLeaderboardsFn = httpsCallable(functions, 'getLeaderboards');
+          const res = await getLeaderboardsFn({ boardId: id });
+          console.log('lb loaded:', id, res.data); // temporary debug, remove later
+          lbCache.set(id, { t: Date.now(), entries: res.data.entries, me: res.data.me || null });
+          if (id !== boardId()) return; // the player already picked something else
+          renderBoard(res.data.entries, res.data.me);
+        } catch (err) {
+          console.error('Failed to load leaderboard:', err.message);
+        }
+      };
+
+        // Row template: the plain .lb-column row (not .header) is cloned once per player
+        const tplRow = overlay.querySelector('.lb-column:not(.header)');
+        if (!tplRow) console.warn('lb: no template row (.lb-column without .header)');
+        const rowList = tplRow ? tplRow.parentElement : null;
+        const rowTemplate = tplRow ? tplRow.cloneNode(true) : null;
+        if (tplRow) tplRow.remove();
+
+      const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '-';
+
+      const buildRow = (entry, rank) => {
+      const row = rowTemplate.cloneNode(true);
+      row.dataset.lbRow = '1';
+      if (entry.isMe) row.dataset.me = '1';
+      const cells = row.children; // order: # / avatar / player / lvl / score / fav topic
+      cells[0].textContent = rank;
+      const img = cells[1].tagName === 'IMG' ? cells[1] : cells[1].querySelector('img');
+      if (img && entry.profilePicUrl) {
+        img.removeAttribute('srcset'); // Webflow srcset would override src
+        img.removeAttribute('sizes');
+        img.src = entry.profilePicUrl;
+        img.alt = entry.username || '';
+      }
+      cells[2].textContent = entry.username || '-';
+      cells[3].textContent = entry.level ?? '-';
+      cells[4].textContent = fmtNum(entry.score);
+      cells[4].dataset.score = entry.score;
+      cells[5].textContent = capitalize(entry.favTopic);
+      return row;
+    };
+
+      // Intro/default heading row fades out once a board has loaded
+      const introRow = overlay.querySelector('.lb-row-1.hide');
+        const hideIntro = () => {
+        if (!introRow || introRow.dataset.gone) return;
+        introRow.dataset.gone = '1';
+        introRow.style.height = introRow.offsetHeight + 'px';   // lock current height
+        introRow.offsetHeight;                                  // force a reflow
+        introRow.style.transition = 'opacity 0.4s ease, transform 0.4s ease, height 0.4s ease, padding 0.4s ease, margin 0.4s ease';
+        introRow.style.opacity = '0';
+        introRow.style.transform = 'translateY(-10px)';
+        introRow.style.height = '1.5rem';    // <-- ÄNDRA HÄR FRÅN '0' TILL '1.5rem'
+        introRow.style.paddingTop = '0';
+        introRow.style.paddingBottom = '0';
+        introRow.style.marginTop = '0';
+        introRow.style.marginBottom = '0';
+        introRow.style.overflow = 'hidden';
+        // Ta bort setTimeout med display: none helt, så den stannar kvar på 1.5rem höjd!
+      };
+      const renderBoard = (entries, me) => {
+        myOutside = me || null;
+        if (!rowList || !rowTemplate) return;
+        rowList.querySelectorAll('[data-lb-row]').forEach(r => r.remove());
+        const frag = document.createDocumentFragment();
+        // Sortera alltid så att högst poäng kommer först, uavsett ordning i DB
+        entries
+          .filter(e => e.score > 0)
+          .sort((a, b) => b.score - a.score) // <-- Lägg till denna rad!
+          .forEach((e, i) => frag.appendChild(buildRow(e, i + 1)));
+        rowList.appendChild(frag);
+        fitScores();
+        if (userPicked) hideIntro();
+      };
+
+      /* Abbreviate large numbers in Score column */
+      const lbWrapper = overlay.querySelector('.lb-wrapper');
+      const SCORE_STEPS = [Infinity, 1000000, 100000, 10000]; // abbreviate scores >= this   
+      const lbLang = (document.documentElement.lang || 'en').split('-')[0];
+      const compactFmt = new Intl.NumberFormat(lbLang, { notation: 'compact', maximumFractionDigits: 1 });
+
+      const fitScores = () => {
+        if (!lbWrapper) return;
+        const cells = lbWrapper.querySelectorAll('[data-lb-row] > :nth-child(5)');
+        for (const limit of SCORE_STEPS) {
+          cells.forEach(c => {
+            if (!c.dataset.score) return;
+            const n = Number(c.dataset.score);
+            c.textContent = n >= limit ? compactFmt.format(n) : fmtNum(n);
+          });
+          if (lbWrapper.scrollWidth <= lbWrapper.clientWidth) break;
+        }
+      };
+      window.addEventListener('resize', fitScores);
+
+      // "Find me!" -Handler: highlight and scroll to the player's own row.
+      // Rows are re-created on every board change, so the highlight resets itself.
+      const findMeBtn = overlay.querySelector('.find-me-btn');
+      if (findMeBtn) {
+        findMeBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          let myRow = rowList && rowList.querySelector('[data-me]');
+          if (!myRow && myOutside && rowList && rowTemplate) {
+            myRow = buildRow({ ...myOutside, isMe: true }, '100+');
+            myRow.classList.add('is-outside');
+            rowList.appendChild(myRow);
+            fitScores();
+          }
+            if (!myRow) {
+            if (typeof window.showGlobalInfo === 'function') window.showGlobalInfo(window.INFO_MESSAGES.NO_LB_RECORD); // not on this board (or outside the top 100)
+            return;
+          }
+
+          if (typeof playSFX === 'function') playSFX('select');
+          myRow.classList.add('is-highlight');
+          myRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+      }
+
+      const sync = () => {
+      const showTopic = !!LB_STATE.type && LB_STATE.type !== 'total'; // Total Score needs no topic or tier
+      const showTier = showTopic && !!LB_STATE.topic;
+      roots.topic.style.display = showTopic ? '' : 'none';
+      roots.tier.style.display = showTier ? '' : 'none';
+      // NEW: bob every visible dropdown that has not been picked yet
+      const visible = { type: true, topic: showTopic, tier: showTier };
+      Object.entries(roots).forEach(([k, dd]) => {
+        dd.classList.toggle('hint-bob', visible[k] && !dd.classList.contains('is-picked'));
+      });
+      const id = boardId();
+      if (id) loadBoard(id);
+    };
+
+    Object.entries(roots).forEach(([kind, dd]) => {
+      const toggle = dd.querySelector('.dropdown-toggle-lvl');
+      const list = dd.querySelector('.dropdown-gllist');
+      if (!toggle || !list) return;
+            dd.addEventListener('pointerdown', () => dd.classList.remove('hint-bob'));
+
+      toggle.addEventListener('click', () => {
+        if (typeof playSFX === 'function') playSFX(toggle.classList.contains('w--open') ? 'back' : 'select');
+      });
+      
+      // Click handler
+      list.addEventListener('click', (e) => {
+        const row = e.target.closest('.game-level-option');
+        if (!row || !list.contains(row)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof playSFX === 'function') playSFX('back');
+
+        list.querySelectorAll('.game-level-option').forEach(r => r.classList.remove('is-selected'));
+        row.classList.add('is-selected');
+        dd.classList.add('is-picked');
+
+        const labelEl = row.querySelector('.game-level-text');
+        const text = (labelEl ? labelEl.textContent : row.textContent).trim();
+        dd.querySelectorAll('.gamelvl-title:not(.arrow)').forEach(t => { t.textContent = text; });
+
+        if (kind === 'type') {
+          LB_STATE.type = LB_TYPES[row.getAttribute('data-level')] || null;
+
+          // OM ANVÄNDAREN VÄLJER TOTAL SCORE: Nollställ allt efterföljande!
+          if (LB_STATE.type === 'total') {
+            LB_STATE.topic = null;
+            LB_STATE.tier = null;
+
+            // Rensa UI och state för Topic och Tier så de blir "som nya" igen
+            ['topic', 'tier'].forEach(k => {
+              if (roots[k]) {
+                roots[k].classList.remove('is-picked');
+                roots[k].querySelectorAll('.game-level-option').forEach(r => r.classList.remove('is-selected'));
+                
+                // Sätt tillbaka ursprungstexten på knapparna
+                const defaultText = k === 'topic' ? 'Select Topic' : 'Select Tier';
+                roots[k].querySelectorAll('.gamelvl-title:not(.arrow)').forEach(t => { 
+                  t.textContent = defaultText; 
+                });
+              }
+            });
+          }
+        }
+        if (kind === 'topic') LB_STATE.topic = row.dataset.topic || null;
+        if (kind === 'tier') LB_STATE.tier = parseInt(row.getAttribute('data-level'), 10) || null;
+
+        userPicked = true;
+        dd.dispatchEvent(new Event('w-close'));
+        sync();
+        
+      });
+    });
+    sync(); // initial state: only the type dropdown visible, Total Score board loaded
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();

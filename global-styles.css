@@ -1,0 +1,918 @@
+/* root is like a variable collection. Tested - working */
+:root {
+  --yellow: #ffcb6b;
+  --gold-sand: #75644e;
+  --gold-dark: #35332f;
+  --sand: #494643;
+  --white-1: #ffffff;
+  --light: #dfdfdf;
+  --grey-text: #9b9b9b;
+  --grey-stroke: #8d8d8d;
+  --grey: #464443;
+  --dark-grey: #181717;
+}
+
+
+
+/* ————————— UNIVERSAL ANTI-FOUC CLASS ———————— */
+.fouc-reveal {
+  visibility: hidden;
+}
+.fouc-reveal.is-revealed {
+  visibility: visible;
+  animation: fouc-in 0.3s ease;
+}
+.fouc-reveal.is-revealed.no-fade {
+  animation: none;
+}
+@keyframes fouc-in {
+  from { opacity: 0; }
+}
+
+/* —————— Global overflow-stopper —————— */
+.wrapper-score,
+.about-wrapper,
+.games-grid-clip,
+.intro-overlay-grp {
+  overflow-x: hidden;
+}
+
+.intro-overlay-grp {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transition: none !important;
+}
+
+/* Hide or fix scrollbar for some classes */
+.clipping,
+.games-grid-clip,
+.mask-middle,
+.intro-overlay-grp {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.clipping::-webkit-scrollbar,
+.games-grid-clip::-webkit-scrollbar,
+.mask-middle::-webkit-scrollbar,
+.intro-overlay-grp::-webkit-scrollbar {
+  display: none;
+}
+
+/* Tvingar bort de blå linjerna på sidorna i Webflow-formulär */
+  .w-input:focus, 
+  .w-input[data-name]:focus,
+  .w-select:focus,
+  .submit-button:focus-visible {
+    border-color: var(--yellow, #ffcb6b) !important; /* Ändra färg eller osynlig */
+    box-shadow: none !important;               /* Tar bort eventuell blå glöd */
+  }
+  
+  /* 2. Change the text selection highlight color site-wide */
+  ::selection {
+    background-color: var(--yellow, #ffcb6b);
+    color: #111111; /* Makes the text dark when highlighted so it's readable against the yellow/orange */
+  }
+
+  /* Fallback for older Firefox browsers */
+  ::-moz-selection {
+    background-color: var(--yellow, #ffcb6b);
+    color: #111111;
+  }
+  
+/* Disable text selection everywhere by default */
+* {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Remove default browser focus outline globally */
+*:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Re-enable selection/interaction only where it makes sense */
+input,
+textarea,
+[contenteditable],
+.w-input,
+.w-select,
+.form-block-contact,
+
+.submit-button {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  /* pointer-events: auto !important; */
+}
+
+/* Tvinga knappar och inputs att alltid fungera*/
+input, textarea, button, .w-button, #submit-btn-vanilla {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+/*   pointer-events: auto !important; */
+}
+  
+/* 1. Avstavning och Mobil-fixar */
+* {
+  -webkit-hyphens: auto;
+  -ms-hyphens: auto;
+  hyphens: auto;
+  -webkit-tap-highlight-color: transparent;
+
+  /* Tvingar fram mjukare text i Chrome på 1080p-skärmar */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+
+/* —————————— Gömmer enbart inventory-overlay i lobby-varianten vid start */
+/*   .lobby .inventory-overlay,
+  {
+    display: none;
+  } */
+
+/* Interpolate-size, try to autosize animations, for whole site */
+:root { interpolate-size: allow-keywords; }
+
+/* ——————————————— GLOBAL INFO POP UP ——————————————— */ 
+/* Base overlay container */
+.global-info {
+  display: none;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease-out;
+}
+
+.global-info.is-visible {
+  opacity: 1 !important;
+  pointer-events: auto;
+}
+
+/* Backdrop blur element isolation */
+.blur-backdrop {
+  -webkit-backdrop-filter: blur(6px); /* Fallback for Safari */
+  backdrop-filter: blur(6px);
+  transform: translateZ(0); /* Forces clean GPU layer initialization */
+}
+
+/* ——————————————— LEVEL UP POP UP ——————————————— */ 
+/* 1. SKÄRM-FLASH (FULLSCREEN) */
+.level-up {
+  overscroll-behavior: none;
+  touch-action: none; /* Förhindrar att touch-gester scrollar sidan bakom */
+}
+
+.level-up .flash {
+  opacity: 0;
+}
+
+.level-up .flash.animate-screen-flash {
+  /* Sätt totaltiden till 120ms */
+  animation: lvlupFlashBlink 200ms ease-out forwards;
+}
+
+@keyframes lvlupFlashBlink {
+  0%   { opacity: 0; }   /* 0 ms: osynlig */
+  20%  { opacity: 1; }  
+  100% { opacity: 0; }  /* helt släckt */
+}
+
+/* 2. STRÅLANDE LINJER (.lines-radiate) */
+.lines-radiate {
+  opacity: 0;
+}
+
+.lines-radiate.animate-radiate {
+  animation: flashRadiate5 1s steps(1) forwards;
+}
+
+@keyframes flashRadiate5 {
+  0%   { opacity: 0; }
+  12%  { opacity: 1; }
+  24%  { opacity: 0; }
+  37%  { opacity: 1; }
+  49%  { opacity: 0; }
+  61%  { opacity: 1; }
+  74%  { opacity: 0; }
+  86%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ———————————— EMAIL AUTH MODAL POPUP ——————————————————————————— */
+/* 1. Placeholder Text (Grey) */
+#email-auth-email::placeholder,
+#email-auth-password::placeholder {
+  color: #9b9b9b !important;
+  -webkit-text-fill-color: #9b9b9b !important; /* Forces Webkit to use grey for the placeholder */
+  opacity: 1 !important; 
+}
+
+/* 2. Actual User Typed Text (Black) */
+#email-auth-email,
+#email-auth-password {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important; 
+  box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  /* transition: background-color 5000s ease-in-out 0s; */
+  background-color: #ffffff !important;
+}
+
+.eam-submit-btn {
+    color: var(--grey-text, #9b9b9b);
+    background-color: var(--gold-dark, #35332f);
+    transition: background-color 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955),
+                color 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955);
+                pointer-events: none;
+}
+.eam-submit-btn.is-active {
+    color: var(--white-1, #ffffff);
+    background-color: var(--gold-sand, #75634e);
+    pointer-events: auto; /* Restores clickability */
+    cursor: pointer; /* Acts as a failsafe for iOS Safari to register tap events */
+} 
+
+
+
+/* Lobby Games mask */
+.games-grid-clip {
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 11%,
+    black 21%,
+    black 84%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 11%,
+    black 21%,
+    black 84%,
+    transparent 100%
+  );
+}
+  
+/* Lobby. Den nya masken som aktiveras när nav menu är öppen */
+body .games-grid-clip.is-skewed {
+  -webkit-mask-image: 
+    linear-gradient(50deg, black 30%, transparent 67%),
+    linear-gradient(to bottom, transparent 11%, black 21%, black 84%, transparent 100%);
+  
+  mask-image: 
+    linear-gradient(50deg, black 30%, transparent 67%),
+    linear-gradient(to bottom, transparent 11%, black 21%, black 84%, transparent 100%);
+  
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;        
+  
+  transition: -webkit-mask-image 400ms ease, mask-image 400ms ease;
+}
+
+/* ── Lobby Audio toggle ─── */
+#toggle-audio-lobby {
+  position: relative; 
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer !important;
+  
+  /* Bas-tillstånd: använd 'scale' egenskapen */
+  scale: 1;
+  transition: scale 110ms ease-out, opacity 1s ease !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+#toggle-audio-lobby.is-visible {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* ── Lobby Audio HOVER (Nu använder vi 'scale' egenskapen, inte transform) ── */
+#toggle-audio-lobby:hover {
+  scale: 1.2;
+}
+
+#toggle-audio-lobby.is-clicked {
+  /* Här kör vi animationen. Den kommer att "stretchas" utöver din hover-skala */
+  animation: clickStretch 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+/* ── Lobby Audio KLICK-ANIMATION (Här kör vi transform, som läggs PÅ TOPPEN) ── */
+@keyframes clickStretch {
+  0% { transform: scale(1.06); } /* Startar från 1 relativt till hovern */
+  50% { transform: scale(1.36, 1); } /* Bred stretch */
+  100% { transform: scale(1.06); }
+}
+
+/* ── IKON-ANIMATION ── */
+/* 1. Puls */
+@keyframes iconPulse {
+  0%, 100% { scale: 1; }
+  50% { scale: 1.2; }
+}
+/* 2. Gung */
+@keyframes iconSwing {
+  0%, 100% { rotate: -7deg; }
+  50% { rotate: 7deg; }
+}
+.sound-icon-on {
+  position: absolute;
+  /* Vi använder EGENSKAPERNA scale/rotate, inte transform */
+  transition: opacity 0.3s ease;
+  transform-origin: center center;
+}
+/* ── Lobby Audio LOGIK ── */
+#toggle-audio-lobby:not(.is-muted) .sound-icon-on {
+  opacity: 1 !important;
+  pointer-events: auto;
+  /* Här kör vi två oberoende animationer. De krockar inte med något annat! */
+  animation: 
+    iconPulse 1s ease-in-out infinite, 
+    iconSwing 4s ease-in-out infinite;
+}
+
+#toggle-audio-lobby.is-muted .sound-icon-on { opacity: 0 !important; pointer-events: none; animation: none; }
+#toggle-audio-lobby.is-muted .sound-icon-off { opacity: 1 !important; pointer-events: auto; }
+#toggle-audio-lobby:not(.is-muted) .sound-icon-off { opacity: 0 !important; pointer-events: none; }
+
+  /* ── Lobby Audio toggle noise effect (Gör dem osynliga och absolut positionerade) ── */
+.noise-big, 
+.noise-small {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  transition: none; /* Vi styr allt via animation */
+}
+/* ── Flashar till ── */
+@keyframes noiseFlash {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+}
+#toggle-audio-lobby.is-animating .noise-big { 
+  animation: noiseFlash 0.2s ease-in-out 0.1s forwards; 
+}
+#toggle-audio-lobby.is-animating .noise-small { 
+  animation: noiseFlash 0.2s ease-in-out 0.3s forwards; 
+}
+
+/* ──────────── HOVER-SCALE SYSTEM STOR (1.15) ──────────────── */
+.js-hover-scale {
+  transition: scale 0.1s cubic-bezier(0.455, 0.03, 0.515, 0.955);
+}
+.js-hover-scale.is-hovered {
+  scale: 1.15;
+}
+/* ───────── WTC-WRAPPER, welcome-text-container ───────── */
+/* ── HOVER-SCALE SYSTEM SUBTIL (1.08) — Smoother transition for wtc-wrapper ── */
+.js-hover-scale-sm {
+    transition: scale 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.js-hover-scale-sm.is-hovered {
+    scale: 1.08;
+}
+
+/* Specifik styrning för wtc-wrapper som hanterar både translate och scale samtidigt */
+.wtc-wrapper {
+    transition: translate 0.86s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                scale 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    will-change: translate, scale;
+}
+.wtc-wrapper.is-clicked {
+    translate: 0 -22%;
+    scale: 1 !important;
+    pointer-events: none;
+}
+
+
+ /* ── PRESS-SCALE / "BLOW UP" SYSTEM (ersätter click-scale-interactions) ── */
+.js-press-scale {
+  transition: scale 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* ≈ Power1 Out */
+}
+/* Touch/penna: skalar UPP (blow up), som tidigare */
+.js-press-scale.is-pressed-up {
+  scale: 1.3;
+}
+/* Mus: skalar NER istället - klassisk "button press"-känsla. Justera värdet efter smak */
+.js-press-scale.is-pressed-down {
+  scale: 0.9; /* storleken */
+  filter: invert(0.5) brightness(0.7);
+}
+
+/* ─────── Exclude classes ─────── */
+.player-info.username {
+  pointer-events: none;
+}
+/* 2. Override: Enable interaction ONLY on the lobby page */
+.body-1.lobby .player-info.username {
+    pointer-events: auto !important;
+}
+
+/* ── SCROLL-PULSE SYSTEM ── */
+.button-wrapper .button,
+.button-wrapper .button-link {
+  opacity: 1;
+}
+.button-wrapper .button.is-pulsing,
+.button-wrapper .button-link.is-pulsing {
+  animation: scrollPulse 2.12s linear infinite;
+}
+@keyframes scrollPulse {
+  0%   { opacity: 1; }
+  50%  { opacity: 0; }
+  100% { opacity: 1; }
+}
+/* Cancel button: no pulsing, always visible */
+.button-wrapper .button.cancel {
+  opacity: 1;
+  animation: none;
+}
+
+/* Lottie-spelare ska ALDRIG fånga klick/hover - släpp igenom till föräldern */
+.js-hover-scale lottie-player,
+.js-hover-scale-sm lottie-player,
+.js-press-scale lottie-player {
+  pointer-events: none;
+}
+a.button-link,
+a.button-link:visited,
+a.button-link:hover {
+  color: inherit !important; /* eller din önskade färg */
+}
+#cp-username-input {
+  white-space: nowrap !important; /* Förhindrar att texten hoppar ner på ny rad */
+  overflow: hidden !important;    /* Döljer allt som går utanför bredden */
+}
+
+.cp-submit-btn {
+    color: var(--grey-text, #9b9b9b);
+    background-color: var(--gold-dark, #35332f);
+    transition: background-color 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955),
+                color 0.14s cubic-bezier(0.455, 0.03, 0.515, 0.955),
+}
+.cp-submit-btn.is-active {
+    color: var(--white-1, #ffffff);
+    background-color: var(--gold-sand, #75634e);
+}
+
+/* ────────────────── GAME START PAGES ──────────────────
+/* ARROW SCROLL ANCHOR */
+.arrow-anchor-wrapper {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: opacity, transform;
+}
+.arrow-anchor-wrapper.is-loaded {
+  opacity: 1;
+  pointer-events: auto;
+}
+.arrow-anchor-wrapper.is-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+/* Make click hitbox larger with a psudeo element */
+.arrow-anchor-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: -4rem;         /* extra clickable area on every side */
+}
+
+/* --------- MASK-TOP-CLONE ------------- */
+/* Mask Top - Disable pointer events and CSS transition delays */
+.mask-top,
+.mask-top * {
+  pointer-events: none !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Instant clone visibility mirror */
+.mask-top .dropdown-gllist {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+/* Change this target from .is-open to .w--open */
+.mask-top .dropdown-gllist.w--open {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.mask-top .loading-gi { display: none !important; }
+/* ------------------------------------------------------- */
+
+
+/* ---- COMPONENT .dropdown-gamelevel ---- */
+.dropdown-gamelevel {
+  opacity: 0;
+  pointer-events: none;
+  animation:
+    fadeIn 0.3s 0.7s ease-in forwards,
+    enableClicks 0s 1.1s forwards;
+}
+@keyframes enableClicks {
+  to { pointer-events: auto; }
+}
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+.mask-top .dropdown-gamelevel {
+  opacity: 1 !important;
+  pointer-events: none !important;
+  animation: none !important;
+}
+
+/* DROPDOWN LIST STATE (Listens ONLY to Webflow's native w--open) */
+.dropdown-gllist {
+  display: flex;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-40%);
+  transition: max-height 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+              opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+              transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.dropdown-gllist.w--open {
+  overflow: visible;
+  max-height: 20rem;
+  max-height: calc-size(auto, size);
+  opacity: 1;
+  transform: translateY(0%);
+}
+
+/* SQUARE BASE TRANSITIONS */
+.dropdown-gamelevel .small-square {
+  transition: opacity 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Hide bottom toggle squares when dropdown is open */
+.dropdown-gamelevel:has(.w--open) .dropdown-toggle-lvl .small-square.bott-r,
+.dropdown-gamelevel:has(.w--open) .dropdown-toggle-lvl .small-square.bott-l {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 1. Stängt läge: Åker tillbaka upp DIREKT (0s delay) när menyn stängs */
+.dropdown-gllist .small-square {
+  transform: translateY(0);
+  transition: transform 0.21s 0.1s ease;
+}
+/* 2. Öppet läge: Åker ner 1rem MED fördröjning (0.15s delay) när menyn öppnas */
+.dropdown-gllist.w--open .small-square {
+  transform: translateY(1rem);
+  transition: transform 0.21s 0.1s ease;
+}
+
+/* CENTER SQUARES (Pops out only when tier is selected and menu is completely closed) */
+.dropdown-gamelevel .small-square.center-l,
+.dropdown-gamelevel .small-square.center-r {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(0);
+  transition: opacity 0.15s 0s ease,
+              transform 0.15s 0s ease;
+}
+
+.dropdown-gamelevel.has-selection:not(:has(.w--open)) .small-square.center-l {
+  opacity: 1;
+  transform: translateX(-1rem);
+  transition: opacity 0.2s 0.1s cubic-bezier(0.25, 1, 0.5, 1),
+              transform 0.25s 0.1s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.dropdown-gamelevel.has-selection:not(:has(.w--open)) .small-square.center-r {
+  opacity: 1;
+  transform: translateX(1rem);
+  transition: opacity 0.2s 0.1s cubic-bezier(0.25, 1, 0.5, 1),
+              transform 0.25s 0.1s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* LB DROPDOWNS VARIANT
+/* Snabbare animationer enbart för dropdowns inne i leaderboarden */
+.leaderboard-overlay .dropdown-gamelevel {
+  animation:
+    fadeIn 0.2s 0.05s ease-in forwards,
+    enableClicks 0s 0.25s forwards;
+}
+
+/*picked state = white box, like the start-page dropdown */
+.leaderboard-overlay .dropdown-gamelevel.is-picked .gamelevel-btn { background-color: #fff; }
+.leaderboard-overlay .dropdown-gamelevel.is-picked .gamelvl-title { color: #000; }
+.leaderboard-overlay .dropdown-gamelevel.is-picked .gamelvl-title.arrow { display: none; }
+/* Heavier text in the white picked state on tablet and mobile */
+@media (max-width: 991px) {
+  .leaderboard-overlay .dropdown-gamelevel.is-picked .gamelvl-title {
+    font-weight: 400;
+  }
+}
+
+/* Gör så att listan flyter över elementen nedanför enbart i leaderboarden */
+.leaderboard-overlay .dropdown-gllist {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+/* 1. Dippa ner raden när en dropdown öppnas */
+.leaderboard-overlay .lb-row-1.select-lb:has(.w--open) {
+  margin-bottom: 3rem;
+  transition: margin-bottom 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.leaderboard-overlay .lb-row-1.select-lb {
+  transition: margin-bottom 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+/* 2. BLUR when dropdown happens */
+.leaderboard-overlay:has(.select-lb .w--open) {
+.lb-row-1.blur,
+.lb-row-1.hide  {
+  -webkit-filter: blur(5px);
+  filter: blur(5px);
+  transition: filter 100ms ease-in;
+}
+}
+/* Mjuk återgång när man stänger menyn igen */
+.lb-row-1.blur,
+.lb-row-1.hide {
+  transition: filter 200ms ease-out;
+}
+
+/* LB HINT: first dropdown bobs until the player clicks it */
+@keyframes hintBob {
+  0%    { transform: translateY(0); }
+  14.3% { transform: translateY(30%); }
+  28.6% { transform: translateY(0); }
+  42.9% { transform: translateY(30%); }
+  57.1% { transform: translateY(0); }
+  100%  { transform: translateY(0); }   /* 0.6s pause */
+}
+.leaderboard-overlay .dropdown-gamelevel.hint-bob {
+  animation:
+    fadeIn 0.2s 0.05s ease-in forwards,
+    enableClicks 0s 0.25s forwards,
+    hintBob 1.6s 0.5s ease-in-out infinite;
+}
+/* FIX GRID POSITIONS: filter, then three dropdowns */
+.leaderboard-overlay .lb-row-1 {
+  grid-template-columns: auto 1fr 1fr 1fr;
+}
+.leaderboard-overlay .lb-row-1 > :nth-child(1) { grid-column: 1; justify-self: start; }  /* filter */
+.leaderboard-overlay .lb-row-1 > :nth-child(2) { grid-column: 2; justify-self: start; }  /* type, hugs the filter */
+.leaderboard-overlay .lb-row-1 > :nth-child(3) { grid-column: 3; justify-self: center; } /* topic */
+.leaderboard-overlay .lb-row-1 > :nth-child(4) { grid-column: 4; justify-self: end; }    /* tier */
+
+/* FAKE SQUARES CORNERS Find me is-highlight */
+.lb-column.is-highlight {
+  position: relative; /* Krävs för att pseudo-elementen ska hamna rätt */
+}
+
+/* Skapa vänster- och högerramen via CSS */
+.lb-column.is-highlight::before,
+.lb-column.is-highlight::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 6px; /* Tjockleken på din ram */
+  background-color: var(--yellow, #ffcb6b);
+  
+  /* Masken som klipper av mitten (behåller 10% i topp och botten) */
+  -webkit-mask-image: linear-gradient(
+    to bottom, 
+    black 0%, 
+    black 10%, 
+    transparent 10%, 
+    transparent 90%, 
+    black 90%, 
+    black 100%
+  );
+  mask-image: linear-gradient(
+    to bottom, 
+    black 0%, 
+    black 10%, 
+    transparent 10%, 
+    transparent 90%, 
+    black 90%, 
+    black 100%
+  );
+}
+
+/* Placera ut dem till vänster respektive höger */
+.lb-column.is-highlight::before {
+  left: 0;
+}
+.lb-column.is-highlight::after {
+  right: 0;
+}
+/* Player outside the top 100: gap above the extra row */
+.lb-column.is-outside {
+  margin-top: 2rem;
+}
+
+/* Skapa en mjuk animation som körs varje gång en rad (kolumn) skapas */
+@keyframes rowFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(35px); /* Startar xx px längre ner */
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);    /* Glider på plats */
+  }
+}
+/* Applicera animationen på alla kolumner i leaderboarden */
+.leaderboard-overlay .lb-column {
+  animation: rowFadeIn 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* Special hover LB Ppic */
+.leaderboard-overlay .ppic-lb {
+  transition: scale 0.25s ease; /* Gör hoovringen mjuk och snygg */
+  transform-origin: 0% 80%; /* Sätter ankarpunkten nere till vänster (eller 'left bottom') */
+}
+.leaderboard-overlay .ppic-lb:hover {
+  scale: 3;
+  position: relative;
+  z-index: 10;
+}
+.leaderboard-overlay .lb-column:has(.ppic-lb:hover) {
+  position: relative;
+  z-index: 10;
+}
+
+/* GAME INFO LOAD ANIMATION */
+.game-info {
+  opacity: 0;
+  transform: translateY(80%);
+  /* Power 1 Out is roughly this cubic-bezier */
+  animation: gameInfoFadeIn 0.29s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.9s forwards;
+  will-change: opacity, transform;
+}
+
+@keyframes gameInfoFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0%);
+  }
+}
+
+/* GAME START BUTTON. Wrapper controls entry animation */
+/* Base state (Hidden) -> Delays hiding until the 0.31s fade/move is done */
+.game-start-btn-wrapper {
+  opacity: 0;
+  transform: translateY(-350%);
+  visibility: hidden; 
+  transition: opacity 0.31s cubic-bezier(0.25, 1, 0.5, 1),
+              transform 0.31s cubic-bezier(0.25, 1, 0.5, 1),
+              visibility 0s 0.31s; /* 👈 The 0.31s delay is the key */
+}
+
+/* Active state (Visible) -> Becomes visible instantly (0s delay) so you see the fade-in */
+.game-start-btn-wrapper.is-visible {
+  opacity: 1;
+  transform: translateY(0%);
+  visibility: visible; 
+  transition: opacity 0.31s cubic-bezier(0.25, 1, 0.5, 1),
+              transform 0.31s cubic-bezier(0.25, 1, 0.5, 1),
+              visibility 0s 0s; /* 👈 Instantly visible */
+}
+/* Inner button link */
+.game-start-btn {
+  display: inline-block;
+  position: relative;
+  z-index: 5;             /* Ensures it sits above sibling elements */
+  cursor: pointer;        /* Forces pointer cursor */
+}
+
+  /* ────────────────── GAME RUNNING PAGES ──────────────────
+  /* GAME ALTERNATIVE-ROW */
+/* checkbox-div animation */
+.checkbox {
+  position: relative;
+  width: 1rem;
+  height: 1rem;
+  border: 0.05rem solid #ffffff; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: visible; 
+}
+
+/* Den dolda vita boxen i utgångsläget (Inaktiv) */
+.checkbox::after {
+  content: "";
+  position: absolute;
+  width: 9rem;  
+  height: 9rem; 
+  background-color: #ffffff;
+  opacity: 0;
+  pointer-events: none;
+  /* Din mjuka original-transition! */
+  transition: 
+    width 0.35s cubic-bezier(0.25, 1, 0.5, 1), 
+    height 0.35s cubic-bezier(0.25, 1, 0.5, 1), 
+    opacity 0.2s ease;
+}
+/* AKTIVT LÄGE: När raden klickas, krymper boxen in i rutan */
+.checkbox.is-active::after {
+  width: 0.3rem;  
+  height: 0.3rem; 
+  opacity: 1;
+}
+.checkbox.no-transition::after {
+  transition: none !important;
+}
+/* Gör hela raden klickvänlig */
+.alternative-row {
+  cursor: pointer;
+  user-select: none;
+}
+.alternative-row {
+  cursor: pointer;
+  user-select: none;
+  touch-action: none; /* finger landing on a row can't start a page scroll */
+}
+
+/* ── Game finished: answers locked until next game ── */
+body.game-finished .alternative-row {
+  pointer-events: none !important;
+}
+/* Elite questions */
+/* .question-card { position: relative; }
+.question-card .q-elite {
+  position: absolute;
+  top: -1rem;      
+  left: 1rem;
+  width: 2rem;
+  height: 2rem;
+  z-index: 2;
+  pointer-events: none;
+}
+.question-card .q-elite svg,
+.question-card .q-elite img { width: 100%; height: 100%; } */
+
+/* —————————————— SCORE PAGE ————————————— */
+.score-title-3 {
+  opacity: 0;
+  transform: translate(var(--title-x, 0px), var(--title-y, 0px)) scale(1.5);
+}
+
+.score-title-3.title-show {
+  opacity: 1;
+  transition: opacity 0.05s ease-out;
+}
+
+.score-title-3.title-move {
+  opacity: 1;
+  transform: translate(0px, 0px) scale(1);
+  transition: opacity 0.05s ease-out, transform 0.37s ease-in-out;
+}
+
+/* ────── Score Review mode ────── */
+.review-mode .question-card { pointer-events: none; }          /* frozen */
+.review-mode .alternative-row {
+  position: relative;
+  pointer-events: none !important;  /* beats the inline 'auto' from the 2s lock script */
+  touch-action: auto !important;    /* normal touch scroll again */
+}
+
+
+.review-mode .alternative-row::before {
+  content: ""; position: absolute; left: -1.5rem; top: 50%;
+  width: 2rem; height: 2rem; transform: translateY(-50%);
+  background: center / contain no-repeat; opacity: 0;
+}
+.review-mode .alternative-row.is-correct-choice::before {
+  background-image: url("https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6ae7dec91593f02f21b350f1_check-yellow.svg"); opacity: 1;
+}
+.review-mode .alternative-row.is-wrong-choice::before {
+  background-image: url("https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6ac293760d510514d031cfb7_af61178e1ed8b34e8e2647d0f2f07a30_review-cross.svg"); opacity: 1;
+}
+
+/* ────── ABOUT contact flip ────── */
+/* Grundinställning för flip-animationen */
+/* Grundinställning för flip och förflyttning */
+.contact-wrapper {
+  transform-origin: bottom right; /* Rotationspunkt under T:et */
+  rotate: 0deg;
+  translate: 0 0px;
+  
+  /* Både rotation och förflyttning animeras mjukt under 1 sekund */
+  transition: rotate 1s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              translate 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+              
+  will-change: rotate, translate;
+}
+
+/* När elementet når 65%-gränsen och klassen tänds via JS */
+.contact-wrapper.is-flipped {
+  rotate: -90deg;       /* Roterar 90 grader moturs */
+  translate: 0 -1.6rem; /* Flyttar sig uppåt med 1.6rem samtidigt */
+}
