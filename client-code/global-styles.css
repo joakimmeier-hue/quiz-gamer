@@ -362,7 +362,7 @@ body .games-grid-clip.is-skewed {
   transition: scale 0.1s cubic-bezier(0.455, 0.03, 0.515, 0.955);
 }
 .js-hover-scale.is-hovered {
-  scale: 2.15;
+  scale: 3.15;
 }
 /* ───────── WTC-WRAPPER, welcome-text-container ───────── */
 /* ── HOVER-SCALE SYSTEM SUBTIL (1.08) — Smoother transition for wtc-wrapper ── */
