@@ -844,6 +844,19 @@ a.button-link:hover {
 body.game-finished .alternative-row {
   pointer-events: none !important;
 }
+/* Elite questions */
+.question-card { position: relative; }
+.question-card .q-elite {
+  position: absolute;
+  top: -1rem;        /* half over the card edge, adjust to taste */
+  left: 1rem;
+  width: 2rem;
+  height: 2rem;
+  z-index: 2;
+  pointer-events: none;
+}
+.question-card .q-elite svg,
+.question-card .q-elite img { width: 100%; height: 100%; }
 
 /* —————————————— SCORE PAGE ————————————— */
 .score-title-3 {
