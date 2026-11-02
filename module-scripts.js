@@ -2265,6 +2265,8 @@ async function initReviewPage() {
       card.setAttribute('data-question-id', q.id);
       card.querySelector('.q-title').textContent = `Question ${i + 1}`;
       card.querySelector('.q-text').textContent = q.text;
+      const eliteEl = card.querySelector('.q-elite');
+      if (eliteEl) eliteEl.style.display = q.tag === 'elite' ? '' : 'none';
 
       for (let c = 1; c <= 4; c++) {
         const row = card.querySelector(`[data-choice="${c}"]`);
