@@ -448,7 +448,7 @@ a.button-link:hover {
   color: #fff;
   caret-color: #fff;
   white-space: nowrap !important; /* Förhindrar att texten hoppar ner på ny rad */
-  overflow: hidden !important;    /* Döljer allt som går utanför bredden */
+  /* overflow: hidden !important;  */   /* Döljer allt som går utanför bredden */
 }
 #cp-username-input::placeholder,
 #change-username-input::placeholder {
