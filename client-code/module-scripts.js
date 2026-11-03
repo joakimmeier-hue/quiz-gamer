@@ -2309,9 +2309,18 @@ if (location.hash === '#leaderboard') {
       let userPicked = false;
       let myOutside = null; // the player's own entry when not in the top 100
       const LB_CACHE_MS = 90 * 1000;
+      const lbLoading = overlay.querySelector('.loading-squares-lb');
+      const setLbLoading = (isLoading) => {
+        if (lbLoading) lbLoading.style.display = isLoading ? 'flex' : 'none';
+      };
       const loadBoard = async (id) => {
         const hit = lbCache.get(id);
-        if (hit && Date.now() - hit.t < LB_CACHE_MS) { renderBoard(hit.entries, hit.me); return; }
+        if (hit && Date.now() - hit.t < LB_CACHE_MS) {
+          renderBoard(hit.entries, hit.me);
+          setLbLoading(false);
+          return;
+        }
+        setLbLoading(true);
         try {
           const getLeaderboardsFn = httpsCallable(functions, 'getLeaderboards');
           const res = await getLeaderboardsFn({ boardId: id });
@@ -2321,6 +2330,8 @@ if (location.hash === '#leaderboard') {
           renderBoard(res.data.entries, res.data.me);
         } catch (err) {
           console.error('Failed to load leaderboard:', err.message);
+        } finally {
+          if (id === boardId()) setLbLoading(false);
         }
       };
 
@@ -2443,6 +2454,7 @@ if (location.hash === '#leaderboard') {
       });
       const id = boardId();
       if (id) loadBoard(id);
+      else setLbLoading(false);
     };
 
     Object.entries(roots).forEach(([kind, dd]) => {

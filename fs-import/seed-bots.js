@@ -33,8 +33,7 @@ const HIGHSCORE_RANGE = [651, 2698]; // per list, Tier 1 values. Higher tiers ge
 const UNLIM_FACTOR = 2;              // unlimited lists ≈ highscore range x this (±8 % jitter)
 
 // The topic ids as they are written in the db (ids of your question banks / lbTop boardIds).
-// !! Check these – "geo" is a guess for Geo&travel.
-const TOPICS = ["science", "history", "food", "animals", "cars", "puzzle", "maze", "pattern", "music", "biology", "geo", "movies", "literature", "math", "sports"];
+const TOPICS = ["science", "history", "food", "animals", "cars", "puzzle", "maze", "pattern", "music", "biology", "geo&travel", "movies", "literature", "math", "sports"];
 
 // ───────────── COPIED FROM functions/index.js (keep in sync) ─────────────
 const TOP_N = 100;
@@ -163,9 +162,29 @@ function buildNames(takenByRealUsers) {
   return { names, skipped };
 }
 
-function loadAvatars() {
+async function loadAvatars() {
   const file = path.join(__dirname, "avatars.txt");
-  if (!fs.existsSync(file)) die("avatars.txt not found next to seed-bots.js (one URL per line).");
+
+  // node seed-bots.js --avatars-from https://quizgamer.se/<page with the avatar picker>
+  // reads the page's HTML, takes every <img class="profile-pic-option">, saves them to avatars.txt
+  const i = process.argv.indexOf("--avatars-from");
+  if (i > -1) {
+    const pageUrl = process.argv[i + 1];
+    if (!pageUrl || pageUrl.startsWith("--")) die("--avatars-from needs a page URL after it.");
+    const res = await fetch(pageUrl);
+    if (!res.ok) die(`Could not fetch ${pageUrl} (HTTP ${res.status}).`);
+    const html = await res.text();
+    const found = (html.match(/<img\b[^>]*>/gi) || [])
+      .filter((tag) => tag.includes("profile-pic-option"))
+      .map((tag) => (tag.match(/\bsrc="([^"]+)"/i) || [])[1])
+      .filter((u) => u && PIC_REGEX.test(u));
+    const fetched = [...new Set(found)];
+    if (!fetched.length) die("No profile-pic-option images with a valid .webp URL in that page's HTML. Is it the page that contains the avatar picker? Otherwise paste the URLs into avatars.txt by hand.");
+    fs.writeFileSync(file, fetched.join("\n"));
+    console.log(`Saved ${fetched.length} avatar URLs to avatars.txt`);
+  }
+
+  if (!fs.existsSync(file)) die("avatars.txt not found next to seed-bots.js. Use --avatars-from <page url>, or paste one URL per line.");
   const urls = [...new Set(fs.readFileSync(file, "utf8").split(/\r?\n/).map((s) => s.trim()).filter(Boolean))];
   const bad = urls.filter((u) => !PIC_REGEX.test(u));
   if (bad.length) die("These avatar URLs would be rejected by completeProfile's PIC_REGEX:\n  " + bad.join("\n  "));
@@ -274,7 +293,7 @@ const line = (id, e) =>
   `  ${id.padEnd(24)} ${String(e.length).padStart(3)} rows   ${fmt(e[0].score)} … ${fmt(e[e.length - 1].score)}   (Lvl ${e[0].level} … ${e[e.length - 1].level})`;
 
 async function seed(dry) {
-  const avatars = loadAvatars();
+  const avatars = await loadAvatars();
 
   // existing users: find old bots, and the names real players already own
   const usersSnap = await db.collection("users").select("username").get();
