@@ -1397,12 +1397,12 @@ function validateUsernameRules(rawName) {
         errors.push("Minimum 1 letter");
     }
     if (rawName.length > 14) errors.push("Maximum 14 characters");
-    const spaceCount = (rawName.match(/ /g) || []).length;
-    if (spaceCount > 1) errors.push("Only one space allowed");
+    if (/ {2,}/.test(rawName)) errors.push("Only single spaces between words");
     const invalidCharRegex = /[^a-zA-Z0-9åäöÅÄÖ\-_. ]/; 
     const repeatedSeparatorRegex = /([_.-])\1/;
-    if (rawName.length > 0 && (invalidCharRegex.test(rawName) || repeatedSeparatorRegex.test(rawName))) {
-        errors.push("Ops, invalid character");
+    if (invalidCharRegex.test(rawName)) errors.push("Oops, invalid character");
+    if (repeatedSeparatorRegex.test(rawName)) {
+        errors.push("Oops, don't repeat ., _, or - in a row");
     }
     return errors;
 }

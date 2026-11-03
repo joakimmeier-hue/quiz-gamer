@@ -34,8 +34,7 @@ const UNLIM_FACTOR = 2;              // unlimited lists ≈ highscore range x th
 
 // The topic ids as they are written in the db (ids of your question banks / lbTop boardIds).
 // !! Check these – "geo" is a guess for Geo&travel.
-const TOPICS = ["science", "history", "food", "animals", "cars", "puzzle", "maze", "pattern",
-                "music", "biology", "geo", "movies", "literature", "math", "sports"];
+const TOPICS = ["science", "history", "food", "animals", "cars", "puzzle", "maze", "pattern", "music", "biology", "geo", "movies", "literature", "math", "sports"];
 
 // ───────────── COPIED FROM functions/index.js (keep in sync) ─────────────
 const TOP_N = 100;
@@ -61,12 +60,12 @@ function validateUsernameServer(rawName) {
   const letterCount = (rawName.match(/[a-zA-ZåäöÅÄÖ]/g) || []).length;
   if (rawName.length < 1 || letterCount < 1) errors.push("Minimum 1 letter");
   if (rawName.length > 14) errors.push("Maximum 14 characters");
-  const spaceCount = (rawName.match(/ /g) || []).length;
-  if (spaceCount > 1) errors.push("Only one space allowed");
+  if (/ {2,}/.test(rawName)) errors.push("Only single spaces between words");
   const invalidCharRegex = /[^a-zA-Z0-9åäöÅÄÖ\-_. ]/;
   const repeatedSeparatorRegex = /([_.-])\1/;
-  if (rawName.length > 0 && (invalidCharRegex.test(rawName) || repeatedSeparatorRegex.test(rawName))) {
-    errors.push("Ops, invalid character");
+  if (invalidCharRegex.test(rawName)) errors.push("Oops, invalid character");
+  if (repeatedSeparatorRegex.test(rawName)) {
+    errors.push("Oops, don't repeat ., _, or - in a row");
   }
   return errors;
 }
@@ -97,8 +96,10 @@ function calcLevelInfo(totalScore) {
 }
 
 // ───────────── YOUR NAMES (invalid ones are skipped automatically) ─────────────
-const USER_NAMES = `Tailgunner, David_S, Ceasar77, Master Chief, Tarzan, Khana, Heiphaistos, Esoteric_Joe, Nephilim4, AdhdTomas, Silversnoken, Illuminati43v3r, Neo, Skeletor, Joseph, Potter Harry, Abraham, Achilles, Cleopatra, Vader-saber, Genghis Khan, mini_matrix, Netrunner, Exfiller, Nero, Aphrodite, Hyperion, Einstein-3000, Baal, Tv-800, Annis, Zee, Lilly, Jonah, Philippa, Sara Daria, Camelo, tittyhunter2000, wewerehere, Skywalker1, Hannibal, Venus_99, Snattarn, brainstorm2000, Typhoon_me, Carolus craus, xxx_Zero_xxx, 007xena, Eyafjättlu1998, Mombasa, Blade, Anna, Zoe, Saharaisnow, Tony, Anastasia, zebramania, valhallkommer, VanDamme, Hauser, stickySteve, MrPoeAllan, Dr. Freeman, Alyx, missan, cleo, star69, Fight Club, Tylor Dyrden7, Max, GollumLives, the mummy, Heracles, Dracula, oMaley, mcLovin64, Xelda, Mimmi, PeterPan, Grabber1, bravo6, S7eve., Robert, Nova, Gandalf_Reaper, Anubis, Shinigami, Sun-Samurai, dosTo3vSky, CatwomanZ, zomBie, 10KBC, Elsa, Miza, Archimedes, Hypatia, Socrates5, DiogenesS, Ryu, Elvisp, Vegaman, slimeboy, BIGslim, IndyAnna37, CaptCobra, Capt_Fishy, Capt-Crysis, Stootzmon, Moony, Dr3lior, DrSpaz, DrEvil, KnowledgeWiz, Cruiser-1, EnigmaJoe, LuckyJack, _V_, LaraK, Jockeboi, Cybersinger, anUpd8, Bot-Sam, Bamboshi9, humanRobot, humanComputer, Sara Lambda, Uruk, Nic-98, 2K, Paemon, Blair Witch Z, B_the_Knight, Neon-King, The fat cat, Asmodius, Cato, skillyboy, aKiRa, Alex-not-great, Ryuk41, Slaggy, Georgia, Rosetta, Nicky_PG, Sticky Nicky, Julia78, ADD-Sam, Mr Morrhår, V, L, Ronin_Jack, HatoriHanzo, Dr. Slime, Dark-Messiah, RayZor, Razor-88, kINg, Penguin, Uruk-Hai, Fox, sSsankE, Snake, Silva, Arasaka, Drifter, oldSchool, lilD, Joker, Fakeru, Slider, Watari, 2BaGod49t, Antonio1, PemBok, Pat, Z, Aizawa, 2u3sDaY, Black Holer, emc2, PlayerNrOne, Obi One, Psycho, Zigma, Zeta R, Bruce_Sane, General45, Smith, Playa17, Solo, Sane, SaintNr1, corruptFile, Noregrets, Undertaker66, HopperZ, Lil-John, Reclaimer-17, Sam_Walker, Kito, Kira, Knut, Khan, John Silver, Cpt Vain, Sonja, Original_sin, Esotericman, Vesuvius, Quintus, Macro, Abomination, Heretic1, TaRe9, dontH8, Dino, Black-Jesus, BlackMamba, LazerBoi, Mara, Emma27, Pekka600, gummies, Ra, Iris, Caesar, Odin88, BamboshiHunter, hope_less, Osiris, Isa, Mona, ToplessJoe, Bot_nr1, Xerxes, aBot99, K2, 2K, Turok, Luigi, ZeldaP, Ikaros, Einstein2.0, Bowser, Snorlax, Boboon64, Bobban, Shinigami, Pumpkin5, Ghost88, Sam, Rose, Mr White, Smoke, Fox21, Jax, Nala`
-  .split(",").map((s) => s.trim()).filter(Boolean);
+const USER_NAMES = `Tailgunner, David_S, Ceasar77, Master Chief, Tarzan, Khana, Heiphaistos, Esoteric_Joe, Nephilim4, AdhdTomas, Silversnoken, Illuminati, Neo, Skeletor, Joseph, Potter Harry, Abraham, Achilles, Cleopatra, Vader-saber, Genghis Khan, mini_matrix, Netrunner, Exfiller, Nero, Aphrodite, Hyperion, Einstein-3000, Baal, Tv-800, Annis, Zee, Lilly, Jonah, Philippa, Sara Daria, Camelo, tittyhunter14, wewerehere, Skywalker1, Hannibal, Venus_99, Snattarn, brainstorm2000, Typhoon_me, Carolus craus, xxx_Zero_xxx, 007xena, Eyafjättlu1998, Mombasa, Blade, Anna, Zoe, Saharaisnow, Tony, Anastasia, zebramania, valhallkommer, VanDamme, Hauser, stickySteve, MrPoeAllan, Dr. Freeman, Alyx, missan, cleo, star69, Fight Club, Tylor Dyrden7, Max, GollumLives, the mummy, Heracles, Dracula, oMaley, mcLovin64, Xelda, Mimmi, PeterPan, Grabber1, bravo6, S7eve., Robert, Nova, Gandalf_Reaper, Anubis, Shinigami, Sun-Samurai, dosTo3vSky, CatwomanZ, zomBie, 10KBC, Elsa, Miza, Archimedes, Hypatia, Socrates5, DiogenesS, Ryu, Elvisp, Vegaman, slimeboy, BIGslim, IndyAnna37, CaptCobra, Capt_Fishy, Capt-Crysis, Stootzmon, Moony, Dr3lior, DrSpaz, DrEvil, KnowledgeWiz, Cruiser-1, EnigmaJoe, LuckyJack, _V_, LaraK, Jockeboi, Cybersinger, anUpd8, Bot-Sam, Bamboshi9, humanRobot, humanComputer, Sara Lambda, Uruk, Nic-98, 2K, Paemon, Blair Witch Z, B_the_Knight, Neon-King, The fat cat, Asmodius, Cato, skillyboy, aKiRa, Alex-not-great, Ryuk41, Slaggy, Georgia, Rosetta, Nicky_PG, Sticky Nicky, Julia78, ADD-Sam, Mr Morrhår, V, L, Ronin_Jack, HatoriHanzo, Dr. Slime, Dark-Messiah, RayZor, Razor-88, kINg, Penguin, Uruk-Hai, Fox, sSsankE, Snake, Silva, Arasaka, Drifter, oldSchool, lilD, Joker, Fakeru, Slider, Watari, 2BaGod49t, Antonio1, PemBok, Pat, Z, Aizawa, 2u3sDaY, Black Holer, emc2, PlayerNrOne, Obi One, Psycho, Zigma, Zeta R, Bruce_Sane, General45, Smith, Playa17, Solo, Sane, SaintNr1, corruptFile, Noregrets, Undertaker66, HopperZ, Lil-John, Reclaimer-17, Sam_Walker, Kito, Kira, Knut, Khan, John Silver, Cpt Vain, Sonja, Original_sin, Esotericman, Vesuvius, Quintus, Macro, Abomination, Heretic1, TaRe9, dontH8, Dino, Black-Jesus, BlackMamba, LazerBoi, Mara, Emma27, Pekka600, gummies, Ra, Iris, Caesar, Odin88, BamboshiHunter, hope_less, Osiris, Isa, Mona, ToplessJoe, Bot_nr1, Xerxes, aBot99, K2, Turok, Luigi, ZeldaP, Ikaros, Einstein2.0, Bowser, Snorlax, Boboon64, Bobban, Pumpkin5, Ghost88, Sam, Rose, Mr White, Smoke, Fox21, Jax, Nala, cAs3, Casper24, Mr Slim, JackJack, Uggla, 24se7en, 0mal8y, Siegfried, Chimera, Blade21, Åle, Rex, 321go, Mrs Fox, Cat77, bLade_run3r, Iamerror, Chris99, Ako, Pi, Hank1, B, bOb, Mario, Pikatchu2, Einstein_2.0, Obese-Ann, Shinobi, ApexJoe, Zig, Fanny, Lil-eric, Sai_tomi, Java, Rama, Santi1, Ober-Hara, Cpt-Carlsson, Drexler5, Motoko, Mats, Phil_17`
+
+  .split(",").map((s) => s.trim()).filter(Boolean)
+  .filter((name) => validateUsernameServer(name).length === 0);
 
 // building blocks for the generated names
 const WORDS_A = ["Shadow", "Night", "Iron", "Frost", "Pixel", "Rogue", "Storm", "Lucky", "Cyber", "Neon",
