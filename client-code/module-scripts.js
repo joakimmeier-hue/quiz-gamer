@@ -1400,7 +1400,8 @@ function validateUsernameRules(rawName) {
     const spaceCount = (rawName.match(/ /g) || []).length;
     if (spaceCount > 1) errors.push("Only one space allowed");
     const invalidCharRegex = /[^a-zA-Z0-9åäöÅÄÖ\-_. ]/; 
-    if (rawName.length > 0 && invalidCharRegex.test(rawName)) {
+    const repeatedSeparatorRegex = /([_.-])\1/;
+    if (rawName.length > 0 && (invalidCharRegex.test(rawName) || repeatedSeparatorRegex.test(rawName))) {
         errors.push("Ops, invalid character");
     }
     return errors;
