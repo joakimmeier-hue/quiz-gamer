@@ -441,9 +441,17 @@ a.button-link:visited,
 a.button-link:hover {
   color: inherit !important; /* eller din önskade färg */
 }
-#cp-username-input {
+#cp-username-input,
+#change-username-input {
+  color: #fff;
+  caret-color: #fff;
   white-space: nowrap !important; /* Förhindrar att texten hoppar ner på ny rad */
   overflow: hidden !important;    /* Döljer allt som går utanför bredden */
+}
+#cp-username-input::placeholder,
+#change-username-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+  opacity: 1;
 }
 
 .cp-submit-btn {

@@ -488,9 +488,8 @@ function hideCreateProfile() {
         modalAvatars.forEach(img => img.src = defaultAvatar);
 
        // Återställ fältet till placeholder för nästa användare
-        if (typeof createUsernameInput !== 'undefined' && createUsernameInput) {
-            createUsernameInput.textContent = createDefaultPlaceholder;
-            createUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
+       if (typeof createUsernameInput !== 'undefined' && createUsernameInput) {
+           createUsernameInput.value = "";
         }
         if (typeof createProfileSubmitBtn !== 'undefined' && createProfileSubmitBtn) {
             createProfileSubmitBtn.classList.remove('is-active');
@@ -558,8 +557,7 @@ createProfileSubmitBtn.addEventListener('click', async (e) => {
         errors.push("Please select a profile picture");
     }
 
-    let rawName = (createUsernameInput.textContent || "").replace(/\u00A0/g, ' ').trim();
-    if (rawName === createDefaultPlaceholder) rawName = "";
+    const rawName = createUsernameInput.value.replace(/\u00A0/g, ' ').trim();
     
     // -- KÖR DELAD VALIDERING --
     errors = errors.concat(validateUsernameRules(rawName));
@@ -643,31 +641,14 @@ if (typeof loadUserData === 'function' && currentUser) {
 // ==========================================
 const changeProfileSubmitBtn = document.getElementById('cp-change-btn'); 
 const changeUsernameInput = document.getElementById('change-username-input'); 
-// Ensure changeUsernameInput is focusable if needed
-if (changeUsernameInput) {
-  if (!changeUsernameInput.hasAttribute('tabindex')) {
-    changeUsernameInput.setAttribute('tabindex', '0');
-  }
-}
-
 const changeErrorMsgEl = document.getElementById('cp-error-msg-change');
 const changeInfoText = document.getElementById('cp-change-info'); 
 const changeDefaultPlaceholder = "New username";
 
 function lockOutNameChangeUI() {
     if (changeUsernameInput) {
-        // Make non-editable and non-interactive
-        changeUsernameInput.setAttribute('contenteditable', 'false');
-        changeUsernameInput.style.pointerEvents = 'none';
-        changeUsernameInput.textContent = changeDefaultPlaceholder;
-        changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
-
-        // Ensure it cannot be focused (remove tabindex), blur if focused,
-        // and mark it so handlers can quickly short-circuit.
-        try {
-          changeUsernameInput.blur();
-        } catch (err) { /* ignore */ }
-        changeUsernameInput.removeAttribute('tabindex');
+        changeUsernameInput.value = "";
+        changeUsernameInput.disabled = true;
         changeUsernameInput.dataset.locked = 'true';
     }
     if (changeProfileSubmitBtn) {
@@ -691,8 +672,7 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
         changeErrorMsgEl.innerHTML = "";
     }
 
-    let rawName = (changeUsernameInput.textContent || "").replace(/\u00A0/g, ' ').trim();
-    if (rawName === changeDefaultPlaceholder) rawName = "";
+    const rawName = changeUsernameInput.value.replace(/\u00A0/g, ' ').trim();
     
     // -- KÖR DELAD VALIDERING (client-side instant feedback) --
     let errors = validateUsernameRules(rawName);
@@ -1040,9 +1020,8 @@ if (googleLoginBtn) {
             changeModalTarget.style.display = 'none';
             
             // POINT 1: Återställ fältet när modalen stängs (om de inte är permanent låsta)
-            if (changeUsernameInput && changeUsernameInput.getAttribute('contenteditable') !== 'false') {
-                changeUsernameInput.textContent = changeDefaultPlaceholder;
-                changeUsernameInput.style.color = "rgba(255, 255, 255, 0.35)";
+            if (changeUsernameInput && !changeUsernameInput.disabled) {
+                changeUsernameInput.value = "";
                 
                 if (changeProfileSubmitBtn) {
                     changeProfileSubmitBtn.classList.remove('is-active');
@@ -1355,33 +1334,19 @@ if (currentSlug === 'score-review' && cameFrom !== 'score') {
 // Denna funktion fungerar som en komponent. Den ger båda fälten exakt samma beteende.
 function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
     if (!inputEl || !btnEl) return;
-    
-    // -- START-UTSEENDE --
-    if (inputEl.textContent.trim() === defaultPlaceholder || inputEl.textContent.trim() === "") {
-        inputEl.textContent = defaultPlaceholder;
-        inputEl.style.color = "rgba(255, 255, 255, 0.35)";
-    }
-    // -- FOKUS --
-    inputEl.addEventListener('focus', () => {
-        if (inputEl.textContent.trim() === defaultPlaceholder) {
-            inputEl.textContent = "";
-        }
-        inputEl.style.color = "rgba(255, 255, 255, 1)";
-    });
+    inputEl.placeholder = defaultPlaceholder;
+    inputEl.maxLength = 14;
+
     // -- BLUR --
     inputEl.addEventListener('blur', () => {
-        inputEl.textContent = inputEl.textContent.trim();
-        if (inputEl.textContent === "") {
-            inputEl.textContent = defaultPlaceholder;
-            inputEl.style.color = "rgba(255, 255, 255, 0.35)";
-        }
+        inputEl.value = inputEl.value.trim();
     });
     // -- TANGENTTRYCK (Enter, Mellanslag, Max 14) --
     inputEl.addEventListener('keydown', (e) => {
         e.stopPropagation();
-        const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
-        const currentText = inputEl.textContent || "";
-        const selection = window.getSelection().toString(); 
+        const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'Tab'];
+        const currentText = inputEl.value;
+        const selectionLength = inputEl.selectionEnd - inputEl.selectionStart;
         
         // ENTER: Hindra radbyte och klicka på fältets tillhörande knapp
         if (e.key === 'Enter') { 
@@ -1399,22 +1364,23 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
         }
         
         // MAX 14 TECKEN (Fysisk spärr, tillåter navigering/radering)
-        if (currentText.length >= 14 && selection.length === 0 && !allowedKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
+        if (currentText.length >= inputEl.maxLength && selectionLength === 0 && !allowedKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
             e.preventDefault(); 
         }
     });
     // -- KLISTRA IN (Tvätta bort radbrytningar) --
     inputEl.addEventListener('paste', (e) => {
         e.preventDefault();
-        let pasteText = (e.clipboardData || window.clipboardData).getData('text');
-        pasteText = pasteText.replace(/[\r\n]+/g, '');
-        document.execCommand('insertText', false, pasteText);
+        const pasteText = e.clipboardData.getData('text').replace(/[\r\n]+/g, '');
+        const start = inputEl.selectionStart;
+        const end = inputEl.selectionEnd;
+        const available = inputEl.maxLength - (inputEl.value.length - (end - start));
+        inputEl.setRangeText(pasteText.slice(0, Math.max(0, available)), start, end, 'end');
+        inputEl.dispatchEvent(new Event('input', { bubbles: true }));
     });
     // -- VÄCK KNAPPEN NÄR MAN SKRIVER --
     inputEl.addEventListener('input', () => {
-    let rawText = inputEl.textContent || "";
-
-    if (rawText.trim().length > 0 && rawText.trim() !== defaultPlaceholder) {
+    if (inputEl.value.trim().length > 0) {
         btnEl.classList.add('is-active');
         btnEl.style.pointerEvents = 'auto';
     } else {
