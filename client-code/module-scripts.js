@@ -707,9 +707,6 @@ function lockOutNameChangeUI() {
         changeUsernameInput.removeAttribute('tabindex');
         changeUsernameInput.dataset.locked = 'true';
     }
-    if (changeInfoText) {
-        changeInfoText.textContent = "Username already changed once, sorry!";
-    }
     if (changeProfileSubmitBtn) {
         changeProfileSubmitBtn.textContent = "Change";
         changeProfileSubmitBtn.classList.remove('is-active');
@@ -1059,6 +1056,20 @@ if (googleLoginBtn) {
         if (changeModal) {
             changeModal.style.display = 'flex';
             changeModal.style.opacity = '0';
+            if (changeUsernameInput?.dataset.locked === 'true' && changeInfoText) {
+                changeInfoText.textContent = "Username already changed once, sorry!";
+            }
+            if (changeUsernameInput &&
+                changeUsernameInput.getAttribute('contenteditable') !== 'false' &&
+                changeUsernameInput.dataset.locked !== 'true') {
+                setTimeout(() => {
+                    if (changeModal.style.display !== 'none' &&
+                        changeUsernameInput.getAttribute('contenteditable') !== 'false' &&
+                        changeUsernameInput.dataset.locked !== 'true') {
+                        focusContentEditableAtEnd(changeUsernameInput);
+                    }
+                }, 1000);
+            }
             // Liten delay så display:flex hinner registreras innan opacity animeras
             setTimeout(() => {
               changeModal.style.transition = 'opacity 200ms ease';
@@ -1387,7 +1398,7 @@ if (currentSlug === 'score-review' && cameFrom !== 'score') {
 }
 
 // ==========================================
-// ── 1. DELAD KOMPONENT FÖR TEXTFÄLT ──
+// ── 1. SHARED COMPONENT FOR TEXT FIELD ──
 // ==========================================
 // Denna funktion fungerar som en komponent. Den ger båda fälten exakt samma beteende.
 function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
