@@ -1463,6 +1463,16 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
     inputEl.addEventListener('input', () => {
     let rawText = inputEl.textContent || "";
 
+    if (rawText === "" && document.activeElement === inputEl) {
+        inputEl.replaceChildren(document.createElement('br'));
+        const range = document.createRange();
+        range.setStart(inputEl, 0);
+        range.collapse(true);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+
     // Select/change username, clear input field
     if (rawText !== defaultPlaceholder && rawText.includes(defaultPlaceholder)) {
         const cleaned = rawText.split(defaultPlaceholder).join('');
