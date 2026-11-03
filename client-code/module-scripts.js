@@ -1062,14 +1062,13 @@ if (googleLoginBtn) {
             if (changeUsernameInput &&
                 changeUsernameInput.getAttribute('contenteditable') !== 'false' &&
                 changeUsernameInput.dataset.locked !== 'true') {
-                setTimeout(() => {
+                
                     if (changeModal.style.display !== 'none' &&
                         changeUsernameInput.getAttribute('contenteditable') !== 'false' &&
                         changeUsernameInput.dataset.locked !== 'true') {
                         focusContentEditableAtEnd(changeUsernameInput);
                     }
-                }, 2000);
-            }
+                }
             // Liten delay så display:flex hinner registreras innan opacity animeras
             setTimeout(() => {
               changeModal.style.transition = 'opacity 200ms ease';
@@ -1422,6 +1421,8 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
         inputEl.textContent = emptyCaretMarker;
         placeCaretAtEnd();
     };
+
+    
     // store placeholder on element so focus helper can detect it reliably
     inputEl.dataset.defaultPlaceholder = defaultPlaceholder;
     // -- START-UTSEENDE --
