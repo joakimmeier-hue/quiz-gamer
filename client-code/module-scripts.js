@@ -1466,8 +1466,8 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
     if (rawText === "" && document.activeElement === inputEl) {
         inputEl.replaceChildren(document.createElement('br'));
         const range = document.createRange();
-        range.setStart(inputEl, 0);
-        range.collapse(true);
+        range.selectNodeContents(inputEl);
+        range.collapse(false);
         const selection = window.getSelection();
         selection.removeAllRanges();
         selection.addRange(range);
