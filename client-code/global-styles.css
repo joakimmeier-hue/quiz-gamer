@@ -441,6 +441,8 @@ a.button-link:visited,
 a.button-link:hover {
   color: inherit !important; /* eller din önskade färg */
 }
+
+/* CP - create and change username input */
 #cp-username-input,
 #change-username-input {
   color: #fff;
@@ -452,6 +454,10 @@ a.button-link:hover {
 #change-username-input::placeholder {
   color: rgba(255, 255, 255, 0.35);
   opacity: 1;
+}
+#cp-username-input:focus::placeholder,
+#change-username-input:focus::placeholder {
+  opacity: 0;
 }
 
 .cp-submit-btn {
