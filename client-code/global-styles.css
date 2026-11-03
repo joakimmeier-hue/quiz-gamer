@@ -756,7 +756,10 @@ a.button-link:hover {
 /* Special hover LB Ppic */
 .leaderboard-overlay .ppic-lb {
   transition: scale 0.25s ease; /* Gör hoovringen mjuk och snygg */
-  transform-origin: 0% 80%; /* Sätter ankarpunkten nere till vänster (eller 'left bottom') */
+  @media (max-width: 991px) {
+    transform-origin: 0% 80%; /* Sätter ankarpunkten nere till vänster (eller 'left bottom') */
+  }
+  
 }
 .leaderboard-overlay .ppic-lb:hover {
   scale: 3;
