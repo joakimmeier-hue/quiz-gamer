@@ -579,7 +579,7 @@ createProfileSubmitBtn.addEventListener('click', async (e) => {
         errors.push("Please select a profile picture");
     }
 
-    let rawName = (createUsernameInput.textContent || "").replace(/\u00A0/g, ' ').trim();
+    let rawName = (createUsernameInput.textContent || "").replace(/\u200B/g, '').replace(/\u00A0/g, ' ').trim();
     if (rawName === createDefaultPlaceholder) rawName = "";
     
     // -- KÖR DELAD VALIDERING --
@@ -728,7 +728,7 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
         changeErrorMsgEl.innerHTML = "";
     }
 
-    let rawName = (changeUsernameInput.textContent || "").replace(/\u00A0/g, ' ').trim();
+    let rawName = (changeUsernameInput.textContent || "").replace(/\u200B/g, '').replace(/\u00A0/g, ' ').trim();
     if (rawName === changeDefaultPlaceholder) rawName = "";
     
     // -- KÖR DELAD VALIDERING (client-side instant feedback) --
@@ -1398,11 +1398,24 @@ if (currentSlug === 'score-review' && cameFrom !== 'score') {
 }
 
 // ==========================================
-// ── 1. SHARED COMPONENT FOR TEXT FIELD ──
+// ── 1. SHARED COMPONENT FOR TEXT FIELD ── cp at least
 // ==========================================
 // Denna funktion fungerar som en komponent. Den ger båda fälten exakt samma beteende.
 function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
     if (!inputEl || !btnEl) return;
+    const emptyCaretMarker = '\u200B';
+    const placeCaretAtEnd = () => {
+        const range = document.createRange();
+        range.selectNodeContents(inputEl);
+        range.collapse(false);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+    };
+    const showEmptyCaret = () => {
+        inputEl.textContent = emptyCaretMarker;
+        placeCaretAtEnd();
+    };
     // store placeholder on element so focus helper can detect it reliably
     inputEl.dataset.defaultPlaceholder = defaultPlaceholder;
     // -- START-UTSEENDE --
@@ -1416,10 +1429,11 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
             inputEl.textContent = "";
         }
         inputEl.style.color = "rgba(255, 255, 255, 1)";
+        if (inputEl.textContent === "") showEmptyCaret();
     });
     // -- BLUR --
     inputEl.addEventListener('blur', () => {
-        inputEl.textContent = inputEl.textContent.trim();
+        inputEl.textContent = inputEl.textContent.replace(/\u200B/g, '').trim();
         if (inputEl.textContent === "") {
             inputEl.textContent = defaultPlaceholder;
             inputEl.style.color = "rgba(255, 255, 255, 0.35)";
@@ -1429,7 +1443,7 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
     inputEl.addEventListener('keydown', (e) => {
         e.stopPropagation();
         const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
-        const currentText = inputEl.textContent || "";
+        const currentText = (inputEl.textContent || "").replace(/\u200B/g, '');
         const selection = window.getSelection().toString(); 
         
         // ENTER: Hindra radbyte och klicka på fältets tillhörande knapp
@@ -1463,14 +1477,14 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
     inputEl.addEventListener('input', () => {
     let rawText = inputEl.textContent || "";
 
+    if (rawText.includes(emptyCaretMarker)) {
+        rawText = rawText.replace(/\u200B/g, '');
+        inputEl.textContent = rawText;
+        if (document.activeElement === inputEl && rawText !== "") placeCaretAtEnd();
+    }
+
     if (rawText === "" && document.activeElement === inputEl) {
-        inputEl.replaceChildren(document.createElement('br'));
-        const range = document.createRange();
-        range.selectNodeContents(inputEl);
-        range.collapse(false);
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
+        showEmptyCaret();
     }
 
     // Select/change username, clear input field
