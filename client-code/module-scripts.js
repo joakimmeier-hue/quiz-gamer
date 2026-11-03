@@ -523,27 +523,6 @@ if (typeof createUsernameInput !== 'undefined' && createUsernameInput && !create
   createUsernameInput.setAttribute('tabindex', '0');
 }
 
-// Ensure single-tap focus on mobile/desktop: only focus when the user actually taps/clicks.
-// We add touchstart and mousedown handlers which call the same focus helper used elsewhere.
-if (typeof createUsernameInput !== 'undefined' && createUsernameInput) {
-  const cpUserFirstInteraction = (e) => {
-    // If already focused, do nothing
-    if (document.activeElement === createUsernameInput) return;
-    // Focus and place caret at end (also clears placeholder if matches)
-    focusContentEditableAtEnd(createUsernameInput);
-    // Let the browser continue; do NOT preventDefault here — we want normal input behavior afterwards.
-  };
-
-  // touchstart ensures immediate focus on mobile; mousedown helps desktop first-click cases.
-  createUsernameInput.addEventListener('touchstart', cpUserFirstInteraction, { passive: true });
-  createUsernameInput.addEventListener('mousedown', cpUserFirstInteraction);
-  // as a fallback, ensure click also focuses if nothing else did
-  createUsernameInput.addEventListener('click', (e) => {
-    if (document.activeElement !== createUsernameInput) focusContentEditableAtEnd(createUsernameInput);
-  });
-}
-
-
 if (createProfileSubmitBtn && createUsernameInput) {
   
   // 1. Koppla fältet till vår nya gemensamma funktion
@@ -579,7 +558,7 @@ createProfileSubmitBtn.addEventListener('click', async (e) => {
         errors.push("Please select a profile picture");
     }
 
-    let rawName = (createUsernameInput.textContent || "").replace(/\u200B/g, '').replace(/\u00A0/g, ' ').trim();
+    let rawName = (createUsernameInput.textContent || "").replace(/\u00A0/g, ' ').trim();
     if (rawName === createDefaultPlaceholder) rawName = "";
     
     // -- KÖR DELAD VALIDERING --
@@ -664,27 +643,11 @@ if (typeof loadUserData === 'function' && currentUser) {
 // ==========================================
 const changeProfileSubmitBtn = document.getElementById('cp-change-btn'); 
 const changeUsernameInput = document.getElementById('change-username-input'); 
-// Ensure changeUsernameInput exists and is focusable if needed
+// Ensure changeUsernameInput is focusable if needed
 if (changeUsernameInput) {
   if (!changeUsernameInput.hasAttribute('tabindex')) {
     changeUsernameInput.setAttribute('tabindex', '0');
   }
-
-  const chUserFirstInteraction = (e) => {
-    // If the field is locked (contenteditable false) or explicitly flagged as locked, do nothing.
-    if (changeUsernameInput.getAttribute('contenteditable') === 'false' || changeUsernameInput.dataset.locked === 'true') return;
-    // If already focused, nothing to do
-    if (document.activeElement === changeUsernameInput) return;
-    // Otherwise focus & place caret
-    focusContentEditableAtEnd(changeUsernameInput);
-  };
-
-  changeUsernameInput.addEventListener('touchstart', chUserFirstInteraction, { passive: true });
-  changeUsernameInput.addEventListener('mousedown', chUserFirstInteraction);
-  changeUsernameInput.addEventListener('click', (e) => {
-    if (changeUsernameInput.getAttribute('contenteditable') === 'false' || changeUsernameInput.dataset.locked === 'true') return;
-    if (document.activeElement !== changeUsernameInput) focusContentEditableAtEnd(changeUsernameInput);
-  });
 }
 
 const changeErrorMsgEl = document.getElementById('cp-error-msg-change');
@@ -728,7 +691,7 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
         changeErrorMsgEl.innerHTML = "";
     }
 
-    let rawName = (changeUsernameInput.textContent || "").replace(/\u200B/g, '').replace(/\u00A0/g, ' ').trim();
+    let rawName = (changeUsernameInput.textContent || "").replace(/\u00A0/g, ' ').trim();
     if (rawName === changeDefaultPlaceholder) rawName = "";
     
     // -- KÖR DELAD VALIDERING (client-side instant feedback) --
@@ -1059,16 +1022,6 @@ if (googleLoginBtn) {
             if (changeUsernameInput?.dataset.locked === 'true' && changeInfoText) {
                 changeInfoText.textContent = "Username already changed once, sorry!";
             }
-            if (changeUsernameInput &&
-                changeUsernameInput.getAttribute('contenteditable') !== 'false' &&
-                changeUsernameInput.dataset.locked !== 'true') {
-                
-                    if (changeModal.style.display !== 'none' &&
-                        changeUsernameInput.getAttribute('contenteditable') !== 'false' &&
-                        changeUsernameInput.dataset.locked !== 'true') {
-                        focusContentEditableAtEnd(changeUsernameInput);
-                    }
-                }
             // Liten delay så display:flex hinner registreras innan opacity animeras
             setTimeout(() => {
               changeModal.style.transition = 'opacity 200ms ease';
@@ -1402,29 +1355,7 @@ if (currentSlug === 'score-review' && cameFrom !== 'score') {
 // Denna funktion fungerar som en komponent. Den ger båda fälten exakt samma beteende.
 function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
     if (!inputEl || !btnEl) return;
-    const emptyCaretMarker = '\u200B';
-    const placeCaretAtEnd = () => {
-        const range = document.createRange();
-        const textNode = inputEl.firstChild;
-        if (inputEl.childNodes.length === 1 && textNode.nodeType === Node.TEXT_NODE) {
-            range.setStart(textNode, textNode.length);
-            range.collapse(true);
-        } else {
-            range.selectNodeContents(inputEl);
-            range.collapse(false);
-        }
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
-    };
-    const showEmptyCaret = () => {
-        inputEl.textContent = emptyCaretMarker;
-        placeCaretAtEnd();
-    };
-
     
-    // store placeholder on element so focus helper can detect it reliably
-    inputEl.dataset.defaultPlaceholder = defaultPlaceholder;
     // -- START-UTSEENDE --
     if (inputEl.textContent.trim() === defaultPlaceholder || inputEl.textContent.trim() === "") {
         inputEl.textContent = defaultPlaceholder;
@@ -1436,11 +1367,10 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
             inputEl.textContent = "";
         }
         inputEl.style.color = "rgba(255, 255, 255, 1)";
-        if (inputEl.textContent === "") showEmptyCaret();
     });
     // -- BLUR --
     inputEl.addEventListener('blur', () => {
-        inputEl.textContent = inputEl.textContent.replace(/\u200B/g, '').trim();
+        inputEl.textContent = inputEl.textContent.trim();
         if (inputEl.textContent === "") {
             inputEl.textContent = defaultPlaceholder;
             inputEl.style.color = "rgba(255, 255, 255, 0.35)";
@@ -1450,7 +1380,7 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
     inputEl.addEventListener('keydown', (e) => {
         e.stopPropagation();
         const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
-        const currentText = (inputEl.textContent || "").replace(/\u200B/g, '');
+        const currentText = inputEl.textContent || "";
         const selection = window.getSelection().toString(); 
         
         // ENTER: Hindra radbyte och klicka på fältets tillhörande knapp
@@ -1484,34 +1414,6 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
     inputEl.addEventListener('input', () => {
     let rawText = inputEl.textContent || "";
 
-    if (rawText.includes(emptyCaretMarker)) {
-        rawText = rawText.replace(/\u200B/g, '');
-        inputEl.textContent = rawText;
-        if (document.activeElement === inputEl && rawText !== "") placeCaretAtEnd();
-    }
-
-    if (rawText === "" && document.activeElement === inputEl) {
-        showEmptyCaret();
-    }
-
-    // Select/change username, clear input field
-    if (rawText !== defaultPlaceholder && rawText.includes(defaultPlaceholder)) {
-        const cleaned = rawText.split(defaultPlaceholder).join('');
-        inputEl.textContent = cleaned;
-        inputEl.style.color = "rgba(255, 255, 255, 1)";
-
-        try {
-            const range = document.createRange();
-            const sel = window.getSelection();
-            range.selectNodeContents(inputEl);
-            range.collapse(false);
-            sel.removeAllRanges();
-            sel.addRange(range);
-        } catch (err) { /* non-fatal */ }
-
-        rawText = cleaned;
-    }
-
     if (rawText.trim().length > 0 && rawText.trim() !== defaultPlaceholder) {
         btnEl.classList.add('is-active');
         btnEl.style.pointerEvents = 'auto';
@@ -1520,40 +1422,6 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
         btnEl.style.pointerEvents = 'none';
     }
   });
-}
-// helper: focus a contenteditable and place caret at end
-// Also clears a stored data-default-placeholder if the element currently contains it.
-function focusContentEditableAtEnd(el) {
-  if (!el) return;
-  try {
-    // Ensure element is focusable
-    if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
-
-    // If the element contains the stored placeholder text, clear it now
-    const storedPlaceholder = el.dataset.defaultPlaceholder;
-    if (storedPlaceholder && el.textContent.trim() === storedPlaceholder) {
-      el.textContent = "";
-      el.style.color = "rgba(255, 255, 255, 1)";
-    }
-
-    el.focus();
-    if (el.textContent === "") el.textContent = '\u200B';
-    const range = document.createRange();
-    const textNode = el.firstChild;
-    if (el.childNodes.length === 1 && textNode.nodeType === Node.TEXT_NODE) {
-      range.setStart(textNode, textNode.length);
-      range.collapse(true);
-    } else {
-      range.selectNodeContents(el);
-      range.collapse(false);
-    }
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(range);
-  } catch (err) {
-    // non-fatal, fail silently
-    console.warn('focusContentEditableAtEnd error', err);
-  }
 }
 // -- DELAD VALIDERINGS-KOMPONENT --
 function validateUsernameRules(rawName) {
