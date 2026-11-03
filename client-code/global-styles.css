@@ -450,6 +450,13 @@ a.button-link:hover {
   white-space: nowrap !important; /* Förhindrar att texten hoppar ner på ny rad */
   /* overflow: hidden !important;  */   /* Döljer allt som går utanför bredden */
 }
+@supports (field-sizing: content) {
+  #cp-username-input,
+  #change-username-input {
+    field-sizing: content;
+    width: auto !important;
+  }
+}
 #cp-username-input::placeholder,
 #change-username-input::placeholder {
   color: rgba(255, 255, 255, 0.35);
