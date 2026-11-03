@@ -1406,8 +1406,14 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
     const emptyCaretMarker = '\u200B';
     const placeCaretAtEnd = () => {
         const range = document.createRange();
-        range.selectNodeContents(inputEl);
-        range.collapse(false);
+        const textNode = inputEl.firstChild;
+        if (inputEl.childNodes.length === 1 && textNode.nodeType === Node.TEXT_NODE) {
+            range.setStart(textNode, textNode.length);
+            range.collapse(true);
+        } else {
+            range.selectNodeContents(inputEl);
+            range.collapse(false);
+        }
         const selection = window.getSelection();
         selection.removeAllRanges();
         selection.addRange(range);
@@ -1530,9 +1536,16 @@ function focusContentEditableAtEnd(el) {
     }
 
     el.focus();
+    if (el.textContent === "") el.textContent = '\u200B';
     const range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(false); // caret at end
+    const textNode = el.firstChild;
+    if (el.childNodes.length === 1 && textNode.nodeType === Node.TEXT_NODE) {
+      range.setStart(textNode, textNode.length);
+      range.collapse(true);
+    } else {
+      range.selectNodeContents(el);
+      range.collapse(false);
+    }
     const sel = window.getSelection();
     sel.removeAllRanges();
     sel.addRange(range);
