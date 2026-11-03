@@ -1068,7 +1068,7 @@ if (googleLoginBtn) {
                         changeUsernameInput.dataset.locked !== 'true') {
                         focusContentEditableAtEnd(changeUsernameInput);
                     }
-                }, 1000);
+                }, 1400);
             }
             // Liten delay så display:flex hinner registreras innan opacity animeras
             setTimeout(() => {
