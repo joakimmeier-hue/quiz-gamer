@@ -2412,6 +2412,16 @@ if (location.hash === '#leaderboard') {
             const image = event.target.closest('.ppic-lb');
             if (image && rowList.contains(image)) showAvatarPreview(image);
           });
+          document.addEventListener('pointerup', (event) => {
+            if (event.pointerType !== 'touch') return;
+            const image = event.target.closest?.('.ppic-lb');
+            if (image && rowList.contains(image)) {
+              if (previewSource === image) hideAvatarPreview();
+              else showAvatarPreview(image);
+            } else {
+              hideAvatarPreview();
+            }
+          });
           document.addEventListener('pointermove', (event) => {
             if (!previewSource) return;
             const image = event.target.closest?.('.ppic-lb');
