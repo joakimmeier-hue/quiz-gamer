@@ -753,6 +753,7 @@ a.button-link:hover {
   animation: rowFadeIn 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
+/* Special hover/press scale on lb Ppic */
 .lb-avatar-hover-preview {
   position: fixed;
   z-index: 2147483647;
@@ -761,6 +762,9 @@ a.button-link:hover {
   opacity: 1;
   scale: 1;
   transition: scale 0.18s ease;
+}
+.lb-avatar-hover-preview[hidden] {
+  display: none;
 }
 .lb-avatar-hover-preview.is-visible {
   scale: 3;
