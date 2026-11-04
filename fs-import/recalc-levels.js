@@ -15,9 +15,9 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
-// ── COPY of the curve from functions/index.js ──
+// ── COPY of the curve from functions/index.js: keep this in sync. ──
 function levelCost(level) {
-  return level * 128;
+  return level * 512;
 }
 
 function calcLevelInfo(totalScore) {

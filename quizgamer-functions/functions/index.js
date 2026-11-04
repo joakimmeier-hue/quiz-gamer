@@ -133,10 +133,10 @@ function calcUnlimitedScore(correctAnswers, weightedCorrect, seconds, totalQuest
   return Math.max(Math.ceil(raw), 1);
 }
 
-// Cumulative threshold: level N requires sum of 128*1 + 128*2 + ... + 128*(N-1)
-// The only place that defines the curve. Change this later to slow progression.
+// Cumulative threshold: level N requires sum of 512*1 + 512*2 + ... + 512*(N-1).
+// Keep the copies in fs-import/recalc-levels.js and seed-bots.js in sync.
 function levelCost(level) {
-  return level * 128;
+  return level * 512;
 }
 
 function calcLevelInfo(totalScore) {

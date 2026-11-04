@@ -25,10 +25,10 @@ const admin = require("firebase-admin");
 
 // ───────────── SETTINGS (edit freely) ─────────────
 const SEED = 20261104;               // change it to get a completely new set of bots
-const POOL_SIZE = 400;               // total bots. Your names first, the rest are generated
+const POOL_SIZE = 500;               // total bots. Your names first, the rest are generated
 const BOT_PREFIX = "bot_";           // uid prefix, this is how bots are recognised
 const TIERS = [1, 2, 3, 4];          // add 5 when it exists
-const TOTAL_RANGE = [7542, 387431];  // total score of the whole bot pool
+const TOTAL_RANGE = [7542, 477431];  // total score of the whole bot pool
 const HIGHSCORE_RANGE = [113, 518]; // per list, Tier 1 values. Higher tiers get the tier multiplier on top
 const UNLIM_FACTOR = 1.3;              // unlimited lists ≈ highscore range x this (±8 % jitter)
 
@@ -71,10 +71,10 @@ function validateUsernameServer(rawName) {
 
 const PIC_REGEX = /^https:\/\/cdn\.prod\.website-files\.com\/693d8d6b18be20357a9cf397\/[A-Za-z0-9_.-]+\.webp$/;
 
-// Cumulative threshold: level N requires sum of 128*1 + 128*2 + ... + 128*(N-1)
-// The only place that defines the curve. Change this later to slow progression.
+// Cumulative threshold: level N requires sum of 512*1 + 512*2 + ... + 512*(N-1).
+// Keep this copy in sync with functions/index.js and recalc-levels.js.
 function levelCost(level) {
-  return level * 128;
+  return level * 512;
 }
 
 function calcLevelInfo(totalScore) {
@@ -240,13 +240,12 @@ const toEntry = (b, score) => ({
 
 // one highscore / unlimited list for a topic + tier
 function buildBoard(bots, topic, tier, unlimited) {
-  // 1. who is on the list: bots that are high enough level for this tier first,
-  //    bots whose fav topic matches the list are a bit more likely to be on it
+  // Only bots meeting the tier's required level can appear on that board.
+  // Matching favorite topics makes a bot somewhat more likely to be selected.
   const need = TIER_REQUIREMENTS[tier];
   const key = (b) => rand() + (b.favTopic === topic ? 0.5 : 0);
   const eligible = bots.filter((b) => b.level >= need).map((b) => [key(b), b]).sort((x, y) => y[0] - x[0]).map((x) => x[1]);
-  const rest = bots.filter((b) => b.level < need).map((b) => [rand(), b]).sort((x, y) => y[0] - x[0]).map((x) => x[1]);
-  const chosen = eligible.concat(rest).slice(0, TOP_N);
+  const chosen = eligible.slice(0, TOP_N);
 
   // 2. their scores: skill drives most of it, a bit of luck, and the curve bunches
   //    most bots at the low end while only a few elite-question runs reach the top
@@ -258,7 +257,7 @@ function buildBoard(bots, topic, tier, unlimited) {
     if (unlimited) s *= UNLIM_FACTOR * (0.92 + rand() * 0.16);
     return toEntry(b, Math.ceil(s * TIER_MULTIPLIERS[tier]));
   });
-  return { entries, underLevel: chosen.filter((b) => b.level < need).length };
+  return { entries, eligibleCount: eligible.length };
 }
 
 // real entries are never displaced: only the lowest bots are cut when the list is full
@@ -290,7 +289,9 @@ function confirm(q) {
 }
 
 const line = (id, e) =>
-  `  ${id.padEnd(24)} ${String(e.length).padStart(3)} rows   ${fmt(e[0].score)} … ${fmt(e[e.length - 1].score)}   (Lvl ${e[0].level} … ${e[e.length - 1].level})`;
+  e.length
+    ? `  ${id.padEnd(24)} ${String(e.length).padStart(3)} rows   ${fmt(e[0].score)} … ${fmt(e[e.length - 1].score)}   (Lvl ${e[0].level} … ${e[e.length - 1].level})`
+    : `  ${id.padEnd(24)}   0 rows   (no eligible bots or real entries)`;
 
 async function seed(dry) {
   const avatars = await loadAvatars();
@@ -323,7 +324,9 @@ async function seed(dry) {
       for (const kind of ["score", "unlim"]) {
         const id = `${kind}-${topic}-l${tier}`;
         const b = buildBoard(bots, topic, tier, kind === "unlim");
-        if (b.underLevel) warnings.push(`${id}: ${b.underLevel} bots are below the level this tier requires (not enough high-level bots in the pool)`);
+        if (b.eligibleCount < TOP_N) {
+          warnings.push(`${id}: ${b.eligibleCount} eligible bots; under-level bots skipped, so the bot portion will have fewer than ${TOP_N} entries.`);
+        }
         boards[id] = mergeBoard(existing[id], b.entries);
       }
     }
@@ -355,6 +358,8 @@ async function seed(dry) {
     if (id.startsWith("score-") && entries.length) {
       w.set(db.collection("leaderboards").doc(id.slice("score-".length)),
         { topScore: entries[0].score, topUsername: entries[0].username, updatedAt: now }, { merge: true });
+    } else if (id.startsWith("score-")) {
+      w.delete(db.collection("leaderboards").doc(id.slice("score-".length)));
     }
   }
   await w.close();
