@@ -2335,10 +2335,14 @@ if (location.hash === '#leaderboard') {
         }
       };
 
-        // Row template: the plain .lb-column row (not .header) is cloned once per player
-        const tplRow = overlay.querySelector('.lb-column:not(.header)');
-        if (!tplRow) console.warn('lb: no template row (.lb-column without .header)');
-        const rowList = tplRow ? tplRow.parentElement : null;
+        // Keep the header fixed; cloned player rows belong in the scroll container.
+        const lbWrapper = overlay.querySelector('.lb-wrapper');
+        const rowList = lbWrapper && lbWrapper.querySelector('.lb-scroll');
+        const tplRow = rowList && [...rowList.children].find(
+          child => child.matches('.lb-column:not(.header)')
+        );
+        if (!rowList) console.warn('lb: missing .lb-scroll inside .lb-wrapper');
+        else if (!tplRow) console.warn('lb: no direct .lb-column row template inside .lb-scroll');
         const rowTemplate = tplRow ? tplRow.cloneNode(true) : null;
         if (tplRow) tplRow.remove();
 
@@ -2399,7 +2403,6 @@ if (location.hash === '#leaderboard') {
       };
 
       /* Abbreviate large numbers in Score column */
-      const lbWrapper = overlay.querySelector('.lb-wrapper');
       const SCORE_STEPS = [Infinity, 1000000, 100000, 10000]; // abbreviate scores >= this   
       const lbLang = (document.documentElement.lang || 'en').split('-')[0];
       const compactFmt = new Intl.NumberFormat(lbLang, { notation: 'compact', maximumFractionDigits: 1 });
