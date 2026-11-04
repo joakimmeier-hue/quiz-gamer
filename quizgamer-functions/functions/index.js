@@ -562,15 +562,24 @@ verifiedTimeSecs = Math.max(verifiedTimeSecs, answeredCount * MIN_SECS_PER_ANSWE
   // 7. Compute live LEVEL leaderboard position
   let leaderboardPosition = null;
   if (onLeaderboard) {
-  const betterSnap = await db
-    .collectionGroup("attempts")
-    .where("topic", "==", topic)
-    .where("level", "==", level)
-    .where("bestScore", ">", newBest)
-    .count()
-    .get();
-  leaderboardPosition = betterSnap.data().count + 1;
-}
+    const [betterSnap, boardSnap] = await Promise.all([
+      db.collectionGroup("attempts")
+        .where("topic", "==", topic)
+        .where("level", "==", level)
+        .where("bestScore", ">", newBest)
+        .count()
+        .get(),
+      db.collection("lbTop").doc(`score-${gameId}`).get(),
+    ]);
+    const betterBotCount = boardSnap.exists
+      ? (boardSnap.data().entries || []).filter(
+        (entry) => typeof entry.uid === "string" &&
+          entry.uid.startsWith("bot_") &&
+          entry.score > newBest
+      ).length
+      : 0;
+    leaderboardPosition = betterSnap.data().count + betterBotCount + 1;
+  }
   // Save game state for the review page
   await db.collection("users").doc(uid).collection("lastGame").doc("current").set({
     topic,
