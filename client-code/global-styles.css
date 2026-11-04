@@ -680,14 +680,14 @@ a.button-link:hover {
     enableClicks 0s 0.25s forwards,
     hintBob 1.6s 0.5s ease-in-out infinite;
 }
-/* FIX GRID POSITIONS: filter, then three dropdowns */
-.leaderboard-overlay .lb-row-1 {
-  grid-template-columns: auto 1fr 1fr 1fr;
+/* Filter gets its own intrinsic track, followed by three equal dropdown tracks. */
+.leaderboard-overlay .lb-row-1.select-lb {
+  grid-template-columns: auto repeat(3, minmax(0, 1fr));
 }
-.leaderboard-overlay .lb-row-1 > :nth-child(1) { grid-column: 1; justify-self: start; }  /* filter */
-.leaderboard-overlay .lb-row-1 > :nth-child(2) { grid-column: 2; justify-self: start; }  /* type, hugs the filter */
-.leaderboard-overlay .lb-row-1 > :nth-child(3) { grid-column: 3; justify-self: center; } /* topic */
-.leaderboard-overlay .lb-row-1 > :nth-child(4) { grid-column: 4; justify-self: end; }    /* tier */
+.leaderboard-overlay .lb-row-1.select-lb > :nth-child(1) { grid-column: 1; justify-self: start; }  /* filter */
+.leaderboard-overlay .lb-row-1.select-lb > :nth-child(2) { grid-column: 2; justify-self: start; }  /* type */
+.leaderboard-overlay .lb-row-1.select-lb > :nth-child(3) { grid-column: 3; justify-self: center; } /* topic */
+.leaderboard-overlay .lb-row-1.select-lb > :nth-child(4) { grid-column: 4; justify-self: end; }    /* tier */
 
 /* FAKE SQUARES CORNERS Find me is-highlight */
 .lb-column.is-highlight {
@@ -753,22 +753,18 @@ a.button-link:hover {
   animation: rowFadeIn 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
-/* Special hover LB Ppic */
-.leaderboard-overlay .ppic-lb {
-  transition: scale 0.25s ease; /* Gör hoovringen mjuk och snygg */
-  @media (max-width: 991px) {
-    transform-origin: 0% 80%; /* Sätter ankarpunkten nere till vänster (eller 'left bottom') */
-  }
-  
+.lb-avatar-hover-preview {
+  position: fixed;
+  z-index: 2147483647;
+  display: block;
+  pointer-events: none;
+  opacity: 0;
+  scale: 1;
+  transition: scale 0.25s ease, opacity 0.25s ease;
 }
-.leaderboard-overlay .ppic-lb:hover {
+.lb-avatar-hover-preview.is-visible {
+  opacity: 1;
   scale: 3;
-  position: relative;
-  z-index: 10;
-}
-.leaderboard-overlay .lb-column:has(.ppic-lb:hover) {
-  position: relative;
-  z-index: 10;
 }
 
 /* GAME INFO LOAD ANIMATION */

@@ -2345,6 +2345,93 @@ if (location.hash === '#leaderboard') {
         else if (!tplRow) console.warn('lb: no direct .lb-column row template inside .lb-scroll');
         const rowTemplate = tplRow ? tplRow.cloneNode(true) : null;
         if (tplRow) tplRow.remove();
+        
+        // SpecialAvatar hover preview
+        let avatarPreview = null;
+        let previewSource = null;
+        let previewHideTimer = null;
+        const hideAvatarPreview = () => {
+          previewSource = null;
+          clearTimeout(previewHideTimer);
+          if (!avatarPreview || avatarPreview.hidden) return;
+          avatarPreview.classList.remove('is-visible');
+          previewHideTimer = setTimeout(() => {
+            if (!previewSource) avatarPreview.hidden = true;
+          }, 250);
+        };
+        const showAvatarPreview = (source) => {
+          if (!avatarPreview) {
+            avatarPreview = document.createElement('img');
+            avatarPreview.className = 'lb-avatar-hover-preview';
+            avatarPreview.alt = '';
+            avatarPreview.setAttribute('aria-hidden', 'true');
+            document.body.appendChild(avatarPreview);
+          }
+          clearTimeout(previewHideTimer);
+          const isNewSource = previewSource !== source;
+          previewSource = source;
+          const rect = source.getBoundingClientRect();
+          if (!rect.width || !rect.height) {
+            hideAvatarPreview();
+            return;
+          }
+          const mobileOrigin = window.matchMedia('(max-width: 991px)').matches;
+          const originX = mobileOrigin ? 0 : 0.5;
+          const originY = mobileOrigin ? 0.8 : 0.5;
+          const scale = 3;
+          const left = rect.left - rect.width * originX * (scale - 1);
+          const top = rect.top - rect.height * originY * (scale - 1);
+          avatarPreview.style.left = `${rect.left}px`;
+          avatarPreview.style.top = `${rect.top}px`;
+          avatarPreview.style.width = `${rect.width}px`;
+          avatarPreview.style.height = `${rect.height}px`;
+          avatarPreview.style.transformOrigin = `${originX * 100}% ${originY * 100}%`;
+          if (isNewSource) {
+            const style = getComputedStyle(source);
+            avatarPreview.src = source.currentSrc || source.src;
+            avatarPreview.style.objectFit = style.objectFit;
+            avatarPreview.style.objectPosition = style.objectPosition;
+            avatarPreview.style.borderRadius = style.borderRadius;
+          }
+          avatarPreview.hidden = false;
+          if (isNewSource) {
+            requestAnimationFrame(() => {
+              if (previewSource === source) avatarPreview.classList.add('is-visible');
+            });
+          }
+          return {
+            left,
+            top,
+            right: left + rect.width * scale,
+            bottom: top + rect.height * scale,
+          };
+        };
+        if (rowList) {
+          rowList.addEventListener('pointerover', (event) => {
+            if (event.pointerType === 'touch') return;
+            const image = event.target.closest('.ppic-lb');
+            if (image && rowList.contains(image)) showAvatarPreview(image);
+          });
+          document.addEventListener('pointermove', (event) => {
+            if (!previewSource) return;
+            const image = event.target.closest?.('.ppic-lb');
+            if (image && rowList.contains(image)) {
+              showAvatarPreview(image);
+              return;
+            }
+            const bounds = showAvatarPreview(previewSource);
+            if (!bounds || event.clientX < bounds.left || event.clientX > bounds.right ||
+                event.clientY < bounds.top || event.clientY > bounds.bottom) {
+              hideAvatarPreview();
+            }
+          });
+          rowList.addEventListener('scroll', hideAvatarPreview);
+          window.addEventListener('resize', hideAvatarPreview);
+          window.addEventListener('blur', hideAvatarPreview);
+          document.addEventListener('pointerout', (event) => {
+            if (!event.relatedTarget) hideAvatarPreview();
+          });
+        }
 
       const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '-';
 
