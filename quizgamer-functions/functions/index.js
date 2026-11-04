@@ -802,7 +802,7 @@ exports.getLeaderboards = onCall(async (request) => {
   const myUid = request.auth ? request.auth.uid : null;
   const { boardId } = request.data;
   const validId = typeof boardId === "string" &&
-    (boardId === "total" || /^(score|unlim)-[a-z0-9-]+-l\d+$/.test(boardId));
+    (boardId === "total" || /^(score|unlim)-[a-z0-9&-]+-l\d+$/.test(boardId));
   if (!validId) {
     throw new HttpsError("invalid-argument", "Invalid boardId.");
   }
