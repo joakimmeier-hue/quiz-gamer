@@ -2378,7 +2378,7 @@ if (location.hash === '#leaderboard') {
           const mobileOrigin = window.matchMedia('(max-width: 991px)').matches;
           const originX = mobileOrigin ? 0 : 0.5;
           const originY = mobileOrigin ? 0.8 : 0.5;
-          const scale = 3;
+          const scale = 4;
           const left = rect.left - rect.width * originX * (scale - 1);
           const top = rect.top - rect.height * originY * (scale - 1);
           avatarPreview.style.left = `${rect.left}px`;
