@@ -758,12 +758,11 @@ a.button-link:hover {
   z-index: 2147483647;
   display: block;
   pointer-events: none;
-  opacity: 0;
+  opacity: 1;
   scale: 1;
-  transition: scale 0.18s ease; /* opacity 0.25s ease; */
+  transition: scale 0.18s ease;
 }
 .lb-avatar-hover-preview.is-visible {
-  opacity: 1;
   scale: 3;
 }
 

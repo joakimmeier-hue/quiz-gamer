@@ -2424,6 +2424,7 @@ if (location.hash === '#leaderboard') {
           });
           document.addEventListener('pointermove', (event) => {
             if (!previewSource) return;
+            if (event.pointerType === 'touch') return;
             const image = event.target.closest?.('.ppic-lb');
             if (image && rowList.contains(image)) {
               showAvatarPreview(image);
@@ -2439,7 +2440,7 @@ if (location.hash === '#leaderboard') {
           window.addEventListener('resize', hideAvatarPreview);
           window.addEventListener('blur', hideAvatarPreview);
           document.addEventListener('pointerout', (event) => {
-            if (!event.relatedTarget) hideAvatarPreview();
+            if (event.pointerType !== 'touch' && !event.relatedTarget) hideAvatarPreview();
           });
         }
 
