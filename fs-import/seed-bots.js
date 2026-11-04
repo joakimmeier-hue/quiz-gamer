@@ -24,7 +24,7 @@ const readline = require("readline");
 const admin = require("firebase-admin");
 
 // ───────────── SETTINGS (edit freely) ─────────────
-const SEED = 20261103;               // change it to get a completely new set of bots
+const SEED = 20261104;               // change it to get a completely new set of bots
 const POOL_SIZE = 400;               // total bots. Your names first, the rest are generated
 const BOT_PREFIX = "bot_";           // uid prefix, this is how bots are recognised
 const TIERS = [1, 2, 3, 4];          // add 5 when it exists
