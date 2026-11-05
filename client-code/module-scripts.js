@@ -39,6 +39,7 @@ const changeUsernameFn = httpsCallable(functions, "changeUsername");
 const getGameInfoFn = httpsCallable(functions, "getGameInfo");
 const startGameFn = httpsCallable(functions, "startGame");
 const gradeGameFn = httpsCallable(functions, "gradeGame");
+const getLeaderboardsFn = httpsCallable(functions, "getLeaderboards");
 const getReviewFn = httpsCallable(functions, 'getReview');
 const payForReviewFn = httpsCallable(functions, "payForReview");
 
@@ -2013,6 +2014,20 @@ Webflow.push(function() {
   setText('list-score', data.finalScore);
   setText('list-unlimited-score', data.unlimitedScore);
 
+  if (isFreshResult && data.topic && data.tier && data.leaderboardPosition) {
+    const boardId = `score-${String(data.topic).toLowerCase()}-l${data.tier}`;
+    getLeaderboardsFn({ boardId }).then((res) => {
+      const currentRank = res.data.entries.findIndex((entry) => entry.isMe) + 1;
+      if (currentRank > 0) {
+        data.leaderboardPosition = currentRank;
+        setText('lb-position', `#${currentRank}`);
+        sessionStorage.setItem('lastGameResultView', JSON.stringify(data));
+      }
+    }).catch((err) => {
+      console.error('Failed to refresh score-page leaderboard position:', err.message);
+    });
+  }
+
   const barEl = document.querySelector('.level-bar');
   if (barEl) barEl.style.width = ((data.levelProgress || 0) * 100) + "%";
 
@@ -2322,7 +2337,6 @@ if (location.hash === '#leaderboard') {
         }
         setLbLoading(true);
         try {
-          const getLeaderboardsFn = httpsCallable(functions, 'getLeaderboards');
           const res = await getLeaderboardsFn({ boardId: id });
           console.log('lb loaded:', id, res.data); // temporary debug, remove later
           lbCache.set(id, { t: Date.now(), entries: res.data.entries, me: res.data.me || null });
