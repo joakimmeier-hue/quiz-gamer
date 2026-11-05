@@ -4,7 +4,11 @@
     "topic": "gma",
     "level": 1,
     "text": "Vilket godis är giftigt för hundar?",
-    "alternatives": { "1": "Jordnötssmör", "2": "Choklad", "3": "Fudge", "4": "Ahlgrens bilar" },
+    "alternatives": { 
+      "1": "Jordnötssmör", 
+      "2": "Choklad", 
+      "3": "Fudge", 
+      "4": "Ahlgrens bilar" },
     "correctChoice": 2
   },
   {
@@ -12,7 +16,11 @@
     "topic": "gma",
     "level": 1,
     "text": "På trädgårdsspråk, vilket alternativ är en perenn?",
-    "alternatives": { "1": "Sjösten", "2": "Gran", "3": "Infravärmare", "4": "Pion" },
+    "alternatives": { 
+      "1": "Sjösten", 
+      "2": "Gran", 
+      "3": "Infravärmare", 
+      "4": "Pion" },
     "correctChoice": 4
   },
   {
@@ -20,7 +28,12 @@
     "topic": "gma",
     "level": 1,
     "text": "Vilket är sant om bin och honung?",
-    "alternatives": { "1": "Bin sjunger för att kommunicera", "2": "Honung är antibakteriell och har hittats ätbar i egyptiska gravar", "3": "Honung gör att man kan se in i framtiden", "4": "Ett honungsbi lever i ett år" },
+    "alternatives": {
+      "1": "Bin sjunger för att kommunicera",
+      "2": "Honung är antibakteriell och har hittats ätbar i egyptiska gravar",
+      "3": "Honung gör att man kan se in i framtiden",
+      "4": "Ett honungsbi lever i ett år"
+    },
     "correctChoice": 2
   },
   {
@@ -28,7 +41,12 @@
     "topic": "gma",
     "level": 1,
     "text": "När Ridderheims expanderade i Norden blev ölkorven en jättesuccé i Norge. Men vad var det som gick trögare och floppade i Oslo runt 2010?",
-    "alternatives": { "1": "Försäljningen av vegetarisk ölkorv", "2": "Lanseringen av en pecifik \"Lusekofta-korv\"", "3": "Lösviktsbarerna med oliver och delikatesser", "4": "Exporten av marinerad vitlök till bensinmackar" },
+    "alternatives": {
+      "1": "Försäljningen av vegetarisk ölkorv",
+      "2": "Lanseringen av en pecifik \"Lusekofta-korv\"",
+      "3": "Lösviktsbarerna med oliver och delikatesser",
+      "4": "Exporten av marinerad vitlök till bensinmackar"
+    },
     "correctChoice": 3
   },
   {
@@ -36,7 +54,12 @@
     "topic": "gma",
     "level": 1,
     "text": "Vilket marint djur har räddat miljontals liv inom sjukvården?",
-    "alternatives": { "1": "Blåvalen (Dess hjärtfrekvens används för att kalibrera pacemakers)", "2": "Sjöhästen (Ur dess hovar utvanns det första bedövningsmedlet)", "3": "Smaragdsnigeln (Den går att använda som konstgjord hud vid brännskador)", "4": "Dolksvansen (Dess blod används för att testa att medicin är helt fri från farliga bakterier" },
+    "alternatives": {
+      "1": "Blåvalen (Dess hjärtfrekvens används för att kalibrera pacemakers)",
+      "2": "Sjöhästen (Ur dess hovar utvanns det första bedövningsmedlet)",
+      "3": "Smaragdsnigeln (Den går att använda som konstgjord hud vid brännskador)",
+      "4": "Dolksvansen (Dess blod används för att testa att medicin är helt fri från farliga bakterier"
+    },
     "correctChoice": 4
   },
   {
@@ -44,7 +67,12 @@
     "topic": "gma",
     "level": 1,
     "text": "Etiopien har en egen kalender och tideräkning. Vilket år befinner de sig i, jämfört med oss?",
-    "alternatives": { "1": "Samma år men de räknar bara med 8 månader", "2": "850 år före", "3": "8 år efter", "4": "850 år efter, tideräkningen började med den första kaffeplantan" },
+    "alternatives": {
+      "1": "Samma år men de räknar bara med 8 månader",
+      "2": "850 år före",
+      "3": "8 år efter",
+      "4": "850 år efter, tideräkningen började med den första kaffeplantan"
+    },
     "correctChoice": 3
   },
   {
@@ -52,7 +80,12 @@
     "topic": "gma",
     "level": 1,
     "text": "Vad står förkortningen ETF för inom finansvärlden?",
-    "alternatives": { "1": "Equity Traded Fund", "2": "Extra Topping Free", "3": "Exchange Traded Fund", "4": "Estimated Tax Fraud (När det går så bra att skatteverket blir misstänksamma)" },
+    "alternatives": {
+      "1": "Equity Traded Fund",
+      "2": "Extra Topping Free",
+      "3": "Exchange Traded Fund",
+      "4": "Estimated Tax Fraud (När det går så bra att skatteverket blir misstänksamma)"
+    },
     "correctChoice": 3
   },
   {
@@ -60,7 +93,12 @@
     "topic": "gma",
     "level": 1,
     "text": "Hur många pubar på Andra Långgatan har havsutsikt?",
-    "alternatives": { "1": "12 st (Hela gatan har egentligen detta från någon av takterasserna)", "2": "3 st om man timar högvattnet", "3": "6 st", "4": "0 st" },
+    "alternatives": {
+      "1": "12 st (Hela gatan har egentligen detta från någon av takterasserna)",
+      "2": "3 st om man timar högvattnet",
+      "3": "6 st",
+      "4": "0 st"
+    },
     "correctChoice": 4
   },
   {
@@ -68,7 +106,12 @@
     "topic": "gma",
     "level": 1,
     "text": "Inom healing och alternativmedicin används ibland sekretet från en groda för utrensning. Vad kallas denna ritual?",
-    "alternatives": { "1": "Kambo (jättelövgroda)", "2": "Bufo-terapi", "3": "Ayahuasca", "4": "Placebo-chebo" },
+    "alternatives": {
+      "1": "Kambo (jättelövgroda)",
+      "2": "Bufo-terapi",
+      "3": "Ayahuasca",
+      "4": "Placebo-chebo"
+    },
     "correctChoice": 1
   },
   {
@@ -76,7 +119,12 @@
     "topic": "gma",
     "level": 1,
     "text": "Inom Tai Chi och Qi Gong fokuserar man mycket på att styra kroppens livsenergi. Vad kallas denna?",
-    "alternatives": { "1": "Kiai", "2": "Gong", "3": "Qi", "4": "Dim Mak" },
+    "alternatives": {
+      "1": "Kiai",
+      "2": "Gong",
+      "3": "Qi",
+      "4": "Dim Mak"
+    },
     "correctChoice": 3
   },
   {
@@ -84,7 +132,12 @@
     "topic": "gma",
     "level": 1,
     "text": "Under huven på en bil, vad gör förgasaren?",
-    "alternatives": { "1": "Stoppar oönskade gaser att nå passagerarna", "2": "Omvandlar bränslet till flytande form ", "3": "Blandar bensin med luft till en fin dimma", "4": "Blandar diesel med luft till en fin dimma" },
+    "alternatives": {
+      "1": "Stoppar oönskade gaser att nå passagerarna",
+      "2": "Omvandlar bränslet till flytande form ",
+      "3": "Blandar bensin med luft till en fin dimma",
+      "4": "Blandar diesel med luft till en fin dimma"
+    },
     "correctChoice": 3
   },
   {
@@ -92,7 +145,12 @@
     "topic": "gma",
     "level": 1,
     "text": "Om du står på en båt och tittar bakåt mot aktern – vad stämmer då?",
-    "alternatives": { "1": "Du har styrbord på din vänstra sida", "2": "Du har styrbord på din högra sida", "3": "Du har babord på din vänstra sida", "4": "" },
+    "alternatives": {
+      "1": "Du har styrbord på din vänstra sida",
+      "2": "Du har styrbord på din högra sida",
+      "3": "Du har babord på din vänstra sida",
+      "4": ""
+    },
     "correctChoice": 1
   },
   {
@@ -100,7 +158,12 @@
     "topic": "gma",
     "level": 1,
     "text": "Vilken av följande fraser på italienska betyder \"Trevligt att träffas\"?",
-    "alternatives": { "1": "Piacere", "2": "Arrivederci", "3": "Dov'è la biblioteca", "4": "Prego" },
+    "alternatives": {
+      "1": "Piacere",
+      "2": "Arrivederci",
+      "3": "Dov'è la biblioteca",
+      "4": "Prego"
+    },
     "correctChoice": 1
   },
   {
@@ -108,7 +171,12 @@
     "topic": "gma",
     "level": 1,
     "text": "Vilken stoppning brukar användas när man restaurerar äldre sittmöbler på traditionellt vis?",
-    "alternatives": { "1": "Renlav", "2": "Hår från hästar", "3": "Fårull", "4": "Torkat sjögräs" },
+    "alternatives": {
+      "1": "Renlav",
+      "2": "Hår från hästar",
+      "3": "Fårull",
+      "4": "Torkat sjögräs"
+    },
     "correctChoice": 2
   },
   {
@@ -116,7 +184,12 @@
     "topic": "gma",
     "level": 1,
     "text": "Vilket land brukar man säga att cacaobönan ursprungligen kommer ifrån?",
-    "alternatives": { "1": "Ecuador", "2": "Elfenbenskusten", "3": "Brasilien", "4": "Peru" },
+    "alternatives": {
+      "1": "Ecuador",
+      "2": "Elfenbenskusten",
+      "3": "Brasilien",
+      "4": "Peru"
+    },
     "correctChoice": 1
   },
   {
@@ -124,7 +197,12 @@
     "topic": "gma",
     "level": 1,
     "text": "Vad kallas den grundläggande takten i en låt som trummisen och basisten skapar tillsammans?",
-    "alternatives": { "1": "Reverb", "2": "BPM", "3": "Fill", "4": "Groove" },
+    "alternatives": {
+      "1": "Reverb",
+      "2": "BPM",
+      "3": "Fill",
+      "4": "Groove"
+    },
     "correctChoice": 4
   },
    {
@@ -132,7 +210,12 @@
     "topic": "gma",
     "level": 1,
     "text": "Vilket designuttryck utmärker Polestars avskalade, digitala gränssnitt?",
-    "alternatives": { "1": "Neoklassicism", "2": "Psykedelisk popkonst", "3": "Skandinavisk minimalism", "4": "Art déco" },
+    "alternatives": {
+      "1": "Neoklassicism",
+      "2": "Psykedelisk popkonst",
+      "3": "Skandinavisk minimalism",
+      "4": "Art déco"
+    },
     "correctChoice": 3
   },
    {
@@ -140,7 +223,12 @@
     "topic": "gma",
     "level": 1,
     "text": "Vilket legendariskt franskt modehus är känt för sitt ikoniska, sammanflätade dubbel-C-monogram?",
-    "alternatives": { "1": "Chanel", "2": "Gucci", "3": "Louis Vuitton", "4": "Versace" },
+    "alternatives": {
+      "1": "Chanel",
+      "2": "Gucci",
+      "3": "Louis Vuitton",
+      "4": "Versace"
+    },
     "correctChoice": 1
   },
    {
@@ -148,7 +236,12 @@
     "topic": "gma",
     "level": 1,
     "text": "Om man dyker 10 m under ytan i havet, vad blir det för absolut tryck? ",
-    "alternatives": { "1": "1 bar", "2": "10 bar", "3": "20 bar", "4": "2 bar" },
+    "alternatives": {
+      "1": "1 bar",
+      "2": "10 bar",
+      "3": "20 bar",
+      "4": "2 bar"
+    },
     "correctChoice": 4
   },
    {
@@ -156,7 +249,12 @@
     "topic": "gma",
     "level": 1,
     "text": "Vid vintillverkning och hembryggning gör jästen följande:",
-    "alternatives": { "1": "Omvandlar öl till vin", "2": "Omvandlar socker till alkohol", "3": "Omvandlar vatten till alkohol", "4": "Omvandlar alkohol till socker" },
+    "alternatives": {
+      "1": "Omvandlar öl till vin",
+      "2": "Omvandlar socker till alkohol",
+      "3": "Omvandlar vatten till alkohol",
+      "4": "Omvandlar alkohol till socker"
+    },
     "correctChoice": 2
   }
 ]
