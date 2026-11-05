@@ -7,8 +7,7 @@
    Add --yes to skip the "are you sure" question.
 
    Needs:  npm i firebase-admin
-           avatars.txt next to this file (one profile-pic URL per line)
-           credentials: GOOGLE_APPLICATION_CREDENTIALS=path\to\serviceAccountKey.json
+           avatars.txt and serviceAccountKey.json next to this file
 
    What a bot is:
      users/bot_001 ... bot_NNN   (isBot: true)   -> so usernames are reserved,
@@ -22,6 +21,7 @@ const fs = require("fs");
 const path = require("path");
 const readline = require("readline");
 const admin = require("firebase-admin");
+const serviceAccount = require(path.join(__dirname, "serviceAccountKey.json"));
 
 // ───────────── SETTINGS (edit freely) ─────────────
 const SEED = 20261104;               // change it to get a completely new set of bots
@@ -289,7 +289,9 @@ function mergeBoard(existingEntries, botEntries, useTime = true) {
 }
 
 // ───────────── firestore ─────────────
-admin.initializeApp();
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 const db = admin.firestore();
 
 function newWriter() {
