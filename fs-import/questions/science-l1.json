@@ -4,7 +4,11 @@
     "topic": "science",
     "level": 1,
     "text": "What's the distance between the Earth and the Sun?",
-    "alternatives": { "1": "5 AU", "2": "384,000 km", "3": "1 light-minute", "4": "1/5 of the distance to Jupiter" },
+    "alternatives": { 
+    "1": "5 AU", 
+    "2": "384,000 km", 
+    "3": "1 light-minute", 
+    "4": "1/5 of the distance to Jupiter" },
     "correctChoice": 4
   },
   {

@@ -1,0 +1,16 @@
+[
+   {
+    "id": "animals-l2-q001",
+    "topic": "animals",
+    "level": 2,
+    "text": "What helped some dinosaurs grow so large?",
+    "alternatives": { 
+    "1": "Hollow (pneumatic) bones", 
+    "2": "Weaker gravity back then", 
+    "3": "More oxygen in the air", 
+    "4": "Algae in lakes and rivers" 
+    },
+    "correctChoice": 1
+  }
+  
+]

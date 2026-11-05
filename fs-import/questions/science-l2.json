@@ -15,7 +15,14 @@
     "alternatives": { "1": "127", "2": "255", "3": "512", "4": "1024" },
     "correctChoice": 2,
     "type": "elite"
-  }
-
+  },
+  {
+      "id": "science-l2-q010",
+      "topic": "science",
+      "level": 2,
+      "text": "What is the chemical symbol for gold?",
+      "alternatives": { "1": "Go", "2": "Au", "3": "Ag", "4": "Gold" },
+      "correctChoice": 2
+    }
 
   ]
