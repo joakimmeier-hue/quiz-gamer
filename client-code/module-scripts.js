@@ -1804,6 +1804,8 @@ document.addEventListener('click', async function(e) {
     width: finishBtn.style.width,
     boxSizing: finishBtn.style.boxSizing,
     justifyContent: finishBtn.style.justifyContent,
+    textDisplay: textEl.style.display,
+    textPosition: textEl.style.position,
     textWidth: textEl.style.width,
     textAlign: textEl.style.textAlign,
   };
@@ -1811,14 +1813,26 @@ document.addEventListener('click', async function(e) {
   finishBtn.style.width = `${finishBtn.getBoundingClientRect().width}px`;
   finishBtn.style.justifyContent = 'center';
   if (textEl !== finishBtn) {
-    textEl.style.width = '100%';
-    textEl.style.textAlign = 'center';
+    textEl.style.display = 'inline-block';
+    textEl.style.position = 'relative';
+    textEl.style.width = 'auto';
   }
+  textEl.textContent = 'Calculating';
+  const dotsEl = document.createElement('span');
+  dotsEl.setAttribute('aria-hidden', 'true');
+  dotsEl.style.position = 'absolute';
+  dotsEl.style.left = '100%';
+  dotsEl.style.top = '0';
+  dotsEl.textContent = '';
+  textEl.appendChild(dotsEl);
 
   const restoreButtonStyles = () => {
+    textEl.textContent = 'Finish!';
     finishBtn.style.width = originalStyles.width;
     finishBtn.style.boxSizing = originalStyles.boxSizing;
     finishBtn.style.justifyContent = originalStyles.justifyContent;
+    textEl.style.display = originalStyles.textDisplay;
+    textEl.style.position = originalStyles.textPosition;
     textEl.style.width = originalStyles.textWidth;
     textEl.style.textAlign = originalStyles.textAlign;
   };
@@ -1827,9 +1841,8 @@ document.addEventListener('click', async function(e) {
   let dotCount = 0;
   const calculatingTimer = setInterval(() => {
     dotCount = (dotCount + 1) % 4;
-    if (textEl) textEl.textContent = `Calculating${'.'.repeat(dotCount)}`;
+    dotsEl.textContent = '.'.repeat(dotCount);
   }, 400);
-  if (textEl) textEl.textContent = "Calculating";
   finishBtn.style.pointerEvents = 'none';
 
   try {
@@ -1842,7 +1855,6 @@ document.addEventListener('click', async function(e) {
       console.error('Cannot grade: answers missing or not an array', answers);
       alert('No answers found. Please answer at least one question before finishing.');
       clearInterval(calculatingTimer);
-      if (textEl) textEl.textContent = "Finish!";
       restoreButtonStyles();
       finishBtn.style.pointerEvents = 'auto';
       return;
@@ -1851,7 +1863,6 @@ document.addEventListener('click', async function(e) {
       console.error('Cannot grade: sessionId missing', sessionId);
       alert('Session id missing — the game was not started properly. Please restart the game.');
       clearInterval(calculatingTimer);
-      if (textEl) textEl.textContent = "Finish!";
       restoreButtonStyles();
       finishBtn.style.pointerEvents = 'auto';
       return;
@@ -1886,7 +1897,6 @@ document.addEventListener('click', async function(e) {
     console.error("Failed to grade game:", err);
     alert("Error calculating score. Please try again.");
     finishBtn.style.pointerEvents = 'auto';
-    if (textEl) textEl.textContent = "Finish!";
     restoreButtonStyles();
     // let the player edit answers and retry
     document.body.classList.remove('game-finished');
