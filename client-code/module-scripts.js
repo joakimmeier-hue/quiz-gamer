@@ -1801,7 +1801,12 @@ document.addEventListener('click', async function(e) {
 
   // 1. Update UI text to "Calculating..."
   const textEl = finishBtn.querySelector('div') || finishBtn;
-  if (textEl) textEl.textContent = "Calculating...";
+  let dotCount = 0;
+  const calculatingTimer = setInterval(() => {
+    dotCount = (dotCount + 1) % 4;
+    if (textEl) textEl.textContent = `Calculating${'.'.repeat(dotCount)}`;
+  }, 400);
+  if (textEl) textEl.textContent = "Calculating";
   finishBtn.style.pointerEvents = 'none';
 
   try {
@@ -1813,6 +1818,7 @@ document.addEventListener('click', async function(e) {
     if (!Array.isArray(answers) || answers.length === 0) {
       console.error('Cannot grade: answers missing or not an array', answers);
       alert('No answers found. Please answer at least one question before finishing.');
+      clearInterval(calculatingTimer);
       if (textEl) textEl.textContent = "Finish!";
       finishBtn.style.pointerEvents = 'auto';
       return;
@@ -1820,6 +1826,7 @@ document.addEventListener('click', async function(e) {
     if (typeof sessionId !== 'string' || sessionId.trim() === '') {
       console.error('Cannot grade: sessionId missing', sessionId);
       alert('Session id missing — the game was not started properly. Please restart the game.');
+      clearInterval(calculatingTimer);
       if (textEl) textEl.textContent = "Finish!";
       finishBtn.style.pointerEvents = 'auto';
       return;
@@ -1833,6 +1840,7 @@ document.addEventListener('click', async function(e) {
       answers: answers,
       clientTimeSecs: window.FinalTimeSecs || 1 // 👈 Passed directly to server
     });
+    clearInterval(calculatingTimer);
 
     // 4. Save response for the score card
     sessionStorage.setItem('lastGameResult', JSON.stringify(response.data));
@@ -1849,6 +1857,7 @@ document.addEventListener('click', async function(e) {
       setTimeout(() => { window.location.href = '/score'; }, 2000);
     }
   } catch (err) {
+    clearInterval(calculatingTimer);
     console.error("Failed to grade game:", err);
     alert("Error calculating score. Please try again.");
     finishBtn.style.pointerEvents = 'auto';
