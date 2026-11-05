@@ -2046,7 +2046,7 @@ Webflow.push(function() {
 window.Webflow = window.Webflow || [];
 window.Webflow.push(setTitleStart);
 
-// ── START SCORE INTRO (custom event "score-page") ──
+// ── TRIGGER SCORE PAGE wfIx (custom event "score-page") ──
 Webflow.push(function() {
   if (currentSlug !== 'score') return;
   const startIntro = () => {
@@ -2493,7 +2493,12 @@ if (location.hash === '#leaderboard') {
         // Sortera alltid så att högst poäng kommer först, uavsett ordning i DB
         entries
           .filter(e => e.score > 0)
-          .sort((a, b) => b.score - a.score) // <-- Lägg till denna rad!
+          .sort((a, b) => {
+            if (a.score !== b.score) return b.score - a.score;
+            const aTime = Number.isFinite(a.timeSecs) ? a.timeSecs : Infinity;
+            const bTime = Number.isFinite(b.timeSecs) ? b.timeSecs : Infinity;
+            return aTime === bTime ? 0 : aTime - bTime;
+          })
           .forEach((e, i) => frag.appendChild(buildRow(e, i + 1)));
         rowList.appendChild(frag);
         fitScores();

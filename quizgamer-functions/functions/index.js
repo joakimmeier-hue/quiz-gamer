@@ -164,20 +164,35 @@ function calcLevel(totalScore) {
 // ──────────────────────────── LEADERBOARD HELPER ────────────────────────────────────
 const TOP_N = 100;
 
-async function updateTopList(boardId, uid, info, score) {
+function leaderboardTime(entry) {
+  return Number.isFinite(entry.timeSecs) ? entry.timeSecs : Infinity;
+}
+
+function compareLeaderboardEntries(a, b) {
+  if (a.score !== b.score) return b.score - a.score;
+  const timeDifference = leaderboardTime(a) - leaderboardTime(b);
+  if (timeDifference) return timeDifference;
+  const aUid = String(a.uid || "");
+  const bUid = String(b.uid || "");
+  return aUid < bUid ? -1 : aUid > bUid ? 1 : 0;
+}
+
+async function updateTopList(boardId, uid, info, score, timeSecs) {
   const ref = db.collection("lbTop").doc(boardId);
   await db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
     let entries = snap.exists ? (snap.data().entries || []) : [];
     const idx = entries.findIndex((e) => e.uid === uid);
+    const newEntry = { uid, ...info, score, timeSecs };
     if (idx >= 0) {
-      if (entries[idx].score >= score) return;
-      entries[idx] = { uid, ...info, score };
+      if (compareLeaderboardEntries(newEntry, entries[idx]) >= 0) return;
+      entries[idx] = newEntry;
     } else {
-      if (entries.length >= TOP_N && score <= entries[entries.length - 1].score) return;
-      entries.push({ uid, ...info, score });
+      if (entries.length >= TOP_N &&
+          compareLeaderboardEntries(newEntry, entries[entries.length - 1]) >= 0) return;
+      entries.push(newEntry);
     }
-    entries.sort((a, b) => b.score - a.score);
+    entries.sort(compareLeaderboardEntries);
     tx.set(ref, { entries: entries.slice(0, TOP_N), updatedAt: new Date() });
   });
 }
@@ -508,6 +523,24 @@ verifiedTimeSecs = Math.max(verifiedTimeSecs, answeredCount * MIN_SECS_PER_ANSWE
   const newBest = Math.max(previousBest, finalScore);
   const previousBestUnlim = attemptSnap.exists ? attemptSnap.data().bestScoreUnlim || 0 : 0;
   const newBestUnlim = Math.max(previousBestUnlim, unlimitedScore);
+  const previousBestTimeSecs = attemptSnap.exists &&
+    Number.isFinite(attemptSnap.data().bestScoreTimeSecs)
+    ? attemptSnap.data().bestScoreTimeSecs
+    : null;
+  const previousBestUnlimTimeSecs = attemptSnap.exists &&
+    Number.isFinite(attemptSnap.data().bestScoreUnlimTimeSecs)
+    ? attemptSnap.data().bestScoreUnlimTimeSecs
+    : null;
+  const scoreBestChanged = finalScore > previousBest ||
+    (finalScore > 0 && finalScore === previousBest &&
+      verifiedTimeSecs < (previousBestTimeSecs ?? Infinity));
+  const unlimitedBestChanged = unlimitedScore > previousBestUnlim ||
+    (unlimitedScore > 0 && unlimitedScore === previousBestUnlim &&
+      verifiedTimeSecs < (previousBestUnlimTimeSecs ?? Infinity));
+  const bestScoreTimeSecs = scoreBestChanged ? verifiedTimeSecs : previousBestTimeSecs;
+  const bestScoreUnlimTimeSecs = unlimitedBestChanged
+    ? verifiedTimeSecs
+    : previousBestUnlimTimeSecs;
 
   // 4. Write back updated attempt doc
   await attemptRef.set({
@@ -515,7 +548,9 @@ verifiedTimeSecs = Math.max(verifiedTimeSecs, answeredCount * MIN_SECS_PER_ANSWE
     level,
     attemptCount: newAttemptCount,
     bestScore: newBest,
+    bestScoreTimeSecs,
     bestScoreUnlim: newBestUnlim,
+    bestScoreUnlimTimeSecs,
     updatedAt: new Date()
   }, { merge: true });
 
@@ -553,8 +588,12 @@ verifiedTimeSecs = Math.max(verifiedTimeSecs, answeredCount * MIN_SECS_PER_ANSWE
   profilePicUrl: userSnap.exists ? userSnap.data().profilePicUrl || null : null,
   favTopic: userSnap.exists ? userSnap.data().favTopic || null : null 
   };
-  if (newBest > previousBest) await updateTopList(`score-${gameId}`, uid, info, newBest);
-  if (newBestUnlim > previousBestUnlim) await updateTopList(`unlim-${gameId}`, uid, info, newBestUnlim);
+  if (scoreBestChanged) {
+    await updateTopList(`score-${gameId}`, uid, info, newBest, bestScoreTimeSecs);
+  }
+  if (unlimitedBestChanged) {
+    await updateTopList(`unlim-${gameId}`, uid, info, newBestUnlim, bestScoreUnlimTimeSecs);
+  }
   }
 
 
@@ -562,23 +601,43 @@ verifiedTimeSecs = Math.max(verifiedTimeSecs, answeredCount * MIN_SECS_PER_ANSWE
   // 7. Compute live LEVEL leaderboard position
   let leaderboardPosition = null;
   if (onLeaderboard) {
-    const [betterSnap, boardSnap] = await Promise.all([
-      db.collectionGroup("attempts")
+    const boardSnap = db.collection("lbTop").doc(`score-${gameId}`).get();
+    const boardData = await boardSnap;
+    const boardEntries = boardData.exists
+      ? (boardData.data().entries || []).filter((entry) => entry.score > 0)
+        .slice().sort(compareLeaderboardEntries)
+      : [];
+    const boardIndex = boardEntries.findIndex((entry) => entry.uid === uid);
+    if (boardIndex >= 0) {
+      leaderboardPosition = boardIndex + 1;
+    } else {
+      const attempts = db.collectionGroup("attempts")
         .where("topic", "==", topic)
-        .where("level", "==", level)
-        .where("bestScore", ">", newBest)
-        .count()
-        .get(),
-      db.collection("lbTop").doc(`score-${gameId}`).get(),
-    ]);
-    const betterBotCount = boardSnap.exists
-      ? (boardSnap.data().entries || []).filter(
-        (entry) => typeof entry.uid === "string" &&
-          entry.uid.startsWith("bot_") &&
-          entry.score > newBest
-      ).length
-      : 0;
-    leaderboardPosition = betterSnap.data().count + betterBotCount + 1;
+        .where("level", "==", level);
+      const [betterSnap, tiedSnap] = await Promise.all([
+        attempts.where("bestScore", ">", newBest).count().get(),
+        attempts.where("bestScore", "==", newBest).get(),
+      ]);
+      const betterHumanCount = tiedSnap.docs.filter((doc) => {
+        const data = doc.data();
+        const otherUid = doc.ref.parent.parent.id;
+        return compareLeaderboardEntries(
+          { uid, score: newBest, timeSecs: bestScoreTimeSecs },
+          { uid: otherUid, score: newBest, timeSecs: data.bestScoreTimeSecs }
+        ) > 0;
+      }).length;
+      const betterBotCount = boardEntries.filter((entry) =>
+        typeof entry.uid === "string" &&
+        entry.uid.startsWith("bot_") &&
+        compareLeaderboardEntries(entry, {
+          uid,
+          score: newBest,
+          timeSecs: bestScoreTimeSecs,
+        }) < 0
+      ).length;
+      leaderboardPosition =
+        betterSnap.data().count + betterHumanCount + betterBotCount + 1;
+    }
   }
   // Save game state for the review page
   await db.collection("users").doc(uid).collection("lastGame").doc("current").set({
@@ -820,7 +879,9 @@ exports.getLeaderboards = onCall(async (request) => {
   if (!snap.exists) return { entries: [], updatedAt: null };
 
   const data = snap.data();
-  const entries = (data.entries || []).map(({ uid, ...rest }) => ({
+  const boardEntries = (data.entries || []).slice();
+  if (boardId !== "total") boardEntries.sort(compareLeaderboardEntries);
+  const entries = boardEntries.map(({ uid, ...rest }) => ({
     ...rest,
     isMe: myUid !== null && uid === myUid,
   }));
@@ -831,6 +892,7 @@ exports.getLeaderboards = onCall(async (request) => {
     if (userSnap.exists) {
       const u = userSnap.data();
       let score = 0;
+      let timeSecs;
       if (boardId === "total") {
         score = u.totalScore || 0;
       } else {
@@ -840,10 +902,20 @@ exports.getLeaderboards = onCall(async (request) => {
         if (att.exists) {
           const a = att.data();
           score = (m[1] === "score" ? a.bestScore : a.bestScoreUnlim) || 0;
+          timeSecs = m[1] === "score"
+            ? a.bestScoreTimeSecs
+            : a.bestScoreUnlimTimeSecs;
         }
       }
       if (score > 0) {
-        me = { username: u.username, profilePicUrl: u.profilePicUrl, level: u.level, favTopic: u.favTopic, score };
+        me = {
+          username: u.username,
+          profilePicUrl: u.profilePicUrl,
+          level: u.level,
+          favTopic: u.favTopic,
+          score,
+          ...(Number.isFinite(timeSecs) ? { timeSecs } : {}),
+        };
       }
     }
   }
