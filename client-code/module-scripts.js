@@ -1799,8 +1799,31 @@ document.addEventListener('click', async function(e) {
   if (!ctx) { window.location.replace('/'); return; }
   const { topic, level } = ctx;
 
+  const textEl = finishBtn.querySelector('.finish-btn-text1') || finishBtn.querySelector('div') || finishBtn;
+  const originalStyles = {
+    width: finishBtn.style.width,
+    boxSizing: finishBtn.style.boxSizing,
+    justifyContent: finishBtn.style.justifyContent,
+    textWidth: textEl.style.width,
+    textAlign: textEl.style.textAlign,
+  };
+  finishBtn.style.boxSizing = 'border-box';
+  finishBtn.style.width = `${finishBtn.getBoundingClientRect().width}px`;
+  finishBtn.style.justifyContent = 'center';
+  if (textEl !== finishBtn) {
+    textEl.style.width = '100%';
+    textEl.style.textAlign = 'center';
+  }
+
+  const restoreButtonStyles = () => {
+    finishBtn.style.width = originalStyles.width;
+    finishBtn.style.boxSizing = originalStyles.boxSizing;
+    finishBtn.style.justifyContent = originalStyles.justifyContent;
+    textEl.style.width = originalStyles.textWidth;
+    textEl.style.textAlign = originalStyles.textAlign;
+  };
+
   // 1. Update UI text to "Calculating..."
-  const textEl = finishBtn.querySelector('div') || finishBtn;
   let dotCount = 0;
   const calculatingTimer = setInterval(() => {
     dotCount = (dotCount + 1) % 4;
@@ -1820,6 +1843,7 @@ document.addEventListener('click', async function(e) {
       alert('No answers found. Please answer at least one question before finishing.');
       clearInterval(calculatingTimer);
       if (textEl) textEl.textContent = "Finish!";
+      restoreButtonStyles();
       finishBtn.style.pointerEvents = 'auto';
       return;
     }
@@ -1828,6 +1852,7 @@ document.addEventListener('click', async function(e) {
       alert('Session id missing — the game was not started properly. Please restart the game.');
       clearInterval(calculatingTimer);
       if (textEl) textEl.textContent = "Finish!";
+      restoreButtonStyles();
       finishBtn.style.pointerEvents = 'auto';
       return;
     }
@@ -1862,6 +1887,7 @@ document.addEventListener('click', async function(e) {
     alert("Error calculating score. Please try again.");
     finishBtn.style.pointerEvents = 'auto';
     if (textEl) textEl.textContent = "Finish!";
+    restoreButtonStyles();
     // let the player edit answers and retry
     document.body.classList.remove('game-finished');
     sessionStorage.removeItem('gameFinished');

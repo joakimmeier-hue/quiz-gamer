@@ -25,12 +25,12 @@ const serviceAccount = require(path.join(__dirname, "serviceAccountKey.json"));
 
 // ───────────── SETTINGS (edit freely) ─────────────
 const SEED = 20261104;               // change it to get a completely new set of bots
-const POOL_SIZE = 800;               // total bots. Your names first, the rest are generated
+const POOL_SIZE = 1000;               // total bots. Your names first, the rest are generated
 const BOT_PREFIX = "bot_";           // uid prefix, this is how bots are recognised
 const TIERS = [1, 2, 3, 4];          // add 5 when it exists
-const TOTAL_RANGE = [7542, 477431];  // total score of the whole bot pool
-const HIGHSCORE_RANGE = [113, 518]; // per list, Tier 1 values. Higher tiers get the tier multiplier on top
-const UNLIM_FACTOR = 1.9;              // unlimited lists ≈ highscore range x this (±8 % jitter)
+const TOTAL_RANGE = [4542, 877431];  // total score of the whole bot pool
+const HIGHSCORE_RANGE = [113, 978]; // per list, Tier 1 values. Higher tiers get the tier multiplier on top
+const UNLIM_FACTOR = 3;              // unlimited lists ≈ highscore range x this (±8 % jitter)
 
 // The topic ids as they are written in the db (ids of your question banks / lbTop boardIds).
 const TOPICS = ["science", "history", "food", "animals", "cars", "puzzle", "maze", "pattern", "music", "biology", "geo&travel", "movies", "literature", "math", "sports"];
@@ -103,10 +103,10 @@ const USER_NAMES = `Tailgunner, David_S, Ceasar77, Master Chief, Tarzan, Khana, 
 // building blocks for the generated names
 const WORDS_A = ["Shadow", "Night", "Iron", "Frost", "Pixel", "Rogue", "Storm", "Lucky", "Cyber", "Neon",
   "Turbo", "Ninja", "Viking", "Raven", "Ember", "Crimson", "Silent", "Atomic", "Mystic", "Rusty",
-  "Sneaky", "Cosmic", "Toxic", "Wild", "Golden", "Dark", "Swift", "Brainy", "Quiz", "Trivia", "Mega", "Lazy"];
+  "Sneaky", "Cosmic", "Toxic", "Wild", "Golden", "Dark", "Swift", "Brainy", "Quiz", "Trivia", "Mega", "Lazy", "Ub", "George", "Sam", "Delta", "Maw", "Ion", "Man", "Wiz", "Visage", "Lord", "Byron", "Tolkien", "Herbert", "Frank", "Garin", "Stoli", "Slivovitz", "Whiskey", "Bourbon", "Be33r", "Cat", "Gin", "Ling", "Brandy", "bR0Ady", "mAnn", "Cola", "Sake", "Rum", "Ron", "Gina", "Carl", "Moxy" ];
 const WORDS_B = ["Wolf", "Hunter", "Wizard", "Knight", "Slayer", "Mage", "Fox", "Ghost", "Rider", "Smith",
   "Baker", "Gamer", "Boi", "Queen", "King", "Owl", "Falcon", "Bear", "Pilot", "Nerd", "Guru", "Master",
-  "Ranger", "Viper", "Tiger", "Dragon", "Pirate", "Monk", "Sage", "Brain", "Panda", "Ace"];
+  "Ranger", "Viper", "Tiger", "Dragon", "Pirate", "Monk", "Sage", "Brain", "Panda", "Ace", "M", "B", "W", "AA", "BB", "Q", "LP", "Sammy", "Fighter", "Pit", "J", "Manuel", "Smart", "Gold", "4K", "8KK", "PP", "Kilo", "s0ul", "Sun", "31", "AR", "01", "51", "21", "ZzZ", "w17hiN", "Messiah", "Atme", "M33", "M30", "81", "88", "91", "97", "99", "ID", "DD", "AI", "IA"];
 
 // ───────────── seeded random (same SEED = same bots) ─────────────
 function mulberry32(a) {
