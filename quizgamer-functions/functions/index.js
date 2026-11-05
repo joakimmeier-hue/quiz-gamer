@@ -313,6 +313,10 @@ exports.getGameInfo = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "Missing or invalid level.");
   }
 
+  if (NO_LEADERBOARD_TOPICS.includes(topic)) {
+    return { lbHighscore: 0 };
+  }
+
   const gameId = `${topic}-l${level}`;
   const lbSnap = await db.collection("leaderboards").doc(gameId).get();
   const lbHighscore = lbSnap.exists ? lbSnap.data().topScore || 0 : 0;
