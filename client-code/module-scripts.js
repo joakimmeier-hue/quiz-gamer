@@ -630,7 +630,7 @@ createProfileSubmitBtn.addEventListener('click', async (e) => {
         errors.push("Please select a profile picture");
     }
 
-    const rawName = createUsernameInput.value.replace(/\u00A0/g, ' ').trim();
+    const rawName = createUsernameInput.value.replace(/\u00A0/g, ' ').normalize('NFC').trim();
     
     // -- KÖR DELAD VALIDERING --
     errors = errors.concat(validateUsernameRules(rawName));
@@ -745,7 +745,7 @@ if (changeProfileSubmitBtn && changeUsernameInput) {
         changeErrorMsgEl.innerHTML = "";
     }
 
-    const rawName = changeUsernameInput.value.replace(/\u00A0/g, ' ').trim();
+    const rawName = changeUsernameInput.value.replace(/\u00A0/g, ' ').normalize('NFC').trim();
     
     // -- KÖR DELAD VALIDERING (client-side instant feedback) --
     let errors = validateUsernameRules(rawName);
@@ -1426,7 +1426,7 @@ if (currentSlug === 'score-review' && cameFrom !== 'score') {
 function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
     if (!inputEl || !btnEl) return;
     inputEl.placeholder = defaultPlaceholder;
-    inputEl.maxLength = 14;
+    inputEl.maxLength = 28;
 
     // -- BLUR --
     inputEl.addEventListener('blur', () => {
@@ -1437,7 +1437,6 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
         e.stopPropagation();
         const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'Tab'];
         const currentText = inputEl.value;
-        const selectionLength = inputEl.selectionEnd - inputEl.selectionStart;
         
         // ENTER: Hindra radbyte och klicka på fältets tillhörande knapp
         if (e.key === 'Enter') { 
@@ -1454,9 +1453,9 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
             return; 
         }
         
-        // MAX 14 TECKEN (Fysisk spärr, tillåter navigering/radering)
-        if (currentText.length >= inputEl.maxLength && selectionLength === 0 && !allowedKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
-            e.preventDefault(); 
+        if ([...e.key].length === 1 && !allowedKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
+            const nextText = currentText.slice(0, inputEl.selectionStart) + e.key + currentText.slice(inputEl.selectionEnd);
+            if ([...nextText.normalize('NFC')].length > 14) e.preventDefault();
         }
     });
     // -- KLISTRA IN (Tvätta bort radbrytningar) --
@@ -1465,8 +1464,10 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
         const pasteText = e.clipboardData.getData('text').replace(/[\r\n]+/g, '');
         const start = inputEl.selectionStart;
         const end = inputEl.selectionEnd;
-        const available = inputEl.maxLength - (inputEl.value.length - (end - start));
-        inputEl.setRangeText(pasteText.slice(0, Math.max(0, available)), start, end, 'end');
+        const remainingText = (inputEl.value.slice(0, start) + inputEl.value.slice(end)).normalize('NFC');
+        const available = Math.max(0, 14 - [...remainingText].length);
+        const limitedPaste = [...pasteText.normalize('NFC')].slice(0, available).join('');
+        inputEl.setRangeText(limitedPaste, start, end, 'end');
         inputEl.dispatchEvent(new Event('input', { bubbles: true }));
     });
     // -- VÄCK KNAPPEN NÄR MAN SKRIVER --
@@ -1483,13 +1484,13 @@ function setupUsernameInput(inputEl, btnEl, defaultPlaceholder) {
 // -- DELAD VALIDERINGS-KOMPONENT --
 function validateUsernameRules(rawName) {
     let errors = [];
-    const letterCount = (rawName.match(/[a-zA-ZåäöÅÄÖ]/g) || []).length;
+    const letterCount = (rawName.match(/\p{L}/gu) || []).length;
     if (rawName.length < 1 || letterCount < 1) {
         errors.push("Minimum 1 letter");
     }
-    if (rawName.length > 14) errors.push("Maximum 14 characters");
+    if ([...rawName].length > 14) errors.push("Maximum 14 characters");
     if (/ {2,}/.test(rawName)) errors.push("Only single spaces between words");
-    const invalidCharRegex = /[^a-zA-Z0-9åäöÅÄÖ\-_. ]/; 
+    const invalidCharRegex = /[^\p{L}\p{M}0-9\-_. ]|(?:^|[^\p{L}\p{M}])\p{M}/u;
     const repeatedSeparatorRegex = /([_.-])\1/;
     if (invalidCharRegex.test(rawName)) errors.push("Oops, invalid character");
     if (repeatedSeparatorRegex.test(rawName)) {

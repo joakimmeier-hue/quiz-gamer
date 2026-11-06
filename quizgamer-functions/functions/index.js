@@ -94,11 +94,11 @@ const db = getFirestore();
 
 function validateUsernameServer(rawName) {
   const errors = [];
-  const letterCount = (rawName.match(/[a-zA-ZåäöÅÄÖ]/g) || []).length;
+  const letterCount = (rawName.match(/\p{L}/gu) || []).length;
   if (rawName.length < 1 || letterCount < 1) errors.push("Minimum 1 letter");
-  if (rawName.length > 14) errors.push("Maximum 14 characters");
+  if ([...rawName].length > 14) errors.push("Maximum 14 characters");
   if (/ {2,}/.test(rawName)) errors.push("Only single spaces between words");
-  const invalidCharRegex = /[^a-zA-Z0-9åäöÅÄÖ\-_. ]/;
+  const invalidCharRegex = /[^\p{L}\p{M}0-9\-_. ]|(?:^|[^\p{L}\p{M}])\p{M}/u;
   const repeatedSeparatorRegex = /([_.-])\1/;
   if (invalidCharRegex.test(rawName)) errors.push("Oops, invalid character");
   if (repeatedSeparatorRegex.test(rawName)) {
@@ -231,7 +231,7 @@ exports.completeProfile = onCall(async (request) => {
   if (!PIC_REGEX.test(profilePicUrl)) {
     throw new HttpsError("invalid-argument", "Invalid profile picture.");
   }
-  const rawName = username.trim();
+  const rawName = username.normalize("NFC").trim();
   const errors = validateUsernameServer(rawName);
   if (errors.length) throw new HttpsError("invalid-argument", errors.join(", "));
 
@@ -270,7 +270,7 @@ exports.changeUsername = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "Missing username.");
   }
 
-  const rawName = username.trim();
+  const rawName = username.normalize("NFC").trim();
   const errors = validateUsernameServer(rawName);
   if (errors.length) throw new HttpsError("invalid-argument", errors.join(", "));
 
