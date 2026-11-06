@@ -255,8 +255,37 @@ document.addEventListener('keydown', function(e) {
   const triggerKeys = ["Escape", "Enter"];
   if (!triggerKeys.includes(e.key)) return;
 
-  // Includes .global-info alongside other overlays
-  const overlays = document.querySelectorAll('.rules-overlay, .leaderboard-overlay, .about-overlay, .global-info');
+  const globalInfo = document.querySelector('.global-info');
+  if (globalInfo) {
+    const infoStyle = window.getComputedStyle(globalInfo);
+    const isInfoOpen = infoStyle.display !== 'none' && infoStyle.visibility !== 'hidden';
+    if (isInfoOpen) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+
+      const isVisible = (button) => {
+        const style = window.getComputedStyle(button);
+        return button.getClientRects().length > 0 &&
+          style.display !== 'none' &&
+          style.visibility !== 'hidden' &&
+          Number(style.opacity) > 0;
+      };
+      const buttons = Array.from(globalInfo.querySelectorAll('.button')).filter(isVisible);
+      const preferredButton = e.key === 'Enter'
+        ? buttons.find(button => button.classList.contains('accept'))
+        : buttons.find(button => button.classList.contains('cancel'));
+      const button = preferredButton || buttons[0];
+
+      if (button && !e.repeat) {
+        button.click();
+      } else if (!button && e.key === 'Escape') {
+        hideGlobalInfo();
+      }
+      return;
+    }
+  }
+
+  const overlays = document.querySelectorAll('.rules-overlay, .leaderboard-overlay, .about-overlay');
   for (const overlay of overlays) {
     const style = window.getComputedStyle(overlay);
     
@@ -269,20 +298,9 @@ document.addEventListener('keydown', function(e) {
     if (isOpen) {
       if (e.key === 'Enter' && overlay.classList.contains('about-overlay')) return;
       e.preventDefault();
-
-      if (overlay.classList.contains('global-info')) {
-        // Two-choice popup: Enter = Accept, Esc = close (same as Cancel)
-        const acceptBtn = Array.from(overlay.querySelectorAll('.button.accept'))
-          .find(el => el.offsetParent !== null);
-        if (e.key === 'Enter' && acceptBtn && !e.repeat) {
-          acceptBtn.click();
-        } else {
-          hideGlobalInfo();
-        }
-      } else {
-        const btn = overlay.querySelector('.button');
-        if (btn) btn.click();
-      }
+      e.stopImmediatePropagation();
+      const btn = overlay.querySelector('.button');
+      if (btn && !e.repeat) btn.click();
       return;
     }
   }
@@ -296,9 +314,10 @@ document.addEventListener('keydown', function(e) {
 
   if (visibleWrapperBtn) {
     e.preventDefault();
+    e.stopImmediatePropagation();
     visibleWrapperBtn.click();
   }
-});
+}, true);
 
 // ────────────────── GAME-START PAGES ──────────────────
 

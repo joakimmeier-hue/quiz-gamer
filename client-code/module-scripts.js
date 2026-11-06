@@ -160,6 +160,12 @@ function hideLoginModal() {
 window.addEventListener('keydown', function(e) {
   const modal = document.getElementById('email-auth-modal');
   const emailAuthSubmit = document.getElementById('email-auth-submit');
+  const globalInfo = document.querySelector('.global-info');
+
+  if (globalInfo) {
+    const infoStyle = getComputedStyle(globalInfo);
+    if (infoStyle.display !== 'none' && infoStyle.visibility !== 'hidden') return;
+  }
   
   // Check if modal exists and is currently displayed
   if (!modal || modal.style.display === 'none' || getComputedStyle(modal).display === 'none') {
