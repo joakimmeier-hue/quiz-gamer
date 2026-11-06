@@ -6,10 +6,7 @@ import {
   GoogleAuthProvider, 
   OAuthProvider,
   signInWithPopup, 
-  // Delete these 3:
-  /* sendSignInLinkToEmail,
-  isSignInWithEmailLink,
-  signInWithEmailLink, */
+  sendEmailVerification,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   linkWithCredential,
@@ -54,6 +51,7 @@ let currentUser = null;
 let pendingAction = null; 
 let isAuthenticating = false; // NYTT: skydd mot dubbla samtidiga inloggningsförsök
 let profileCompleteResolver = null;
+let emailVerificationAuthTransition = false;
 
 
 // ── DOM ELEMENTS ──
@@ -235,7 +233,7 @@ const emailAuthError = document.getElementById('email-auth-error');
 
 let emailAuthMode = 'signin'; // or 'create'
 
-// ── 1. HELPER FUNCTIONS (Safe top-level declarations) ──
+// ──── 1. HELPER FUNCTIONS (Safe top-level declarations) ────
 function validateEmailAuthInputs() {
   if (!emailAuthEmail || !emailAuthPassword) return;
 
@@ -243,7 +241,7 @@ function validateEmailAuthInputs() {
   const password = emailAuthPassword.value;
 
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const isPasswordValid = password.length >= 6;
+  const isPasswordValid = password.length >= 10;
   const isValid = isEmailValid && isPasswordValid;
 
   if (emailAuthSubmit) {
@@ -287,10 +285,10 @@ function showEmailAuthModal() {
   });
 }
 
-// ── 2. LAUNCHER LISTENER ──
+// ──── 2. LAUNCHER LISTENER ────
 document.getElementById('email-login-btn')?.addEventListener('click', showEmailAuthModal);
 
-// ── 3. INPUT & MODAL LISTENERS (Safe initialization) ──
+// ──── 3. INPUT & MODAL LISTENERS (Safe initialization) ────
 if (emailAuthModal) {
   emailAuthEmail?.addEventListener('input', validateEmailAuthInputs);
   emailAuthPassword?.addEventListener('input', validateEmailAuthInputs);
@@ -326,24 +324,74 @@ if (emailAuthModal) {
     emailAuthSubmit.value = emailAuthMode === 'signin' ? 'Signing in...' : 'Creating...';
     emailAuthSubmit.disabled = true;
 
+// ──── 4. VERIFICATION EMAIL AND LINK ────
+    let emailAuthUser = null;
+    let sendingVerificationEmail = false;
     try {
       if (emailAuthMode === 'signin') {
-        await signInWithEmailAndPassword(auth, email, password);
+        emailVerificationAuthTransition = true;
+        const credential = await signInWithEmailAndPassword(auth, email, password);
+        emailAuthUser = credential.user;
+        if (!emailAuthUser.emailVerified) {
+          sendingVerificationEmail = true;
+          await sendEmailVerification(emailAuthUser, {
+            url: `${window.location.origin}/?emailVerified=1`,
+          });
+          sendingVerificationEmail = false;
+          await signOut(auth);
+          emailAuthMode = 'signin';
+          updateEmailAuthUI();
+          emailAuthSubmit.value = 'Sign In';
+          emailAuthSubmit.disabled = false;
+          if (typeof window.showGlobalInfo === 'function') {
+            window.showGlobalInfo(`A verification link has been sent to ${email}. Verify your email, then sign in to play. Good luck!`);
+          }
+          return;
+        }
       } else {
-        await createUserWithEmailAndPassword(auth, email, password);
+        emailVerificationAuthTransition = true;
+        const credential = await createUserWithEmailAndPassword(auth, email, password);
+        emailAuthUser = credential.user;
+        sendingVerificationEmail = true;
+        await sendEmailVerification(emailAuthUser, {
+          url: `${window.location.origin}/?emailVerified=1`,
+        });
+        sendingVerificationEmail = false;
+        await signOut(auth);
+        emailAuthMode = 'signin';
+        updateEmailAuthUI();
+        emailAuthSubmit.value = 'Sign In';
+        emailAuthSubmit.disabled = false;
+        if (typeof window.showGlobalInfo === 'function') {
+          window.showGlobalInfo(`A verification link has been sent to ${email}. Verify your email, then sign in to play. Good luck!`);
+        }
+        return;
       }
       emailAuthModal.style.display = 'none';
       if (typeof hideLoginModal === 'function') hideLoginModal();
 
     } catch (error) {
       console.error("Email auth error:", error);
+      if (emailAuthUser && !emailAuthUser.emailVerified && auth.currentUser) {
+        try {
+          await signOut(auth);
+        } catch (signOutError) {
+          console.error("Could not sign out the unverified email account:", signOutError);
+        }
+      }
       if (emailAuthError) {
-        if (error.code === 'auth/email-already-in-use') {
-          emailAuthError.textContent = 'This email already has an account. Try continuing with Google or Microsoft instead.';
+        if (error.code === 'auth/unauthorized-continue-uri') {
+          emailAuthError.textContent = 'Your account was created, but this site domain is not approved for verification links. Please contact support.';
+        } else if (sendingVerificationEmail) {
+          emailAuthMode = 'signin';
+          updateEmailAuthUI();
+          emailAuthError.textContent = 'Your account exists, but we could not send the verification email. Please sign in to try again.';
+        } else if (error.code === 'auth/email-already-in-use') {
+          emailAuthError.textContent = 'This email already has an account. Switch to Sign In; unverified accounts will be sent a verification link.';
         } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
           emailAuthError.textContent = 'Could not sign in. Check your password, or try continuing with Google or Microsoft if that is how you signed up.';
         } else if (error.code === 'auth/weak-password') {
-          emailAuthError.textContent = 'Password must be at least 6 characters.';
+          emailAuthError.textContent = 'Password must be at least 10 characters.';
         } else if (error.code === 'auth/invalid-email') {
           emailAuthError.textContent = 'Please enter a valid email address.';
         } else {
@@ -353,8 +401,26 @@ if (emailAuthModal) {
       }
       emailAuthSubmit.value = emailAuthMode === 'signin' ? 'Sign In' : 'Create Account';
       emailAuthSubmit.disabled = false;
+    } finally {
+      emailVerificationAuthTransition = false;
     }
   });
+}
+
+if (new URLSearchParams(window.location.search).get('emailVerified') === '1') {
+  const cleanUrl = new URL(window.location.href);
+  cleanUrl.searchParams.delete('emailVerified');
+  window.history.replaceState(null, '', cleanUrl);
+  const showVerifiedNotice = () => {
+    if (typeof window.showGlobalInfo === 'function') {
+      window.showGlobalInfo('Email verified! Sign in to Quiz Gamer to continue. Good luck!');
+    }
+  };
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', showVerifiedNotice, { once: true });
+  } else {
+    showVerifiedNotice();
+  }
 }
 
 // ── LOGIN HANDLER (Popup-Blocker Safe) ──
@@ -1225,6 +1291,24 @@ window.currentUserData = null; // <-- ADDED 1: Initialize global variable
 // ── FIREBASE AUTH OBSERVER ── & ── INCOMPLETE ACCOUNT RECOVERY ──
 // ── UPDATE onAuthStateChanged to RESOLVE when profile is complete ──
   onAuthStateChanged(auth, async (user) => {
+  const isUnverifiedEmailAccount = user &&
+    user.providerData.some((provider) => provider.providerId === 'password') &&
+    !user.emailVerified;
+  if (isUnverifiedEmailAccount) {
+    currentUser = null;
+    window.currentUserData = null;
+    updateAuthUI(null);
+    updateTierLocks(1);
+    if (!emailVerificationAuthTransition) {
+      try {
+        await signOut(auth);
+      } catch (error) {
+        console.error("Could not sign out the unverified email account:", error);
+      }
+    }
+    return;
+  }
+
   currentUser = user;
   updateAuthUI(user);
 
