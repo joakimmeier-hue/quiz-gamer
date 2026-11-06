@@ -2221,7 +2221,6 @@ const HOVER_SCALE_CLASSES = [
     'cp-submit-btn',
     'profile-pic-option',
     'current-profile-pic',
-    'login-modal-btn',
     'gamelevel-btn',
     'game-level-option', 
     'merge-google-btn',
@@ -2232,9 +2231,10 @@ const HOVER_SCALE_CLASSES = [
     'find-me-btn'
 ];
 
-// ---- wtc-wrapper fix --- skalas upp till 1.08 vid hover (subtil effekt)
+// ---- Small hover scale ---  1.08
 const HOVER_SCALE_CLASSES_SM = [
-    'wtc-wrapper'
+    'wtc-wrapper',
+    'login-modal-btn'
 ];
 // Hantera klick på wtc-wrapper för att trigga Y-rörelsen och nollställa hover
 document.addEventListener('DOMContentLoaded', () => {

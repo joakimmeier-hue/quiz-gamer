@@ -232,8 +232,6 @@ const emailAuthCancelBtn = document.getElementById('email-auth-cancel-btn');
 const emailAuthError = document.getElementById('email-auth-error');
 
 let emailAuthMode = 'signin'; // or 'create'
-const EMAIL_VERIFICATION_RETURN_KEY = 'emailVerificationReturn';
-const EMAIL_VERIFICATION_RETURN_TTL_MS = 30 * 60 * 1000;
 
 // ──── 1. HELPER FUNCTIONS (Safe top-level declarations) ────
 function validateEmailAuthInputs() {
@@ -287,31 +285,6 @@ function showEmailAuthModal() {
   });
 }
 
-function getEmailVerificationActionSettings() {
-  const flowId = crypto.randomUUID
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  const canReturnToCurrentPage = ['lobby', 'terms', 'privacy'].includes(currentSlug);
-  const returnPath = canReturnToCurrentPage
-    ? `${window.location.pathname}${window.location.hash}`
-    : '/';
-
-  try {
-    localStorage.setItem(EMAIL_VERIFICATION_RETURN_KEY, JSON.stringify({
-      flowId,
-      returnPath,
-      expiresAt: Date.now() + EMAIL_VERIFICATION_RETURN_TTL_MS,
-    }));
-  } catch (error) {
-    console.warn('Could not save the email-verification return page:', error);
-  }
-
-  const continueUrl = new URL('/', window.location.origin);
-  continueUrl.searchParams.set('emailVerified', '1');
-  continueUrl.searchParams.set('emailFlow', flowId);
-  return { url: continueUrl.toString() };
-}
-
 // ──── 2. LAUNCHER LISTENER ────
 document.getElementById('email-login-btn')?.addEventListener('click', showEmailAuthModal);
 
@@ -361,7 +334,9 @@ if (emailAuthModal) {
         emailAuthUser = credential.user;
         if (!emailAuthUser.emailVerified) {
           sendingVerificationEmail = true;
-          await sendEmailVerification(emailAuthUser, getEmailVerificationActionSettings());
+          await sendEmailVerification(emailAuthUser, {
+            url: `${window.location.origin}/?emailVerified=1`,
+          });
           sendingVerificationEmail = false;
           await signOut(auth);
           emailAuthMode = 'signin';
@@ -378,7 +353,9 @@ if (emailAuthModal) {
         const credential = await createUserWithEmailAndPassword(auth, email, password);
         emailAuthUser = credential.user;
         sendingVerificationEmail = true;
-        await sendEmailVerification(emailAuthUser, getEmailVerificationActionSettings());
+        await sendEmailVerification(emailAuthUser, {
+          url: `${window.location.origin}/?emailVerified=1`,
+        });
         sendingVerificationEmail = false;
         await signOut(auth);
         emailAuthMode = 'signin';
@@ -430,60 +407,19 @@ if (emailAuthModal) {
   });
 }
 
-// ──── 5. EMAIL VERIFICATION RETURN TO SAME LOCATION
-const emailVerificationReturnParams = new URLSearchParams(window.location.search);
-if (emailVerificationReturnParams.get('emailVerified') === '1') {
-  const isReturnHandoff = emailVerificationReturnParams.get('emailReturn') === '1';
-  let savedReturnPath = null;
-
-  if (!isReturnHandoff) {
-    try {
-      const saved = JSON.parse(localStorage.getItem(EMAIL_VERIFICATION_RETURN_KEY) || 'null');
-      localStorage.removeItem(EMAIL_VERIFICATION_RETURN_KEY);
-      if (saved && saved.flowId === emailVerificationReturnParams.get('emailFlow') &&
-          saved.expiresAt > Date.now() && typeof saved.returnPath === 'string') {
-        const returnUrl = new URL(saved.returnPath, window.location.origin);
-        const publicPaths = ['/', '/lobby', '/terms', '/privacy'];
-        if (returnUrl.origin === window.location.origin && publicPaths.includes(returnUrl.pathname)) {
-          savedReturnPath = `${returnUrl.pathname}${returnUrl.hash}`;
-        }
-      }
-    } catch (error) {
-      console.warn('Could not read the email-verification return page:', error);
+if (new URLSearchParams(window.location.search).get('emailVerified') === '1') {
+  const cleanUrl = new URL(window.location.href);
+  cleanUrl.searchParams.delete('emailVerified');
+  window.history.replaceState(null, '', cleanUrl);
+  const showVerifiedNotice = () => {
+    if (typeof window.showGlobalInfo === 'function') {
+      window.showGlobalInfo('Email verified! Sign in to Quiz Gamer to continue. Good luck!');
     }
-  }
-
-  if (!isReturnHandoff && savedReturnPath &&
-      `${window.location.pathname}${window.location.hash}` !== savedReturnPath) {
-    const returnUrl = new URL(savedReturnPath, window.location.origin);
-    returnUrl.searchParams.set('emailVerified', '1');
-    returnUrl.searchParams.set('emailReturn', '1');
-    window.location.replace(returnUrl.toString());
-  } else if (!isReturnHandoff && !savedReturnPath && window.location.pathname !== '/') {
-    const fallbackUrl = new URL('/', window.location.origin);
-    fallbackUrl.searchParams.set('emailVerified', '1');
-    fallbackUrl.searchParams.set('emailReturn', '1');
-    window.location.replace(fallbackUrl.toString());
+  };
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', showVerifiedNotice, { once: true });
   } else {
-    const cleanUrl = new URL(window.location.href);
-    cleanUrl.searchParams.delete('emailVerified');
-    cleanUrl.searchParams.delete('emailFlow');
-    cleanUrl.searchParams.delete('emailReturn');
-    window.history.replaceState(null, '', cleanUrl);
-
-    const showVerifiedSignIn = () => {
-      if (emailAuthModal) {
-        showEmailAuthModal();
-        if (emailAuthTitle) emailAuthTitle.textContent = 'Email verified! Sign in';
-      } else if (typeof window.showGlobalInfo === 'function') {
-        window.showGlobalInfo('Email verified! Sign in to Quiz Gamer to continue. Good luck!');
-      }
-    };
-    if (document.readyState === 'loading') {
-      window.addEventListener('DOMContentLoaded', showVerifiedSignIn, { once: true });
-    } else {
-      showVerifiedSignIn();
-    }
+    showVerifiedNotice();
   }
 }
 
