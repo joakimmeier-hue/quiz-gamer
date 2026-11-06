@@ -2422,6 +2422,7 @@ if (location.hash === '#leaderboard') {
         let avatarPreview = null;
         let previewSource = null;
         let previewHideTimer = null;
+        let avatarHoverUnlockPoint = null;
         const hideAvatarPreview = () => {
           previewSource = null;
           clearTimeout(previewHideTimer);
@@ -2481,6 +2482,7 @@ if (location.hash === '#leaderboard') {
         if (rowList) {
           rowList.addEventListener('pointerover', (event) => {
             if (event.pointerType === 'touch') return;
+            if (avatarHoverUnlockPoint) return;
             const image = event.target.closest('.ppic-lb');
             if (image && rowList.contains(image)) showAvatarPreview(image);
           });
@@ -2495,13 +2497,19 @@ if (location.hash === '#leaderboard') {
             }
           });
           document.addEventListener('pointermove', (event) => {
-            if (!previewSource) return;
             if (event.pointerType === 'touch') return;
+            if (avatarHoverUnlockPoint) {
+              const dx = event.clientX - avatarHoverUnlockPoint.x;
+              const dy = event.clientY - avatarHoverUnlockPoint.y;
+              if (Math.hypot(dx, dy) < 10) return;
+              avatarHoverUnlockPoint = null;
+            }
             const image = event.target.closest?.('.ppic-lb');
             if (image && rowList.contains(image)) {
               showAvatarPreview(image);
               return;
             }
+            if (!previewSource) return;
             const bounds = showAvatarPreview(previewSource);
             if (!bounds || event.clientX < bounds.left || event.clientX > bounds.right ||
                 event.clientY < bounds.top || event.clientY > bounds.bottom) {
@@ -2652,6 +2660,10 @@ if (location.hash === '#leaderboard') {
         e.preventDefault();
         e.stopPropagation();
         if (typeof playSFX === 'function') playSFX('back');
+        hideAvatarPreview();
+        avatarHoverUnlockPoint = e.detail > 0
+          ? { x: e.clientX, y: e.clientY }
+          : null;
 
         list.querySelectorAll('.game-level-option').forEach(r => r.classList.remove('is-selected'));
         row.classList.add('is-selected');
