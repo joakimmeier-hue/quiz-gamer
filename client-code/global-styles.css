@@ -615,8 +615,9 @@ a.button-link:hover {
               transform 0.25s 0.1s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* LB DROPDOWNS VARIANT
-/* Snabbare animationer enbart för dropdowns inne i leaderboarden */
+/* ────────────────── LB ──────────────────
+DROPDOWNS VARIANT
+ Snabbare animationer enbart för dropdowns inne i leaderboarden */
 .leaderboard-overlay .dropdown-gamelevel {
   animation:
     fadeIn 0.2s 0.05s ease-in forwards,
@@ -769,6 +770,15 @@ a.button-link:hover {
 .lb-avatar-hover-preview.is-visible {
   scale: 3;
 }
+.body-1 .trophy{
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+.body-1 .trophy.is-visible {
+  opacity: 1;
+  transition: opacity 0.18s ease;
+}
+──────────────────────────────────────────────────────────────────────────────────────────
 
 /* GAME INFO LOAD ANIMATION */
 .game-info {
