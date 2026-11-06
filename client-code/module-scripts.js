@@ -2397,11 +2397,15 @@ if (location.hash === '#leaderboard') {
         // Keep the header fixed; cloned player rows belong in the scroll container.
         const lbWrapper = overlay.querySelector('.lb-wrapper');
         const rowList = lbWrapper && lbWrapper.querySelector('.lb-scroll');
-        const trophy = overlay.querySelector('.trophy');
-        if (rowList && trophy) {
+        const trophyRow = overlay.querySelector('.lb-row-1.blur');
+        const trophies = trophyRow
+          ? trophyRow.querySelectorAll('.trophy')
+          : overlay.querySelectorAll('.trophy');
+        if (rowList && trophies.length) {
           const updateTrophyVisibility = () => {
             const topThreshold = parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.6;
-            trophy.classList.toggle('is-scrolled', rowList.scrollTop > topThreshold);
+            const opacity = rowList.scrollTop > topThreshold ? '0' : '1';
+            trophies.forEach((trophy) => { trophy.style.opacity = opacity; });
           };
           rowList.addEventListener('scroll', updateTrophyVisibility, { passive: true });
           updateTrophyVisibility();

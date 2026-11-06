@@ -770,12 +770,9 @@ DROPDOWNS VARIANT
 .lb-avatar-hover-preview.is-visible {
   scale: 3;
 }
-.body-1 .trophy{
+.leaderboard-overlay .trophy{
   opacity: 1;
   transition: opacity 0.18s ease;
-}
-.body-1 .trophy.is-scrolled {
-  opacity: 0;
 }
 ──────────────────────────────────────────────────────────────────────────────────────────
 
