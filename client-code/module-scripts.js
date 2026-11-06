@@ -2403,7 +2403,7 @@ if (location.hash === '#leaderboard') {
           : overlay.querySelectorAll('.trophy');
         if (rowList && trophies.length) {
           const updateTrophyVisibility = () => {
-            const topThreshold = parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.6;
+            const topThreshold = parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.5;
             const opacity = rowList.scrollTop > topThreshold ? '0' : '1';
             trophies.forEach((trophy) => { trophy.style.opacity = opacity; });
           };
