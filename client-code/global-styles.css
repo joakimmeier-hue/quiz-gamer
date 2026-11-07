@@ -20,13 +20,9 @@
 }
 .fouc-reveal.is-revealed {
   visibility: visible;
-  animation: fouc-in 0.3s ease;
 }
 .fouc-reveal.is-revealed.no-fade {
   animation: none;
-}
-@keyframes fouc-in {
-  from { opacity: 0; }
 }
 
 /* —————— Global overflow-stopper —————— */
