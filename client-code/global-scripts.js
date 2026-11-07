@@ -2306,7 +2306,7 @@ const PRESS_SCALE_CLASSES = [
     'gamelevel-btn',
     'games-link-block',
     'games-link-block-gma',
-    'inventory-btn-wrapper',
+    /* 'inventory-btn-wrapper', */
     'link-score',
     'link-to-lobby',
     'login-modal-btn',
