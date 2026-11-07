@@ -160,7 +160,9 @@ function smoothScrollToId(targetId, opts = {}) {
       if (!id) return;
       smoothScrollToId(id, {
         duration: 900,
-        topOffsetPercent: window.innerWidth < 600 ? 0.12 : 0.20
+        topOffsetPercent: window.innerWidth < 600
+          ? (this.classList.contains('arrow-anchor-wrapper') ? 0.75 : 0.12)
+          : 0.20
         // no containerSelector needed — auto-detects .mask-middle here,
         // falls back to window on normal pages
       });
