@@ -1,3 +1,17 @@
+function getVisibleCreateProfileModal() {
+  return Array.from(document.querySelectorAll('#create-profile, .create-profile')).find((modal) => {
+    const style = window.getComputedStyle(modal);
+    return style.display !== 'none' && style.visibility !== 'hidden' && modal.getClientRects().length > 0;
+  }) || null;
+}
+
+window.addEventListener('keydown', (e) => {
+  const modal = getVisibleCreateProfileModal();
+  if (!modal || modal.contains(e.target)) return;
+  e.preventDefault();
+  e.stopImmediatePropagation();
+}, true);
+
 // ─────────────────── GLOBAL INPUT PROTECTION & BUTTON SHIELD ──────────────────────
 ['pointerdown', 'mousedown', 'mouseup', 'click', 'auxclick', 'contextmenu'].forEach(eventType => {
   document.addEventListener(eventType, (e) => {
@@ -254,6 +268,7 @@ document.addEventListener('click', (e) => {
 document.addEventListener('keydown', function(e) {
   const triggerKeys = ["Escape", "Enter"];
   if (!triggerKeys.includes(e.key)) return;
+  if (getVisibleCreateProfileModal()) return;
 
   const globalInfo = document.querySelector('.global-info');
   if (globalInfo) {
@@ -561,6 +576,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Enter = START, but only after a tier is selected and nothing else is open
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter' || e.repeat || !startBtn) return;
+    if (getVisibleCreateProfileModal()) return;
     if (!document.querySelector('.mask-middle .game-level-option.is-selected')) return;
     if (dropdownToggle.classList.contains('w--open')) return;   // dropdown open: Enter belongs to it
     const info = document.querySelector('.global-info');
@@ -1988,6 +2004,7 @@ document.addEventListener('click', function(e) {
 let triggered = false;
 document.addEventListener("keydown", function(e) {
   if (triggered) return;
+  if (getVisibleCreateProfileModal()) return;
   
   // NEW: Block if any modal is open (create-profile, login, etc)
   const blockingModals = [
@@ -2199,6 +2216,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // ── GLOBALT STOPP FÖR STANDARD TAB-FOKUS ────────────────────────────
 window.addEventListener('keydown', function(e) {
     if (e.key !== 'Tab') return;
+    const profileModal = getVisibleCreateProfileModal();
+    if (profileModal && profileModal.contains(e.target)) return;
           
     if (e.target.closest('.form-block-contact, .email-auth-modal')) {
             return; // innuti, gör inget, låt Tab bete sig normalt

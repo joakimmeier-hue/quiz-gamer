@@ -931,6 +931,11 @@ function hidePPDropdown() {
 document.addEventListener('keydown', (e) => {
   if (e.repeat) return; // Stoppar buggar om man håller inne knappen
   const key = (e.key || '').toLowerCase();
+  const createProfileOpen = Array.from(document.querySelectorAll('#create-profile, .create-profile')).some((modal) => {
+    const style = window.getComputedStyle(modal);
+    return style.display !== 'none' && style.visibility !== 'hidden' && modal.getClientRects().length > 0;
+  });
+  if (createProfileOpen) return;
 
   // --- 1) PP-GRID-WRAPPER PRIORITY: ESC should close any open pp-grid-wrapper first ---
   if (key === 'escape') {
