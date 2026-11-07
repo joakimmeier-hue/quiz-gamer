@@ -914,18 +914,19 @@ function hidePPDropdown() {
       overlay.style.display = 'flex';
       requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-              overlay.style.transition = 'opacity 300ms ease-out';
+              overlay.style.transition = 'opacity 400ms ease-out';
               overlay.style.opacity = '1';
           });
       });
   }
  function closeLobbyInventory(overlay) {
   window.lobbyInvOpen = false;
-  overlay.style.transition = 'opacity 1300ms ease-out';
-  overlay.style.opacity = '0';
-  setTimeout(() => {
-      if (!window.lobbyInvOpen) overlay.style.display = 'none';
-  }, 200);
+   const fadeDurationMs = 400;
+   overlay.style.transition = `opacity ${fadeDurationMs}ms ease-out`;
+   overlay.style.opacity = '0';
+   setTimeout(() => {
+       if (!window.lobbyInvOpen) overlay.style.display = 'none';
+   }, fadeDurationMs + 50);
 }
 // ── TANGENTBORDS-LYSSNARE (I, TAB, ESC) ──
 document.addEventListener('keydown', (e) => {
