@@ -914,14 +914,14 @@ function hidePPDropdown() {
       overlay.style.display = 'flex';
       requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-              overlay.style.transition = 'opacity 160ms ease-out';
+              overlay.style.transition = 'opacity 300ms ease-out';
               overlay.style.opacity = '1';
           });
       });
   }
  function closeLobbyInventory(overlay) {
   window.lobbyInvOpen = false;
-  overlay.style.transition = 'opacity 160ms ease-out';
+  overlay.style.transition = 'opacity 300ms ease-out';
   overlay.style.opacity = '0';
   setTimeout(() => {
       if (!window.lobbyInvOpen) overlay.style.display = 'none';
