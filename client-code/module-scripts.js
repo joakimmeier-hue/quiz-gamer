@@ -1658,6 +1658,9 @@ async function renderRating(el, n, mode) {
   const token = (ratingTokens.get(el) || 0) + 1;
   ratingTokens.set(el, token);
 
+  neutralize(el);
+  el.replaceChildren();
+
   const lottie = await getLottieLib();
   const data = await getRatingData(RATING_URLS[n] ? n : 1);
   if (!el.isConnected || ratingTokens.get(el) !== token) return;
