@@ -218,7 +218,7 @@ function showGlobalInfo(text) {
   const giText = document.querySelector('.gi-text');
   if (!globalInfo) return;
 
-  if (giText) { giText. textContent = text; }
+  if (giText) { giText.textContent = String(text).replace(/Quiz Gamer/g, "Quiz\u00A0Gamer"); }
 
   // Make flex first
   globalInfo.style.display = 'flex';

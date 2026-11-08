@@ -478,7 +478,7 @@ async function handleLogin(provider) {
             <p style="margin-bottom:1rem; font-size: 0.9rem; line-height: 1.4;">The email <b>${email}</b> is already registered with another provider.</p>
             <p style="margin-bottom: 2rem; font-size: 0.9rem; line-height: 1.4;">Please verify your identity with Google to link your accounts.</p>
             
-            <button id="merge-google-btn" class="merge-google-btn" style="background:white; color:var(--dark-grey); padding:0.8rem 1rem; border:none; cursor:pointer; width:13rem; font-family: inherit; font-size: 1rem; font-weight: bold;">
+            <button id="merge-google-btn" class="merge-google-btn" style="background:white; color:var(--dark-grey); padding:0.8rem 1rem; border:none; cursor:pointer; width:13rem; font-family: inherit; font-size: 1rem; font-weight: 400;">
               Verify with Google
             </button>
             
