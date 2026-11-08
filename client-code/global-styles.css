@@ -407,27 +407,16 @@ body .games-grid-clip.is-skewed {
 }
 
 .inv-arrow-lobby {
-  opacity: 0; 
+  opacity: 0;
   pointer-events: none;
-  animation: inv-arrow-appear 1s ease-out 7s forwards;
+  transition: opacity 1s ease-out;
 }
-@keyframes inv-arrow-appear {
-  0% {
-    opacity: 0;
-    pointer-events: none;
-  }
-  99% {
-    opacity: 1;
-    pointer-events: none;
-  }
-  100% {
-    opacity: 1;
-    pointer-events: auto;
-  }
+.inv-arrow-lobby.is-visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
-
-/* ── SCROLL-PULSE SYSTEM ── */
+/* ── SCROLL-PULSE SYSTEM FOR BUTTONS ── */
 .button-wrapper .button,
 .button-wrapper .button-link {
   opacity: 1;

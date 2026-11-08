@@ -1221,6 +1221,18 @@ if (option && !isGameSide) {
     }
   }); 
 
+// INVENTORY ARROW SHORTCUT ON LOBBY
+document.addEventListener('DOMContentLoaded', () => {
+const trigger = document.querySelector('.welcome-text-container');
+const inventoryArrow = document.querySelector('.inv-arrow-lobby');
+if (!trigger || !inventoryArrow) return;
+
+inventoryArrow.classList.remove('is-visible');
+trigger.addEventListener('click', () => {
+  setTimeout(() => inventoryArrow.classList.add('is-visible'), 7000);
+}, { once: true });
+});
+
 // HÄMTA DATA (BILD + STATS)
 async function loadUserData(uid) {
    const currentAvatars = document.querySelectorAll('.current-profile-pic');
