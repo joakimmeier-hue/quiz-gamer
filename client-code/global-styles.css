@@ -397,7 +397,7 @@ body .games-grid-clip.is-skewed {
   filter: invert(0.5) brightness(0.7);
 }
 
-/* ────────────── Inventory ────────────── */
+/* ────────────── INVENTORY ────────────── */
 .player-info.username {
   pointer-events: none;
 }
@@ -409,7 +409,8 @@ body .games-grid-clip.is-skewed {
 .inv-arrow-lobby {
   opacity: 0;
   pointer-events: none;
-  transition: opacity 1s ease-out;
+  transition: opacity 1s ease-out,
+              scale 0.1s cubic-bezier(0.455, 0.03, 0.515, 0.955);
 }
 .inv-arrow-lobby.is-visible {
   opacity: 1;
