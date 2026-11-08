@@ -467,6 +467,10 @@ async function handleLogin(provider) {
     if (error.code === 'auth/account-exists-with-different-credential') {
       const email = error.customData?.email;
       const pendingCred = OAuthProvider.credentialFromError(error) || GoogleAuthProvider.credentialFromError(error);
+      const verifyingMicrosoft = provider.providerId === 'google.com';
+      const verificationProvider = verifyingMicrosoft ? microsoftProvider : googleProvider;
+      const verificationName = verifyingMicrosoft ? 'Microsoft' : 'Google';
+      const verificationButtonId = 'merge-verify-btn';
 
       if (email && pendingCred) {
         const mergeDiv = document.createElement('div');
@@ -476,10 +480,10 @@ async function handleLogin(provider) {
           <div style="padding: 2rem 4rem; text-align:center; max-width:25rem; color:white; border-right: var(--stroke) solid var(--grey-stroke); border-left: var(--stroke) solid var(--grey-stroke);">
             <h3 style="margin-top:0; margin-bottom: 1rem; font-size: 1.3rem;">Account Already Exists</h3>
             <p style="margin-bottom:1rem; font-size: 0.9rem; line-height: 1.4;">The email <b>${email}</b> is already registered with another provider.</p>
-            <p style="margin-bottom: 2rem; font-size: 0.9rem; line-height: 1.4;">Please verify your identity with Google to link your accounts.</p>
+            <p style="margin-bottom: 2rem; font-size: 0.9rem; line-height: 1.4;">Please verify your identity with ${verificationName} to link your accounts.</p>
             
-            <button id="merge-google-btn" class="merge-google-btn" style="background:white; color:var(--dark-grey); padding:0.8rem 1rem; border:none; cursor:pointer; width:13rem; font-family: inherit; font-size: 1rem; font-weight: 400;">
-              Verify with Google
+            <button id="${verificationButtonId}" class="merge-verify-btn" style="background:white; color:var(--dark-grey); padding:0.8rem 1rem; border:none; cursor:pointer; width:13rem; font-family: inherit; font-size: 1rem; font-weight: 400;">
+              Verify with ${verificationName}
             </button>
             
             <button id="cancel-merge-btn" class="cancel-merge-btn" style="background:transparent; color:#fff; padding:0.8rem; border:none; cursor:pointer; margin-top:0.8rem; width:100%; font-family: inherit; font-size: 0.9rem;">
@@ -489,16 +493,16 @@ async function handleLogin(provider) {
         `;
         document.body.appendChild(mergeDiv);
 
-        if (typeof initHoverScale === 'function') initHoverScale(['merge-google-btn', 'cancel-merge-btn'], 'js-hover-scale');
-        if (typeof initPressScale === 'function') initPressScale(['merge-google-btn', 'cancel-merge-btn'], 'js-press-scale');
+        if (typeof initHoverScale === 'function') initHoverScale([verificationButtonId, 'cancel-merge-btn'], 'js-hover-scale');
+        if (typeof initPressScale === 'function') initPressScale([verificationButtonId, 'cancel-merge-btn'], 'js-press-scale');
 
-        // Handle Google Verification Click
-        document.getElementById('merge-google-btn')?.addEventListener('click', async () => {
-          const btn = document.getElementById('merge-google-btn');
+        // Verify the existing account, then link the provider the user just tried.
+        document.getElementById(verificationButtonId)?.addEventListener('click', async () => {
+          const btn = document.getElementById(verificationButtonId);
           if (btn) btn.innerText = "Verifying...";
           
           try {
-            const verifyResult = await signInWithPopup(auth, googleProvider);
+            const verifyResult = await signInWithPopup(auth, verificationProvider);
             await linkWithCredential(verifyResult.user, pendingCred);
             
             document.body.removeChild(mergeDiv);
@@ -512,7 +516,7 @@ async function handleLogin(provider) {
             if (mergeError.code !== 'auth/popup-closed-by-user') {
               alert("Account linking failed: " + mergeError.message);
             }
-            if (btn) btn.innerText = "Verify with Google";
+            if (btn) btn.innerText = `Verify with ${verificationName}`;
           }
         });
 
@@ -1061,33 +1065,6 @@ document.addEventListener('keydown', (e) => {
     }
   }
 }, true);
-
-// ── GOOGLE LOGIN ──
-if (googleLoginBtn) {
-  googleLoginBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-    if (isAuthenticating) return; // Skydd mot dubbla samtidiga inloggningsförsök
-    isAuthenticating = true;
-    
-    try {
-      console.log("Initierar Google Sign-In Popup...");
-      const result = await signInWithPopup(auth, googleProvider);
-      currentUser = result.user; 
-      console.log("Inloggning lyckades för:", currentUser.displayName);
-      
-      hideLoginModal(); 
-
-      // 🛑 DELETED the manual Firestore check and if/else block here!
-      // onAuthStateChanged will instantly detect the login and perfectly route 
-      // the user to showCreateProfile() OR resolvePendingAction().
-
-    } catch (error) {
-      console.error("Inloggning avbruten eller misslyckades helt:", error.message);
-    } finally {
-      isAuthenticating = false; 
-    }
-  });
-}
 
   // ── GLOBAL KLICKLYSSNARE ──
   document.addEventListener('click', async (e) => {
