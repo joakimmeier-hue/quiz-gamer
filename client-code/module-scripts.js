@@ -1229,7 +1229,7 @@ if (!trigger || !inventoryArrow) return;
 
 inventoryArrow.classList.remove('is-visible');
 trigger.addEventListener('click', () => {
-  setTimeout(() => inventoryArrow.classList.add('is-visible'), 7000);
+  setTimeout(() => inventoryArrow.classList.add('is-visible'), 7400);
 }, { once: true });
 });
 
