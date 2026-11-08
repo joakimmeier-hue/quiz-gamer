@@ -1190,7 +1190,7 @@ if (option && !isGameSide) {
     }
 
     // 5. GATEKEEPER & ÖPPNA FÖR LOBBY INVENTORY
-    const invBtn = e.target.closest('#lobby-inventory-btn');
+    const invBtn = e.target.closest('#lobby-inventory-btn, .inv-arrow-lobby');
     if (invBtn) {
       e.preventDefault();
       e.stopPropagation();

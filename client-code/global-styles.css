@@ -397,7 +397,7 @@ body .games-grid-clip.is-skewed {
   filter: invert(0.5) brightness(0.7);
 }
 
-/* ─────── Exclude classes ─────── */
+/* ────────────── Inventory ────────────── */
 .player-info.username {
   pointer-events: none;
 }
@@ -405,6 +405,27 @@ body .games-grid-clip.is-skewed {
 .body-1.lobby .player-info.username {
     pointer-events: auto !important;
 }
+
+.inv-arrow-lobby {
+  opacity: 0; 
+  pointer-events: none;
+  animation: inv-arrow-appear 1s ease-out 7s forwards;
+}
+@keyframes inv-arrow-appear {
+  0% {
+    opacity: 0;
+    pointer-events: none;
+  }
+  99% {
+    opacity: 1;
+    pointer-events: none;
+  }
+  100% {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
 
 /* ── SCROLL-PULSE SYSTEM ── */
 .button-wrapper .button,
