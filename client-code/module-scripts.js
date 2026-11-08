@@ -1208,7 +1208,7 @@ if (option && !isGameSide) {
     }
 
     // 5b. STÄNG-KNAPP FÖR LOBBY INVENTORY
-    const closeBtn = e.target.closest('#i-lobby-back');
+    const closeBtn = e.target.closest('#i-lobby-back, #exit-cross-inv');
     if (closeBtn) {
       e.preventDefault();
       e.stopPropagation();
