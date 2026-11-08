@@ -47,6 +47,23 @@ googleProvider.setCustomParameters({ prompt: 'select_account' });
 const microsoftProvider = new OAuthProvider('microsoft.com');
 microsoftProvider.setCustomParameters({ prompt: 'select_account' });
 
+async function sendAccountVerificationEmail(user) {
+  try {
+    await sendEmailVerification(user, {
+      url: `${window.location.origin}/?emailVerified=1`,
+    });
+    return false;
+  } catch (error) {
+    if (error.code !== 'auth/unauthorized-continue-uri') throw error;
+
+    console.warn(
+      'Email verification return domain is not authorized; sending a standard Firebase verification link instead.'
+    );
+    await sendEmailVerification(user);
+    return true;
+  }
+}
+
 let currentUser = null;
 let pendingAction = null; 
 let isAuthenticating = false; // NYTT: skydd mot dubbla samtidiga inloggningsförsök
@@ -333,6 +350,7 @@ if (emailAuthModal) {
 // ──── 4. VERIFICATION EMAIL AND LINK ────
     let emailAuthUser = null;
     let sendingVerificationEmail = false;
+    let usedDefaultVerificationHandler = false;
     try {
       if (emailAuthMode === 'signin') {
         emailVerificationAuthTransition = true;
@@ -340,9 +358,7 @@ if (emailAuthModal) {
         emailAuthUser = credential.user;
         if (!emailAuthUser.emailVerified) {
           sendingVerificationEmail = true;
-          await sendEmailVerification(emailAuthUser, {
-            url: `${window.location.origin}/?emailVerified=1`,
-          });
+          usedDefaultVerificationHandler = await sendAccountVerificationEmail(emailAuthUser);
           sendingVerificationEmail = false;
           await signOut(auth);
           emailAuthMode = 'signin';
@@ -350,7 +366,11 @@ if (emailAuthModal) {
           emailAuthSubmit.value = 'Sign In';
           emailAuthSubmit.disabled = false;
           if (typeof window.showGlobalInfo === 'function') {
-            window.showGlobalInfo(`A verification link has been sent to ${email}. Verify your email, then sign in to play. Good luck!`);
+            window.showGlobalInfo(
+              usedDefaultVerificationHandler
+                ? `A verification link has been sent to ${email}. Verify your email, return to this site, then sign in to play.`
+                : `A verification link has been sent to ${email}. Verify your email, then sign in to play. Good luck!`
+            );
           }
           return;
         }
@@ -359,9 +379,7 @@ if (emailAuthModal) {
         const credential = await createUserWithEmailAndPassword(auth, email, password);
         emailAuthUser = credential.user;
         sendingVerificationEmail = true;
-        await sendEmailVerification(emailAuthUser, {
-          url: `${window.location.origin}/?emailVerified=1`,
-        });
+        usedDefaultVerificationHandler = await sendAccountVerificationEmail(emailAuthUser);
         sendingVerificationEmail = false;
         await signOut(auth);
         emailAuthMode = 'signin';
@@ -369,7 +387,11 @@ if (emailAuthModal) {
         emailAuthSubmit.value = 'Sign In';
         emailAuthSubmit.disabled = false;
         if (typeof window.showGlobalInfo === 'function') {
-          window.showGlobalInfo(`A verification link has been sent to ${email}. Verify your email, then sign in to play. Good luck!`);
+          window.showGlobalInfo(
+            usedDefaultVerificationHandler
+              ? `A verification link has been sent to ${email}. Verify your email, return to this site, then sign in to play.`
+              : `A verification link has been sent to ${email}. Verify your email, then sign in to play. Good luck!`
+          );
         }
         return;
       }
