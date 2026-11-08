@@ -253,6 +253,7 @@ exports.completeProfile = onCall(async (request) => {
     totalScore: 0,
     rank: 0,
     hasChangedUsername: false,
+    isBot: false,
     updatedAt: new Date(),
   }, { merge: true });
   console.log("Firestore write complete");
@@ -393,7 +394,7 @@ exports.startGame = onCall(async (request) => {
       const newCount = (counts[topic] || 0) + 1;
       const currentFav = uSnap.exists ? uSnap.data().favTopic : null;
       const favCount = currentFav ? (counts[currentFav] || 0) : 0;
-      const update = { topicCounts: { [topic]: newCount } };
+      const update = { topicCounts: { [topic]: newCount }, isBot: false };
       if (topic !== currentFav && newCount > favCount) update.favTopic = topic;
       tx.set(userRef, update, { merge: true });
     } else {
@@ -569,7 +570,7 @@ verifiedTimeSecs = Math.max(verifiedTimeSecs, answeredCount * MIN_SECS_PER_ANSWE
   const newLevel = calcLevel(newTotalScore);
 
   await userRef.set(
-    { totalScore: newTotalScore, level: newLevel, levelProgress: newInfo.progress, updatedAt: new Date() },
+    { totalScore: newTotalScore, level: newLevel, levelProgress: newInfo.progress, isBot: false, updatedAt: new Date() },
     { merge: true },
      );
 
@@ -861,6 +862,7 @@ exports.payForReview = onCall(async (request) => {
     tx.set(userRef, {
       totalScore: newTotal,
       levelProgress: calcLevelInfo(newTotal).progress,
+      isBot: false,
       updatedAt: new Date(),
     }, { merge: true });
     tx.update(gameRef, { reviewPaid: true, reviewCost: cost, reviewPaidAt: new Date() });

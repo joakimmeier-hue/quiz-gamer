@@ -1310,7 +1310,7 @@ async function loadUserData(uid) {
   if (!currentUser) return;
   try {
     const userDocRef = doc(db, "users", currentUser.uid);
-    await setDoc(userDocRef, { profilePicUrl: avatarUrl, updatedAt: new Date() }, { merge: true });
+    await setDoc(userDocRef, { profilePicUrl: avatarUrl, isBot: false, updatedAt: new Date() }, { merge: true });
     localStorage.setItem('cachedAvatar_' + currentUser.uid, avatarUrl); // 🆕
     console.log("Profile picture successfully saved!");
   } catch (error) {
