@@ -2161,13 +2161,13 @@ Webflow.push(function() {
     el.textContent = typeof value === 'number' ? safeFmtNum(value) : value;
   };
 
-  setText('list-game', data.topic ? data.topic.toUpperCase() : '');
+  setText('list-game', data.topic ? data.topic.charAt(0).toUpperCase() + data.topic.slice(1) + (data.tier ? ` Tier ${data.tier}` : '') : '');
   setText('list-result', `${data.correctCount}/${data.totalQuestions}`);
   setText('list-elites', Number.isInteger(data.eliteCorrectCount) && Number.isInteger(data.eliteTotalCount)
     ? `${data.eliteCorrectCount}/${data.eliteTotalCount}`
     : '–');
   setText('list-time', data.timeStr);
-  setText('list-tier-bonus', `Tier ${data.tier} bonus: ${Number(data.tierMultiplier).toFixed(1)}x`);
+  setText('list-tier-bonus', `Tier bonus: ${Number(data.tierMultiplier).toFixed(1)}x`);
   setText('list-attempts', data.attemptCount - 1);
   setText('lb-position', data.leaderboardPosition ? `#${data.leaderboardPosition}` : '–');
   setText('list-score', data.finalScore);
