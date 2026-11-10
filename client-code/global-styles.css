@@ -622,7 +622,7 @@ a.button-link:hover {
               transform 0.25s 0.1s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* ────────────────── LB ──────────────────
+/* ──────────────────────────────────────────── LB ───────────────────────────────────────────────────
 DROPDOWNS VARIANT
  Snabbare animationer enbart för dropdowns inne i leaderboarden */
 .leaderboard-overlay .dropdown-gamelevel {
@@ -741,7 +741,7 @@ DROPDOWNS VARIANT
   right: 0;
 }
 /* Player outside the top 100: gap above the extra row */
-.lb-column.is-outside {
+.leaderboard-overlay .lb-scroll > .lb-column.is-outside {
   margin-top: 2rem;
 }
 

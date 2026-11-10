@@ -231,6 +231,16 @@ async function getTierLeaderboardPosition(boardId, uid, score, timeSecs, boardEn
 
   return betterSnap.data().count + betterHumanCount + betterBotCount + 1;
 }
+
+async function getTotalLeaderboardPosition(uid, score) {
+  const users = db.collection("users");
+  const [betterSnap, tiedSnap] = await Promise.all([
+    users.where("totalScore", ">", score).count().get(),
+    users.where("totalScore", "==", score).get(),
+  ]);
+  const tiedBeforeCount = tiedSnap.docs.filter((doc) => doc.id > uid).length;
+  return betterSnap.data().count + tiedBeforeCount + 1;
+}
   
 async function renameInBoards(uid, oldName, newName) {
   // lbTop: patch this user's entry in every list they appear in
@@ -922,7 +932,7 @@ exports.getLeaderboards = onCall(async (request) => {
       let rank = null;
       if (boardId === "total") {
         score = u.totalScore || 0;
-        rank = Number.isInteger(u.rank) && u.rank > 0 ? u.rank : null;
+        if (score > 0) rank = await getTotalLeaderboardPosition(uid, score);
       } else {
         const m = boardId.match(/^(score|unlim)-(.+)-l(\d+)$/);
         const att = await db.collection("users").doc(uid)

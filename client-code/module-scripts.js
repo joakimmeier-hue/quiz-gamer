@@ -2483,6 +2483,7 @@ if (location.hash === '#leaderboard') {
       const LB_CACHE_MS = 90 * 1000;
       let userPicked = false;
       let myOutside = null; // the player's own entry when not in the top 100
+      let activeBoardId = null;
       const lbLoading = overlay.querySelector('.loading-squares-lb');
       const setLbLoading = (isLoading) => {
         if (lbLoading) lbLoading.style.display = isLoading ? 'flex' : 'none';
@@ -2761,6 +2762,14 @@ if (location.hash === '#leaderboard') {
         dd.classList.toggle('hint-bob', visible[k] && !dd.classList.contains('is-picked'));
       });
       const id = boardId();
+      if (id !== activeBoardId) {
+        activeBoardId = id;
+        myOutside = null;
+        if (rowList) {
+          rowList.querySelectorAll('[data-lb-row]').forEach(r => r.remove());
+          rowList.scrollTop = 0;
+        }
+      }
       if (id) loadBoard(id);
       else setLbLoading(false);
     };
