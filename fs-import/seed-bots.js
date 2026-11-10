@@ -263,7 +263,7 @@ function weightedOrder(candidates, topic, favoriteMultiplier) {
   })).sort((a, b) => a.selectionKey - b.selectionKey);
 }
 
-// one highscore / unlimited list for a topic + tier
+// Build a visible top-100 list and a full simulated rank list for a topic + tier.
 function buildBoard(bots, topic, tier, unlimited) {
   // Only bots meeting the tier's required level can appear on that board.
   const need = TIER_REQUIREMENTS[tier];
@@ -276,7 +276,9 @@ function buildBoard(bots, topic, tier, unlimited) {
   const top = weightedOrder(candidates, topic, 5).slice(0, topCount);
   const topBots = new Set(top.map((candidate) => candidate.bot));
   const remaining = candidates.filter((candidate) => !topBots.has(candidate.bot));
-  const tail = weightedOrder(remaining, topic, 3).slice(0, TOP_N - top.length);
+  const tailOrder = weightedOrder(remaining, topic, 3);
+  const tail = tailOrder.slice(0, TOP_N - top.length);
+  const beyondTop = tailOrder.slice(TOP_N - top.length);
   const chosen = [...top, ...tail];
 
   // Map the existing skill-driven score curve onto the topic-weighted rank order.
@@ -293,7 +295,19 @@ function buildBoard(bots, topic, tier, unlimited) {
       timeSecs: 20 + Math.round((1 - bot.skill) * 120),
     };
   });
-  return { entries, eligibleCount: eligible.length };
+  const lowerEntries = beyondTop.map(({ bot }, i) => {
+    const rankFraction = i / Math.max(beyondTop.length - 1, 1);
+    const baseScore = (lo - 1) * (1 - rankFraction);
+    return {
+      ...toEntry(bot, Math.max(1, Math.ceil(baseScore * unlimitedScale * TIER_MULTIPLIERS[tier]))),
+      timeSecs: 20 + Math.round((1 - bot.skill) * 120),
+    };
+  });
+  return {
+    entries,
+    allEntries: [...entries, ...lowerEntries].sort((a, b) => compareBoardEntries(a, b)),
+    eligibleCount: eligible.length,
+  };
 }
 
 // real entries are never displaced: only the lowest bots are cut when the list is full
@@ -353,6 +367,7 @@ async function seed(dry) {
 
   // build every list
   const boards = {};
+  const botRankings = {};
   const warnings = [];
   const totalBots = bots.slice().sort((a, b) => b.totalScore - a.totalScore).slice(0, TOP_N).map((b) => toEntry(b, b.totalScore));
   boards.total = mergeBoard(existing.total, totalBots, false);
@@ -366,6 +381,7 @@ async function seed(dry) {
           warnings.push(`${id}: ${b.eligibleCount} eligible bots; under-level bots skipped, so the bot portion will have fewer than ${TOP_N} entries.`);
         }
         boards[id] = mergeBoard(existing[id], b.entries);
+        botRankings[id] = b.allEntries.map(({ uid, score, timeSecs }) => ({ uid, score, timeSecs }));
       }
     }
   }
@@ -375,7 +391,7 @@ async function seed(dry) {
   if (warnings.length) console.log("\nWarnings:\n  " + warnings.join("\n  "));
 
   const staleBots = oldBotIds.filter((id) => !bots.some((b) => b.uid === id));
-  console.log(`\nWill write ${bots.length} user docs, ${Object.keys(boards).length} lbTop docs, ${TOPICS.length * TIERS.length} leaderboards docs` +
+  console.log(`\nWill write ${bots.length} user docs, ${Object.keys(boards).length} lbTop docs, ${Object.keys(botRankings).length} full bot-rank docs, ${TOPICS.length * TIERS.length} leaderboards docs` +
     (staleBots.length ? `, and delete ${staleBots.length} old bot users that are no longer in the pool` : "") + ".");
   if (dry) return console.log("Dry run – nothing was written.");
   if (!(await confirm("Write this to the database now?"))) return console.log("Cancelled.");
@@ -400,6 +416,9 @@ async function seed(dry) {
       w.delete(db.collection("leaderboards").doc(id.slice("score-".length)));
     }
   }
+  for (const [id, entries] of Object.entries(botRankings)) {
+    w.set(db.collection("lbBotRanks").doc(id), { entries, updatedAt: now });
+  }
   await w.close();
   console.log("Done.");
 }
@@ -408,6 +427,7 @@ async function removeBots(dry) {
   const usersSnap = await db.collection("users").select().get(); // ids only
   const botIds = usersSnap.docs.map((d) => d.id).filter(isBotUid);
   const lbSnap = await db.collection("lbTop").get();
+  const botRanksSnap = await db.collection("lbBotRanks").get();
 
   // plan first, write after the confirmation (BulkWriter starts sending as soon as ops are queued)
   const now = new Date();
@@ -429,13 +449,14 @@ async function removeBots(dry) {
       });
     }
   }
-  console.log(`\nRemoving ${botIds.length} bot users; cleaning ${ops.length} lbTop lists (${emptied} of them end up empty and are deleted, with their leaderboards doc).`);
+  console.log(`\nRemoving ${botIds.length} bot users; cleaning ${ops.length} lbTop lists (${emptied} of them end up empty and are deleted, with their leaderboards doc), and deleting ${botRanksSnap.size} full bot-rank docs.`);
   if (dry) return console.log("Dry run – nothing was removed.");
   if (!(await confirm("Remove all bots now?"))) return console.log("Cancelled.");
 
   const w = newWriter();
   ops.forEach((op) => op(w));
   for (const id of botIds) w.delete(db.collection("users").doc(id));
+  for (const doc of botRanksSnap.docs) w.delete(doc.ref);
   await w.close();
   console.log("Done.");
 }

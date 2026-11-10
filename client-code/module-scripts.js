@@ -2479,26 +2479,24 @@ if (location.hash === '#leaderboard') {
         if (!LB_STATE.type || !LB_STATE.topic || !LB_STATE.tier) return null;
         return `${LB_STATE.type}-${LB_STATE.topic}-l${LB_STATE.tier}`; // score-science-l1 / unlim-science-l1
       };
-      const lbCache = new Map(); // boardId -> { t, entries }
+      const lbCache = new Map(); // boardId -> { entries, me }
       let userPicked = false;
       let myOutside = null; // the player's own entry when not in the top 100
-      const LB_CACHE_MS = 90 * 1000;
       const lbLoading = overlay.querySelector('.loading-squares-lb');
       const setLbLoading = (isLoading) => {
         if (lbLoading) lbLoading.style.display = isLoading ? 'flex' : 'none';
       };
       const loadBoard = async (id) => {
         const hit = lbCache.get(id);
-        if (hit && Date.now() - hit.t < LB_CACHE_MS) {
+        if (hit) {
           renderBoard(hit.entries, hit.me);
-          setLbLoading(false);
-          return;
+        } else {
+          setLbLoading(true);
         }
-        setLbLoading(true);
         try {
           const res = await getLeaderboardsFn({ boardId: id });
           console.log('lb loaded:', id, res.data); // temporary debug, remove later
-          lbCache.set(id, { t: Date.now(), entries: res.data.entries, me: res.data.me || null });
+          lbCache.set(id, { entries: res.data.entries, me: res.data.me || null });
           if (id !== boardId()) return; // the player already picked something else
           renderBoard(res.data.entries, res.data.me);
         } catch (err) {
@@ -2726,7 +2724,10 @@ if (location.hash === '#leaderboard') {
           e.preventDefault();
           let myRow = rowList && rowList.querySelector('[data-me]');
           if (!myRow && myOutside && rowList && rowTemplate) {
-            myRow = buildRow({ ...myOutside, isMe: true }, '100+');
+            const rank = Number.isInteger(myOutside.rank) && myOutside.rank > 0
+              ? myOutside.rank
+              : '100+';
+            myRow = buildRow({ ...myOutside, isMe: true }, rank);
             myRow.classList.add('is-outside');
             rowList.appendChild(myRow);
             fitScores();

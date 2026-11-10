@@ -196,6 +196,43 @@ async function updateTopList(boardId, uid, info, score, timeSecs) {
     tx.set(ref, { entries: entries.slice(0, TOP_N), updatedAt: new Date() });
   });
 }
+// Get live Tier LB, Total score LB is cached, 15 min update
+async function getTierLeaderboardPosition(boardId, uid, score, timeSecs, boardEntries) {
+  const boardIndex = boardEntries.findIndex((entry) => entry.uid === uid);
+  if (boardIndex >= 0) return boardIndex + 1;
+
+  const match = boardId.match(/^(score|unlim)-(.+)-l(\d+)$/);
+  if (!match) return null;
+  const [, type, topic, level] = match;
+  const scoreField = type === "score" ? "bestScore" : "bestScoreUnlim";
+  const timeField = type === "score" ? "bestScoreTimeSecs" : "bestScoreUnlimTimeSecs";
+  const attempts = db.collectionGroup("attempts")
+    .where("topic", "==", topic)
+    .where("level", "==", Number(level));
+  const [betterSnap, tiedSnap, botRanksSnap] = await Promise.all([
+    attempts.where(scoreField, ">", score).count().get(),
+    attempts.where(scoreField, "==", score).get(),
+    db.collection("lbBotRanks").doc(boardId).get(),
+  ]);
+  const betterHumanCount = tiedSnap.docs.filter((doc) => {
+    const otherUid = doc.ref.parent.parent.id;
+    if (otherUid.startsWith("bot_")) return false;
+    return compareLeaderboardEntries(
+      { uid, score, timeSecs },
+      { uid: otherUid, score, timeSecs: doc.get(timeField) }
+    ) > 0;
+  }).length;
+  const botRankEntries = botRanksSnap.exists
+    ? (botRanksSnap.data().entries || [])
+    : boardEntries.filter((entry) =>
+      typeof entry.uid === "string" && entry.uid.startsWith("bot_")
+    );
+  const betterBotCount = botRankEntries.filter((entry) =>
+    compareLeaderboardEntries(entry, { uid, score, timeSecs }) < 0
+  ).length;
+
+  return betterSnap.data().count + betterHumanCount + betterBotCount + 1;
+}
   
 async function renameInBoards(uid, oldName, newName) {
   // lbTop: patch this user's entry in every list they appear in
@@ -613,43 +650,19 @@ verifiedTimeSecs = Math.max(verifiedTimeSecs, answeredCount * MIN_SECS_PER_ANSWE
   // 7. Compute live LEVEL leaderboard position
   let leaderboardPosition = null;
   if (onLeaderboard) {
-    const boardSnap = db.collection("lbTop").doc(`score-${gameId}`).get();
-    const boardData = await boardSnap;
+    const boardId = `score-${gameId}`;
+    const boardData = await db.collection("lbTop").doc(boardId).get();
     const boardEntries = boardData.exists
       ? (boardData.data().entries || []).filter((entry) => entry.score > 0)
         .slice().sort(compareLeaderboardEntries)
       : [];
-    const boardIndex = boardEntries.findIndex((entry) => entry.uid === uid);
-    if (boardIndex >= 0) {
-      leaderboardPosition = boardIndex + 1;
-    } else {
-      const attempts = db.collectionGroup("attempts")
-        .where("topic", "==", topic)
-        .where("level", "==", level);
-      const [betterSnap, tiedSnap] = await Promise.all([
-        attempts.where("bestScore", ">", newBest).count().get(),
-        attempts.where("bestScore", "==", newBest).get(),
-      ]);
-      const betterHumanCount = tiedSnap.docs.filter((doc) => {
-        const data = doc.data();
-        const otherUid = doc.ref.parent.parent.id;
-        return compareLeaderboardEntries(
-          { uid, score: newBest, timeSecs: bestScoreTimeSecs },
-          { uid: otherUid, score: newBest, timeSecs: data.bestScoreTimeSecs }
-        ) > 0;
-      }).length;
-      const betterBotCount = boardEntries.filter((entry) =>
-        typeof entry.uid === "string" &&
-        entry.uid.startsWith("bot_") &&
-        compareLeaderboardEntries(entry, {
-          uid,
-          score: newBest,
-          timeSecs: bestScoreTimeSecs,
-        }) < 0
-      ).length;
-      leaderboardPosition =
-        betterSnap.data().count + betterHumanCount + betterBotCount + 1;
-    }
+    leaderboardPosition = await getTierLeaderboardPosition(
+      boardId,
+      uid,
+      newBest,
+      bestScoreTimeSecs,
+      boardEntries
+    );
   }
   // Save game state for the review page
   await db.collection("users").doc(uid).collection("lastGame").doc("current").set({
@@ -908,8 +921,10 @@ exports.getLeaderboards = onCall(async (request) => {
       const u = userSnap.data();
       let score = 0;
       let timeSecs;
+      let rank = null;
       if (boardId === "total") {
         score = u.totalScore || 0;
+        rank = Number.isInteger(u.rank) && u.rank > 0 ? u.rank : null;
       } else {
         const m = boardId.match(/^(score|unlim)-(.+)-l(\d+)$/);
         const att = await db.collection("users").doc(uid)
@@ -921,6 +936,16 @@ exports.getLeaderboards = onCall(async (request) => {
             ? a.bestScoreTimeSecs
             : a.bestScoreUnlimTimeSecs;
         }
+        if (score > 0) {
+          rank = await getTierLeaderboardPosition(
+            boardId,
+            uid,
+            score,
+            timeSecs,
+            boardEntries.filter((entry) => entry.score > 0)
+              .slice().sort(compareLeaderboardEntries)
+          );
+        }
       }
       if (score > 0) {
         me = {
@@ -929,6 +954,7 @@ exports.getLeaderboards = onCall(async (request) => {
           level: u.level,
           favTopic: u.favTopic,
           score,
+          ...(rank ? { rank } : {}),
           ...(Number.isFinite(timeSecs) ? { timeSecs } : {}),
         };
       }
