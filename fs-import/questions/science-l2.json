@@ -692,12 +692,51 @@
     "id": "science-l2-q054",
     "topic": "science",
     "level": 2,
-    "text": "The word 'fluorescence' comes from which glowing mineral?",
+    "text": "Under a UV lamp, the mineral fluorite glows bright blue. What is this effect called?",
     "alternatives": {
-      "1": "Granite",
-      "2": "Fluorite",
-      "3": "Quartz",
-      "4": "Apatite"
+      "1": "Radioactivity",
+      "2": "Fluorescence",
+      "3": "Phosphorescence",
+      "4": "Combustion"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "science-l2-q055",
+    "topic": "science",
+    "level": 2,
+    "text": "Per kilogram, nuclear fuel holds how much more energy than oil?",
+    "alternatives": {
+      "1": "About 10 times",
+      "2": "About 100 times",
+      "3": "About 1,000 times",
+      "4": "Tens of thousands of times"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l2-q056",
+    "topic": "science",
+    "level": 2,
+    "text": "Per kWh over its whole life cycle, natural gas emits roughly how much more CO2 than nuclear?",
+    "alternatives": {
+      "1": "About the same",
+      "2": "About 4 times more",
+      "3": "About 40 times more",
+      "4": "About 400 times more"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l2-q057",
+    "topic": "science",
+    "level": 2,
+    "text": "What is true about nuclear energy?",
+    "alternatives": {
+      "1": "Atoms are fused",
+      "2": "Atoms are split",
+      "3": "Molecules are destroyed",
+      "4": "Antimatter is created"
     },
     "correctChoice": 2
   },
@@ -709,7 +748,7 @@
 
 
   {
-    "id": "science-l2-q055",
+    "id": "science-l2-q058",
     "topic": "science",
     "level": 2,
     "text": "What causes most chimney fires?",
@@ -723,7 +762,7 @@
     "type": "elite"
   },
   {
-    "id": "science-l2-q056",
+    "id": "science-l2-q059",
     "topic": "science",
     "level": 2,
     "text": "What is the decimal equivalent of the hexadecimal byte 'FF' (binary 11111111)?",
@@ -737,7 +776,7 @@
     "type": "elite"
   },
   {
-    "id": "science-l2-q057",
+    "id": "science-l2-q060",
     "topic": "science",
     "level": 2,
     "text": "1771: a mouse sealed in a jar survived thanks to a...?",
@@ -751,7 +790,7 @@
     "type": "elite"
   },
   {
-    "id": "science-l2-q058",
+    "id": "science-l2-q061",
     "topic": "science",
     "level": 2,
     "text": "Schrödinger's cat was invented to show...?",
@@ -765,7 +804,7 @@
     "type": "elite"
   },
   {
-    "id": "science-l2-q059",
+    "id": "science-l2-q062",
     "topic": "science",
     "level": 2,
     "text": "Occam's razor says the simplest explanation is...?",
@@ -779,7 +818,7 @@
     "type": "elite"
   },
   {
-    "id": "science-l2-q060",
+    "id": "science-l2-q063",
     "topic": "science",
     "level": 2,
     "text": "Da Vinci designed a bridge for an Ottoman sultan in 1502. It was first built in...?",
@@ -793,7 +832,7 @@
     "type": "elite"
   },
   {
-    "id": "science-l2-q061",
+    "id": "science-l2-q064",
     "topic": "science",
     "level": 2,
     "text": "Breathing in sulfur hexafluoride gas makes your voice...?",
@@ -807,7 +846,7 @@
     "type": "elite"
   },
   {
-    "id": "science-l2-q062",
+    "id": "science-l2-q065",
     "topic": "science",
     "level": 2,
     "text": "Liquid water is densest at about...?",
@@ -821,7 +860,7 @@
     "type": "elite"
   },
   {
-    "id": "science-l2-q063",
+    "id": "science-l2-q066",
     "topic": "science",
     "level": 2,
     "text": "Around 240 BC, Eratosthenes measured Earth's size using...?",
@@ -835,7 +874,7 @@
     "type": "elite"
   },
   {
-    "id": "science-l2-q064",
+    "id": "science-l2-q067",
     "topic": "science",
     "level": 2,
     "text": "Bananas are slightly radioactive because of...?",
@@ -849,7 +888,7 @@
     "type": "elite"
   },
   {
-    "id": "science-l2-q065",
+    "id": "science-l2-q068",
     "topic": "science",
     "level": 2,
     "text": "Old church windows are thicker at the bottom because glass slowly flows?",
@@ -863,7 +902,7 @@
     "type": "elite"
   },
   {
-    "id": "science-l2-q066",
+    "id": "science-l2-q069",
     "topic": "science",
     "level": 2,
     "text": "Besides mercury, which element is liquid at room temperature?",
@@ -875,5 +914,34 @@
     },
     "correctChoice": 3,
     "type": "elite"
+  },
+  {
+    "id": "science-l2-q070",
+    "topic": "science",
+    "level": 2,
+    "text": "In New Zealand caves, glowworms light up the ceiling mainly to...?",
+    "alternatives": {
+      "1": "Scare off competitors",
+      "2": "Find a mate",
+      "3": "Keep warm",
+      "4": "Trap insects to eat"
+    },
+    "correctChoice": 4,
+    "type": "elite"
+  },
+  {
+    "id": "science-l2-q071",
+    "topic": "science",
+    "level": 2,
+    "text": "Foxfire mushrooms glow green in dark forests. What makes the light?",
+    "alternatives": {
+      "1": "A chemical reaction using oxygen",
+      "2": "Methane from rotting wood burning slowly",
+      "3": "Enzymes consuming nitrogen",
+      "4": "Static electricity from the roots"
+    },
+    "correctChoice": 1,
+    "type": "elite"
   }
+
 ]

@@ -29,7 +29,7 @@ const QUESTION_WEIGHTS = { normal: 1, elite: 5 };
 const QUESTIONS_PER_GAME = 10;
 const BANK_SIZES = {          // how many questions exist per topic+level
   "science-l1": 70,
-  "science-l2": 66,
+  "science-l2": 71,
   // add one line per game as you import banks
 };
 

@@ -1,0 +1,16 @@
+[
+  {
+    "id": "science-l3-q001",
+    "topic": "science",
+    "level": 3,
+    "text": "When was the first practical camera invented?",
+    "alternatives": {
+      "1": "1837 in Somalia",
+      "2": "1839 in France",
+      "3": "1841 in England",
+      "4": "1888 in the USA"
+    },
+    "correctChoice": 2
+  }
+
+]
