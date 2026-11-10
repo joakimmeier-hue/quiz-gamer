@@ -12,6 +12,20 @@ window.addEventListener('keydown', (e) => {
   e.stopImmediatePropagation();
 }, true);
 
+// Turn off Lottie SUB frame render, 30FPS stays 30, easier on CPUs
+(function () {
+  function apply() {
+    var w = window.Webflow && Webflow.require && Webflow.require('lottie');
+    if (!w || !w.lottie) return false;
+    w.lottie.setSubframeRendering(false);
+    w.lottie.getRegisteredAnimations().forEach(function (a) { a.setSubframe(false); });
+    return true;
+  }
+  window.Webflow = window.Webflow || [];
+  Webflow.push(apply);
+  window.addEventListener('load', function () { setTimeout(apply, 500); });
+})();
+
 // ─────────────────── GLOBAL INPUT PROTECTION & BUTTON SHIELD ──────────────────────
 ['pointerdown', 'mousedown', 'mouseup', 'click', 'auxclick', 'contextmenu'].forEach(eventType => {
   document.addEventListener(eventType, (e) => {

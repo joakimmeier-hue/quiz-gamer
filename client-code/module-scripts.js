@@ -2479,7 +2479,8 @@ if (location.hash === '#leaderboard') {
         if (!LB_STATE.type || !LB_STATE.topic || !LB_STATE.tier) return null;
         return `${LB_STATE.type}-${LB_STATE.topic}-l${LB_STATE.tier}`; // score-science-l1 / unlim-science-l1
       };
-      const lbCache = new Map(); // boardId -> { entries, me }
+      const lbCache = new Map(); // boardId -> { t, entries, me }
+      const LB_CACHE_MS = 90 * 1000;
       let userPicked = false;
       let myOutside = null; // the player's own entry when not in the top 100
       const lbLoading = overlay.querySelector('.loading-squares-lb');
@@ -2490,13 +2491,14 @@ if (location.hash === '#leaderboard') {
         const hit = lbCache.get(id);
         if (hit) {
           renderBoard(hit.entries, hit.me);
+          if (id === 'total' && Date.now() - hit.t < LB_CACHE_MS) return;
         } else {
           setLbLoading(true);
         }
         try {
           const res = await getLeaderboardsFn({ boardId: id });
           console.log('lb loaded:', id, res.data); // temporary debug, remove later
-          lbCache.set(id, { entries: res.data.entries, me: res.data.me || null });
+          lbCache.set(id, { t: Date.now(), entries: res.data.entries, me: res.data.me || null });
           if (id !== boardId()) return; // the player already picked something else
           renderBoard(res.data.entries, res.data.me);
         } catch (err) {
