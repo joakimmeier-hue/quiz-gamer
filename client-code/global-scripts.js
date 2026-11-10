@@ -1142,6 +1142,13 @@ window.addEventListener('wheel', function(e) {
 
 // ── KATEGORI / ÄMNES-SYSTEM FÖR MUSIK & FÄRGER ────────────────────────
 const TOPICS = {
+    'quiz-game': {
+        url: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a9ca192f2ca5d16042302f8_SunoAI-chrome-lotus-run.mp3', 
+        volume: 0.6,
+        startTime: 0,
+        fadeColor: '#000000'
+    },
+    
     gma: { 
         url: 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a184d4a7db7a603d72f42db_gma-music.mp3',
         volume: 0.6, 
@@ -1193,6 +1200,7 @@ const TOPICS = {
 };
 function getTopicFromUrl(url) {
     const lowerUrl = url.toLowerCase();
+    if (lowerUrl.includes('quiz-game')) return 'quiz-game';
     if (lowerUrl.includes('science')) return 'science';
     if (lowerUrl.includes('gma')) return 'gma';
     if (lowerUrl.includes('cars')) return 'cars';
