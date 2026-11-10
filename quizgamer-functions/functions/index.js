@@ -198,11 +198,9 @@ async function updateTopList(boardId, uid, info, score, timeSecs) {
 }
 // Get live Tier LB, Total score LB is cached, 15 min update
 async function getTierLeaderboardPosition(boardId, uid, score, timeSecs, boardEntries) {
-  const boardIndex = boardEntries.findIndex((entry) => entry.uid === uid);
-  if (boardIndex >= 0) return boardIndex + 1;
-
   const match = boardId.match(/^(score|unlim)-(.+)-l(\d+)$/);
   if (!match) return null;
+  // lbTop is only the display slice and may include players outside the full bot ranking.
   const [, type, topic, level] = match;
   const scoreField = type === "score" ? "bestScore" : "bestScoreUnlim";
   const timeField = type === "score" ? "bestScoreTimeSecs" : "bestScoreUnlimTimeSecs";
@@ -913,8 +911,8 @@ exports.getLeaderboards = onCall(async (request) => {
     ...rest,
     isMe: myUid !== null && uid === myUid,
   }));
-    let me = null;
-  if (myUid && !entries.some((e) => e.isMe)) {
+  let me = null;
+  if (myUid && (boardId !== "total" || !entries.some((e) => e.isMe))) {
     const uid = myUid;
     const userSnap = await db.collection("users").doc(uid).get();
     if (userSnap.exists) {

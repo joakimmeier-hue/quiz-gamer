@@ -2176,7 +2176,7 @@ Webflow.push(function() {
   if (isFreshResult && data.topic && data.tier && data.leaderboardPosition) {
     const boardId = `score-${String(data.topic).toLowerCase()}-l${data.tier}`;
     getLeaderboardsFn({ boardId }).then((res) => {
-      const currentRank = res.data.entries.findIndex((entry) => entry.isMe) + 1;
+      const currentRank = res.data.me?.rank;
       if (currentRank > 0) {
         data.leaderboardPosition = currentRank;
         setText('lb-position', `#${currentRank}`);
@@ -2693,7 +2693,12 @@ if (location.hash === '#leaderboard') {
             const bTime = Number.isFinite(b.timeSecs) ? b.timeSecs : Infinity;
             return aTime === bTime ? 0 : aTime - bTime;
           })
-          .forEach((e, i) => frag.appendChild(buildRow(e, i + 1)));
+          .forEach((e, i) => {
+            const rank = e.isMe && Number.isInteger(me?.rank) && me.rank > 0
+              ? me.rank
+              : i + 1;
+            frag.appendChild(buildRow(e, rank));
+          });
         rowList.appendChild(frag);
         fitScores();
         if (userPicked) hideIntro();
