@@ -28,8 +28,8 @@ const QUESTION_WEIGHTS = { normal: 1, elite: 5 };
 // at the top of the file, next to TIER_MULTIPLIERS
 const QUESTIONS_PER_GAME = 10;
 const BANK_SIZES = {          // how many questions exist per topic+level
-  "science-l1": 41,
-  "science-l2": 2,
+  "science-l1": 70,
+  "science-l2": 66,
   // add one line per game as you import banks
 };
 
@@ -500,14 +500,21 @@ verifiedTimeSecs = Math.max(verifiedTimeSecs, answeredCount * MIN_SECS_PER_ANSWE
     ...questionIds.map((id) => db.collection("answerKeys").doc(id))
   );
 
-    let correctCount = 0;
-    let weightedCorrect = 0;
-    questionSnaps.forEach((snap, i) => {
-    if (!snap.exists || !keySnaps[i].exists) return;
+  let correctCount = 0;
+  let weightedCorrect = 0;
+  let eliteCorrectCount = 0;
+  let eliteTotalCount = 0;
+  questionSnaps.forEach((snap, i) => {
+    if (!snap.exists) return;
+    const question = snap.data();
+    const isElite = question.tag === "elite";
+    if (isElite) eliteTotalCount++;
+    if (!keySnaps[i].exists) return;
     const key = keySnaps[i].data();
     if (answers[i].choice === key.correctChoice) {
       correctCount++;
-      weightedCorrect += QUESTION_WEIGHTS[snap.data().tag] || 1;
+      weightedCorrect += QUESTION_WEIGHTS[question.tag] || 1;
+      if (isElite) eliteCorrectCount++;
     }
   });
 
@@ -665,6 +672,8 @@ verifiedTimeSecs = Math.max(verifiedTimeSecs, answeredCount * MIN_SECS_PER_ANSWE
     topic,
     correctCount,
     totalQuestions,
+    eliteCorrectCount,
+    eliteTotalCount,
     finalScore,
     unlimitedScore,
     attemptCount: newAttemptCount,
@@ -824,8 +833,8 @@ exports.getReview = onCall(async (request) => {
   return { topic: g.topic, level: g.level, timeStr: g.timeStr, questions };
 });
 
-// ── PAY FOR REVIEW (cost = 15% of the last game's Final Score) ─────
-const REVIEW_COST_PERCENT = 15;
+// ── PAY FOR REVIEW (cost = 10% of the last game's Final Score) ─────
+const REVIEW_COST_PERCENT = 10;
 
 exports.payForReview = onCall(async (request) => {
   if (!request.auth) {

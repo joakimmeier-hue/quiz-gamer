@@ -1835,7 +1835,7 @@ Webflow.push(async function() {
       const titleEl = card.querySelector('.q-title');
       if (titleEl) titleEl.textContent = `Question ${index + 1}`;
       card.setAttribute('data-question-id', docSnap.id);
-      //Attach elite icon to question
+      // Elite questions. Attach the icon to question
       const eliteEl = card.querySelector('.q-elite');
       if (eliteEl) eliteEl.style.display = data.tag === 'elite' ? '' : 'none';
 
@@ -2163,6 +2163,9 @@ Webflow.push(function() {
 
   setText('list-game', data.topic ? data.topic.toUpperCase() : '');
   setText('list-result', `${data.correctCount}/${data.totalQuestions}`);
+  setText('list-elites', Number.isInteger(data.eliteCorrectCount) && Number.isInteger(data.eliteTotalCount)
+    ? `${data.eliteCorrectCount}/${data.eliteTotalCount}`
+    : '–');
   setText('list-time', data.timeStr);
   setText('list-tier-bonus', `Tier ${data.tier} bonus: ${Number(data.tierMultiplier).toFixed(1)}x`);
   setText('list-attempts', data.attemptCount - 1);

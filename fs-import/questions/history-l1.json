@@ -1,0 +1,72 @@
+[
+  {
+    "id": "history-l1-q001",
+    "topic": "history",
+    "level": 1,
+    "text": "Cleopatra lived closer in time to...?",
+    "alternatives": {
+      "1": "The Great Pyramid being built",
+      "2": "The Moon landing",
+      "3": "Exactly the same distance",
+      "4": "The invention of writing"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "history-l1-q002",
+    "topic": "history",
+    "level": 1,
+    "text": "The Great Pyramid of Giza. It was 147m tall, weighed 6 million tonnes. Build time?",
+    "alternatives": {
+      "1": "∿60 years",
+      "2": "∿40 years",
+      "3": "∿20 years",
+      "4": "It wasn't finished"
+    },
+    "correctChoice": 3
+  },
+    {
+    "id": "history-l1-q003",
+    "topic": "history",
+    "level": 1,
+    "text": "The Great Pyramid was built around…?",
+    "alternatives": {
+      "1": "500 AD",
+      "2": "500 BCE",
+      "3": "1,500 BCE",
+      "4": "2,600 BCE"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "history-l1-q004",
+    "topic": "history",
+    "level": 1,
+    "text": "When did the earliest known writing appear?",
+    "alternatives": {
+      "1": "3,200 BCE (Sumerian)",
+      "2": "1,000 BCE (Greek)",
+      "3": "6,000 BCE (Babylonian)",
+      "4": "8,000 BCE (Caveman)"
+    },
+    "correctChoice": 1
+  },
+    {
+    "id": "history-l1-q005",
+    "topic": "history",
+    "level": 1,
+    "text": "Oldest known cave paintings are about how old?",
+    "alternatives": {
+      "1": "10,000 years",
+      "2": "12,000 years",
+      "3": "25,000 years",
+      "4": "45,000 years"
+    },
+    "correctChoice": 4
+  }
+
+
+
+
+
+]

@@ -5,36 +5,875 @@
     "level": 2,
     "text": "What is the most common type of star in the Milky Way galaxy?",
     "alternatives": { 
-    "1": "Red dwarf", 
-    "2": "Yellow dwarf", 
-    "3": "Blue giant", 
-    "4": "White dwarf" },
+      "1": "Red dwarf", 
+      "2": "Yellow dwarf", 
+      "3": "Blue giant", 
+      "4": "White dwarf" 
+    },
     "correctChoice": 1
   },
   {
     "id": "science-l2-q002",
-    "topic": "math",
-    "level": 1,
-    "text": "What is the decimal equivalent of the hexadecimal byte 'FF' (binary 11111111)?",
-    "alternatives": { 
-    "1": "127", 
-    "2": "255", 
-    "3": "512", 
-    "4": "1024" },
-    "correctChoice": 2,
-    "type": "elite"
-  },
-  {
-      "id": "science-l2-q010",
-      "topic": "science",
-      "level": 2,
-      "text": "What is the chemical symbol for gold?",
+    "topic": "science",
+    "level": 2,
+    "text": "What is the chemical symbol for gold?",
       "alternatives": { 
       "1": "Go", 
       "2": "Au", 
       "3": "Ag", 
-      "4": "Gold" },
-      "correctChoice": 2
-    }
+      "4": "Gold" 
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "science-l2-q003",
+    "topic": "science",
+    "level": 2,
+    "text": "Which two cleaning products should you NEVER mix?",
+    "alternatives": {
+      "1": "Dish soap and water",
+      "2": "Vinegar and water",
+      "3": "Baking soda and water",
+      "4": "Bleach and ammonia"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l2-q004",
+    "topic": "science",
+    "level": 2,
+    "text": "Before rubber erasers, what did people use to erase pencil marks?",
+    "alternatives": {
+      "1": "Wet sand",
+      "2": "Wool socks",
+      "3": "Bread",
+      "4": "Chalk"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l2-q005",
+    "topic": "science",
+    "level": 2,
+    "text": "Why does a spinning skater speed up when pulling in their arms?",
+    "alternatives": {
+      "1": "Angular momentum is conserved",
+      "2": "Their mass increases",
+      "3": "Gravity pulls harder",
+      "4": "The ice pushes them"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l2-q006",
+    "topic": "science",
+    "level": 2,
+    "text": "How can a heat pump achieve a heating efficiency (COP) greater than 100%?",
+    "alternatives": {
+      "1": "It violates the laws of thermodynamics",
+      "2": "It converts electrical resistance into plasma",
+      "3": "It utilizes trapped solar radiation in pipes",
+      "4": "It moves existing heat from outside rather than creating it from scratch"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l2-q007",
+    "topic": "science",
+    "level": 2,
+    "text": "Why does heating the air inside an air balloon make it rise?",
+    "alternatives": {
+      "1": "Hot air molecules become charged",
+      "2": "Heating creates high-pressure chemical propulsion",
+      "3": "Warm air expands, lowering its density relative to cooler outside air",
+      "4": "The burner flame ionizes the surroundings"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l2-q008",
+    "topic": "science",
+    "level": 2,
+    "text": "What is the primary compound melted to make standard glass?",
+    "alternatives": {
+      "1": "Silicon dioxide (quartz sand)",
+      "2": "Sodium chloride",
+      "3": "Calcium carbonate",
+      "4": "Aluminum oxide"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l2-q009",
+    "topic": "science",
+    "level": 2,
+    "text": "Why is air travel vastly more energy-intensive per passenger than trains?",
+    "alternatives": {
+      "1": "Jets use low-efficiency electric engines",
+      "2": "Jet fuel contains less energy than diesel",
+      "3": "Airplanes must constantly burn fuel to generate lift and fight drag",
+      "4": "Air friction creates permanent magnetic drag"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l2-q010",
+    "topic": "science",
+    "level": 2,
+    "text": "What is the Cosmic Microwave Background (CMB)?",
+    "alternatives": {
+      "1": "Stray radiation bouncing off planetary rings",
+      "2": "Energy emissions from active galactic nuclei",
+      "3": "Static interference caused by Earth's ionosphere",
+      "4": "The leftover thermal echo of the early universe"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l2-q011",
+    "topic": "science",
+    "level": 2,
+    "text": "What theoretical radiation is emitted by black holes due to quantum fluctuations?",
+    "alternatives": {
+      "1": "Hawking radiation",
+      "2": "Gamma-ray bursts",
+      "3": "Synchrotron radiation",
+      "4": "Cosmic microwave rays"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l2-q012",
+    "topic": "science",
+    "level": 2,
+    "text": "Why do distant galaxies appear red-shifted?",
+    "alternatives": {
+      "1": "Interstellar dust absorbs all blue light",
+      "2": "Older stars naturally emit lower-energy red light",
+      "3": "The expansion of space stretches the wavelength of light",
+      "4": "Gravitational lensing bends light into lower frequencies"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l2-q013",
+    "topic": "science",
+    "level": 2,
+    "text": "What is the difference between a Kilowatt (kW) and a Kilowatt-hour (kWh)?",
+    "alternatives": {
+      "1": "kW is for DC power, kWh is for AC power",
+      "2": "kW measures power rate, kWh measures total energy consumed",
+      "3": "They measure the exact same physical property",
+      "4": "kWh measures instantaneous current"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "science-l2-q014",
+    "topic": "science",
+    "level": 2,
+    "text": "Why do many biologists classify viruses as non-living entities?",
+    "alternatives": {
+      "1": "They lack any form of genetic code",
+      "2": "They are composed of inorganic crystals",
+      "3": "They do not mutate or evolve over time",
+      "4": "They cannot eat or replicate without a host cell"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l2-q015",
+    "topic": "science",
+    "level": 2,
+    "text": "How do single-celled bacteria primarily reproduce?",
+    "alternatives": {
+      "1": "Spore pollination via airflow",
+      "2": "Budding like yeast cells",
+      "3": "Splitting into two identical cells",
+      "4": "Exchanging gametes in microscopic pairs"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l2-q016",
+    "topic": "science",
+    "level": 2,
+    "text": "Why does lowering your indoor heating by 1°C save noticeable energy?",
+    "alternatives": {
+      "1": "The rate of heat loss to the colder outdoor decreases proportionally",
+      "2": "It completely halts thermal conduction through walls",
+      "3": "Radiators consume almost 0 at lower settings",
+      "4": "Air density drops, making rooms easier to heat"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l2-q017",
+    "topic": "science",
+    "level": 2,
+    "text": "What counteracts gravity to keep a stable star from collapsing in on itself?",
+    "alternatives": {
+      "1": "Centrifugal force from planetary rotation",
+      "2": "Magnetic repulsion between iron atoms",
+      "3": "A surrounding envelope of dark matter",
+      "4": "Thermal and radiation pressure from nuclear fusion in the core"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l2-q018",
+    "topic": "science",
+    "level": 2,
+    "text": "Can drinking too much tap water cause poisoning?",
+    "alternatives": {
+      "1": "Yes",
+      "2": "No",
+      "3": "Yes, but only if it is ice-cold",
+      "4": "No, unless mixed with sugar"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l2-q019",
+    "topic": "science",
+    "level": 2,
+    "text": "Lots of apple seeds may contain enough cyanide to harm you?",
+    "alternatives": {
+      "1": "Yes",
+      "2": "No",
+      "3": "If swallowed whole",
+      "4": "If you chew them thoroughly"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l2-q020",
+    "topic": "science",
+    "level": 2,
+    "text": "Can standard passenger trains climb steep mountain slopes on regular flat tracks?",
+    "alternatives": {
+      "1": "Yes",
+      "2": "No",
+      "3": "Yes, but only if running in reverse",
+      "4": "No, unless using a special center rack rail system"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l2-q021",
+    "topic": "science",
+    "level": 2,
+    "text": "Can pure oxygen gas catch fire by itself without any spark or flame?",
+    "alternatives": {
+      "1": "Yes",
+      "2": "No",
+      "3": "Yes, but only inside a sealed glass container",
+      "4": "No, unless exposed to flammable oils or grease"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l2-q022",
+    "topic": "science",
+    "level": 2,
+    "text": "When were wireless electricity extension cords invented?",
+    "alternatives": {
+      "1": "1895",
+      "2": "1940",
+      "3": "2012",
+      "4": "There is no such thing"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l2-q023",
+    "topic": "science",
+    "level": 2,
+    "text": "When were Bluetooth-enabled digging spades invented?",
+    "alternatives": {
+      "1": "1998",
+      "2": "2015",
+      "3": "2023",
+      "4": "There is no such thing"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l2-q024",
+    "topic": "science",
+    "level": 2,
+    "text": "Why do farmers apply hydrogen gas directly to soil as a fertilizer?",
+    "alternatives": {
+      "1": "It's cheaper than nitrogen",
+      "2": "It prevents weed germination",
+      "3": "It helps root cell division",
+      "4": "They don't"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l2-q025",
+    "topic": "science",
+    "level": 2,
+    "text": "When were argon-filled zeppelins retired from service?",
+    "alternatives": {
+      "1": "After the Hindenburg disaster",
+      "2": "1984",
+      "3": "Those wouldn't even fly",
+      "4": "2010"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l2-q026",
+    "topic": "science",
+    "level": 2,
+    "text": "What helped ancient Egyptians drag heavy stones across sand?",
+    "alternatives": {
+      "1": "Wetting the sand",
+      "2": "Heating the stones",
+      "3": "Rolling them on logs",
+      "4": "Covering them in oil"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l2-q027",
+    "topic": "science",
+    "level": 2,
+    "text": "When was penicillin first used to treat a patient?",
+    "alternatives": {
+      "1": "1918",
+      "2": "1925",
+      "3": "1941",
+      "4": "1954"
+    },
+    "correctChoice": 3
+  },
+    {
+    "id": "science-l2-q028",
+    "topic": "science",
+    "level": 2,
+    "text": "When did Gutenberg's printing press appear in Europe?",
+    "alternatives": {
+      "1": "1140",
+      "2": "1340",
+      "3": "1440",
+      "4": "1640"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l2-q029",
+    "topic": "science",
+    "level": 2,
+    "text": "How long was the Great Pyramid the tallest structure on Earth?",
+    "alternatives": {
+      "1": "∿3,800 years",
+      "2": "∿1,000 years",
+      "3": "∿400 years",
+      "4": "∿12,000 years"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l2-q030",
+    "topic": "science",
+    "level": 2,
+    "text": "Who really built the Giza pyramids?",
+    "alternatives": {
+      "1": "Hebrew slaves",
+      "2": "Captured enemy armies",
+      "3": "Greek engineers",
+      "4": "Egyptian work crews"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l2-q031",
+    "topic": "science",
+    "level": 2,
+    "text": "What made Roman concrete so durable?",
+    "alternatives": {
+      "1": "Human hair",
+      "2": "Stainless steel rods",
+      "3": "Volcanic ash",
+      "4": "Clay bricks"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l2-q032",
+    "topic": "science",
+    "level": 2,
+    "text": "How did most Roman aqueducts move water?",
+    "alternatives": {
+      "1": "Steam pumps",
+      "2": "Giant screws",
+      "3": "Slave relays",
+      "4": "Gravity"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l2-q033",
+    "topic": "science",
+    "level": 2,
+    "text": "Romans collected urine to...?",
+    "alternatives": {
+      "1": "Clean clothes",
+      "2": "Bake bread",
+      "3": "Pave roads",
+      "4": "Fuel lamps"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l2-q034",
+    "topic": "science",
+    "level": 2,
+    "text": "When was the telephone invented?",
+    "alternatives": {
+      "1": "1826",
+      "2": "1876",
+      "3": "1898",
+      "4": "1916"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "science-l2-q035",
+    "topic": "science",
+    "level": 2,
+    "text": "On the Moon, a hammer and a feather dropped together land...?",
+    "alternatives": {
+      "1": "At the same time",
+      "2": "Feather first",
+      "3": "Hammer first",
+      "4": "The feather floats away"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l2-q036",
+    "topic": "science",
+    "level": 2,
+    "text": "The Eiffel Tower grows taller in summer. Why?",
+    "alternatives": {
+      "1": "Tourists weigh it down",
+      "2": "Wind lifts it",
+      "3": "Iron expands in heat",
+      "4": "Its antenna extends"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l2-q037",
+    "topic": "science",
+    "level": 2,
+    "text": "We only use 10% of our brain?",
+    "alternatives": {
+      "1": "Myth, we use all of it",
+      "2": "Fact, the rest is backup",
+      "3": "Only while awake",
+      "4": "Only while sleeping"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l2-q038",
+    "topic": "science",
+    "level": 2,
+    "text": "Mixing bleach and vinegar makes...?",
+    "alternatives": {
+      "1": "A stronger cleaner",
+      "2": "Harmless foam",
+      "3": "Toxic chlorine gas",
+      "4": "Hydrogen gas"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l2-q039",
+    "topic": "science",
+    "level": 2,
+    "text": "How much body heat do you lose through your head?",
+    "alternatives": {
+      "1": "About 10%, like any other body part",
+      "2": "About 50%",
+      "3": "About 80%",
+      "4": "None, hats are useless"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l2-q040",
+    "topic": "science",
+    "level": 2,
+    "text": "A penny dropped from a skyscraper can...?",
+    "alternatives": {
+      "1": "Kill someone",
+      "2": "Crack a windshield",
+      "3": "Stick into the pavement",
+      "4": "Just sting a bit"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l2-q041",
+    "topic": "science",
+    "level": 2,
+    "text": "Lightning never strikes the same place twice?",
+    "alternatives": {
+      "1": "Fact",
+      "2": "Myth, skyscrapers get hit often",
+      "3": "Fact, the spot gets burned out",
+      "4": "Fact, but only for trees"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "science-l2-q042",
+    "topic": "science",
+    "level": 2,
+    "text": "Does cracking your knuckles cause arthritis?",
+    "alternatives": {
+      "1": "Yes",
+      "2": "Only after age 50",
+      "3": "No, studies found no link",
+      "4": "Only with thumbs"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l2-q043",
+    "topic": "science",
+    "level": 2,
+    "text": "What does Wi-Fi stand for?",
+    "alternatives": {
+      "1": "Wireless Fidelity",
+      "2": "Wireless Finder",
+      "3": "Wide Frequency",
+      "4": "Nothing, it's just a brand name"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l2-q044",
+    "topic": "science",
+    "level": 2,
+    "text": "Which food basically never spoils?",
+    "alternatives": {
+      "1": "Maple syrup",
+      "2": "Honey",
+      "3": "Cooked rice",
+      "4": "Eggs"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "science-l2-q045",
+    "topic": "science",
+    "level": 2,
+    "text": "Salt melts ice on roads by...?",
+    "alternatives": {
+      "1": "Lowering its freezing point",
+      "2": "Soaking it up like a sponge",
+      "3": "Cracking the ice",
+      "4": "Absorbing sunlight"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l2-q046",
+    "topic": "science",
+    "level": 2,
+    "text": "What ages a phone battery fastest?",
+    "alternatives": {
+      "1": "Charging overnight",
+      "2": "Using Wi-Fi",
+      "3": "Heat",
+      "4": "Dark mode"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l2-q047",
+    "topic": "science",
+    "level": 2,
+    "text": "Which food was NOT shaped by selective breeding?",
+    "alternatives": {
+      "1": "Apples",
+      "2": "Strawberries",
+      "3": "Cod",
+      "4": "Watermelon"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l2-q048",
+    "topic": "science",
+    "level": 2,
+    "text": "Dirt in a cut is risky mainly because of...?",
+    "alternatives": {
+      "1": "Tetanus bacteria",
+      "2": "Iron in the dirt",
+      "3": "Unknown viruses",
+      "4": "Dry air"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l2-q049",
+    "topic": "science",
+    "level": 2,
+    "text": "Near a black hole, time passes...?",
+    "alternatives": {
+      "1": "Faster",
+      "2": "Slower (seen from far away)",
+      "3": "Backwards (seen from far away)",
+      "4": "The same"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "science-l2-q050",
+    "topic": "science",
+    "level": 2,
+    "text": "Every 10 m deeper underwater adds pressure equal to...?",
+    "alternatives": {
+      "1": "Nothing until 100 m",
+      "2": "10% of an atmosphere",
+      "3": "10 atmospheres",
+      "4": "1 whole atmosphere"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l2-q051",
+    "topic": "science",
+    "level": 2,
+    "text": "1 cubic meter of water weighs about...?",
+    "alternatives": {
+      "1": "10,000 grams",
+      "2": "500 kg",
+      "3": "A tonne",
+      "4": "10,000 kg"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l2-q052",
+    "topic": "science",
+    "level": 2,
+    "text": "1 cubic meter of air weighs about...?",
+    "alternatives": {
+      "1": "1.2 kg",
+      "2": "0.1 kg",
+      "3": "2 kg",
+      "4": "0 kg"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l2-q053",
+    "topic": "science",
+    "level": 2,
+    "text": "Most deep-sea animals that glow make which color?",
+    "alternatives": {
+      "1": "White",
+      "2": "Red",
+      "3": "Green",
+      "4": "Blue"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l2-q054",
+    "topic": "science",
+    "level": 2,
+    "text": "The word 'fluorescence' comes from which glowing mineral?",
+    "alternatives": {
+      "1": "Granite",
+      "2": "Fluorite",
+      "3": "Quartz",
+      "4": "Apatite"
+    },
+    "correctChoice": 2
+  },
 
-  ]
+
+
+
+
+
+
+  {
+    "id": "science-l2-q055",
+    "topic": "science",
+    "level": 2,
+    "text": "What causes most chimney fires?",
+    "alternatives": {
+      "1": "Birds' nests",
+      "2": "Creosote buildup",
+      "3": "Too much ash",
+      "4": "Rain"
+    },
+    "correctChoice": 2,
+    "type": "elite"
+  },
+  {
+    "id": "science-l2-q056",
+    "topic": "science",
+    "level": 2,
+    "text": "What is the decimal equivalent of the hexadecimal byte 'FF' (binary 11111111)?",
+      "alternatives": { 
+      "1": "127", 
+      "2": "255", 
+      "3": "512", 
+      "4": "1024" 
+    },
+    "correctChoice": 2,
+    "type": "elite"
+  },
+  {
+    "id": "science-l2-q057",
+    "topic": "science",
+    "level": 2,
+    "text": "1771: a mouse sealed in a jar survived thanks to a...?",
+    "alternatives": {
+      "1": "Burning candle",
+      "2": "Piece of cheese",
+      "3": "Mint plant",
+      "4": "Magnet"
+    },
+    "correctChoice": 3,
+    "type": "elite"
+  },
+  {
+    "id": "science-l2-q058",
+    "topic": "science",
+    "level": 2,
+    "text": "Schrödinger's cat was invented to show...?",
+    "alternatives": {
+      "1": "Cats can be alive and dead",
+      "2": "Light is both wave and particle",
+      "3": "How absurd quantum rules look at large scale",
+      "4": "How predictable radioactive decay is"
+    },
+    "correctChoice": 3,
+    "type": "elite"
+  },
+  {
+    "id": "science-l2-q059",
+    "topic": "science",
+    "level": 2,
+    "text": "Occam's razor says the simplest explanation is...?",
+    "alternatives": {
+      "1": "Always correct",
+      "2": "Always the most scientific",
+      "3": "A good one to test first",
+      "4": "Only valid in physics"
+    },
+    "correctChoice": 3,
+    "type": "elite"
+  },
+  {
+    "id": "science-l2-q060",
+    "topic": "science",
+    "level": 2,
+    "text": "Da Vinci designed a bridge for an Ottoman sultan in 1502. It was first built in...?",
+    "alternatives": {
+      "1": "Venice, 1610",
+      "2": "Istanbul, 1885",
+      "3": "Never built",
+      "4": "Norway, 2001"
+    },
+    "correctChoice": 4,
+    "type": "elite"
+  },
+  {
+    "id": "science-l2-q061",
+    "topic": "science",
+    "level": 2,
+    "text": "Breathing in sulfur hexafluoride gas makes your voice...?",
+    "alternatives": {
+      "1": "Deeper",
+      "2": "Louder",
+      "3": "Painful to use",
+      "4": "Higher, like helium"
+    },
+    "correctChoice": 1,
+    "type": "elite"
+  },
+  {
+    "id": "science-l2-q062",
+    "topic": "science",
+    "level": 2,
+    "text": "Liquid water is densest at about...?",
+    "alternatives": {
+      "1": "0°C, just before freezing",
+      "2": "4°C",
+      "3": "10°C",
+      "4": "1°C"
+    },
+    "correctChoice": 2,
+    "type": "elite"
+  },
+  {
+    "id": "science-l2-q063",
+    "topic": "science",
+    "level": 2,
+    "text": "Around 240 BC, Eratosthenes measured Earth's size using...?",
+    "alternatives": {
+      "1": "Star charts and a ship",
+      "2": "Mountain heights",
+      "3": "Shadows in two cities",
+      "4": "Eclipse timing"
+    },
+    "correctChoice": 3,
+    "type": "elite"
+  },
+  {
+    "id": "science-l2-q064",
+    "topic": "science",
+    "level": 2,
+    "text": "Bananas are slightly radioactive because of...?",
+    "alternatives": {
+      "1": "Potassium-40",
+      "2": "Uranium in the soil",
+      "3": "Radium fertilizer",
+      "4": "Potassium-70"
+    },
+    "correctChoice": 1,
+    "type": "elite"
+  },
+  {
+    "id": "science-l2-q065",
+    "topic": "science",
+    "level": 2,
+    "text": "Old church windows are thicker at the bottom because glass slowly flows?",
+    "alternatives": {
+      "1": "Fact, over centuries",
+      "2": "Fact, but only in the summer",
+      "3": "Only true for lead glass",
+      "4": "Myth, old glass was made unevenly"
+    },
+    "correctChoice": 4,
+    "type": "elite"
+  },
+  {
+    "id": "science-l2-q066",
+    "topic": "science",
+    "level": 2,
+    "text": "Besides mercury, which element is liquid at room temperature?",
+    "alternatives": {
+      "1": "Iodine",
+      "2": "Chlorine",
+      "3": "Bromine",
+      "4": "Sulfur"
+    },
+    "correctChoice": 3,
+    "type": "elite"
+  }
+]

@@ -11,6 +11,31 @@
     "4": "Hollow (pneumatic) bones" 
     },
     "correctChoice": 4
+  },
+  {
+    "id": "animals-l1-q002",
+    "topic": "science",
+    "level": 1,
+    "text": "Which animal holds the absolute speed record in a dive?",
+    "alternatives": {
+      "1": "Cheetah",
+      "2": "Peregrine falcon",
+      "3": "Sailfish",
+      "4": "Dragonfly"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "animals-l1-q003",
+    "topic": "animals",
+    "level": 1,
+    "text": "Why do sharks never run out of teeth?",
+    "alternatives": {
+      "1": "Their teeth regrow from roots",
+      "2": "They continuously rotate new teeth forward",
+      "3": "Shark enamel never wears down",
+      "4": "They only eat soft food"
+    },
+    "correctChoice": 2
   }
-  
 ]

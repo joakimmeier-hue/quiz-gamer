@@ -207,7 +207,7 @@ const INFO_MESSAGES = {
   NO_TIER_SELECTED: "Please select a tier!",
   LEVEL_TOO_LOW: (reqLvl) => `Progress to level ${reqLvl} to play this tier!`,
   // Score page
-  REVIEW_COST: "Cost for review is 15% of the Final Score. Affecting your global score but not your Highscore.",
+  REVIEW_COST: "Cost for review is 10% of the Final Score. Affecting your global score but not your Highscore.",
     // LB
   NO_LB_RECORD: "Oops, no record for you in this leaderboard. Think you can make the top 100? Go play!"
 };

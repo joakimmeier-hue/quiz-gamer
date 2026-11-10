@@ -328,6 +328,19 @@
     "id": "science-l1-q026",
     "topic": "science",
     "level": 1,
+    "text": "What surprising ingredient strengthened some Ming-era Great Wall mortar?",
+    "alternatives": {
+      "1": "Sticky rice",
+      "2": "Tea leaves",
+      "3": "Egg white",
+      "4": "Sugar"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l1-q027",
+    "topic": "science",
+    "level": 1,
     "text": "What is the primary element that makes up the Sun?",
     "alternatives": {
       "1": "Oxygen",
@@ -338,7 +351,7 @@
     "correctChoice": 4
   },
   {
-    "id": "science-l1-q027",
+    "id": "science-l1-q028",
     "topic": "science",
     "level": 1,
     "text": "How many states of matter commonly exist in daily life?",
@@ -351,7 +364,7 @@
     "correctChoice": 2
   },
   {
-    "id": "science-l1-q028",
+    "id": "science-l1-q029",
     "topic": "science",
     "level": 1,
     "text": "What force holds galaxies, stars, and planets together?",
@@ -364,7 +377,7 @@
     "correctChoice": 2
   },
   {
-    "id": "science-l1-q029",
+    "id": "science-l1-q030",
     "topic": "science",
     "level": 1,
     "text": "In the film Interstellar, 1 hour on Miller's ocean planet equals how long on Earth?",
@@ -377,7 +390,7 @@
     "correctChoice": 4
   },
   {
-    "id": "science-l1-q030",
+    "id": "science-l1-q031",
     "topic": "science",
     "level": 1,
     "text": "Where does crude oil primarily originate from?",
@@ -390,7 +403,7 @@
     "correctChoice": 4
   },
   {
-    "id": "science-l1-q031",
+    "id": "science-l1-q032",
     "topic": "science",
     "level": 1,
     "text": "Why did dead trees turn into massive coal deposits during the Carboniferous Period?",
@@ -403,7 +416,7 @@
     "correctChoice": 4
   },
   {
-    "id": "science-l1-q032",
+    "id": "science-l1-q033",
     "topic": "science",
     "level": 1,
     "text": "What is the most common chemical element in the observable universe?",
@@ -416,7 +429,7 @@
     "correctChoice": 4
   },
   {
-    "id": "science-l1-q033",
+    "id": "science-l1-q034",
     "topic": "science",
     "level": 1,
     "text": "Which part of an atom carries a negative electrical charge?",
@@ -429,7 +442,7 @@
     "correctChoice": 4
   },
   {
-    "id": "science-l1-q034",
+    "id": "science-l1-q035",
     "topic": "science",
     "level": 1,
     "text": "What unit measures electrical resistance in a circuit?",
@@ -442,7 +455,7 @@
     "correctChoice": 4
   },
   {
-    "id": "science-l1-q035",
+    "id": "science-l1-q036",
     "topic": "science",
     "level": 1,
     "text": "What prevents a satellite from falling straight down into Earth?",
@@ -455,7 +468,7 @@
     "correctChoice": 1
   },
    {
-    "id": "science-l1-q036",
+    "id": "science-l1-q037",
     "topic": "science",
     "level": 1,
     "text": "Why does coal even exist today?",
@@ -468,7 +481,7 @@
     "correctChoice": 3
   },
   {
-    "id": "science-l1-q037",
+    "id": "science-l1-q038",
     "topic": "science",
     "level": 1,
     "text": "What is the square root of (100 / 3)?",
@@ -481,7 +494,267 @@
     "correctChoice": 1
   },
   {
-    "id": "science-l1-q038",
+    "id": "science-l1-q039",
+    "topic": "science",
+    "level": 1,
+    "text": "Your frying oil catches fire. What should you NEVER do?",
+    "alternatives": {
+      "1": "Put a lid on it",
+      "2": "Throw water on it",
+      "3": "Turn off the heat",
+      "4": "Smother it with baking soda"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "science-l1-q040",
+    "topic": "science",
+    "level": 1,
+    "text": "What's the easiest way to save energy when boiling food in a pot?",
+    "alternatives": {
+      "1": "Put a lid on the pot",
+      "2": "Stir clockwise",
+      "3": "Use a bigger spoon",
+      "4": "Blow on the water"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l1-q041",
+    "topic": "science",
+    "level": 1,
+    "text": "Why do we always see the same side of the Moon?",
+    "alternatives": {
+      "1": "The Moon doesn't spin at all",
+      "2": "The other side is too dark to see",
+      "3": "It spins exactly once per orbit",
+      "4": "Its gravity is too weak"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l1-q042",
+    "topic": "science",
+    "level": 1,
+    "text": "Which is the safest place during a lightning storm?",
+    "alternatives": {
+      "1": "Inside a car",
+      "2": "Under a lone tree",
+      "3": "In an open field",
+      "4": "Holding a metal umbrella"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l1-q043",
+    "topic": "science",
+    "level": 1,
+    "text": "Which planet is the hottest in our solar system?",
+    "alternatives": {
+      "1": "Mercury",
+      "2": "Venus",
+      "3": "Mars",
+      "4": "Jupiter"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "science-l1-q044",
+    "topic": "science",
+    "level": 1,
+    "text": "Alfred Nobel, founder of the Nobel Prizes, made his fortune by inventing what?",
+    "alternatives": {
+      "1": "The telephone",
+      "2": "Dynamite",
+      "3": "The light bulb",
+      "4": "Penicillin"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "science-l1-q045",
+    "topic": "science",
+    "level": 1,
+    "text": "Why is the sky blue?",
+    "alternatives": {
+      "1": "It reflects the oceans",
+      "2": "Space is blue",
+      "3": "Air scatters blue sunlight more than red",
+      "4": "Clouds are blue"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l1-q046",
+    "topic": "science",
+    "level": 1,
+    "text": "What is Earth's core mostly made of?",
+    "alternatives": {
+      "1": "Lava",
+      "2": "Granite",
+      "3": "Iron and nickel",
+      "4": "Ice"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l1-q047",
+    "topic": "science",
+    "level": 1,
+    "text": "How long will astronauts’ footprints stay on the Moon?",
+    "alternatives": {
+      "1": "Millions of years",
+      "2": "One week",
+      "3": "Until the next meteor shower",
+      "4": "One year"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l1-q048",
+    "topic": "science",
+    "level": 1,
+    "text": "Why does cutting an onion make you cry?",
+    "alternatives": {
+      "1": "Onion skin is full of salt",
+      "2": "Onions secretly feel sad",
+      "3": "It releases an eye-irritating gas",
+      "4": "The knife heats up the onion"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l1-q049",
+    "topic": "science",
+    "level": 1,
+    "text": "Which food can stay safe to eat for thousands of years?",
+    "alternatives": {
+      "1": "Milk",
+      "2": "Bread",
+      "3": "Bananas",
+      "4": "Honey"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l1-q050",
+    "topic": "science",
+    "level": 1,
+    "text": "When you wash clothes, what uses most of the energy?",
+    "alternatives": {
+      "1": "Heating the water",
+      "2": "Spinning the drum",
+      "3": "Pumping out the water",
+      "4": "Playing the sound cues"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l1-q051",
+    "topic": "science",
+    "level": 1,
+    "text": "In which of these does sound travel fastest?",
+    "alternatives": {
+      "1": "Air",
+      "2": "Water",
+      "3": "Steel",
+      "4": "Empty space"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l1-q052",
+    "topic": "science",
+    "level": 1,
+    "text": "Why can dog whistles be heard by dogs but not humans?",
+    "alternatives": {
+      "1": "The pitch is too high for human ears",
+      "2": "The sound travels backwards",
+      "3": "Dogs have bigger ears",
+      "4": "The whistle creates silent air waves"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l1-q053",
+    "topic": "science",
+    "level": 1,
+    "text": "What makes wet asphalt smell so distinct after rain?",
+    "alternatives": {
+      "1": "Melted plastic from tires",
+      "2": "Bacterial spores and plant oils",
+      "3": "Evaporating engine oil",
+      "4": "Acid in the rainwater"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "science-l1-q054",
+    "topic": "science",
+    "level": 1,
+    "text": "Why do glass windows look transparent?",
+    "alternatives": {
+      "1": "Visible light passes right through its atoms",
+      "2": "Glass is 99% empty air",
+      "3": "Light bends around the glass edges",
+      "4": "Your eyes filter out the color"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l1-q055",
+    "topic": "science",
+    "level": 1,
+    "text": "What causes the loud 'crack' sound of a whip?",
+    "alternatives": {
+      "1": "The leather slapping itself",
+      "2": "The tip breaking the speed of sound",
+      "3": "Air pressure building inside the handle",
+      "4": "Static electricity discharging"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "science-l1-q056",
+    "topic": "science",
+    "level": 1,
+    "text": "Which appliance typically eats the most electricity in a home?",
+    "alternatives": {
+      "1": "Wi-Fi router",
+      "2": "Phone charger",
+      "3": "Heat pump / space heating",
+      "4": "LED light bulb"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "science-l1-q057",
+    "topic": "science",
+    "level": 1,
+    "text": "Can a typical cloud weigh over a million kg and still float?",
+    "alternatives": {
+      "1": "Yes",
+      "2": "No",
+      "3": "If wind speed is high",
+      "4": "If humidity is 100%"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "science-l1-q058",
+    "topic": "science",
+    "level": 1,
+    "text": "When were Bluetooth-enabled toilet plungers invented?",
+    "alternatives": {
+      "1": "1995",
+      "2": "2006",
+      "3": "2021",
+      "4": "There is no such thing"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "science-l1-q059",
     "topic": "science",
     "level": 1,
     "text": "Max height a suction pump can lift water?",
@@ -495,7 +768,7 @@
     "tag": "elite"
   },
   {
-    "id": "science-l1-q039",
+    "id": "science-l1-q060",
     "topic": "science",
     "level": 1,
     "text": "On the moment magnitude scale for earthquakes, how much more energy is released by a magnitude 7.0 quake compared to a 6.0?",
@@ -509,7 +782,7 @@
     "tag": "elite"
   },
   {
-    "id": "science-l1-q040",
+    "id": "science-l1-q061",
     "topic": "science",
     "level": 1,
     "text": "Why does the water around a nuclear reactor core emit an eerie blue Cherenkov glow?",
@@ -522,8 +795,8 @@
     "correctChoice": 2,
     "tag": "elite"
   },
-{
-    "id": "science-l1-q041",
+  {
+    "id": "science-l1-q062",
     "topic": "science",
     "level": 1,
     "text": "If a pure sound wave's frequency is doubled, what musical interval does it shift up by?",
@@ -535,6 +808,117 @@
     },
     "correctChoice": 2,
     "tag": "elite"
+  },
+    {
+    "id": "science-l1-q063",
+    "topic": "science",
+    "level": 1,
+    "text": "At the ISS's altitude, how strong is Earth's gravity compared to the surface?",
+    "alternatives": {
+      "1": "Zero",
+      "2": "About 50%",
+      "3": "About 90%",
+      "4": "About 75%"
+    },
+    "correctChoice": 3,
+    "tag": "elite"
+  },
+  {
+    "id": "science-l1-q064",
+    "topic": "science",
+    "level": 1,
+    "text": "A metal and a wooden spoon sit in the same room. Why does the metal one feel colder?",
+    "alternatives": {
+      "1": "It's actually colder",
+      "2": "It pulls heat from your hand faster",
+      "3": "It blocks heat from your hand",
+      "4": "It's heavier"
+    },
+    "correctChoice": 2,
+    "tag": "elite"
+  },
+  {
+    "id": "science-l1-q065",
+    "topic": "science",
+    "level": 1,
+    "text": "Why does water boil at a lower temperature on a mountain top?",
+    "alternatives": {
+      "1": "Air has a lower percentage of oxygen",
+      "2": "More radiation at high altitude",
+      "3": "Air has a lower percentage of nitrogen",
+      "4": "Lower air pressure"
+    },
+    "correctChoice": 4,
+    "tag": "elite"
+  },
+  {
+    "id": "science-l1-q066",
+    "topic": "science",
+    "level": 1,
+    "text": "Why does tire pressure drop when the weather gets cold?",
+    "alternatives": {
+      "1": "Air leaks through frozen rubber",
+      "2": "Cold air turns to liquid",
+      "3": "Air molecules move slower and push less",
+      "4": "Tires get heavier"
+    },
+    "correctChoice": 3,
+    "tag": "elite"
+  },
+  {
+    "id": "science-l1-q067",
+    "topic": "science",
+    "level": 1,
+    "text": "Why does salt melt ice on roads?",
+    "alternatives": {
+      "1": "It splits water into hydrogen and oxygen",
+      "2": "It lowers water's freezing point",
+      "3": "It raises water's freezing point",
+      "4": "It burns the ice"
+    },
+    "correctChoice": 2,
+    "tag": "elite"
+  },
+   {
+    "id": "science-l1-q068",
+    "topic": "science",
+    "level": 1,
+    "text": "Where does most of a tree's solid wood come from?",
+    "alternatives": {
+      "1": "The soil",
+      "2": "The air",
+      "3": "Rainwater",
+      "4": "Sunlight"
+    },
+    "correctChoice": 2,
+    "tag": "elite"
+  },
+  {
+    "id": "science-l1-q069",
+    "topic": "science",
+    "level": 1,
+    "text": "When is Earth closest to the Sun?",
+    "alternatives": {
+      "1": "Early January",
+      "2": "Early April",
+      "3": "Early July",
+      "4": "Early October"
+    },
+    "correctChoice": 1,
+    "tag": "elite"
+  },
+  {
+    "id": "science-l1-q070",
+    "topic": "science",
+    "level": 1,
+    "text": "An ice cube floats in a full glass of water. When it melts, what happens?",
+    "alternatives": {
+      "1": "The glass overflows",
+      "2": "The water level drops",
+      "3": "The water level rises a little",
+      "4": "The water level stays the same"
+    },
+    "correctChoice": 4,
+    "tag": "elite"
   }
-
 ]
