@@ -2505,6 +2505,9 @@ if (location.hash === '#leaderboard') {
       const setLbLoading = (isLoading) => {
         if (lbLoading) lbLoading.style.display = isLoading ? 'flex' : 'none';
       };
+      const boardDataMatches = (a, b) =>
+        JSON.stringify(a.entries) === JSON.stringify(b.entries) &&
+        JSON.stringify(a.me) === JSON.stringify(b.me);
       const loadBoard = async (id) => {
         if (id === activeBoardId || pendingBoards.has(id)) return;
         pendingBoards.add(id);
@@ -2521,9 +2524,12 @@ if (location.hash === '#leaderboard') {
         }
         try {
           const res = await getLeaderboardsFn({ boardId: id });
-          lbCache.set(id, { t: Date.now(), entries: res.data.entries, me: res.data.me || null });
+          const fresh = { t: Date.now(), entries: res.data.entries, me: res.data.me || null };
+          lbCache.set(id, fresh);
           if (id !== boardId()) return; // the player already picked something else
-          renderBoard(res.data.entries, res.data.me, id, !hit);
+          if (!hit || !boardDataMatches(hit, fresh)) {
+            renderBoard(fresh.entries, fresh.me, id);
+          }
         } catch (err) {
           console.error('Failed to load leaderboard:', err.message);
         } finally {
@@ -2703,7 +2709,7 @@ if (location.hash === '#leaderboard') {
         introRow.style.overflow = 'hidden';
         // Ta bort setTimeout med display: none helt, så den stannar kvar på 1.5rem höjd!
       };
-      const renderBoard = (entries, me, id, animateRows = true) => {
+      const renderBoard = (entries, me, id) => {
         if (!rowList || !rowTemplate) return;
         if (id !== activeBoardId) {
           activeBoardId = id;
@@ -2724,9 +2730,7 @@ if (location.hash === '#leaderboard') {
         const frag = document.createDocumentFragment();
         sortedEntries.forEach((e, i) => {
           if (e.isMe) return;
-          const row = buildRow(e, i + 1);
-          if (!animateRows) row.style.animation = 'none';
-          frag.appendChild(row);
+          frag.appendChild(buildRow(e, i + 1));
         });
         rowList.appendChild(frag);
         fitScores();
