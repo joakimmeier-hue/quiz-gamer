@@ -16,7 +16,7 @@
     "id": "history-l1-q002",
     "topic": "history",
     "level": 1,
-    "text": "The Great Pyramid of Giza. It was 147m tall, weighed 6 million tonnes. Build time?",
+    "text": "The Great Pyramid of Giza. It was 147m tall, weighed ∿6 million tonnes. How long did it take to build?",
     "alternatives": {
       "1": "∿60 years",
       "2": "∿40 years",
@@ -25,13 +25,13 @@
     },
     "correctChoice": 3
   },
-    {
+  {
     "id": "history-l1-q003",
     "topic": "history",
     "level": 1,
     "text": "The Great Pyramid was built around…?",
     "alternatives": {
-      "1": "500 AD",
+      "1": "500 CE",
       "2": "500 BCE",
       "3": "1,500 BCE",
       "4": "2,600 BCE"
@@ -51,19 +51,619 @@
     },
     "correctChoice": 1
   },
-    {
+  {
     "id": "history-l1-q005",
     "topic": "history",
     "level": 1,
-    "text": "Oldest known cave paintings are about how old?",
+    "text": "The oldest known figurative cave paintings are about how old?",
     "alternatives": {
-      "1": "10,000 years",
-      "2": "12,000 years",
-      "3": "25,000 years",
-      "4": "45,000 years"
+      "1": "11,000 years",
+      "2": "20,000 years",
+      "3": "26,000 years",
+      "4": "51,000 years"
     },
     "correctChoice": 4
-  }
+  },
+  {
+    "id": "history-l1-q006",
+    "topic": "history",
+    "level": 1,
+    "text": "King Darius I of Persia, 498 BCE. At every dinner, a servant was told to remind him of what?",
+    "alternatives": {
+      "1": "Invading Egypt",
+      "2": "Defending against Thrace",
+      "3": "Disliking Jews",
+      "4": "Punishing the Athenians"
+    },
+    "correctChoice": 4
+  },
+  {
+  "id": "history-l1-q007",
+  "topic": "history",
+  "level": 1,
+  "text": "Which city is credited with the first democracy, around 508 BCE?",
+  "alternatives": {
+    "1": "Atlantis",
+    "2": "Sparta",
+    "3": "Athens",
+    "4": "Rome"
+  },
+  "correctChoice": 3
+},
+{
+  "id": "history-l1-q008",
+  "topic": "history",
+  "level": 1,
+  "text": "Which nomadic people built the largest connected land empire in history, in the 13th century?",
+  "alternatives": {
+    "1": "The Mongols",
+    "2": "The Huns",
+    "3": "The Vikings",
+    "4": "The Dothraki"
+  },
+  "correctChoice": 1
+},
+{
+  "id": "history-l1-q009",
+  "topic": "history",
+  "level": 1,
+  "text": "In which year did Columbus reach the Americas?",
+  "alternatives": {
+    "1": "1392",
+    "2": "1492",
+    "3": "1592",
+    "4": "1942"
+  },
+  "correctChoice": 2
+},
+{
+  "id": "history-l1-q010",
+  "topic": "history",
+  "level": 1,
+  "text": "Greeks vs Troy: when is the Trojan War traditionally set?",
+  "alternatives": {
+    "1": "~3,000 BCE",
+    "2": "~1,200 BCE",
+    "3": "~500 BCE",
+    "4": "~100 CE"
+  },
+  "correctChoice": 2
+},
+{
+  "id": "history-l1-q011",
+  "topic": "history",
+  "level": 1,
+  "text": "When did humans start spreading out from Africa to the rest of the world?",
+  "alternatives": {
+    "1": "∿6,000 years ago",
+    "2": "∿20,000 years ago",
+    "3": "∿60,000 years ago",
+    "4": "∿250,000 years ago"
+  },
+  "correctChoice": 3
+},
+{
+  "id": "history-l1-q012",
+  "topic": "history",
+  "level": 1,
+  "text": "In which year did humans first land on the Moon?",
+  "alternatives": {
+    "1": "1966",
+    "2": "1967",
+    "3": "1969",
+    "4": "1970"
+  },
+  "correctChoice": 3
+},
+{
+  "id": "history-l1-q013",
+  "topic": "history",
+  "level": 1,
+  "text": "250 million years ago, all land was one supercontinent. What was it called?",
+  "alternatives": {
+    "1": "Greenland",
+    "2": "Everest",
+    "3": "Tellus",
+    "4": "Pangaea"
+  },
+  "correctChoice": 4
+},
+{
+  "id": "history-l1-q014",
+  "topic": "history",
+  "level": 1,
+  "text": "Persia's elite 10,000-man guard was called the...?",
+  "alternatives": {
+    "1": "The Immortals",
+    "2": "The Invincibles",
+    "3": "The Eternals",
+    "4": "The Undying Pigeons"
+  },
+  "correctChoice": 1
+},
+{
+  "id": "history-l1-q015",
+  "topic": "history",
+  "level": 1,
+  "text": "At Thermopylae, 480 BCE, how many Spartans famously held off the Persian army?",
+  "alternatives": {
+    "1": "30",
+    "2": "3,000",
+    "3": "300",
+    "4": "30,000"
+  },
+  "correctChoice": 3
+},
+{
+  "id": "history-l1-q016",
+  "topic": "history",
+  "level": 1,
+  "text": "Emperor Caligula reportedly wanted to make his horse a...?",
+  "alternatives": {
+    "1": "Gladiator",
+    "2": "Consul",
+    "3": "Slave",
+    "4": "Emperor"
+  },
+  "correctChoice": 2
+},
+{
+  "id": "history-l1-q017",
+  "topic": "history",
+  "level": 1,
+  "text": "The Great Fire of London (1666) destroyed most of the city. How many deaths were officially recorded?",
+  "alternatives": {
+    "1": "6",
+    "2": "600",
+    "3": "6,000",
+    "4": "60,000"
+  },
+  "correctChoice": 1
+},
+{
+  "id": "history-l1-q018",
+  "topic": "history",
+  "level": 1,
+  "text": "How tall was Napoleon?",
+  "alternatives": {
+    "1": "1.5 m, tiny",
+    "2": "1.7 m, about average",
+    "3": "1.9 m, a giant",
+    "4": "He stood on a box"
+  },
+  "correctChoice": 2
+},
+{
+  "id": "history-l1-q019",
+  "topic": "history",
+  "level": 1,
+  "text": "Who led a Viking voyage to North America around 1000 CE?",
+  "alternatives": {
+    "1": "Columbus",
+    "2": "Thor",
+    "3": "Ragnar Lothbrok",
+    "4": "Leif Erikson"
+  },
+  "correctChoice": 4
+},
+{
+  "id": "history-l1-q020",
+  "topic": "history",
+  "level": 1,
+  "text": "Cleopatra's royal family originally came from...?",
+  "alternatives": {
+    "1": "China",
+    "2": "Greece",
+    "3": "Egypt",
+    "4": "Denmark"
+  },
+  "correctChoice": 2
+},
+{
+  "id": "history-l1-q021",
+  "topic": "history",
+  "level": 1,
+  "text": "How long did the Hundred Years' War last?",
+  "alternatives": {
+    "1": "100 years",
+    "2": "60 years",
+    "3": "116 years",
+    "4": "200 years"
+  },
+  "correctChoice": 3
+},
+{
+  "id": "history-l1-q022",
+  "topic": "history",
+  "level": 1,
+  "text": "The shortest war in history (Britain vs Zanzibar, 1896) lasted about...?",
+  "alternatives": {
+    "1": "40 seconds",
+    "2": "40 minutes",
+    "3": "4 days",
+    "4": "4 weeks"
+  },
+  "correctChoice": 2
+},
+{
+  "id": "history-l1-q023",
+  "topic": "history",
+  "level": 1,
+  "text": "In 1903, who made the first powered airplane flight?",
+  "alternatives": {
+    "1": "The Wright brothers",
+    "2": "The Marx Brothers",
+    "3": "The Mario Brothers",
+    "4": "The Blues Brothers"
+  },
+  "correctChoice": 1
+},
+{
+  "id": "history-l1-q024",
+  "topic": "history",
+  "level": 1,
+  "text": "Which is older?",
+  "alternatives": {
+    "1": "The Aztec Empire",
+    "2": "Oxford University",
+    "3": "The Eiffel Tower",
+    "4": "All the same age"
+  },
+  "correctChoice": 2
+},
+{
+  "id": "history-l1-q025",
+  "topic": "history",
+  "level": 1,
+  "text": "In 1630s Holland, people paid fortunes for...?",
+  "alternatives": {
+    "1": "Potatoes",
+    "2": "Windmills",
+    "3": "Cheese",
+    "4": "Tulip bulbs"
+  },
+  "correctChoice": 4
+},
+{
+  "id": "history-l1-q026",
+  "topic": "history",
+  "level": 1,
+  "text": "Alexander the Great died at what age?",
+  "alternatives": {
+    "1": "19",
+    "2": "32",
+    "3": "52",
+    "4": "72"
+  },
+  "correctChoice": 2
+},
+{
+  "id": "history-l1-q027",
+  "topic": "history",
+  "level": 1,
+  "text": "Only one of the Seven Wonders of the Ancient World still stands. Which?",
+  "alternatives": {
+    "1": "Hanging Gardens of Babylon",
+    "2": "Colossus of Rhodes",
+    "3": "Lighthouse of Alexandria",
+    "4": "Great Pyramid of Giza"
+  },
+  "correctChoice": 4
+},
+{
+  "id": "history-l1-q028",
+  "topic": "history",
+  "level": 1,
+  "text": "The Black Death (1347–1351) killed roughly how much of Europe's population?",
+  "alternatives": {
+    "1": "1%",
+    "2": "10%",
+    "3": "A third or more",
+    "4": "90%"
+  },
+  "correctChoice": 3
+},
+{
+  "id": "history-l1-q029",
+  "topic": "history",
+  "level": 1,
+  "text": "In which year did the Berlin Wall fall?",
+  "alternatives": {
+    "1": "1961",
+    "2": "1979",
+    "3": "1989",
+    "4": "1999"
+  },
+  "correctChoice": 3
+},
+{
+  "id": "history-l1-q030",
+  "topic": "history",
+  "level": 1,
+  "text": "According to legend, how did the Greeks finally get into Troy?",
+  "alternatives": {
+    "1": "A giant wooden horse",
+    "2": "A tunnel",
+    "3": "A catapult",
+    "4": "A very polite knock"
+  },
+  "correctChoice": 1
+},
+{
+  "id": "history-l1-q031",
+  "topic": "history",
+  "level": 1,
+  "text": "When was the First World War?",
+  "alternatives": {
+    "1": "1914–1918",
+    "2": "1910–1914",
+    "3": "1939–1945",
+    "4": "1839–1845"
+  },
+  "correctChoice": 1
+},
+{
+  "id": "history-l1-q032",
+  "topic": "history",
+  "level": 1,
+  "text": "When was the Second World War?",
+  "alternatives": {
+    "1": "1839–1845",
+    "2": "1914–1918",
+    "3": "1933–1937",
+    "4": "1939–1945"
+  },
+  "correctChoice": 4
+},
+{
+  "id": "history-l1-q033",
+  "topic": "history",
+  "level": 1,
+  "text": "When and where did the first paper money appear?",
+  "alternatives": {
+    "1": "∿1,000 BCE, Egypt",
+    "2": "∿1,000 CE, China",
+    "3": "∿1,600 CE, England",
+    "4": "∿1,776 CE, America"
+  },
+  "correctChoice": 2
+},
+{
+  "id": "history-l1-q034",
+  "topic": "history",
+  "level": 1,
+  "text": "When was the American Revolutionary War?",
+  "alternatives": {
+    "1": "1475–1483",
+    "2": "1775–1783",
+    "3": "1814–1821",
+    "4": "1861–1865"
+  },
+  "correctChoice": 2
+},
+{
+  "id": "history-l1-q035",
+  "topic": "history",
+  "level": 1,
+  "text": "Who did the American colonists fight in the Revolutionary War?",
+  "alternatives": {
+    "1": "Mexico",
+    "2": "Russia",
+    "3": "Britain",
+    "4": "The Mongols"
+  },
+  "correctChoice": 3
+},
+{
+  "id": "history-l1-q036",
+  "topic": "history",
+  "level": 1,
+  "text": "Most of the Great Wall of China we see today was built when?",
+  "alternatives": {
+    "1": "∿1,000 BCE",
+    "2": "∿200 BCE",
+    "3": "1400s–1600s CE",
+    "4": "1900s CE"
+  },
+  "correctChoice": 3
+},
+{
+  "id": "history-l1-q037",
+  "topic": "history",
+  "level": 1,
+  "text": "In feudal Japan, who held the real power?",
+  "alternatives": {
+    "1": "The emperor",
+    "2": "The daimyo",
+    "3": "The samurai",
+    "4": "The shogun"
+  },
+  "correctChoice": 4
+},
+{
+  "id": "history-l1-q038",
+  "topic": "history",
+  "level": 1,
+  "text": "The Titanic sank in 1912. Roughly how long into her very first voyage?",
+  "alternatives": {
+    "1": "Four hours",
+    "2": "Four days",
+    "3": "Four weeks",
+    "4": "Two months"
+  },
+  "correctChoice": 2
+},
+{
+  "id": "history-l1-q039",
+  "topic": "history",
+  "level": 1,
+  "text": "When did humans start farming?",
+  "alternatives": {
+    "1": "∿3,000 years ago",
+    "2": "∿6,000 years ago",
+    "3": "∿12,000 years ago",
+    "4": "∿50,000 years ago"
+  },
+  "correctChoice": 3
+},
+{
+  "id": "history-l1-q040",
+  "topic": "history",
+  "level": 1,
+  "text": "When did the last Ice Age end?",
+  "alternatives": {
+    "1": "∿12,000 years ago",
+    "2": "∿1,000 years ago",
+    "3": "∿120 years ago",
+    "4": "∿100,000 years ago"
+  },
+  "correctChoice": 1
+},
+{
+  "id": "history-l1-q041",
+  "topic": "history",
+  "level": 1,
+  "text": "Marie Curie was a pioneer in researching...?",
+  "alternatives": {
+    "1": "Plutonium",
+    "2": "Platinum",
+    "3": "Lead poisoning",
+    "4": "Radioactivity"
+  },
+  "correctChoice": 4
+},
+{
+  "id": "history-l1-q042",
+  "topic": "history",
+  "level": 1,
+  "text": "What actually caused the Black Death?",
+  "alternatives": {
+    "1": "Bad air",
+    "2": "A bacterium",
+    "3": "A virus",
+    "4": "Crazy rats"
+  },
+  "correctChoice": 2
+},
+{
+  "id": "history-l1-q043",
+  "topic": "history",
+  "level": 1,
+  "text": "Cortés conquered the Aztecs with ∿500 men. Besides smallpox, who helped him most?",
+  "alternatives": {
+    "1": "Local peoples who hated the Aztecs",
+    "2": "The Vikings",
+    "3": "The Mongols",
+    "4": "Domesticated llamas"
+  },
+  "correctChoice": 1
+},
+{
+  "id": "history-l1-q044",
+  "topic": "history",
+  "level": 1,
+  "text": "In the 1840s, Dr Semmelweis saved new mothers by making doctors...?",
+  "alternatives": {
+    "1": "Use more leeches",
+    "2": "Wear scarves",
+    "3": "Wash their hands",
+    "4": "Sing to patients"
+  },
+  "correctChoice": 3
+},
+{
+  "id": "history-l1-q045",
+  "topic": "history",
+  "level": 1,
+  "text": "According to legend, young Alexander the Great tamed the wild horse Bucephalus. It was afraid of its own...?",
+  "alternatives": {
+    "1": "Saddle",
+    "2": "Name",
+    "3": "Mother",
+    "4": "Shadow"
+  },
+  "correctChoice": 4
+},
+{
+  "id": "history-l1-q046",
+  "topic": "history",
+  "level": 1,
+  "text": "According to legend, how did Alexander the Great solve the unsolvable Gordian Knot?",
+  "alternatives": {
+    "1": "He cut it with his sword",
+    "2": "He untied it patiently",
+    "3": "He burned it",
+    "4": "He asked his mom"
+  },
+  "correctChoice": 1
+},
+{
+  "id": "history-l1-q047",
+  "topic": "history",
+  "level": 1,
+  "text": "According to legend, Romulus, the founder of Rome, was raised by a...?",
+  "alternatives": {
+    "1": "Eagle",
+    "2": "She-wolf",
+    "3": "Cow",
+    "4": "Roman senator"
+  },
+  "correctChoice": 2
+},
+{
+  "id": "history-l1-q048",
+  "topic": "history",
+  "level": 1,
+  "text": "Julius Caesar's famous last words \"Et tu, Brute?\" were made famous by...?",
+  "alternatives": {
+    "1": "Caesar himself",
+    "2": "Cicero",
+    "3": "Brutus",
+    "4": "Shakespeare"
+  },
+  "correctChoice": 4
+},
+{
+  "id": "history-l1-q049",
+  "topic": "history",
+  "level": 1,
+  "text": "When did Gutenberg's printing press appear in Europe?",
+  "alternatives": {
+    "1": "∿1450",
+    "2": "∿1150",
+    "3": "∿1050",
+    "4": "∿1850"
+  },
+  "correctChoice": 1
+},
+{
+  "id": "history-l1-q050",
+  "topic": "history",
+  "level": 1,
+  "text": "In 1928, Alexander Fleming discovered penicillin thanks to...?",
+  "alternatives": {
+    "1": "A lightning strike",
+    "2": "A mouldy dish he forgot to clean",
+    "3": "A curious cat",
+    "4": "A royal order"
+  },
+  "correctChoice": 2
+},
+{
+  "id": "history-l1-q051",
+  "topic": "history",
+  "level": 1,
+  "text": "Who first reached the South Pole, in 1911?",
+  "alternatives": {
+    "1": "Roald Amundsen",
+    "2": "Ferdinand Magellan",
+    "3": "Josef Stalin",
+    "4": "Leif Erikson"
+  },
+  "correctChoice": 1
+}
+
+
 
 
 
