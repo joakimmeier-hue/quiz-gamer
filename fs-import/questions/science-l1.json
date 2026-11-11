@@ -753,6 +753,19 @@
     },
     "correctChoice": 4
   },
+  {
+    "id": "science-l1-q059",
+    "topic": "science",
+    "level": 1,
+    "text": "What is a kWh (kilowatt-hour)?",
+    "alternatives": {
+      "1": "A unit for power",
+      "2": "It measures voltage",
+      "3": "A unit for energy",
+      "4": "There is no such thing"
+    },
+    "correctChoice": 3
+  },
 
 
 
@@ -761,20 +774,7 @@
 
 
   
-  {
-    "id": "science-l1-q059",
-    "topic": "science",
-    "level": 1,
-    "text": "Max height a suction pump can lift water?",
-    "alternatives": {
-      "1": "∿100m",
-      "2": "∿101m",
-      "3": "∿9m",
-      "4": "∿10m"
-    },
-    "correctChoice": 4,
-    "tag": "elite"
-  },
+ 
   {
     "id": "science-l1-q060",
     "topic": "science",
@@ -925,6 +925,20 @@
       "2": "The water level drops",
       "3": "The water level rises a little",
       "4": "The water level stays the same"
+    },
+    "correctChoice": 4,
+    "tag": "elite"
+  },
+ {
+    "id": "science-l1-q071",
+    "topic": "science",
+    "level": 1,
+    "text": "Max height a suction pump can lift water?",
+    "alternatives": {
+      "1": "∿100m",
+      "2": "∿101m",
+      "3": "∿9m",
+      "4": "∿10m"
     },
     "correctChoice": 4,
     "tag": "elite"

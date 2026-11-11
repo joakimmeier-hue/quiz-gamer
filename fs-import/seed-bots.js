@@ -30,7 +30,7 @@ const BOT_PREFIX = "bot_";           // uid prefix, this is how bots are recogni
 const TIERS = [1, 2, 3, 4];          // add 5 when it exists
 const TOTAL_RANGE = [4542, 877431];  // total score of the whole bot pool
 const HIGHSCORE_RANGE = [313, 1108]; // Tier 1 tail start and top-100 ceiling; tier and Unlimited scales apply on top
-const HIGHSCORE_BOTTOM = 190;         // Tier 1 Highscore floor at the bottom of the full ranking
+const HIGHSCORE_BOTTOM = 110;         // Tier 1 Highscore floor at the bottom of the full ranking
 const UNLIM_FACTOR = 2.1;              // unlimited lists ≈ highscore range x this (±8 % jitter)
 
 // The topic ids as they are written in the db (ids of your question banks / lbTop boardIds).
@@ -319,16 +319,18 @@ function buildBoard(bots, topic, tier, unlimited) {
   };
 }
 
-// real entries are never displaced: only the lowest bots are cut when the list is full
+// Humans and bots compete for the same top-N slots.
 function mergeBoard(existingEntries, botEntries, useTime = true) {
   const real = (existingEntries || []).filter((e) => !isBotUid(e.uid));
-  let botSlots = TOP_N - real.length;
-  const out = [];
-  for (const e of [...real, ...botEntries].sort((a, b) => compareBoardEntries(a, b, useTime))) {
-    if (isBotUid(e.uid)) { if (botSlots <= 0) continue; botSlots--; }
-    out.push(e);
+  const entries = new Map();
+  for (const entry of [...real, ...botEntries]) {
+    if (!entry || typeof entry.uid !== "string") continue;
+    const existing = entries.get(entry.uid);
+    entries.set(entry.uid, existing ? { ...existing, ...entry } : entry);
   }
-  return out;
+  return [...entries.values()]
+    .sort((a, b) => compareBoardEntries(a, b, useTime))
+    .slice(0, TOP_N);
 }
 
 // ───────────── firestore ─────────────
@@ -389,7 +391,7 @@ async function seed(dry) {
         if (b.eligibleCount < TOP_N) {
           warnings.push(`${id}: ${b.eligibleCount} eligible bots; under-level bots skipped, so the bot portion will have fewer than ${TOP_N} entries.`);
         }
-        boards[id] = mergeBoard(existing[id], b.entries);
+        boards[id] = mergeBoard(existing[id], b.allEntries);
         botRankings[id] = b.allEntries.map(({ uid, score, timeSecs }) => ({ uid, score, timeSecs }));
       }
     }

@@ -28,7 +28,7 @@ const QUESTION_WEIGHTS = { normal: 1, elite: 5 };
 // at the top of the file, next to TIER_MULTIPLIERS
 const QUESTIONS_PER_GAME = 10;
 const BANK_SIZES = {          // how many questions exist per topic+level
-  "science-l1": 70,
+  "science-l1": 71,
   "science-l2": 71,
   // add one line per game as you import banks
 };
@@ -208,13 +208,19 @@ async function getTierLeaderboardPosition(boardId, uid, score, timeSecs, boardEn
     .where("topic", "==", topic)
     .where("level", "==", Number(level));
   const [betterSnap, tiedSnap, botRanksSnap] = await Promise.all([
-    attempts.where(scoreField, ">", score).count().get(),
+    attempts.where(scoreField, ">", score).get(),
     attempts.where(scoreField, "==", score).get(),
     db.collection("lbBotRanks").doc(boardId).get(),
   ]);
-  const betterHumanCount = tiedSnap.docs.filter((doc) => {
+  const isBotAttempt = (doc) => {
     const otherUid = doc.ref.parent.parent.id;
-    if (otherUid.startsWith("bot_")) return false;
+    // Bot ranks are counted from lbBotRanks below, not from stale bot attempts.
+    return otherUid.startsWith("bot_");
+  };
+  const betterHumanCount = betterSnap.docs.filter((doc) => !isBotAttempt(doc)).length;
+  const tiedHumanCount = tiedSnap.docs.filter((doc) => {
+    if (isBotAttempt(doc)) return false;
+    const otherUid = doc.ref.parent.parent.id;
     return compareLeaderboardEntries(
       { uid, score, timeSecs },
       { uid: otherUid, score, timeSecs: doc.get(timeField) }
@@ -229,7 +235,7 @@ async function getTierLeaderboardPosition(boardId, uid, score, timeSecs, boardEn
     compareLeaderboardEntries(entry, { uid, score, timeSecs }) < 0
   ).length;
 
-  return betterSnap.data().count + betterHumanCount + betterBotCount + 1;
+  return betterHumanCount + tiedHumanCount + betterBotCount + 1;
 }
 
 async function getTotalLeaderboardPosition(uid, score) {

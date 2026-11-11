@@ -2491,17 +2491,16 @@ if (location.hash === '#leaderboard') {
       const loadBoard = async (id) => {
         const hit = lbCache.get(id);
         if (hit) {
-          renderBoard(hit.entries, hit.me);
+          renderBoard(hit.entries, hit.me, id);
           if (id === 'total' && Date.now() - hit.t < LB_CACHE_MS) return;
         } else {
           setLbLoading(true);
         }
         try {
           const res = await getLeaderboardsFn({ boardId: id });
-          console.log('lb loaded:', id, res.data); // temporary debug, remove later
           lbCache.set(id, { t: Date.now(), entries: res.data.entries, me: res.data.me || null });
           if (id !== boardId()) return; // the player already picked something else
-          renderBoard(res.data.entries, res.data.me);
+          renderBoard(res.data.entries, res.data.me, id);
         } catch (err) {
           console.error('Failed to load leaderboard:', err.message);
         } finally {
@@ -2680,26 +2679,29 @@ if (location.hash === '#leaderboard') {
         introRow.style.overflow = 'hidden';
         // Ta bort setTimeout med display: none helt, så den stannar kvar på 1.5rem höjd!
       };
-      const renderBoard = (entries, me) => {
-        myOutside = me || null;
+      const renderBoard = (entries, me, id) => {
         if (!rowList || !rowTemplate) return;
+        if (id !== activeBoardId) {
+          activeBoardId = id;
+          rowList.scrollTop = 0;
+        }
         rowList.querySelectorAll('[data-lb-row]').forEach(r => r.remove());
-        const frag = document.createDocumentFragment();
-        // Sortera alltid så att högst poäng kommer först, uavsett ordning i DB
-        entries
+        const sortedEntries = entries
           .filter(e => e.score > 0)
           .sort((a, b) => {
             if (a.score !== b.score) return b.score - a.score;
             const aTime = Number.isFinite(a.timeSecs) ? a.timeSecs : Infinity;
             const bTime = Number.isFinite(b.timeSecs) ? b.timeSecs : Infinity;
             return aTime === bTime ? 0 : aTime - bTime;
-          })
-          .forEach((e, i) => {
-            const rank = e.isMe && Number.isInteger(me?.rank) && me.rank > 0
-              ? me.rank
-              : i + 1;
-            frag.appendChild(buildRow(e, rank));
           });
+        const ownEntry = sortedEntries.find(e => e.isMe);
+        const ownIndex = ownEntry ? sortedEntries.indexOf(ownEntry) : -1;
+        myOutside = me || (ownEntry ? { ...ownEntry, rank: ownIndex + 1 } : null);
+        const frag = document.createDocumentFragment();
+        sortedEntries.forEach((e, i) => {
+          if (e.isMe) return;
+          frag.appendChild(buildRow(e, i + 1));
+        });
         rowList.appendChild(frag);
         fitScores();
         if (userPicked) hideIntro();
@@ -2736,7 +2738,7 @@ if (location.hash === '#leaderboard') {
               ? myOutside.rank
               : '100+';
             myRow = buildRow({ ...myOutside, isMe: true }, rank);
-            myRow.classList.add('is-outside');
+            if (rank === '100+' || rank > 100) myRow.classList.add('is-outside');
             rowList.appendChild(myRow);
             fitScores();
           }
@@ -2762,14 +2764,6 @@ if (location.hash === '#leaderboard') {
         dd.classList.toggle('hint-bob', visible[k] && !dd.classList.contains('is-picked'));
       });
       const id = boardId();
-      if (id !== activeBoardId) {
-        activeBoardId = id;
-        myOutside = null;
-        if (rowList) {
-          rowList.querySelectorAll('[data-lb-row]').forEach(r => r.remove());
-          rowList.scrollTop = 0;
-        }
-      }
       if (id) loadBoard(id);
       else setLbLoading(false);
     };

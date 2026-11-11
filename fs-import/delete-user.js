@@ -23,6 +23,21 @@ admin.initializeApp({
 
 const db = admin.firestore();
 const userRef = db.collection("users").doc(uid);
+const TOP_N = 100;
+
+function isBotEntry(entry) {
+  return typeof entry.uid === "string" && entry.uid.startsWith("bot_");
+}
+
+function compareLeaderboardEntries(a, b) {
+  if (a.score !== b.score) return b.score - a.score;
+  const aTime = Number.isFinite(a.timeSecs) ? a.timeSecs : Infinity;
+  const bTime = Number.isFinite(b.timeSecs) ? b.timeSecs : Infinity;
+  if (aTime !== bTime) return aTime - bTime;
+  const aUid = String(a.uid || "");
+  const bUid = String(b.uid || "");
+  return aUid < bUid ? -1 : aUid > bUid ? 1 : 0;
+}
 
 async function getAuthStatus() {
   try {
@@ -60,6 +75,82 @@ async function removeLeaderboardEntries() {
   }
 
   return changedBoardIds;
+}
+
+async function refillBotLeaderboardSlots(boardIds) {
+  for (const boardId of boardIds) {
+    if (boardId === "total" || !/^(score|unlim)-/.test(boardId)) continue;
+    const boardRef = db.collection("lbTop").doc(boardId);
+    const [board, botRanks] = await Promise.all([
+      boardRef.get(),
+      db.collection("lbBotRanks").doc(boardId).get(),
+    ]);
+    if (!board.exists || !botRanks.exists) continue;
+
+    const entries = board.get("entries");
+    const rankedBots = botRanks.get("entries");
+    if (!Array.isArray(entries) || !Array.isArray(rankedBots)) {
+      throw new Error(`Invalid leaderboard entries in ${boardId}`);
+    }
+
+    const humans = entries.filter((entry) => !isBotEntry(entry));
+    const botsByUid = new Map(
+      entries.filter(isBotEntry).map((entry) => [entry.uid, entry])
+    );
+    for (const rankedBot of rankedBots) {
+      if (!isBotEntry(rankedBot)) continue;
+      const current = botsByUid.get(rankedBot.uid);
+      botsByUid.set(rankedBot.uid, current ? { ...current, ...rankedBot } : rankedBot);
+    }
+
+    const top = [...humans, ...botsByUid.values()]
+      .sort(compareLeaderboardEntries)
+      .slice(0, TOP_N);
+    const missingBotDocs = top.filter((entry) =>
+      isBotEntry(entry) && !entry.username
+    );
+    const botUserSnaps = await db.getAll(
+      ...missingBotDocs.map((entry) => db.collection("users").doc(entry.uid))
+    );
+    const botUsers = new Map(botUserSnaps.filter((snap) => snap.exists)
+      .map((snap) => [snap.id, snap.data()]));
+    const hydratedTop = top.map((entry) => {
+      if (!isBotEntry(entry) || entry.username) return entry;
+      const bot = botUsers.get(entry.uid);
+      if (!bot) return null;
+      return {
+        ...entry,
+        username: bot.username,
+        profilePicUrl: bot.profilePicUrl || null,
+        level: bot.level || 1,
+        favTopic: bot.favTopic || null,
+      };
+    }).filter(Boolean);
+
+    await db.runTransaction(async (tx) => {
+      const fresh = await tx.get(boardRef);
+      if (!fresh.exists) return;
+      const freshEntries = fresh.get("entries");
+      if (!Array.isArray(freshEntries)) {
+        throw new Error(`Invalid entries field in lbTop/${boardId}`);
+      }
+      const currentHumans = freshEntries.filter((entry) => !isBotEntry(entry));
+      const currentBots = freshEntries.filter(isBotEntry);
+      const candidates = new Map();
+      for (const entry of [
+        ...currentHumans,
+        ...currentBots,
+        ...hydratedTop.filter(isBotEntry),
+      ]) {
+        const current = candidates.get(entry.uid);
+        candidates.set(entry.uid, current ? { ...current, ...entry } : entry);
+      }
+      tx.update(boardRef, {
+        entries: [...candidates.values()].sort(compareLeaderboardEntries).slice(0, TOP_N),
+        updatedAt: new Date(),
+      });
+    });
+  }
 }
 
 async function updateGameHighscores(boardIds) {
@@ -149,6 +240,8 @@ async function main() {
   const changedBoardIds = await removeLeaderboardEntries();
   console.log("Deleting Firestore user data...");
   await db.recursiveDelete(userRef);
+  console.log("Refilling tier boards from the bot rankings...");
+  await refillBotLeaderboardSlots(changedBoardIds);
   console.log("Updating game highscore summaries and total ranks...");
   await updateGameHighscores(changedBoardIds);
   await rebuildTotalRanks();

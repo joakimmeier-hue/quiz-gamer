@@ -192,6 +192,7 @@ async function deleteAuthUsers(users) {
 async function rebuildBotRanks() {
   const users = await db.collection("users").orderBy("totalScore", "desc").get();
   const bots = users.docs.filter((doc) => isBot(doc.id, doc.data()));
+  const botByUid = new Map(bots.map((doc) => [doc.id, doc]));
   let batch = db.batch();
   let writes = 0;
 
@@ -218,6 +219,45 @@ async function rebuildBotRanks() {
     entries,
     updatedAt: new Date(),
   });
+
+  const botRankBoards = await db.collection("lbBotRanks").get();
+  for (const board of botRankBoards.docs) {
+    const rankedBots = board.get("entries");
+    if (!Array.isArray(rankedBots)) {
+      throw new Error(`Invalid entries field in lbBotRanks/${board.id}`);
+    }
+    const boardEntries = rankedBots
+      .filter((entry) => entry && typeof entry.uid === "string" && botByUid.has(entry.uid))
+      .slice(0, 100)
+      .map((entry) => {
+        const bot = botByUid.get(entry.uid);
+        return {
+          uid: entry.uid,
+          username: bot.get("username"),
+          score: entry.score,
+          timeSecs: entry.timeSecs,
+          level: bot.get("level") || 1,
+          profilePicUrl: bot.get("profilePicUrl") || null,
+          favTopic: bot.get("favTopic") || null,
+        };
+      });
+    await db.collection("lbTop").doc(board.id).set({
+      entries: boardEntries,
+      updatedAt: new Date(),
+    });
+    if (board.id.startsWith("score-")) {
+      const gameId = board.id.slice("score-".length);
+      if (boardEntries.length) {
+        await db.collection("leaderboards").doc(gameId).set({
+          topScore: boardEntries[0].score,
+          topUsername: boardEntries[0].username,
+          updatedAt: new Date(),
+        }, { merge: true });
+      } else {
+        await db.collection("leaderboards").doc(gameId).delete();
+      }
+    }
+  }
 }
 
 async function main() {
