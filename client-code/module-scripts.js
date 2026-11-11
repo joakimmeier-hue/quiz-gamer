@@ -2479,20 +2479,43 @@ if (location.hash === '#leaderboard') {
         if (!LB_STATE.type || !LB_STATE.topic || !LB_STATE.tier) return null;
         return `${LB_STATE.type}-${LB_STATE.topic}-l${LB_STATE.tier}`; // score-science-l1 / unlim-science-l1
       };
+      const optionIsSelected = (kind, row) => {
+        if (kind === 'type') return LB_TYPES[row.getAttribute('data-level')] === LB_STATE.type;
+        if (kind === 'topic') return row.dataset.topic === LB_STATE.topic;
+        if (kind === 'tier') return Number(row.getAttribute('data-level')) === LB_STATE.tier;
+        return false;
+      };
+      const syncDropdownOptions = () => {
+        Object.entries(roots).forEach(([kind, dd]) => {
+          dd.querySelectorAll('.game-level-option').forEach(row => {
+            const selected = optionIsSelected(kind, row);
+            row.style.display = selected ? 'none' : '';
+            if (selected) row.setAttribute('aria-hidden', 'true');
+            else row.removeAttribute('aria-hidden');
+          });
+        });
+      };
       const lbCache = new Map(); // boardId -> { t, entries, me }
       const LB_CACHE_MS = 90 * 1000;
       let userPicked = false;
       let myOutside = null; // the player's own entry when not in the top 100
       let activeBoardId = null;
+      const pendingBoards = new Set();
       const lbLoading = overlay.querySelector('.loading-squares-lb');
       const setLbLoading = (isLoading) => {
         if (lbLoading) lbLoading.style.display = isLoading ? 'flex' : 'none';
       };
       const loadBoard = async (id) => {
+        if (id === activeBoardId || pendingBoards.has(id)) return;
+        pendingBoards.add(id);
         const hit = lbCache.get(id);
         if (hit) {
           renderBoard(hit.entries, hit.me, id);
-          if (id === 'total' && Date.now() - hit.t < LB_CACHE_MS) return;
+          if (id === 'total' && Date.now() - hit.t < LB_CACHE_MS) {
+            pendingBoards.delete(id);
+            setLbLoading(false);
+            return;
+          }
         } else {
           setLbLoading(true);
         }
@@ -2504,6 +2527,7 @@ if (location.hash === '#leaderboard') {
         } catch (err) {
           console.error('Failed to load leaderboard:', err.message);
         } finally {
+          pendingBoards.delete(id);
           if (id === boardId()) setLbLoading(false);
         }
       };
@@ -2754,6 +2778,7 @@ if (location.hash === '#leaderboard') {
       }
 
       const sync = () => {
+      syncDropdownOptions();
       const showTopic = !!LB_STATE.type && LB_STATE.type !== 'total'; // Total Score needs no topic or tier
       const showTier = showTopic && !!LB_STATE.topic;
       roots.topic.style.display = showTopic ? '' : 'none';
@@ -2782,6 +2807,7 @@ if (location.hash === '#leaderboard') {
       list.addEventListener('click', (e) => {
         const row = e.target.closest('.game-level-option');
         if (!row || !list.contains(row)) return;
+        if (optionIsSelected(kind, row)) return;
         e.preventDefault();
         e.stopPropagation();
         if (typeof playSFX === 'function') playSFX('back');
