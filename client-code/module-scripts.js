@@ -1606,11 +1606,11 @@ async function loadGmaPanel() {
 
 // ───────────────── DYNAMIC GAME RATING SYSTEM (DIFF & BONUS LOTTIES) ──────────────────────────────
 const RATING_URLS = { // ── RATINGS DATA ─────────────────────────────────────
-  1: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3a01ff91c4daae84ea_1f8fa74613944f5a9ac25e2aac7b6051_game-rating-1.json",
-  2: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3aacb1ae9005246beb_a3cf25b733cc7e02dee51b452032b1e3_game-rating-2.json",
-  3: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3a01ff91c4daae84ef_134ebc6a9f4fd5ca311b1a4f5fe69112_game-rating-3.json",
-  4: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3a18793645ec4b0cf8_5baa664b38d30c21cff231395a48efd4_game-rating-4.json",
-  5: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3a729f5fafbcaa9390_2618b717e5ef44cc5a9868485966b1fd_game-rating-5.json",
+  1: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3a01ff91c4daae84ea_8e887747e3ba33e13abe0f0ecf20f8c3_game-rating-1.json",
+  2: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3aacb1ae9005246beb_fb961f804f2fdd5ce30bc34154460c81_game-rating-2.json",
+  3: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3a01ff91c4daae84ef_39c3184c88a5b2c7eb7af0f7fe28db82_game-rating-3.json",
+  4: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3a18793645ec4b0cf8_1e2abae4f6446cc2b1ff8fa10aae3b2d_game-rating-4.json",
+  5: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3a729f5fafbcaa9390_1e843ebf46507e94a1d413a8073bb7d5_game-rating-5.json",
  };
 
 // 'topic-l LEVEL': { diff, bonus (1–5), questions, time }
