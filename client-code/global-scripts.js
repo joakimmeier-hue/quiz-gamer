@@ -2179,12 +2179,9 @@ function initAboutSpinner() {
   const spinner = overlay.querySelector('.spinner-1');
   const focus = overlay.querySelector('.Focus');
   const lottieModule = window.Webflow?.require?.('lottie');
-  const spinnerAnimation = spinner ? lottieModule?.getAnim?.(spinner)?.[0] : null;
-  const focusAnimation = focus ? lottieModule?.getAnim?.(focus)?.[0] : null;
-  if (!spinnerAnimation && !focusAnimation) {
-    console.warn('About overlay: no Lottie animations found for .spinner-1 or .Focus.');
-    return;
-  }
+  let spinnerAnimation = null;
+  let focusAnimation = null;
+  let lottieInitRequested = false;
 
   const wiggle = [0, 0.35, 0.15, 0.55, 0.4, 0.75, 0.58, 1, 0.85, 1, 0.63, 0.88, 0.4, 0.7, 0.22, 0.48, 0];
   let overlayOpen = false;
@@ -2200,6 +2197,18 @@ function initAboutSpinner() {
       style.visibility !== 'hidden' &&
       Number(style.opacity) >= 0.99;
   };
+
+  function refreshAnimations() {
+    if (!lottieModule) return;
+    if (!spinnerAnimation && spinner) spinnerAnimation = lottieModule.getAnim?.(spinner)?.[0] || null;
+    if (!focusAnimation && focus) focusAnimation = lottieModule.getAnim?.(focus)?.[0] || null;
+    if ((!spinnerAnimation || !focusAnimation) && !lottieInitRequested && typeof lottieModule.init === 'function') {
+      lottieInitRequested = true;
+      lottieModule.init();
+      if (!spinnerAnimation && spinner) spinnerAnimation = lottieModule.getAnim?.(spinner)?.[0] || null;
+      if (!focusAnimation && focus) focusAnimation = lottieModule.getAnim?.(focus)?.[0] || null;
+    }
+  }
 
   function clearSpinnerTimers() {
     clearTimeout(spinnerDelayTimer);
@@ -2217,7 +2226,22 @@ function initAboutSpinner() {
     return frameRate > 0 ? (animation.totalFrames / frameRate) * 1000 : 1000;
   }
 
+  function playFocus(attempt = 0) {
+    if (!overlayOpen || !isVisible()) return;
+    refreshAnimations();
+    if (focusAnimation) {
+      focusAnimation.goToAndPlay(0, true);
+      return;
+    }
+    if (attempt < 30) {
+      focusDelayTimer = setTimeout(() => playFocus(attempt + 1), 100);
+    } else {
+      console.warn('About overlay: .Focus Lottie did not initialize.');
+    }
+  }
+
   function startWiggle() {
+    refreshAnimations();
     if (!spinnerAnimation || !isVisible()) return;
 
     wiggleIndex = 0;
@@ -2238,10 +2262,19 @@ function initAboutSpinner() {
     }, 630 / (wiggle.length - 1));
   }
 
-  function playFull(count) {
-    if (!spinnerAnimation || !isVisible()) return;
-
+  function playFull(count, attempt = 0) {
+    if (!overlayOpen || !isVisible()) return;
     clearSpinnerTimers();
+    refreshAnimations();
+    if (!spinnerAnimation) {
+      if (attempt < 30) {
+        spinnerPlaybackTimer = setTimeout(() => playFull(count, attempt + 1), 100);
+      } else {
+        console.warn('About overlay: .spinner-1 Lottie did not initialize.');
+      }
+      return;
+    }
+
     let remaining = count;
     const playOnce = () => {
       if (!isVisible()) {
@@ -2269,18 +2302,18 @@ function initAboutSpinner() {
     overlayOpen = true;
     clearSpinnerTimers();
     clearTimeout(focusDelayTimer);
+    lottieInitRequested = false;
+    refreshAnimations();
+    if (spinner) spinnerDelayTimer = setTimeout(() => playFull(2), 500);
     if (spinnerAnimation) {
-      spinnerDelayTimer = setTimeout(() => playFull(2), 500);
       spinnerAnimation.pause();
       spinnerAnimation.goToAndStop(0, true);
     }
     if (focusAnimation) {
       focusAnimation.pause();
       focusAnimation.goToAndStop(0, true);
-      focusDelayTimer = setTimeout(() => {
-        if (overlayOpen && isVisible()) focusAnimation.goToAndPlay(0, true);
-      }, 3000);
     }
+    if (focus) focusDelayTimer = setTimeout(() => playFocus(), 3500);
   }
 
   function closeOverlay() {
@@ -2320,6 +2353,48 @@ function initAboutSpinner() {
 }
 window.Webflow = window.Webflow || [];
 window.Webflow.push(initAboutSpinner);
+
+function initVanillaSubmitNoise() {
+  const submitButton = document.getElementById('submit-btn-vanilla');
+  if (!submitButton) return;
+
+  const lottieModule = window.Webflow?.require?.('lottie');
+  if (!lottieModule) {
+    console.warn('Vanilla submit animation: Webflow Lottie is unavailable.');
+    return;
+  }
+
+  let playToken = 0;
+  document.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target.closest('#submit-btn-vanilla') : null;
+    if (!target) return;
+
+    const noise = document.querySelector('.input-field-noise-2');
+    if (!noise) {
+      console.warn('Vanilla submit animation: missing .input-field-noise-2.');
+      return;
+    }
+
+    const token = ++playToken;
+    const play = (attempt = 0) => {
+      if (token !== playToken) return;
+      const animation = lottieModule.getAnim?.(noise)?.[0];
+      if (animation) {
+        animation.loop = false;
+        animation.setDirection(1);
+        animation.setSpeed(1);
+        animation.goToAndPlay(0, true);
+        return;
+      }
+
+      if (attempt === 0 && typeof lottieModule.init === 'function') lottieModule.init();
+      if (attempt < 20) setTimeout(() => play(attempt + 1), 100);
+      else console.warn('Vanilla submit animation: .input-field-noise-2 did not initialize.');
+    };
+    play();
+  }, true);
+}
+window.Webflow.push(initVanillaSubmitNoise);
 
 /* ────── ABOUT contact flip ────── */
 document.addEventListener('DOMContentLoaded', () => {
