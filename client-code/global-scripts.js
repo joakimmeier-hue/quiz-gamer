@@ -2298,6 +2298,7 @@ const HOVER_SCALE_CLASSES = [
     'profile-pic-option',
     'q-logo',
     'share-score-btn',
+    'spinner-clip',
     'submit-button',
     'text-link'
 ];
@@ -2350,6 +2351,7 @@ const PRESS_SCALE_CLASSES = [
     'profile-pic-option',
     'q-logo',
     'share-score-btn',
+    'spinner-clip',
     'submit-button',
     'text-link'
 ];
