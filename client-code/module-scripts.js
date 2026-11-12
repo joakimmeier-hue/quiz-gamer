@@ -963,48 +963,60 @@ function initAboutSpinner() {
   if (!overlay) return;
 
   const spinner = overlay.querySelector('.spinner-1');
-  const replayTrigger = overlay.querySelector('.spinner-clip');
+  const focus = overlay.querySelector('.Focus');
   const lottieModule = window.Webflow?.require?.('lottie');
-  const animation = spinner ? lottieModule?.getAnim?.(spinner)?.[0] : null;
-  if (!spinner || !animation) {
-    console.warn('About spinner: missing .spinner-1 Lottie animation.');
+  const spinnerAnimation = spinner ? lottieModule?.getAnim?.(spinner)?.[0] : null;
+  const focusAnimation = focus ? lottieModule?.getAnim?.(focus)?.[0] : null;
+  if (!spinnerAnimation && !focusAnimation) {
+    console.warn('About overlay: no Lottie animations found for .spinner-1 or .Focus.');
     return;
   }
 
   const wiggle = [0, 0.35, 0.15, 0.55, 0.4, 0.75, 0.58, 1, 0.85, 1, 0.63, 0.88, 0.4, 0.7, 0.22, 0.48, 0];
-  let mode = 'idle';
-  let playsRemaining = 0;
-  let delayTimer = null;
+  let overlayOpen = false;
+  let spinnerDelayTimer = null;
+  let spinnerPlaybackTimer = null;
   let wiggleTimer = null;
   let wiggleIndex = 0;
+  let focusDelayTimer = null;
 
-  const isVisibleFlex = () => {
+  const isVisible = () => {
     const style = window.getComputedStyle(overlay);
-    return style.display === 'flex' && style.visibility !== 'hidden';
+    return style.display !== 'none' &&
+      style.visibility !== 'hidden' &&
+      Number(style.opacity) >= 0.99;
   };
 
-  function clearScheduledPlayback() {
-    clearTimeout(delayTimer);
+  function clearSpinnerTimers() {
+    clearTimeout(spinnerDelayTimer);
+    clearTimeout(spinnerPlaybackTimer);
     clearInterval(wiggleTimer);
-    delayTimer = null;
+    spinnerDelayTimer = null;
+    spinnerPlaybackTimer = null;
     wiggleTimer = null;
   }
 
-  function startWiggle() {
-    if (!isVisibleFlex()) return;
+  function getPlaybackDuration(animation) {
+    const seconds = animation.getDuration?.(false);
+    if (Number.isFinite(seconds) && seconds > 0) return seconds * 1000;
+    const frameRate = animation.frameRate;
+    return frameRate > 0 ? (animation.totalFrames / frameRate) * 1000 : 1000;
+  }
 
-    mode = 'wiggle';
+  function startWiggle() {
+    if (!spinnerAnimation || !isVisible()) return;
+
     wiggleIndex = 0;
-    const startFrame = Math.round(animation.totalFrames * 0.51);
-    const endFrame = Math.round(animation.totalFrames * 0.62);
+    const startFrame = Math.round(spinnerAnimation.totalFrames * 0.51);
+    const endFrame = Math.round(spinnerAnimation.totalFrames * 0.62);
     const setFrame = (progress) => {
-      animation.goToAndStop(Math.round(startFrame + (endFrame - startFrame) * progress), true);
+      spinnerAnimation.goToAndStop(Math.round(startFrame + (endFrame - startFrame) * progress), true);
     };
 
     setFrame(wiggle[wiggleIndex]);
     wiggleTimer = setInterval(() => {
-      if (!isVisibleFlex()) {
-        stopPlayback();
+      if (!isVisible()) {
+        closeOverlay();
         return;
       }
       wiggleIndex = (wiggleIndex + 1) % wiggle.length;
@@ -1012,53 +1024,84 @@ function initAboutSpinner() {
     }, 630 / (wiggle.length - 1));
   }
 
-  function stopPlayback() {
-    clearScheduledPlayback();
-    mode = 'idle';
-    animation.pause();
-  }
-
   function playFull(count) {
-    if (!isVisibleFlex()) return;
+    if (!spinnerAnimation || !isVisible()) return;
 
-    clearScheduledPlayback();
-    mode = 'full';
-    playsRemaining = count;
-    animation.loop = false;
-    animation.setDirection(1);
-    animation.goToAndPlay(0, true);
+    clearSpinnerTimers();
+    let remaining = count;
+    const playOnce = () => {
+      if (!isVisible()) {
+        closeOverlay();
+        return;
+      }
+
+      spinnerAnimation.loop = false;
+      spinnerAnimation.setDirection(1);
+      spinnerAnimation.setSpeed(1);
+      spinnerAnimation.goToAndPlay(0, true);
+      spinnerPlaybackTimer = setTimeout(() => {
+        remaining -= 1;
+        if (remaining > 0) {
+          playOnce();
+        } else {
+          spinnerPlaybackTimer = setTimeout(startWiggle, 300);
+        }
+      }, getPlaybackDuration(spinnerAnimation) + 50);
+    };
+    playOnce();
   }
 
-  function onComplete() {
-    if (mode !== 'full') return;
-    playsRemaining -= 1;
-    if (playsRemaining > 0) {
-      animation.goToAndPlay(0, true);
-      return;
+  function openOverlay() {
+    overlayOpen = true;
+    clearSpinnerTimers();
+    clearTimeout(focusDelayTimer);
+    if (spinnerAnimation) {
+      spinnerDelayTimer = setTimeout(() => playFull(2), 500);
+      spinnerAnimation.pause();
+      spinnerAnimation.goToAndStop(0, true);
     }
+    if (focusAnimation) {
+      focusAnimation.pause();
+      focusAnimation.goToAndStop(0, true);
+      focusDelayTimer = setTimeout(() => {
+        if (overlayOpen && isVisible()) focusAnimation.goToAndPlay(0, true);
+      }, 2000);
+    }
+  }
 
-    mode = 'waiting';
-    delayTimer = setTimeout(startWiggle, 500);
+  function closeOverlay() {
+    if (!overlayOpen) return;
+    overlayOpen = false;
+    clearSpinnerTimers();
+    clearTimeout(focusDelayTimer);
+    focusDelayTimer = null;
+    if (spinnerAnimation) {
+      spinnerAnimation.pause();
+      spinnerAnimation.goToAndStop(0, true);
+    }
+    if (focusAnimation) {
+      focusAnimation.pause();
+      focusAnimation.goToAndStop(0, true);
+    }
   }
 
   function syncVisibility() {
-    const visible = isVisibleFlex();
-    if (visible && mode === 'idle') {
-      delayTimer = setTimeout(() => playFull(2), 900);
-      mode = 'opening-delay';
-    } else if (!visible && mode !== 'idle') {
-      stopPlayback();
-    }
+    const visible = isVisible();
+    if (visible && !overlayOpen) openOverlay();
+    else if (!visible && overlayOpen) closeOverlay();
   }
-
-  animation.addEventListener('complete', onComplete);
-  if (replayTrigger) replayTrigger.addEventListener('click', () => playFull(1));
-  else console.warn('About spinner: missing .spinner-clip replay trigger.');
 
   new MutationObserver(syncVisibility).observe(overlay, {
     attributes: true,
     attributeFilter: ['class', 'style']
   });
+  overlay.addEventListener('transitionend', (event) => {
+    if (event.target === overlay && event.propertyName === 'opacity') syncVisibility();
+  });
+  document.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target.closest('.spinner-clip') : null;
+    if (target && overlayOpen) playFull(1);
+  }, true);
   syncVisibility();
 }
 window.Webflow = window.Webflow || [];
