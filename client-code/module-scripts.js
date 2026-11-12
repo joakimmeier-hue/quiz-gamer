@@ -930,7 +930,8 @@ function hidePPDropdown() {
   window.lobbyInvOpen = false; 
   window.isGameInvAnimating = false;
 
-  // ── BARA FÖR LOBBYN: Animationer ──
+  // ── LOBBY ANIMATIONS ──
+  // INVENTORY
   function openLobbyInventory(overlay) {
     // Close any open profile-pic dropdowns first, so inventory opens in a clean state
     hidePPDropdown();
@@ -954,6 +955,115 @@ function hidePPDropdown() {
        if (!window.lobbyInvOpen) overlay.style.display = 'none';
    }, fadeDurationMs + 50);
 }
+
+// ────────────────── ABOUT OVERLAY ──────────────────
+//Spinner-clip
+function initAboutSpinner() {
+  const overlay = document.querySelector('.about-overlay');
+  if (!overlay) return;
+
+  const spinner = overlay.querySelector('.spinner-1');
+  const replayTrigger = overlay.querySelector('.spinner-clip');
+  const lottieModule = window.Webflow?.require?.('lottie');
+  const animation = spinner ? lottieModule?.getAnim?.(spinner)?.[0] : null;
+  if (!spinner || !animation) {
+    console.warn('About spinner: missing .spinner-1 Lottie animation.');
+    return;
+  }
+
+  const wiggle = [0, 0.35, 0.15, 0.55, 0.4, 0.75, 0.58, 1, 0.85, 1, 0.63, 0.88, 0.4, 0.7, 0.22, 0.48, 0];
+  let mode = 'idle';
+  let playsRemaining = 0;
+  let delayTimer = null;
+  let wiggleTimer = null;
+  let wiggleIndex = 0;
+
+  const isVisibleFlex = () => {
+    const style = window.getComputedStyle(overlay);
+    return style.display === 'flex' && style.visibility !== 'hidden';
+  };
+
+  function clearScheduledPlayback() {
+    clearTimeout(delayTimer);
+    clearInterval(wiggleTimer);
+    delayTimer = null;
+    wiggleTimer = null;
+  }
+
+  function startWiggle() {
+    if (!isVisibleFlex()) return;
+
+    mode = 'wiggle';
+    wiggleIndex = 0;
+    const startFrame = Math.round(animation.totalFrames * 0.51);
+    const endFrame = Math.round(animation.totalFrames * 0.62);
+    const setFrame = (progress) => {
+      animation.goToAndStop(Math.round(startFrame + (endFrame - startFrame) * progress), true);
+    };
+
+    setFrame(wiggle[wiggleIndex]);
+    wiggleTimer = setInterval(() => {
+      if (!isVisibleFlex()) {
+        stopPlayback();
+        return;
+      }
+      wiggleIndex = (wiggleIndex + 1) % wiggle.length;
+      setFrame(wiggle[wiggleIndex]);
+    }, 630 / (wiggle.length - 1));
+  }
+
+  function stopPlayback() {
+    clearScheduledPlayback();
+    mode = 'idle';
+    animation.pause();
+  }
+
+  function playFull(count) {
+    if (!isVisibleFlex()) return;
+
+    clearScheduledPlayback();
+    mode = 'full';
+    playsRemaining = count;
+    animation.loop = false;
+    animation.setDirection(1);
+    animation.goToAndPlay(0, true);
+  }
+
+  function onComplete() {
+    if (mode !== 'full') return;
+    playsRemaining -= 1;
+    if (playsRemaining > 0) {
+      animation.goToAndPlay(0, true);
+      return;
+    }
+
+    mode = 'waiting';
+    delayTimer = setTimeout(startWiggle, 300);
+  }
+
+  function syncVisibility() {
+    const visible = isVisibleFlex();
+    if (visible && mode === 'idle') {
+      delayTimer = setTimeout(() => playFull(2), 500);
+      mode = 'opening-delay';
+    } else if (!visible && mode !== 'idle') {
+      stopPlayback();
+    }
+  }
+
+  animation.addEventListener('complete', onComplete);
+  if (replayTrigger) replayTrigger.addEventListener('click', () => playFull(1));
+  else console.warn('About spinner: missing .spinner-clip replay trigger.');
+
+  new MutationObserver(syncVisibility).observe(overlay, {
+    attributes: true,
+    attributeFilter: ['class', 'style']
+  });
+  syncVisibility();
+}
+Webflow.push(initAboutSpinner);
+
+
 // ── TANGENTBORDS-LYSSNARE (I, TAB, ESC) ──
 document.addEventListener('keydown', (e) => {
   if (e.repeat) return; // Stoppar buggar om man håller inne knappen
@@ -2868,3 +2978,4 @@ if (location.hash === '#leaderboard') {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();
+
