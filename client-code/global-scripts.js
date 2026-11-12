@@ -2171,6 +2171,156 @@ window.addEventListener('load', function() {
   window.scrollTo(0, 0);
 }); */
 
+// ────────────────── ABOUT OVERLAY ──────────────────
+function initAboutSpinner() {
+  const overlay = document.querySelector('.about-overlay');
+  if (!overlay) return;
+
+  const spinner = overlay.querySelector('.spinner-1');
+  const focus = overlay.querySelector('.Focus');
+  const lottieModule = window.Webflow?.require?.('lottie');
+  const spinnerAnimation = spinner ? lottieModule?.getAnim?.(spinner)?.[0] : null;
+  const focusAnimation = focus ? lottieModule?.getAnim?.(focus)?.[0] : null;
+  if (!spinnerAnimation && !focusAnimation) {
+    console.warn('About overlay: no Lottie animations found for .spinner-1 or .Focus.');
+    return;
+  }
+
+  const wiggle = [0, 0.35, 0.15, 0.55, 0.4, 0.75, 0.58, 1, 0.85, 1, 0.63, 0.88, 0.4, 0.7, 0.22, 0.48, 0];
+  let overlayOpen = false;
+  let spinnerDelayTimer = null;
+  let spinnerPlaybackTimer = null;
+  let wiggleTimer = null;
+  let wiggleIndex = 0;
+  let focusDelayTimer = null;
+
+  const isVisible = () => {
+    const style = window.getComputedStyle(overlay);
+    return style.display !== 'none' &&
+      style.visibility !== 'hidden' &&
+      Number(style.opacity) >= 0.99;
+  };
+
+  function clearSpinnerTimers() {
+    clearTimeout(spinnerDelayTimer);
+    clearTimeout(spinnerPlaybackTimer);
+    clearInterval(wiggleTimer);
+    spinnerDelayTimer = null;
+    spinnerPlaybackTimer = null;
+    wiggleTimer = null;
+  }
+
+  function getPlaybackDuration(animation) {
+    const seconds = animation.getDuration?.(false);
+    if (Number.isFinite(seconds) && seconds > 0) return seconds * 1000;
+    const frameRate = animation.frameRate;
+    return frameRate > 0 ? (animation.totalFrames / frameRate) * 1000 : 1000;
+  }
+
+  function startWiggle() {
+    if (!spinnerAnimation || !isVisible()) return;
+
+    wiggleIndex = 0;
+    const startFrame = Math.round(spinnerAnimation.totalFrames * 0.51);
+    const endFrame = Math.round(spinnerAnimation.totalFrames * 0.62);
+    const setFrame = (progress) => {
+      spinnerAnimation.goToAndStop(Math.round(startFrame + (endFrame - startFrame) * progress), true);
+    };
+
+    setFrame(wiggle[wiggleIndex]);
+    wiggleTimer = setInterval(() => {
+      if (!isVisible()) {
+        closeOverlay();
+        return;
+      }
+      wiggleIndex = (wiggleIndex + 1) % wiggle.length;
+      setFrame(wiggle[wiggleIndex]);
+    }, 630 / (wiggle.length - 1));
+  }
+
+  function playFull(count) {
+    if (!spinnerAnimation || !isVisible()) return;
+
+    clearSpinnerTimers();
+    let remaining = count;
+    const playOnce = () => {
+      if (!isVisible()) {
+        closeOverlay();
+        return;
+      }
+
+      spinnerAnimation.loop = false;
+      spinnerAnimation.setDirection(1);
+      spinnerAnimation.setSpeed(1);
+      spinnerAnimation.goToAndPlay(0, true);
+      spinnerPlaybackTimer = setTimeout(() => {
+        remaining -= 1;
+        if (remaining > 0) {
+          playOnce();
+        } else {
+          spinnerPlaybackTimer = setTimeout(startWiggle, 300);
+        }
+      }, getPlaybackDuration(spinnerAnimation) + 50);
+    };
+    playOnce();
+  }
+
+  function openOverlay() {
+    overlayOpen = true;
+    clearSpinnerTimers();
+    clearTimeout(focusDelayTimer);
+    if (spinnerAnimation) {
+      spinnerDelayTimer = setTimeout(() => playFull(2), 500);
+      spinnerAnimation.pause();
+      spinnerAnimation.goToAndStop(0, true);
+    }
+    if (focusAnimation) {
+      focusAnimation.pause();
+      focusAnimation.goToAndStop(0, true);
+      focusDelayTimer = setTimeout(() => {
+        if (overlayOpen && isVisible()) focusAnimation.goToAndPlay(0, true);
+      }, 3000);
+    }
+  }
+
+  function closeOverlay() {
+    if (!overlayOpen) return;
+    overlayOpen = false;
+    clearSpinnerTimers();
+    clearTimeout(focusDelayTimer);
+    focusDelayTimer = null;
+    if (spinnerAnimation) {
+      spinnerAnimation.pause();
+      spinnerAnimation.goToAndStop(0, true);
+    }
+    if (focusAnimation) {
+      focusAnimation.pause();
+      focusAnimation.goToAndStop(0, true);
+    }
+  }
+
+  function syncVisibility() {
+    const visible = isVisible();
+    if (visible && !overlayOpen) openOverlay();
+    else if (!visible && overlayOpen) closeOverlay();
+  }
+
+  new MutationObserver(syncVisibility).observe(overlay, {
+    attributes: true,
+    attributeFilter: ['class', 'style']
+  });
+  overlay.addEventListener('transitionend', (event) => {
+    if (event.target === overlay && event.propertyName === 'opacity') syncVisibility();
+  });
+  document.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target.closest('.spinner-clip.play-sfx-select') : null;
+    if (target && overlayOpen) playFull(1);
+  }, true);
+  syncVisibility();
+}
+window.Webflow = window.Webflow || [];
+window.Webflow.push(initAboutSpinner);
+
 /* ────── ABOUT contact flip ────── */
 document.addEventListener('DOMContentLoaded', () => {
   const contactEl = document.querySelector('.contact-wrapper');
