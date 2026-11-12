@@ -1061,7 +1061,8 @@ function initAboutSpinner() {
   });
   syncVisibility();
 }
-Webflow.push(initAboutSpinner);
+window.Webflow = window.Webflow || [];
+window.Webflow.push(initAboutSpinner);
 
 
 // ── TANGENTBORDS-LYSSNARE (I, TAB, ESC) ──
