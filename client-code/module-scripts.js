@@ -1038,13 +1038,13 @@ function initAboutSpinner() {
     }
 
     mode = 'waiting';
-    delayTimer = setTimeout(startWiggle, 300);
+    delayTimer = setTimeout(startWiggle, 500);
   }
 
   function syncVisibility() {
     const visible = isVisibleFlex();
     if (visible && mode === 'idle') {
-      delayTimer = setTimeout(() => playFull(2), 500);
+      delayTimer = setTimeout(() => playFull(2), 900);
       mode = 'opening-delay';
     } else if (!visible && mode !== 'idle') {
       stopPlayback();
