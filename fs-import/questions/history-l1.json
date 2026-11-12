@@ -661,7 +661,34 @@
     "4": "Leif Erikson"
   },
   "correctChoice": 1
+},
+{
+  "id": "history-l1-q052",
+  "topic": "history",
+  "level": 1,
+  "text": "What does the Latin phrase \"Pater, Filius, Spiritus Sanctus\" mean?",
+  "alternatives": {
+    "1": "Father, Son, Holy Spirit",
+    "2": "Peter, Philip, Ghost Santa",
+    "3": "Father, Son, Holy Mother",
+    "4": "Mother, Father, Sanctuary"
+  },
+  "correctChoice": 1
+},
+{
+  "id": "history-l1-q053",
+  "topic": "history",
+  "level": 1,
+  "text": "What does the Latin phrase \"Deus ex machina\" mean?",
+  "alternatives": {
+    "1": "Man from God",
+    "2": "Computers created God",
+    "3": "God from the machine",
+    "4": "God turned into a machine"
+  },
+  "correctChoice": 3
 }
+
 
 
 
