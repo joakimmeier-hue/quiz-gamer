@@ -57,6 +57,7 @@ window.addEventListener('keydown', (e) => {
     }
   }, true); // Capture phase
 });
+
 // ─────────────────── Make number separator like 1,000 / 1 000 ───────────
 function fmtNum(n) {
   if (isNaN(n) || n === null || n === undefined) return n; // Safely returns "..." without turning into NaN!
@@ -284,6 +285,11 @@ document.addEventListener('click', (e) => {
 document.addEventListener('keydown', function(e) {
   const triggerKeys = ["Escape", "Enter"];
   if (!triggerKeys.includes(e.key)) return;
+  if (e.key === 'Escape' && e.repeat) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    return;
+  }
   if (getVisibleCreateProfileModal()) return;
 
   const globalInfo = document.querySelector('.global-info');
@@ -2434,10 +2440,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // ══════════════════════════════════════════════════════════════════════
 // SCROLL-PULSE SYSTEM (FÖR CUSTOM <LOTTIE-PLAYER>)
 // ══════════════════════════════════════════════════════════════════════
-
 const SCROLL_PULSE_DELAY_MS = 700;
 const pulsePendingTimeouts = new Map();
-
 function startSnake(wrapperEl) {
     const snake = wrapperEl.querySelector('lottie-player.return-snake');
     if (!snake) return;
@@ -2446,7 +2450,6 @@ function startSnake(wrapperEl) {
     if (typeof snake.seek === 'function') snake.seek(0);
     if (typeof snake.play === 'function') snake.play();
 }
-
 function stopSnake(wrapperEl) {
     const snake = wrapperEl.querySelector('lottie-player.return-snake');
     if (!snake) return;
@@ -2455,7 +2458,6 @@ function stopSnake(wrapperEl) {
     if (typeof snake.stop === 'function') snake.stop();
     if (typeof snake.seek === 'function') snake.seek(0);
 }
-
 function resetPulse(wrapperEl) {
     if (pulsePendingTimeouts.has(wrapperEl)) {
         clearTimeout(pulsePendingTimeouts.get(wrapperEl));
@@ -2464,7 +2466,6 @@ function resetPulse(wrapperEl) {
     wrapperEl.querySelectorAll('.button, .button-link').forEach(btn => btn.classList.remove('is-pulsing'));
     stopSnake(wrapperEl);
 }
-
 function startPulse(wrapperEl) {
     if (pulsePendingTimeouts.has(wrapperEl)) return;
     const timeoutId = setTimeout(() => {
@@ -2474,7 +2475,6 @@ function startPulse(wrapperEl) {
     }, SCROLL_PULSE_DELAY_MS);
     pulsePendingTimeouts.set(wrapperEl, timeoutId);
 }
-
 function initScrollPulse() {
     const wrappers = document.querySelectorAll('.button-wrapper');
     if (!wrappers.length) return;
