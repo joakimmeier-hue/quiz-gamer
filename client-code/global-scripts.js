@@ -2315,7 +2315,7 @@ function initAboutSpinner() {
     clearSpinnerTimers();
     clearTimeout(focusDelayTimer);
     refreshAnimations();
-    if (spinner) spinnerDelayTimer = setTimeout(() => playFull(2), 500);
+    if (spinner) spinnerDelayTimer = setTimeout(() => playFull(2), 160);
     if (spinnerAnimation) {
       spinnerAnimation.pause();
       spinnerAnimation.stop();
