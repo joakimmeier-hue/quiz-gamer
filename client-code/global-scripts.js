@@ -2192,10 +2192,12 @@ function initAboutSpinner() {
   let focusFirstOpen = true;
   let focusHoldTimer = null;
 
+  // CHANGED: opacity now counts, so an invisible (opacity 0) overlay is "closed"
   const isVisible = () => {
     const style = window.getComputedStyle(overlay);
     return style.display !== 'none' &&
-      style.visibility !== 'hidden';
+      style.visibility !== 'hidden' &&
+      parseFloat(style.opacity) > 0;
   };
 
   function findAnim(el) {
@@ -2236,7 +2238,7 @@ function initAboutSpinner() {
   function playFocus(attempt = 0) {
     if (!overlayOpen || !isVisible()) return;
     refreshAnimations();
-      if (focusAnimation) {
+    if (focusAnimation) {
       focusAnimation.loop = true;
       focusAnimation.goToAndPlay(0, true);
       return;
@@ -2309,6 +2311,7 @@ function initAboutSpinner() {
 
   function openOverlay() {
     overlayOpen = true;
+    console.log('overlay open detected, firstOpen:', focusFirstOpen); // DEBUG: remove later
     clearSpinnerTimers();
     clearTimeout(focusDelayTimer);
     refreshAnimations();
