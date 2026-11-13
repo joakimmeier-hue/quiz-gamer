@@ -2364,6 +2364,7 @@ function initVanillaSubmitNoise() {
   if (!submitButton || !noise) return;
 
   submitButton.addEventListener('click', () => {
+  console.log('submit clicked');
     const lottieModule = window.Webflow?.require?.('lottie');
     const animation = lottieModule?.lottie
       ?.getRegisteredAnimations?.()
