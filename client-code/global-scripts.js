@@ -2194,8 +2194,7 @@ function initAboutSpinner() {
   const isVisible = () => {
     const style = window.getComputedStyle(overlay);
     return style.display !== 'none' &&
-      style.visibility !== 'hidden' &&
-      Number(style.opacity) >= 0.99;
+      style.visibility !== 'hidden';
   };
 
   function refreshAnimations() {
@@ -2230,7 +2229,8 @@ function initAboutSpinner() {
     if (!overlayOpen || !isVisible()) return;
     refreshAnimations();
     if (focusAnimation) {
-      focusAnimation.goToAndPlay(0, true);
+      focusAnimation.stop();
+      focusAnimation.play();
       return;
     }
     if (attempt < 30) {
@@ -2285,7 +2285,8 @@ function initAboutSpinner() {
       spinnerAnimation.loop = false;
       spinnerAnimation.setDirection(1);
       spinnerAnimation.setSpeed(1);
-      spinnerAnimation.goToAndPlay(0, true);
+      spinnerAnimation.stop();
+      spinnerAnimation.play();
       spinnerPlaybackTimer = setTimeout(() => {
         remaining -= 1;
         if (remaining > 0) {
@@ -2307,11 +2308,11 @@ function initAboutSpinner() {
     if (spinner) spinnerDelayTimer = setTimeout(() => playFull(2), 500);
     if (spinnerAnimation) {
       spinnerAnimation.pause();
-      spinnerAnimation.goToAndStop(0, true);
+      spinnerAnimation.stop();
     }
     if (focusAnimation) {
       focusAnimation.pause();
-      focusAnimation.goToAndStop(0, true);
+      focusAnimation.stop();
     }
     if (focus) focusDelayTimer = setTimeout(() => playFocus(), 3500);
   }
@@ -2324,11 +2325,11 @@ function initAboutSpinner() {
     focusDelayTimer = null;
     if (spinnerAnimation) {
       spinnerAnimation.pause();
-      spinnerAnimation.goToAndStop(0, true);
+      spinnerAnimation.stop();
     }
     if (focusAnimation) {
       focusAnimation.pause();
-      focusAnimation.goToAndStop(0, true);
+      focusAnimation.stop();
     }
   }
 
@@ -2345,6 +2346,8 @@ function initAboutSpinner() {
   overlay.addEventListener('transitionend', (event) => {
     if (event.target === overlay && event.propertyName === 'opacity') syncVisibility();
   });
+  const visibilityPoll = setInterval(syncVisibility, 100);
+  window.addEventListener('pagehide', () => clearInterval(visibilityPoll), { once: true });
   document.addEventListener('click', (event) => {
     const target = event.target instanceof Element ? event.target.closest('.spinner-clip.play-sfx-select') : null;
     if (target && overlayOpen) playFull(1);
@@ -2356,43 +2359,18 @@ window.Webflow.push(initAboutSpinner);
 
 function initVanillaSubmitNoise() {
   const submitButton = document.getElementById('submit-btn-vanilla');
-  if (!submitButton) return;
-
+  const noise = document.querySelector('.input-field-noise-2');
   const lottieModule = window.Webflow?.require?.('lottie');
-  if (!lottieModule) {
-    console.warn('Vanilla submit animation: Webflow Lottie is unavailable.');
+  const animation = noise ? lottieModule?.getAnim?.(noise)?.[0] : null;
+  if (!submitButton || !animation) {
+    if (submitButton) console.warn('Vanilla submit animation: .input-field-noise-2 is unavailable.');
     return;
   }
 
-  let playToken = 0;
-  document.addEventListener('click', (event) => {
-    const target = event.target instanceof Element ? event.target.closest('#submit-btn-vanilla') : null;
-    if (!target) return;
-
-    const noise = document.querySelector('.input-field-noise-2');
-    if (!noise) {
-      console.warn('Vanilla submit animation: missing .input-field-noise-2.');
-      return;
-    }
-
-    const token = ++playToken;
-    const play = (attempt = 0) => {
-      if (token !== playToken) return;
-      const animation = lottieModule.getAnim?.(noise)?.[0];
-      if (animation) {
-        animation.loop = false;
-        animation.setDirection(1);
-        animation.setSpeed(1);
-        animation.goToAndPlay(0, true);
-        return;
-      }
-
-      if (attempt === 0 && typeof lottieModule.init === 'function') lottieModule.init();
-      if (attempt < 20) setTimeout(() => play(attempt + 1), 100);
-      else console.warn('Vanilla submit animation: .input-field-noise-2 did not initialize.');
-    };
-    play();
-  }, true);
+  submitButton.addEventListener('click', () => {
+    animation.loop = false;
+    animation.goToAndPlay(0, true);
+  });
 }
 window.Webflow.push(initVanillaSubmitNoise);
 
