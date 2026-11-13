@@ -2177,11 +2177,10 @@ function initAboutSpinner() {
   if (!overlay) return;
 
   const spinner = overlay.querySelector('.spinner-1');
-  const focus = overlay.querySelector('.Focus');
+  const focus = overlay.querySelector('.focus');
   const lottieModule = window.Webflow?.require?.('lottie');
   let spinnerAnimation = null;
   let focusAnimation = null;
-  let lottieInitRequested = false;
 
   const wiggle = [0, 0.35, 0.15, 0.55, 0.4, 0.75, 0.58, 1, 0.85, 1, 0.63, 0.88, 0.4, 0.7, 0.22, 0.48, 0];
   let overlayOpen = false;
@@ -2190,6 +2189,7 @@ function initAboutSpinner() {
   let wiggleTimer = null;
   let wiggleIndex = 0;
   let focusDelayTimer = null;
+  let focusFirstOpen = true;
 
   const isVisible = () => {
     const style = window.getComputedStyle(overlay);
@@ -2197,16 +2197,14 @@ function initAboutSpinner() {
       style.visibility !== 'hidden';
   };
 
+  function findAnim(el) {
+    const registered = lottieModule?.lottie?.getRegisteredAnimations?.() || [];
+    return el ? (registered.find(a => a.wrapper === el) || null) : null;
+  }
+
   function refreshAnimations() {
-    if (!lottieModule) return;
-    if (!spinnerAnimation && spinner) spinnerAnimation = lottieModule.getAnim?.(spinner)?.[0] || null;
-    if (!focusAnimation && focus) focusAnimation = lottieModule.getAnim?.(focus)?.[0] || null;
-    if ((!spinnerAnimation || !focusAnimation) && !lottieInitRequested && typeof lottieModule.init === 'function') {
-      lottieInitRequested = true;
-      lottieModule.init();
-      if (!spinnerAnimation && spinner) spinnerAnimation = lottieModule.getAnim?.(spinner)?.[0] || null;
-      if (!focusAnimation && focus) focusAnimation = lottieModule.getAnim?.(focus)?.[0] || null;
-    }
+    spinnerAnimation = findAnim(spinner) || spinnerAnimation;
+    focusAnimation = findAnim(focus) || focusAnimation;
   }
 
   function clearSpinnerTimers() {
@@ -2229,14 +2227,14 @@ function initAboutSpinner() {
     if (!overlayOpen || !isVisible()) return;
     refreshAnimations();
     if (focusAnimation) {
-      focusAnimation.stop();
-      focusAnimation.play();
+      focusAnimation.loop = true;
+      focusAnimation.goToAndPlay(0, true);
       return;
     }
     if (attempt < 30) {
       focusDelayTimer = setTimeout(() => playFocus(attempt + 1), 100);
     } else {
-      console.warn('About overlay: .Focus Lottie did not initialize.');
+      console.warn('About overlay: .focus Lottie did not initialize.');
     }
   }
 
@@ -2303,7 +2301,6 @@ function initAboutSpinner() {
     overlayOpen = true;
     clearSpinnerTimers();
     clearTimeout(focusDelayTimer);
-    lottieInitRequested = false;
     refreshAnimations();
     if (spinner) spinnerDelayTimer = setTimeout(() => playFull(2), 500);
     if (spinnerAnimation) {
@@ -2314,7 +2311,10 @@ function initAboutSpinner() {
       focusAnimation.pause();
       focusAnimation.stop();
     }
-    if (focus) focusDelayTimer = setTimeout(() => playFocus(), 3500);
+    if (focus) {
+      focusDelayTimer = setTimeout(() => playFocus(), focusFirstOpen ? 3000 : 0);
+      focusFirstOpen = false;
+    }
   }
 
   function closeOverlay() {
@@ -2364,7 +2364,6 @@ function initVanillaSubmitNoise() {
   if (!submitButton || !noise) return;
 
   submitButton.addEventListener('click', () => {
-  console.log('submit clicked');
     const lottieModule = window.Webflow?.require?.('lottie');
     const animation = lottieModule?.lottie
       ?.getRegisteredAnimations?.()
@@ -2374,7 +2373,6 @@ function initVanillaSubmitNoise() {
       console.warn('Submit noise: animation not found at click time.');
       return;
     }
-    animation.loop = false;
     animation.goToAndPlay(0, true);
   });
 }
