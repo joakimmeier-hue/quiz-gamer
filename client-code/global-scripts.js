@@ -2190,6 +2190,7 @@ function initAboutSpinner() {
   let wiggleIndex = 0;
   let focusDelayTimer = null;
   let focusFirstOpen = true;
+  let focusHoldTimer = null;
 
   const isVisible = () => {
     const style = window.getComputedStyle(overlay);
@@ -2223,10 +2224,19 @@ function initAboutSpinner() {
     return frameRate > 0 ? (animation.totalFrames / frameRate) * 1000 : 1000;
   }
 
+  function holdFocus() {
+    if (!focus) return;
+    refreshAnimations();
+    if (focusAnimation) {
+      focusAnimation.pause();
+      focusAnimation.goToAndStop(0, true);
+    }
+  }
+
   function playFocus(attempt = 0) {
     if (!overlayOpen || !isVisible()) return;
     refreshAnimations();
-    if (focusAnimation) {
+      if (focusAnimation) {
       focusAnimation.loop = true;
       focusAnimation.goToAndPlay(0, true);
       return;
@@ -2307,12 +2317,14 @@ function initAboutSpinner() {
       spinnerAnimation.pause();
       spinnerAnimation.stop();
     }
-    if (focusAnimation) {
-      focusAnimation.pause();
-      focusAnimation.stop();
-    }
     if (focus) {
-      focusDelayTimer = setTimeout(() => playFocus(), focusFirstOpen ? 3000 : 0);
+      holdFocus();
+      clearInterval(focusHoldTimer);
+      focusHoldTimer = setInterval(holdFocus, 50);
+      focusDelayTimer = setTimeout(() => {
+        clearInterval(focusHoldTimer);
+        playFocus();
+      }, focusFirstOpen ? 3000 : 0);
       focusFirstOpen = false;
     }
   }
@@ -2322,6 +2334,7 @@ function initAboutSpinner() {
     overlayOpen = false;
     clearSpinnerTimers();
     clearTimeout(focusDelayTimer);
+    clearInterval(focusHoldTimer);
     focusDelayTimer = null;
     if (spinnerAnimation) {
       spinnerAnimation.pause();
