@@ -2327,7 +2327,7 @@ function initAboutSpinner() {
       focusDelayTimer = setTimeout(() => {
         clearInterval(focusHoldTimer);
         playFocus();
-      }, focusFirstOpen ? 3000 : 0);
+      }, focusFirstOpen ? 2000 : 0);
       focusFirstOpen = false;
     }
   }
@@ -2335,6 +2335,7 @@ function initAboutSpinner() {
   function closeOverlay() {
     if (!overlayOpen) return;
     overlayOpen = false;
+    focusFirstOpen = true; // reset so the delay applies again on the next open
     clearSpinnerTimers();
     clearTimeout(focusDelayTimer);
     clearInterval(focusHoldTimer);
