@@ -2357,19 +2357,22 @@ function initAboutSpinner() {
 window.Webflow = window.Webflow || [];
 window.Webflow.push(initAboutSpinner);
 
+// Play noise on Submit click
 function initVanillaSubmitNoise() {
   const submitButton = document.getElementById('submit-btn-vanilla');
   const noise = document.querySelector('.input-field-noise-2');
-  const lottieModule = window.Webflow?.require?.('lottie');
-  const animation = noise
-  ? lottieModule?.lottie?.getRegisteredAnimations?.().find(a => a.wrapper === noise)
-  : null;
-  if (!submitButton || !animation) {
-    if (submitButton) console.warn('Vanilla submit animation: .input-field-noise-2 is unavailable.');
-    return;
-  }
+  if (!submitButton || !noise) return;
 
   submitButton.addEventListener('click', () => {
+    const lottieModule = window.Webflow?.require?.('lottie');
+    const animation = lottieModule?.lottie
+      ?.getRegisteredAnimations?.()
+      .find(a => a.wrapper === noise);
+
+    if (!animation) {
+      console.warn('Submit noise: animation not found at click time.');
+      return;
+    }
     animation.loop = false;
     animation.goToAndPlay(0, true);
   });
