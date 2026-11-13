@@ -2357,11 +2357,13 @@ function initAboutSpinner() {
 window.Webflow = window.Webflow || [];
 window.Webflow.push(initAboutSpinner);
 
-/* function initVanillaSubmitNoise() {
+function initVanillaSubmitNoise() {
   const submitButton = document.getElementById('submit-btn-vanilla');
   const noise = document.querySelector('.input-field-noise-2');
   const lottieModule = window.Webflow?.require?.('lottie');
-  const animation = noise ? lottieModule?.getAnim?.(noise)?.[0] : null;
+  const animation = noise
+  ? lottieModule?.lottie?.getRegisteredAnimations?.().find(a => a.wrapper === noise)
+  : null;
   if (!submitButton || !animation) {
     if (submitButton) console.warn('Vanilla submit animation: .input-field-noise-2 is unavailable.');
     return;
@@ -2372,7 +2374,7 @@ window.Webflow.push(initAboutSpinner);
     animation.goToAndPlay(0, true);
   });
 }
-window.Webflow.push(initVanillaSubmitNoise); */
+window.Webflow.push(initVanillaSubmitNoise);
 
 /* ────── ABOUT contact flip ────── */
 document.addEventListener('DOMContentLoaded', () => {
