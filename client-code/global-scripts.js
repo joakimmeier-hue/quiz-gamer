@@ -1818,7 +1818,7 @@ if (!document.querySelector('script[src*="lottie-player"]')) {
 }
 // 1. SETTINGS
 const LOTTIE_DELAY_MS = 1200;
-const LOTTIE_SRC = 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a159263c0394fc57a0ee84a_loading-game-2.json';
+const LOTTIE_SRC = 'https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/6a159263c0394fc57a0ee84a_962792dc67ce51e5c4c257e12e5f7b7f_loading-game-2.json';
 const revealDuration = '0.8s';
 const isGamePage = /^\/(quiz-game|gma-game-1)\/?$/.test(window.location.pathname);
 const isReviewPage = /^\/score-review\/?$/.test(window.location.pathname);
