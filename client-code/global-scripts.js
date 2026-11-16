@@ -2312,7 +2312,7 @@ function initAboutSpinner() {
     if (!spinnerAnimation || !isVisible()) return;
 
     wiggleIndex = 0;
-    const startFrame = Math.round(spinnerAnimation.totalFrames * 0.48);
+    const startFrame = Math.round(spinnerAnimation.totalFrames * 0.49);
     const endFrame = Math.round(spinnerAnimation.totalFrames * 0.62);
     const setFrame = (progress) => {
       spinnerAnimation.goToAndStop(Math.round(startFrame + (endFrame - startFrame) * progress), true);
