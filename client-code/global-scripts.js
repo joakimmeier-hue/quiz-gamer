@@ -2312,8 +2312,8 @@ function initAboutSpinner() {
     if (!spinnerAnimation || !isVisible()) return;
 
     wiggleIndex = 0;
-    const startFrame = Math.round(spinnerAnimation.totalFrames * 0.47);
-    const endFrame = Math.round(spinnerAnimation.totalFrames * 0.62);
+    const startFrame = Math.round(spinnerAnimation.totalFrames * 0.49);
+    const endFrame = Math.round(spinnerAnimation.totalFrames * 0.63);
     const setFrame = (progress) => {
       spinnerAnimation.goToAndStop(Math.round(startFrame + (endFrame - startFrame) * progress), true);
     };
@@ -2326,7 +2326,7 @@ function initAboutSpinner() {
       }
       wiggleIndex = (wiggleIndex + 1) % wiggle.length;
       setFrame(wiggle[wiggleIndex]);
-    }, 1200 / (wiggle.length - 1));
+    }, 1400 / (wiggle.length - 1));
   }
 
   function playFull(count, attempt = 0) {
