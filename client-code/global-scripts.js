@@ -2317,14 +2317,15 @@ function initAboutSpinner() {
       spinnerAnimation.goToAndStop(startFrame + (endFrame - startFrame) * progress, true);
     };
 
-    const segmentDuration = 2000 / (wiggle.length - 1);
+    const wiggleDuration = 2000;
+    const segmentDuration = wiggleDuration / (wiggle.length - 1);
     const cycleStart = performance.now();
     const animateWiggle = (timestamp) => {
       if (!isVisible()) {
         closeOverlay();
         return;
       }
-      const position = ((timestamp - cycleStart) % 2000) / segmentDuration;
+      const position = ((timestamp - cycleStart) % wiggleDuration) / segmentDuration;
       const index = Math.min(Math.floor(position), wiggle.length - 2);
       const progress = position - index;
       const value = wiggle[index] + (wiggle[index + 1] - wiggle[index]) * progress;
@@ -2839,3 +2840,181 @@ document.addEventListener("click", (e) => {
   navType: performance.getEntriesByType('navigation')[0]?.type,
   skipIntro: sessionStorage.getItem('skipIntro')
 })); */
+
+/* ────────────────── PASSWORD INPUT ────────────────── */
+document.addEventListener("DOMContentLoaded", function() {
+    const input = document.querySelector('.invisible-input');
+    const display = document.querySelector('.text-input');
+    const box = document.querySelector('.input-box');
+    const overlay = document.querySelector('.input-overlay-gma');
+    
+    if (!input || !display) return;
+
+    let focusTimeout = null;
+    let isNavigating = false;
+    let isProcessing = false;
+    let userHasInteracted = false;
+
+    function resetInteractionFlag() {
+        userHasInteracted = false;
+        document.addEventListener('mousedown',  () => { userHasInteracted = true; }, { once: true });
+        document.addEventListener('keydown',    () => { userHasInteracted = true; }, { once: true });
+        document.addEventListener('touchstart', () => { userHasInteracted = true; }, { once: true });
+    }
+    resetInteractionFlag();
+    // ── FAILSAFE STÄNGNING OCH RENSLING ──
+    function forceCloseAndClear() {
+        if (focusTimeout) clearTimeout(focusTimeout);
+        if (input) {
+            input.blur();
+            input.disabled = true;
+            input.style.display = 'none';
+            input.value = "";
+            refresh();
+        }
+                const closer = overlay ? overlay.querySelector('[class*="close"]') : null;
+        if (closer) {
+            closer.click();
+        } else if (overlay) {
+            overlay.style.display = 'none';
+            overlay.style.opacity = '0';
+        }
+    }
+    // ── POINTER UP (NÄR MAN SLÄPPER MUSKNAPPEN UTANFÖR) ──
+    if (overlay) {
+        overlay.addEventListener('pointerup', (e) => {
+            if (!e.target.closest('.input-box')) {
+                if (typeof playSFX === 'function') playSFX('back', 0.95);
+                forceCloseAndClear();
+            }
+        });
+    }
+    // ── ESCAPE-TANGENT (LJUD + STÄNG OMEDELBART) ──
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            if (!overlay) return;
+            const style = window.getComputedStyle(overlay);
+            const isOpen = style.display !== 'none' && parseFloat(style.opacity) > 0.1;
+            if (!isOpen) return;
+            if (typeof playSFX === 'function') playSFX('back', 0.95);
+            forceCloseAndClear();
+        }
+    });
+    // ── BACK/FORWARD CACHE FIX ──
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted || (performance.getEntriesByType('navigation')[0] && performance.getEntriesByType('navigation')[0].type === 'back_forward')) {
+            isNavigating = false;
+            resetInteractionFlag(); 
+            forceCloseAndClear();
+        }
+    });
+    // ── INPUT EGENSKAPER ──
+    input.setAttribute('autocomplete', 'one-time-code');
+    input.setAttribute('name', 'pw-' + Math.random().toString(36).substring(7));
+    input.setAttribute('type', 'text');
+    input.addEventListener('selectstart', e => e.preventDefault());
+    input.addEventListener('select', () => {
+        const pos = input.selectionEnd;
+        input.setSelectionRange(pos, pos);
+    });
+    function refresh() {
+        const val = input.value;
+        if (val.length === 0) {
+            display.innerHTML = '<span class="is-placeholder">ENTER PASSWORD</span><span class="fake-caret"></span>';
+        } else {
+            display.innerHTML = '<span>' + val + '</span><span class="fake-caret"></span>';
+        }
+    }
+    input.addEventListener('input', refresh);
+    input.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && ['a', 'c', 'x'].includes(e.key)) { e.preventDefault(); }
+        if (e.shiftKey && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) { e.preventDefault(); }
+    });
+    input.addEventListener('copy', e => e.preventDefault());
+    input.addEventListener('cut', e => e.preventDefault());
+    // ── ENTER-TRYCK (LÖSENORDSKONTROLL) ──
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (input.value.toLowerCase() === "bosse") {
+                if (typeof playSFX === 'function') playSFX('select');
+
+                const isStaging = window.location.hostname.includes('webflow.io');
+                const targetUrl = isStaging
+                    ? "https://quizgamer-se.webflow.io/gma"
+                    : "https://www.quizgamer.se/gma";
+
+                if (focusTimeout) clearTimeout(focusTimeout);
+                input.blur();
+
+                if (window.triggerPageExit) {
+                    isNavigating = true;
+                    window.triggerPageExit(targetUrl, true);
+                    setTimeout(forceCloseAndClear, 500);
+                } else {
+                    window.location.href = targetUrl;
+                }
+            } else {
+                if (typeof playSFX === 'function') playSFX('deny', 0.5);
+
+                display.innerText = "Incorrect";
+                input.value = "";
+                box?.classList.add('shake-now');
+                setTimeout(() => {
+                    box?.classList.remove('shake-now');
+                    refresh();
+                }, 1800);
+            }
+        }
+    });
+
+    // ── OBSERVER FÖR ÖPPNING & STÄNGNING ──
+    if (overlay) {
+        let wasOpen = false;
+        const obs = new MutationObserver(() => {
+            if (isProcessing || isNavigating) return;
+            const style = window.getComputedStyle(overlay);
+            const isCurrentlyOpen = style.display !== 'none' && parseFloat(style.opacity) > 0.1;
+
+            if (isCurrentlyOpen && !wasOpen) {
+                // ÖPPNA
+                if (!userHasInteracted) {
+                    forceCloseAndClear();
+                    return;
+                }
+                wasOpen = true;
+                isProcessing = true;
+                
+                input.disabled = false;
+                input.style.display = 'block';
+                input.value = "";
+                refresh();
+
+                if (focusTimeout) clearTimeout(focusTimeout);
+                focusTimeout = setTimeout(() => {
+                    input.focus();
+                    isProcessing = false;
+                }, 50);
+
+            } else if (!isCurrentlyOpen && wasOpen) {
+                // STÄNG
+                wasOpen = false;
+                isProcessing = true;
+
+                if (focusTimeout) clearTimeout(focusTimeout);
+                input.blur();
+                input.disabled = true;
+                input.style.display = 'none';
+                input.value = "";
+                refresh();
+                
+                setTimeout(() => { isProcessing = false; }, 300);
+            }
+        });
+        obs.observe(overlay, { attributes: true, attributeFilter: ['style', 'class'] });
+    }
+    // Initial nollställning vid laddning
+    input.disabled = true;
+    input.style.display = 'none';
+    refresh();
+});
