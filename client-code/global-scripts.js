@@ -2182,11 +2182,14 @@ function initAboutSpinner() {
   let spinnerAnimation = null;
   let focusAnimation = null;
 
-  const wiggle = [0, 0.35, 0.15, 0.55, 0.4, 0.75, 0.58, 1, 0.85, 1, 0.63, 0.88, 0.4, 0.7, 0.22, 0.48, 0];
+  const wiggle = [0, 0.08, 0.23, 0.43, 0.66, 0.85, 0.98, 1, 0.95, 0.82, 0.62, 0.4, 0.21, 0.08, 0.02, 0.1, 0.31, 0.57, 0.8, 0.96, 0.91, 0.75, 0.51, 0.28, 0.1, 0.03, 0.14, 0.4, 0.7, 0.95, 0.88, 0.58, 0.25, 0];
   let overlayOpen = false;
   let spinnerDelayTimer = null;
   let spinnerPlaybackTimer = null;
   let wiggleTimer = null;
+  let clickReplayTimer = null;
+  let clickReplayTarget = null;
+  let clickReplayStyles = null;
   let wiggleIndex = 0;
   let focusDelayTimer = null;
   let focusFirstOpen = true;
@@ -2217,6 +2220,56 @@ function initAboutSpinner() {
     spinnerDelayTimer = null;
     spinnerPlaybackTimer = null;
     wiggleTimer = null;
+  }
+
+  function restoreClickReplayTarget() {
+    if (!clickReplayTarget || !clickReplayStyles) return;
+    if (clickReplayStyles.transition) {
+      clickReplayTarget.style.setProperty('transition', clickReplayStyles.transition, clickReplayStyles.transitionPriority);
+    } else {
+      clickReplayTarget.style.removeProperty('transition');
+    }
+    if (clickReplayStyles.opacity) {
+      clickReplayTarget.style.setProperty('opacity', clickReplayStyles.opacity, clickReplayStyles.opacityPriority);
+    } else {
+      clickReplayTarget.style.removeProperty('opacity');
+    }
+    clickReplayTarget = null;
+    clickReplayStyles = null;
+  }
+
+  function clearClickReplay() {
+    clearTimeout(clickReplayTimer);
+    clickReplayTimer = null;
+    restoreClickReplayTarget();
+  }
+
+  function replaySpinnerAfterFade(target) {
+    if (clickReplayTimer || !overlayOpen) return;
+    clickReplayTarget = target;
+    clickReplayStyles = {
+      opacity: target.style.getPropertyValue('opacity'),
+      opacityPriority: target.style.getPropertyPriority('opacity'),
+      transition: target.style.getPropertyValue('transition'),
+      transitionPriority: target.style.getPropertyPriority('transition')
+    };
+    const opacity = window.getComputedStyle(target).opacity;
+    target.style.setProperty('transition', 'opacity 300ms ease-out');
+    void target.offsetWidth;
+    target.style.setProperty('opacity', '0');
+    clickReplayTimer = setTimeout(() => {
+      clickReplayTimer = null;
+      if (!overlayOpen || !isVisible()) {
+        restoreClickReplayTarget();
+        return;
+      }
+      target.style.setProperty('opacity', opacity);
+      playFull(1);
+      clickReplayTimer = setTimeout(() => {
+        clickReplayTimer = null;
+        restoreClickReplayTarget();
+      }, 300);
+    }, 300);
   }
 
   function getPlaybackDuration(animation) {
@@ -2255,8 +2308,8 @@ function initAboutSpinner() {
     if (!spinnerAnimation || !isVisible()) return;
 
     wiggleIndex = 0;
-    const startFrame = Math.round(spinnerAnimation.totalFrames * 0.51);
-    const endFrame = Math.round(spinnerAnimation.totalFrames * 0.62);
+    const startFrame = Math.round(spinnerAnimation.totalFrames * 0.45);
+    const endFrame = Math.round(spinnerAnimation.totalFrames * 0.68);
     const setFrame = (progress) => {
       spinnerAnimation.goToAndStop(Math.round(startFrame + (endFrame - startFrame) * progress), true);
     };
@@ -2269,7 +2322,7 @@ function initAboutSpinner() {
       }
       wiggleIndex = (wiggleIndex + 1) % wiggle.length;
       setFrame(wiggle[wiggleIndex]);
-    }, 630 / (wiggle.length - 1));
+    }, 882 / (wiggle.length - 1));
   }
 
   function playFull(count, attempt = 0) {
@@ -2337,6 +2390,7 @@ function initAboutSpinner() {
     overlayOpen = false;
     focusFirstOpen = true; // reset so the delay applies again on the next open
     clearSpinnerTimers();
+    clearClickReplay();
     clearTimeout(focusDelayTimer);
     clearInterval(focusHoldTimer);
     focusDelayTimer = null;
@@ -2365,9 +2419,15 @@ function initAboutSpinner() {
   });
   const visibilityPoll = setInterval(syncVisibility, 100);
   window.addEventListener('pagehide', () => clearInterval(visibilityPoll), { once: true });
-  document.addEventListener('click', (event) => {
+  document.addEventListener('pointerup', (event) => {
+    if (event.button !== 0 || !event.isPrimary) return;
     const target = event.target instanceof Element ? event.target.closest('.spinner-clip.play-sfx-select') : null;
-    if (target && overlayOpen) playFull(1);
+    if (target && overlayOpen) replaySpinnerAfterFade(target);
+  }, true);
+  document.addEventListener('click', (event) => {
+    if (event.detail !== 0) return;
+    const target = event.target instanceof Element ? event.target.closest('.spinner-clip.play-sfx-select') : null;
+    if (target && overlayOpen) replaySpinnerAfterFade(target);
   }, true);
   syncVisibility();
 }
