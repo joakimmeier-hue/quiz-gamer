@@ -2941,8 +2941,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
                 const isStaging = window.location.hostname.includes('webflow.io');
                 const targetUrl = isStaging
-                    ? "https://quizgamer-se.webflow.io/gma"
-                    : "https://www.quizgamer.se/gma";
+                    ? "https://quizgamer-nexus.webflow.io/gma-start"
+                    : "https://www.quizgamer.nexus/gma-start";
 
                 if (focusTimeout) clearTimeout(focusTimeout);
                 input.blur();
