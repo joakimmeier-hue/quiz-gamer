@@ -2017,7 +2017,7 @@ document.addEventListener('click', function(e) {
     const link = e.target.closest('a');
     if (!link || link.target === '_blank' || e.metaKey || e.ctrlKey) return;
     const href = link.getAttribute('href');
-    if (!href || href === '#' || href.startsWith('#') || link.classList.contains('is-password') || link.closest('.pp-dropdown, .i-closer-game, .button.i-lobby-back, .games-link-block')) return;
+    if (!href || href === '#' || href.startsWith('#') || link.classList.contains('is-password-gma') || link.closest('.pp-dropdown, .i-closer-game, .button.i-lobby-back, .games-link-block')) return;
     e.preventDefault();
 
     // Check if the user is clicking the finish button / navigating to the score page
@@ -2583,7 +2583,6 @@ const HOVER_SCALE_CLASSES = [
     'game-start-btn-gma',
     'gamelevel-btn',
     'games-link-block',
-    'games-link-block-gma',
     'inv-arrow-lobby',
     'inventory-btn-wrapper',
     'link-score',
@@ -2636,7 +2635,6 @@ const PRESS_SCALE_CLASSES = [
     'game-start-btn-gma',
     'gamelevel-btn',
     'games-link-block',
-    'games-link-block-gma',
     'inv-arrow-lobby',
     'inventory-btn-wrapper',
     'link-score',

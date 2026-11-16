@@ -835,6 +835,12 @@ function resolvePendingAction() {
     if (overlay && !window.lobbyInvOpen) {
       openLobbyInventory(overlay);
     }
+      } else if (pendingAction === 'GMA_PASSWORD') {
+    // login done: open the password box by clicking the link again (now logged in)
+    setTimeout(() => {
+      const pwLink = document.querySelector('.games-link-block.is-password-gma');
+      if (pwLink) pwLink.click();
+    }, 350);   // let the login modal fade out first
   } else {
     // pendingAction är en URL (spel-länk)
     console.log("Navigerar vidare till spel-länk:", pendingAction);
@@ -1181,6 +1187,8 @@ if (option && !isGameSide) {
       if (!currentUser) {
         pendingAction = gameBtn.href;
         showLoginModal();
+      } else if (gameBtn.classList.contains('is-password-gma')) {
+        // password overlay is opened by the Webflow interaction, nothing to navigate to
       } else {
         if (typeof window.triggerPageExit === 'function') {
           window.triggerPageExit(gameBtn.href, false);
@@ -1190,6 +1198,16 @@ if (option && !isGameSide) {
       }
       return;
     }
+
+    // GMA password link: not logged in -> login popup first (same flow as the other game links)
+    document.addEventListener('click', (e) => {
+      const pwLink = e.target.closest('.games-link-block.is-password-gma');
+      if (!pwLink || currentUser) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      pendingAction = 'GMA_PASSWORD';
+      showLoginModal();
+    }, true);
 
     // 5. GATEKEEPER & ÖPPNA FÖR LOBBY INVENTORY
     const invBtn = e.target.closest('#lobby-inventory-btn, .inv-arrow-lobby');
