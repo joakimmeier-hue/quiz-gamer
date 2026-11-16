@@ -2182,7 +2182,7 @@ function initAboutSpinner() {
   let spinnerAnimation = null;
   let focusAnimation = null;
 
-  const wiggle = [0, 0.1, 0.23, 0.43, 0.66, 0.85, 0.98, 1, 0.95, 0.82, 0.62, 0.4, 0.21, 0.01, 0.2, 0, 0.31, 0.57, 0.8, 0.96, 0.91, 0.75, 0.51, 0.28, 0.1, 0.03, 0.14, 0.4, 0.7, 0.95, 0.88, 0.58, 0.25, 0];
+  const wiggle = [0, 0.2, 0.01, 0.25, 0.6, 0.85, 0.5, 0.95, 0.67, 1, 0.9, 0.4, 0.65, 0.3, 0.1, 0.34, 0.08, 0, 0.24, 0.1, 0.47, 0.2, 0.55, 0.28, 0.1, 0.03, 0.41, 0.78, 0.98, 0.3, 0.62, 0.37, 0.26, 0];
   let overlayOpen = false;
   let spinnerDelayTimer = null;
   let spinnerPlaybackTimer = null;
@@ -2238,15 +2238,6 @@ function initAboutSpinner() {
     clickReplayStyles = null;
   }
 
-  function restoreClickReplayTransition() {
-    if (!clickReplayTarget || !clickReplayStyles) return;
-    if (clickReplayStyles.transition) {
-      clickReplayTarget.style.setProperty('transition', clickReplayStyles.transition, clickReplayStyles.transitionPriority);
-    } else {
-      clickReplayTarget.style.removeProperty('transition');
-    }
-  }
-
   function clearClickReplay() {
     clearTimeout(clickReplayTimer);
     clickReplayTimer = null;
@@ -2265,7 +2256,8 @@ function initAboutSpinner() {
       opacity: target.style.getPropertyValue('opacity'),
       opacityPriority: target.style.getPropertyPriority('opacity'),
       transition: target.style.getPropertyValue('transition'),
-      transitionPriority: target.style.getPropertyPriority('transition')
+      transitionPriority: target.style.getPropertyPriority('transition'),
+      visibleOpacity: window.getComputedStyle(target).opacity
     };
     target.style.setProperty('transition', 'opacity 300ms ease-out');
     void target.offsetWidth;
@@ -2276,7 +2268,10 @@ function initAboutSpinner() {
         restoreClickReplayTarget();
         return;
       }
-      restoreClickReplayTransition();
+      target.style.setProperty('transition', 'none');
+      target.style.setProperty('opacity', clickReplayStyles.visibleOpacity);
+      void target.offsetWidth;
+      restoreClickReplayTarget();
       playFull(1);
     }, 300);
   }
@@ -2317,8 +2312,8 @@ function initAboutSpinner() {
     if (!spinnerAnimation || !isVisible()) return;
 
     wiggleIndex = 0;
-    const startFrame = Math.round(spinnerAnimation.totalFrames * 0.51);
-    const endFrame = Math.round(spinnerAnimation.totalFrames * 0.63);
+    const startFrame = Math.round(spinnerAnimation.totalFrames * 0.49);
+    const endFrame = Math.round(spinnerAnimation.totalFrames * 0.61);
     const setFrame = (progress) => {
       spinnerAnimation.goToAndStop(Math.round(startFrame + (endFrame - startFrame) * progress), true);
     };
