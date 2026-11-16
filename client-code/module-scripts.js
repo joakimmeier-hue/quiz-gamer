@@ -2510,7 +2510,7 @@ if (location.hash === '#leaderboard') {
       const boardDataMatches = (a, b) =>
         JSON.stringify(a.entries) === JSON.stringify(b.entries) &&
         JSON.stringify(a.me) === JSON.stringify(b.me);
-      const loadBoard = async (id) => {
+        const loadBoard = async (id, retry = 0) => {
         if (id === activeBoardId || pendingBoards.has(id)) return;
         pendingBoards.add(id);
         const hit = lbCache.get(id);
@@ -2534,6 +2534,8 @@ if (location.hash === '#leaderboard') {
           }
         } catch (err) {
           console.error('Failed to load leaderboard:', err.message);
+          // retry up to 2 times (the tab may just be waking up from sleep)
+          if (retry < 2 && id === boardId()) setTimeout(() => loadBoard(id, retry + 1), 2000 * (retry + 1));
         } finally {
           pendingBoards.delete(id);
           if (id === boardId()) setLbLoading(false);
@@ -2864,10 +2866,21 @@ if (location.hash === '#leaderboard') {
         
       });
     });
+
+    // when the tab wakes up or the network returns, reload if the board is empty
+    const reloadIfEmpty = () => {
+      if (document.visibilityState === 'hidden') return;
+      const id = boardId();
+      if (id && rowList && !rowList.querySelector('[data-lb-row]')) {
+        activeBoardId = null;
+        loadBoard(id);
+      }
+    };
+    document.addEventListener('visibilitychange', reloadIfEmpty);
+    window.addEventListener('online', reloadIfEmpty);    
     sync(); // initial state: only the type dropdown visible, Total Score board loaded
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();
-
