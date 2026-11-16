@@ -2182,7 +2182,7 @@ function initAboutSpinner() {
   let spinnerAnimation = null;
   let focusAnimation = null;
 
-  const wiggle = [0, 0.08, 0.23, 0.43, 0.66, 0.85, 0.98, 1, 0.95, 0.82, 0.62, 0.4, 0.21, 0.08, 0.02, 0.1, 0.31, 0.57, 0.8, 0.96, 0.91, 0.75, 0.51, 0.28, 0.1, 0.03, 0.14, 0.4, 0.7, 0.95, 0.88, 0.58, 0.25, 0];
+  const wiggle = [0, 0.1, 0.23, 0.43, 0.66, 0.85, 0.98, 1, 0.95, 0.82, 0.62, 0.4, 0.21, 0.01, 0.2, 0, 0.31, 0.57, 0.8, 0.96, 0.91, 0.75, 0.51, 0.28, 0.1, 0.03, 0.14, 0.4, 0.7, 0.95, 0.88, 0.58, 0.25, 0];
   let overlayOpen = false;
   let spinnerDelayTimer = null;
   let spinnerPlaybackTimer = null;
@@ -2238,6 +2238,15 @@ function initAboutSpinner() {
     clickReplayStyles = null;
   }
 
+  function restoreClickReplayTransition() {
+    if (!clickReplayTarget || !clickReplayStyles) return;
+    if (clickReplayStyles.transition) {
+      clickReplayTarget.style.setProperty('transition', clickReplayStyles.transition, clickReplayStyles.transitionPriority);
+    } else {
+      clickReplayTarget.style.removeProperty('transition');
+    }
+  }
+
   function clearClickReplay() {
     clearTimeout(clickReplayTimer);
     clickReplayTimer = null;
@@ -2245,7 +2254,12 @@ function initAboutSpinner() {
   }
 
   function replaySpinnerAfterFade(target) {
-    if (clickReplayTimer || !overlayOpen) return;
+    if (!overlayOpen) return;
+    if (clickReplayTarget === target) {
+      if (!clickReplayTimer) playFull(1);
+      return;
+    }
+    if (clickReplayTimer) return;
     clickReplayTarget = target;
     clickReplayStyles = {
       opacity: target.style.getPropertyValue('opacity'),
@@ -2253,7 +2267,6 @@ function initAboutSpinner() {
       transition: target.style.getPropertyValue('transition'),
       transitionPriority: target.style.getPropertyPriority('transition')
     };
-    const opacity = window.getComputedStyle(target).opacity;
     target.style.setProperty('transition', 'opacity 300ms ease-out');
     void target.offsetWidth;
     target.style.setProperty('opacity', '0');
@@ -2263,12 +2276,8 @@ function initAboutSpinner() {
         restoreClickReplayTarget();
         return;
       }
-      target.style.setProperty('opacity', opacity);
+      restoreClickReplayTransition();
       playFull(1);
-      clickReplayTimer = setTimeout(() => {
-        clickReplayTimer = null;
-        restoreClickReplayTarget();
-      }, 300);
     }, 300);
   }
 
@@ -2308,8 +2317,8 @@ function initAboutSpinner() {
     if (!spinnerAnimation || !isVisible()) return;
 
     wiggleIndex = 0;
-    const startFrame = Math.round(spinnerAnimation.totalFrames * 0.45);
-    const endFrame = Math.round(spinnerAnimation.totalFrames * 0.68);
+    const startFrame = Math.round(spinnerAnimation.totalFrames * 0.51);
+    const endFrame = Math.round(spinnerAnimation.totalFrames * 0.63);
     const setFrame = (progress) => {
       spinnerAnimation.goToAndStop(Math.round(startFrame + (endFrame - startFrame) * progress), true);
     };
