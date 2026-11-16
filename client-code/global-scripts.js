@@ -2190,7 +2190,6 @@ function initAboutSpinner() {
   let clickReplayTimer = null;
   let clickReplayTarget = null;
   let clickReplayStyles = null;
-  let wiggleIndex = 0;
   let focusDelayTimer = null;
   let focusFirstOpen = true;
   let focusHoldTimer = null;
@@ -2216,7 +2215,7 @@ function initAboutSpinner() {
   function clearSpinnerTimers() {
     clearTimeout(spinnerDelayTimer);
     clearTimeout(spinnerPlaybackTimer);
-    clearInterval(wiggleTimer);
+    cancelAnimationFrame(wiggleTimer);
     spinnerDelayTimer = null;
     spinnerPlaybackTimer = null;
     wiggleTimer = null;
@@ -2315,18 +2314,26 @@ function initAboutSpinner() {
     const startFrame = Math.round(spinnerAnimation.totalFrames * 0.49);
     const endFrame = Math.round(spinnerAnimation.totalFrames * 0.62);
     const setFrame = (progress) => {
-      spinnerAnimation.goToAndStop(Math.round(startFrame + (endFrame - startFrame) * progress), true);
+      spinnerAnimation.goToAndStop(startFrame + (endFrame - startFrame) * progress, true);
     };
 
-    setFrame(wiggle[wiggleIndex]);
-    wiggleTimer = setInterval(() => {
+    const segmentDuration = 2000 / (wiggle.length - 1);
+    const cycleStart = performance.now();
+    const animateWiggle = (timestamp) => {
       if (!isVisible()) {
         closeOverlay();
         return;
       }
-      wiggleIndex = (wiggleIndex + 1) % wiggle.length;
-      setFrame(wiggle[wiggleIndex]);
-    }, 2000 / (wiggle.length - 1));
+      const position = ((timestamp - cycleStart) % 2000) / segmentDuration;
+      const index = Math.min(Math.floor(position), wiggle.length - 2);
+      const progress = position - index;
+      const value = wiggle[index] + (wiggle[index + 1] - wiggle[index]) * progress;
+      setFrame(value);
+      wiggleTimer = requestAnimationFrame(animateWiggle);
+    };
+
+    setFrame(wiggle[0]);
+    wiggleTimer = requestAnimationFrame(animateWiggle);
   }
 
   function playFull(count, attempt = 0) {
