@@ -441,7 +441,58 @@
     },
     "correctChoice": 4
   },
-
+  {
+    "id": "history-l2-q035",
+    "topic": "history",
+    "level": 2,
+    "text": "Before modern chemistry, blue ultramarine paint was worth more than gold. It was ground from...?",
+    "alternatives": {
+      "1": "Sapphires",
+      "2": "Blueberries",
+      "3": "Lapis lazuli stone",
+      "4": "Murex  shells"
+    },
+    "correctChoice": 3
+},
+{
+  "id": "history-l2-q036",
+  "topic": "history",
+  "level": 2,
+  "text": "Jacques Cousteau co-invented the aqualung in 1943. What is \"the bends\"?",
+  "alternatives": {
+    "1": "Fear of deep water",
+    "2": "Divers' illness from rising too fast",
+    "3": "Seasickness",
+    "4": "Too much Navy gin"
+  },
+  "correctChoice": 2
+},
+{
+  "id": "history-l2-q037",
+  "topic": "history",
+  "level": 2,
+  "text": "Which story is the oldest? The one about...",
+  "alternatives": {
+    "1": "Jesus",
+    "2": "Beowulf",
+    "3": "Muhammad",
+    "4": "Odysseus"
+  },
+  "correctChoice": 4
+},
+{
+  "id": "history-l2-q038",
+  "topic": "history",
+  "level": 2,
+  "text": "What did the Inca use for counting and record keeping?",
+  "alternatives": {
+    "1": "Ink and paper",
+    "2": "Hats",
+    "3": "Knotted strings",
+    "4": "Corn-cobs"
+  },
+  "correctChoice": 3
+},
 
 
 
