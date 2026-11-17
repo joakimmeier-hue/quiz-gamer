@@ -1,0 +1,24 @@
+[
+  {
+    "id": "history-l3-q001",
+    "topic": "history",
+    "level": 3,
+    "text": "Which is the only state in the world where only men are allowed to vote?",
+    "alternatives": {
+      "1": "Vatican City",
+      "2": "Iraq",
+      "3": "Libya",
+      "4": "Burma"
+    },
+    "correctChoice": 1
+  }
+
+
+
+
+
+
+
+
+
+]

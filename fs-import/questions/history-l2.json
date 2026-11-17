@@ -1,0 +1,503 @@
+[
+  {
+    "id": "history-l2-q001",
+    "topic": "history",
+    "level": 2,
+    "text": "Who invented the number 0?",
+    "alternatives": {
+      "1": "Nigerians",
+      "2": "Englishmen",
+      "3": "Japanese",
+      "4": "Arabs"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "history-l2-q002",
+    "topic": "history",
+    "level": 2,
+    "text": "Romans used poisonous lead (Pb) for water pipes. Which profession is named after it?",
+    "alternatives": {
+      "1": "Shift Leader",
+      "2": "Plumber",
+      "3": "Pilot",
+      "4": "Potter"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "history-l2-q003",
+    "topic": "history",
+    "level": 2,
+    "text": "Hammurabi's famous law code, ∿1750 BCE, with rules on punishment, came from...?",
+    "alternatives": {
+      "1": "Rome",
+      "2": "Egypt",
+      "3": "Babylon",
+      "4": "Greece"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "history-l2-q004",
+    "topic": "history",
+    "level": 2,
+    "text": "In the 1200s, the English colonised Australia and forced natives to...?",
+    "alternatives": {
+      "1": "Play the didgeridoo",
+      "2": "Throw boomerangs",
+      "3": "Sail to England",
+      "4": "It happened much later"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "history-l2-q005",
+    "topic": "history",
+    "level": 2,
+    "text": "How did Earth get its Moon?",
+    "alternatives": {
+      "1": "A planet crashed into early Earth",
+      "2": "Earth captured a passing asteroid",
+      "3": "It was always there",
+      "4": "It broke off from Mars"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "history-l2-q006",
+    "topic": "history",
+    "level": 2,
+    "text": "Which came first on Earth?",
+    "alternatives": {
+      "1": "Trees",
+      "2": "Flowers",
+      "3": "Sharks",
+      "4": "Grass"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "history-l2-q007",
+    "topic": "history",
+    "level": 2,
+    "text": "Just after the Moon formed, how did it look from Earth?",
+    "alternatives": {
+      "1": "∿15 times larger",
+      "2": "Invisible",
+      "3": "∿15 times smaller",
+      "4": "There were 2 Moons"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "history-l2-q008",
+    "topic": "history",
+    "level": 2,
+    "text": "Japan was closed to foreigners for ∿200 years. Who ended it in 1853 with his \"black ships\"?",
+    "alternatives": {
+      "1": "Captain Cook",
+      "2": "Commodore Perry",
+      "3": "Marco Polo",
+      "4": "Christopher Columbus"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "history-l2-q009",
+    "topic": "history",
+    "level": 2,
+    "text": "In the 1800s \"Bone Wars\", rival fossil hunters Cope and Marsh did what?",
+    "alternatives": {
+      "1": "Stole and smashed each other's fossils",
+      "2": "Sold bones as furniture",
+      "3": "Ground bones into medicine",
+      "4": "Hid bones from the British Museum"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "history-l2-q010",
+    "topic": "history",
+    "level": 2,
+    "text": "Whiskey ages in barrels, and some evaporates. Distillers call that the angel's...?",
+    "alternatives": {
+      "1": "Tax",
+      "2": "Share",
+      "3": "Tear",
+      "4": "Wing"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "history-l2-q011",
+    "topic": "history",
+    "level": 2,
+    "text": "The word \"vodka\" comes from Slavic words meaning little...?",
+    "alternatives": {
+      "1": "Fire",
+      "2": "Bear",
+      "3": "Water",
+      "4": "Friend"
+    },
+    "correctChoice": 3
+  },  
+  {
+    "id": "history-l2-q012",
+    "topic": "history",
+    "level": 2,
+    "text": "Where were the ancient Olympic Games held?",
+    "alternatives": {
+      "1": "Athens",
+      "2": "Sparta",
+      "3": "Olympia",
+      "4": "Rome"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "history-l2-q013",
+    "topic": "history",
+    "level": 2,
+    "text": "Who painted the Mona Lisa?",
+    "alternatives": {
+      "1": "Bernini",
+      "2": "Michelangelo",
+      "3": "Dante",
+      "4": "Da Vinci"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "history-l2-q014",
+    "topic": "history",
+    "level": 2,
+    "text": "Before 1918, what were women in Germany not allowed to do?",
+    "alternatives": {
+      "1": "Drive cars",
+      "2": "Vote",
+      "3": "Go to the gym",
+      "4": "Do laundry"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "history-l2-q015",
+    "topic": "history",
+    "level": 2,
+    "text": "Columbus sailed west in 1492. He was actually aiming for...?",
+    "alternatives": {
+      "1": "India",
+      "2": "Brazil",
+      "3": "Australia",
+      "4": "Iceland"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "history-l2-q016",
+    "topic": "history",
+    "level": 2,
+    "text": "The Church punished Galileo for saying that Earth...?",
+    "alternatives": {
+      "1": "Is flat",
+      "2": "Is hollow",
+      "3": "Orbits the Sun",
+      "4": "Is round"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "history-l2-q017",
+    "topic": "history",
+    "level": 2,
+    "text": "Which Indonesian volcano exploded in 1883, heard 4,800 km away?",
+    "alternatives": {
+      "1": "Vesuvius",
+      "2": "Krakatoa",
+      "3": "Mount Fuji",
+      "4": "Etna"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "history-l2-q018",
+    "topic": "history",
+    "level": 2,
+    "text": "What did the Aztecs use as money?",
+    "alternatives": {
+      "1": "Gold coins",
+      "2": "Paper notes",
+      "3": "Pearls",
+      "4": "Cacao beans"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "history-l2-q019",
+    "topic": "history",
+    "level": 2,
+    "text": "Norway's famous fjords were carved by...?",
+    "alternatives": {
+      "1": "Rivers",
+      "2": "Earthquakes",
+      "3": "Glaciers",
+      "4": "Meteors"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "history-l2-q020",
+    "topic": "history",
+    "level": 2,
+    "text": "Machu Picchu was built by the...?",
+    "alternatives": {
+      "1": "Aztecs",
+      "2": "Inca",
+      "3": "Maya",
+      "4": "Romans"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "history-l2-q021",
+    "topic": "history",
+    "level": 2,
+    "text": "Britain was once joined to Europe by land. When did the sea flood it?",
+    "alternatives": {
+      "1": "∿500 years ago",
+      "2": "∿2,000 years ago",
+      "3": "∿50,000 years ago",
+      "4": "∿8,000 years ago"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "history-l2-q022",
+    "topic": "history",
+    "level": 2,
+    "text": "When was the first visible LED light made?",
+    "alternatives": {
+      "1": "1877",
+      "2": "1998",
+      "3": "1962",
+      "4": "2017"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "history-l2-q023",
+    "topic": "history",
+    "level": 2,
+    "text": "Why is Greenland called \"Green\"?",
+    "alternatives": {
+      "1": "A name to lure settlers",
+      "2": "It was covered in forests",
+      "3": "Green ice",
+      "4": "Algae on the coast"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "history-l2-q024",
+    "topic": "history",
+    "level": 2,
+    "text": "When did loudspeakers first go on sale?",
+    "alternatives": {
+      "1": "∿1825",
+      "2": "∿1925",
+      "3": "∿1955",
+      "4": "∿1985"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "history-l2-q025",
+    "topic": "history",
+    "level": 2,
+    "text": "Which animal were dogs first domesticated from?",
+    "alternatives": {
+      "1": "Wolves",
+      "2": "Foxes",
+      "3": "Jackals",
+      "4": "Hyenas"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "history-l2-q026",
+    "topic": "history",
+    "level": 2,
+    "text": "When was the French Revolution?",
+    "alternatives": {
+      "1": "1689",
+      "2": "1889",
+      "3": "1789",
+      "4": "1919"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "history-l2-q027",
+    "topic": "history",
+    "level": 2,
+    "text": "Which country has the world's oldest monarchy?",
+    "alternatives": {
+      "1": "Japan",
+      "2": "Britain",
+      "3": "Sweden",
+      "4": "Spain"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "history-l2-q028",
+    "topic": "history",
+    "level": 2,
+    "text": "Who won the Battle of Hastings, 1066?",
+    "alternatives": {
+      "1": "The Vikings",
+      "2": "The Normans",
+      "3": "The Romans",
+      "4": "The Spartans"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "history-l2-q029",
+    "topic": "history",
+    "level": 2,
+    "text": "Where and when was gunpowder first widely made?",
+    "alternatives": {
+      "1": "Germany, ∿1300 CE",
+      "2": "Egypt, ∿2000 BCE",
+      "3": "China, ∿1000 CE",
+      "4": "Greece, ∿500 BCE"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "history-l2-q030",
+    "topic": "history",
+    "level": 2,
+    "text": "Which of these is the oldest?",
+    "alternatives": {
+      "1": "Hot air balloons",
+      "2": "Steel",
+      "3": "Writing ink",
+      "4": "Beer"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "history-l2-q031",
+    "topic": "history",
+    "level": 2,
+    "text": "In the 1800s, whales were mainly hunted for...?",
+    "alternatives": {
+      "1": "Oil",
+      "2": "Meat",
+      "3": "Teeth",
+      "4": "Fur"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "history-l2-q032",
+    "topic": "history",
+    "level": 2,
+    "text": "When was the Bronze Age?",
+    "alternatives": {
+      "1": "∿12,000 to 8,000 BCE",
+      "2": "∿3000 to 1200 BCE",
+      "3": "∿1,500 to 1 BCE",
+      "4": "∿1 to 1000 CE"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "history-l2-q033",
+    "topic": "history",
+    "level": 2,
+    "text": "Which of these is the most recent?",
+    "alternatives": {
+      "1": "Jurassic",
+      "2": "Cretaceous",
+      "3": "Paleocene",
+      "4": "Triassic"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "history-l2-q034",
+    "topic": "history",
+    "level": 2,
+    "text": "Which text is the oldest?",
+    "alternatives": {
+      "1": "Quran",
+      "2": "Shakespeare's plays",
+      "3": "New Testament",
+      "4": "Plato's works"
+    },
+    "correctChoice": 4
+  },
+
+
+
+
+
+
+
+
+  {
+    "id": "history-l2-q0XX",
+    "topic": "history",
+    "level": 2,
+    "text": "Which of these countries was the last to grant women the right to vote?",
+    "alternatives": {
+      "1": "Iran",
+      "2": "Azerbaijan",
+      "3": "Switzerland",
+      "4": "India"
+    },
+    "correctChoice": 3,
+    "type": "elite"
+  },
+  {
+    "id": "history-l2-q0XX",
+    "topic": "history",
+    "level": 2,
+    "text": "T. rex lived closer in time to humans than to...?",
+    "alternatives": {
+      "1": "Triceratops",
+      "2": "Stegosaurus",
+      "3": "Velociraptor",
+      "4": "Mammoths"
+    },
+    "correctChoice": 2,
+    "tag": "elite"
+  },
+  {
+    "id": "history-l2-q0xx",
+    "topic": "history",
+    "level": 2,
+    "text": "Which country became independent in 2011?",
+    "alternatives": {
+      "1": "Kosovo",
+      "2": "East Timor",
+      "3": "Montenegro",
+      "4": "South Sudan"
+    },
+    "correctChoice": 4,
+    "tag": "elite"
+  }
+
+
+
+
+
+
+
+
+
+]
