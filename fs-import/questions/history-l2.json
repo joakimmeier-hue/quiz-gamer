@@ -224,14 +224,14 @@
     "id": "history-l2-q018",
     "topic": "history",
     "level": 2,
-    "text": "What did the Aztecs use as money?",
+    "text": "Medieval kings claimed their wisdom and power came from...?",
     "alternatives": {
-      "1": "Gold coins",
-      "2": "Paper notes",
-      "3": "Pearls",
-      "4": "Cacao beans"
+      "1": "Voting",
+      "2": "God",
+      "3": "Money",
+      "4": "Education"
     },
-    "correctChoice": 4
+    "correctChoice": 2
   },
   {
     "id": "history-l2-q019",
@@ -453,69 +453,436 @@
       "4": "Murex  shells"
     },
     "correctChoice": 3
-},
-{
-  "id": "history-l2-q036",
-  "topic": "history",
-  "level": 2,
-  "text": "Jacques Cousteau co-invented the aqualung in 1943. What is \"the bends\"?",
-  "alternatives": {
-    "1": "Fear of deep water",
-    "2": "Divers' illness from rising too fast",
-    "3": "Seasickness",
-    "4": "Too much Navy gin"
   },
-  "correctChoice": 2
-},
-{
-  "id": "history-l2-q037",
-  "topic": "history",
-  "level": 2,
-  "text": "Which story is the oldest? The one about...",
-  "alternatives": {
-    "1": "Jesus",
-    "2": "Beowulf",
-    "3": "Muhammad",
-    "4": "Odysseus"
-  },
-  "correctChoice": 4
-},
-{
-  "id": "history-l2-q038",
-  "topic": "history",
-  "level": 2,
-  "text": "What did the Inca use for counting and record keeping?",
-  "alternatives": {
-    "1": "Ink and paper",
-    "2": "Hats",
-    "3": "Knotted strings",
-    "4": "Corn-cobs"
-  },
-  "correctChoice": 3
-},
-
-
-
-
-
-
-
   {
-    "id": "history-l2-q0XX",
+    "id": "history-l2-q036",
     "topic": "history",
     "level": 2,
-    "text": "Which of these countries was the last to grant women the right to vote?",
+    "text": "Jacques Cousteau co-invented the aqualung in 1943. What is \"the bends\"?",
     "alternatives": {
-      "1": "Iran",
-      "2": "Azerbaijan",
-      "3": "Switzerland",
-      "4": "India"
+      "1": "Fear of deep water",
+      "2": "Divers' illness from rising fast",
+      "3": "Seasickness",
+      "4": "Too much Navy gin"
     },
-    "correctChoice": 3,
-    "type": "elite"
+    "correctChoice": 2
   },
   {
-    "id": "history-l2-q0XX",
+    "id": "history-l2-q037",
+    "topic": "history",
+    "level": 2,
+    "text": "Which story is the oldest? The one about...",
+    "alternatives": {
+      "1": "Jesus",
+      "2": "Beowulf",
+      "3": "Muhammad",
+      "4": "Odysseus"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "history-l2-q038",
+    "topic": "history",
+    "level": 2,
+    "text": "What did the Inca use for counting and record keeping?",
+    "alternatives": {
+      "1": "Ink and paper",
+      "2": "Hats",
+      "3": "Knotted strings",
+      "4": "Corn-cobs"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "history-l2-q039",
+    "topic": "history",
+    "level": 2,
+    "text": "What is the Dalai Lama?",
+    "alternatives": {
+      "1": "A Himalayan animal",
+      "2": "A Buddhist holy book",
+      "3": "A Tibetan Buddhist leader",
+      "4": "A sacred mountain"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "history-l2-q040",
+    "topic": "history",
+    "level": 2,
+    "text": "How is a new Dalai Lama found?",
+    "alternatives": {
+      "1": "By election",
+      "2": "By searching for a reborn child",
+      "3": "By royal inheritance",
+      "4": "By a sword duel"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "history-l2-q041",
+    "topic": "history",
+    "level": 2,
+    "text": "Where did Buddhism begin, ∿500 BCE?",
+    "alternatives": {
+      "1": "China",
+      "2": "Japan",
+      "3": "Egypt",
+      "4": "India"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "history-l2-q042",
+    "topic": "history",
+    "level": 2,
+    "text": "In medieval times, Stocks and pillories were used for...?",
+    "alternatives": {
+      "1": "Storage",
+      "2": "Medical care",
+      "3": "Sleeping",
+      "4": "Public shame"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "history-l2-q043",
+    "topic": "history",
+    "level": 2,
+    "text": "\"Chivalry\" comes from the old word for...?",
+    "alternatives": {
+      "1": "Sword",
+      "2": "Honor",
+      "3": "Horse",
+      "4": "Castle"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "history-l2-q044",
+    "topic": "history",
+    "level": 2,
+    "text": "Ideal knights protected the weak. Real knights often...?",
+    "alternatives": {
+      "1": "Robbed peasants",
+      "2": "Gave gold to the poor",
+      "3": "Farmed fields",
+      "4": "Taught children"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "history-l2-q045",
+    "topic": "history",
+    "level": 2,
+    "text": "Early knight tournaments were...?",
+    "alternatives": {
+      "1": "Polite games",
+      "2": "Poetry contests",
+      "3": "Horse races",
+      "4": "Mock wars with real deaths"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "history-l2-q046",
+    "topic": "history",
+    "level": 2,
+    "text": "A medieval serf could not...?",
+    "alternatives": {
+      "1": "Marry",
+      "2": "Pray",
+      "3": "Leave the lord's land",
+      "4": "Have children"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "history-l2-q047",
+    "topic": "history",
+    "level": 2,
+    "text": "Medieval peasants often shared their home with...?",
+    "alternatives": {
+      "1": "Their animals",
+      "2": "Knights",
+      "3": "Priests",
+      "4": "The king"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "history-l2-q048",
+    "topic": "history",
+    "level": 2,
+    "text": "Why did people stop building big stone castles?",
+    "alternatives": {
+      "1": "Stone ran out",
+      "2": "Cannons were invented",
+      "3": "Wars ended",
+      "4": "Fear of ghosts"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "history-l2-q049",
+    "topic": "history",
+    "level": 2,
+    "text": "In the witch water test, who was \"guilty\"?",
+    "alternatives": {
+      "1": "Those who floated",
+      "2": "Those who sank",
+      "3": "Those who screamed",
+      "4": "Those who swam"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "history-l2-q050",
+    "topic": "history",
+    "level": 2,
+    "text": "How many were executed as witches in Europe?",
+    "alternatives": {
+      "1": "∿50",
+      "2": "∿500",
+      "3": "∿50,000",
+      "4": "∿5 million"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "history-l2-q051",
+    "topic": "history",
+    "level": 2,
+    "text": "In the Dark Ages, what was \"trial by ordeal\"?",
+    "alternatives": {
+      "1": "A village vote",
+      "2": "A lawyers' debate",
+      "3": "A written exam",
+      "4": "Pain tests where God decides guilt"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "history-l2-q052",
+    "topic": "history",
+    "level": 2,
+    "text": "Medieval doctors thought illness came from...?",
+    "alternatives": {
+      "1": "Bacteria",
+      "2": "Body fluids out of balance",
+      "3": "Virus",
+      "4": "Bad shoes"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "history-l2-q053",
+    "topic": "history",
+    "level": 2,
+    "text": "Why did doctors use leeches?",
+    "alternatives": {
+      "1": "To drain \"bad blood\"",
+      "2": "For food",
+      "3": "To cleanse sins",
+      "4": "To cure sleep"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "history-l2-q054",
+    "topic": "history",
+    "level": 2,
+    "text": "In the 1300s, doctors blamed the Black Death on...?",
+    "alternatives": {
+      "1": "Germs",
+      "2": "Bad air and stars",
+      "3": "Too much sleep",
+      "4": "Rats"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "history-l2-q055",
+    "topic": "history",
+    "level": 2,
+    "text": "Peasants paid the church a \"tithe\". How much?",
+    "alternatives": {
+      "1": "One tenth of their harvest",
+      "2": "Half of everything",
+      "3": "Nothing",
+      "4": "One fifth of income"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "history-l2-q056",
+    "topic": "history",
+    "level": 2,
+    "text": "Plague doctors' beak masks were stuffed with...?",
+    "alternatives": {
+      "1": "Silver coins",
+      "2": "Herbs and spices",
+      "3": "Soap",
+      "4": "Antibiotics"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "history-l2-q057",
+    "topic": "history",
+    "level": 2,
+    "text": "Average life expectancy at birth in medieval Europe?",
+    "alternatives": {
+      "1": "∿30 years",
+      "2": "∿40 years",
+      "3": "∿50 years",
+      "4": "∿60 years"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "history-l2-q058",
+    "topic": "history",
+    "level": 2,
+    "text": "Alchemists tried to turn lead into...?",
+    "alternatives": {
+      "1": "Silver",
+      "2": "Gold",
+      "3": "Glass",
+      "4": "Iron"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "history-l2-q059",
+    "topic": "history",
+    "level": 2,
+    "text": "Chinese emperors drank mercury \"elixirs\" and died. They wanted...?",
+    "alternatives": {
+      "1": "Power",
+      "2": "Beauty",
+      "3": "Eternal life",
+      "4": "Strong armies"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "history-l2-q060",
+    "topic": "history",
+    "level": 2,
+    "text": "Bran Castle is called \"Dracula's Castle\". Which ruler inspired Dracula?",
+    "alternatives": {
+      "1": "Attila the Hun",
+      "2": "Ivan the Terrible",
+      "3": "Vlad the Impaler",
+      "4": "Genghis Khan"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "history-l2-q061",
+    "topic": "history",
+    "level": 2,
+    "text": "What are Easter Island's giant stone statues called?",
+    "alternatives": {
+      "1": "Moai",
+      "2": "Totems",
+      "3": "Flagpoles",
+      "4": "Gargoyles"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "history-l2-q062",
+    "topic": "history",
+    "level": 2,
+    "text": "How many statues are on Easter Island?",
+    "alternatives": {
+      "1": "∿9,000",
+      "2": "∿100",
+      "3": "∿900",
+      "4": "12"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "history-l2-q063",
+    "topic": "history",
+    "level": 2,
+    "text": "How did Polynesians find tiny islands in the huge Pacific?",
+    "alternatives": {
+      "1": "European maps",
+      "2": "Stars, waves and birds",
+      "3": "Compasses",
+      "4": "Prophecies"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "history-l2-q064",
+    "topic": "history",
+    "level": 2,
+    "text": "How did Polynesians reach Hawaii in ∿1000 CE?",
+    "alternatives": {
+      "1": "Rowing boats only",
+      "2": "Galleons",
+      "3": "Steamships",
+      "4": "Big sailing canoes"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "history-l2-q065",
+    "topic": "history",
+    "level": 2,
+    "text": "How many medieval Europeans could read?",
+    "alternatives": {
+      "1": "∿3 in 10",
+      "2": "∿7 in 10",
+      "3": "∿1 in 10",
+      "4": "Everyone"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "history-l2-q066",
+    "topic": "history",
+    "level": 2,
+    "text": "The Aztecs used what as money?",
+    "alternatives": {
+      "1": "Cacao beans",
+      "2": "Paper notes",
+      "3": "Iron coins",
+      "4": "Feathers only"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "history-l2-q067",
+    "topic": "history",
+    "level": 2,
+    "text": "The word \"algebra\" comes from which language?",
+    "alternatives": {
+      "1": "Latin",
+      "2": "Greek",
+      "3": "Arabic",
+      "4": "Chinese"
+    },
+    "correctChoice": 3
+  },
+
+
+
+
+
+
+
+
+
+
+
+  {
+    "id": "history-l2-q068",
     "topic": "history",
     "level": 2,
     "text": "T. rex lived closer in time to humans than to...?",
@@ -529,7 +896,7 @@
     "tag": "elite"
   },
   {
-    "id": "history-l2-q0xx",
+    "id": "history-l2-q069",
     "topic": "history",
     "level": 2,
     "text": "Which country became independent in 2011?",
@@ -541,11 +908,203 @@
     },
     "correctChoice": 4,
     "tag": "elite"
+  },
+  {
+    "id": "history-l2-q070",
+    "topic": "history",
+    "level": 2,
+    "text": "A medieval cure that actually might have worked...?",
+    "alternatives": {
+      "1": "Powdered goat horns",
+      "2": "Moldy bread on wounds",
+      "3": "Boiled death cap",
+      "4": "Bloodletting for fevers"
+    },
+    "correctChoice": 2,
+    "tag": "elite"
+  },
+  {
+    "id": "history-l2-q071",
+    "topic": "history",
+    "level": 2,
+    "text": "Where were the first windmills built, ∿700 CE?",
+    "alternatives": {
+      "1": "Netherlands",
+      "2": "Denmark",
+      "3": "Persia",
+      "4": "China"
+    },
+    "correctChoice": 3,
+    "tag": "elite"
+  },
+  {
+    "id": "history-l2-q072",
+    "topic": "history",
+    "level": 2,
+    "text": "Angkor Wat in Cambodia is the world's largest...?",
+    "alternatives": {
+      "1": "Religious monument",
+      "2": "Castle",
+      "3": "Cathedral",
+      "4": "Bazaar"
+    },
+    "correctChoice": 1,
+    "tag": "elite"
+  },
+  {
+    "id": "history-l2-q073",
+    "topic": "history",
+    "level": 2,
+    "text": "When did big gaps in wealth first appear?",
+    "alternatives": {
+      "1": "Among hunter-gatherers",
+      "2": "In Ancient Rome",
+      "3": "In the Industrial Revolution",
+      "4": "After farming began"
+    },
+    "correctChoice": 4,
+    "tag": "elite"
+  },
+  {
+    "id": "history-l2-q074",
+    "topic": "history",
+    "level": 2,
+    "text": "Which of these countries was the last to grant women the right to vote?",
+    "alternatives": {
+      "1": "Iran",
+      "2": "Azerbaijan",
+      "3": "Switzerland",
+      "4": "India"
+    },
+    "correctChoice": 3,
+    "tag": "elite"
+  },
+  {
+    "id": "history-l2-q075",
+    "topic": "history",
+    "level": 2,
+    "text": "Ancient Egyptians put honey on wounds. Why did it work?",
+    "alternatives": {
+      "1": "It counteracts parasites",
+      "2": "It kills virus",
+      "3": "It kills bacteria",
+      "4": "It cools the wound"
+    },
+    "correctChoice": 3,
+    "tag": "elite"
+  },
+  {
+    "id": "history-l2-q076",
+    "topic": "history",
+    "level": 2,
+    "text": "The Toba eruption (Indonesia, ∿74,000 years ago) may have cut humanity to as few as...?",
+    "alternatives": {
+      "1": "∿50 people",
+      "2": "∿5 million people",
+      "3": "∿500,000 people",
+      "4": "∿5,000 people"
+    },
+    "correctChoice": 4,
+    "tag": "elite"
+  },
+  {
+    "id": "history-l2-q077",
+    "topic": "history",
+    "level": 2,
+    "text": "Which ancient Chinese remedy inspired a 2015 Nobel Prize malaria drug?",
+    "alternatives": {
+      "1": "Willow bark",
+      "2": "Mercury elixir",
+      "3": "Poppy milk",
+      "4": "Sweet wormwood"
+    },
+    "correctChoice": 4,
+    "tag": "elite"
+  },
+  {
+    "id": "history-l2-q078",
+    "topic": "history",
+    "level": 2,
+    "text": "Which country's troops stormed Juno Beach on D-Day?",
+    "alternatives": {
+      "1": "Australia",
+      "2": "Poland",
+      "3": "Canada",
+      "4": "New Zealand"
+    },
+    "correctChoice": 3,
+    "tag": "elite"
+  },
+  {
+    "id": "history-l2-q079",
+    "topic": "history",
+    "level": 2,
+    "text": "Fasting days banned meat. The Church ruled which animal counted as \"fish\"?",
+    "alternatives": {
+      "1": "Beaver",
+      "2": "Chicken",
+      "3": "Heron",
+      "4": "Swan"
+    },
+    "correctChoice": 1,
+    "tag": "elite"
+  },
+  {
+    "id": "history-l2-q080",
+    "topic": "history",
+    "level": 2,
+    "text": "When did the last woolly mammoth die?",
+    "alternatives": {
+      "1": "∿7,000 years ago",
+      "2": "Before the pyramids of Giza",
+      "3": "∿10,000 years ago",
+      "4": "∿4,000 years ago"
+    },
+    "correctChoice": 4,
+    "tag": "elite"
+  },
+  {
+    "id": "history-l2-q081",
+    "topic": "history",
+    "level": 2,
+    "text": "When were all Native Americans born in the US made US citizens?",
+    "alternatives": {
+      "1": "1924",
+      "2": "1900",
+      "3": "1892",
+      "4": "1865"
+    },
+    "correctChoice": 1,
+    "tag": "elite"
+  },
+  {
+    "id": "history-l2-q082",
+    "topic": "history",
+    "level": 2,
+    "text": "The \"Night Witches\" of WWII were...?",
+    "alternatives": {
+      "1": "German night fighters",
+      "2": "British women codebreakers",
+      "3": "Soviet women bomber pilots",
+      "4": "Polish resistance spies"
+    },
+    "correctChoice": 3,
+    "tag": "elite"
+  },
+  {
+    "id": "history-l2-q083",
+    "topic": "history",
+    "level": 2,
+    "text": "Which was NOT a real military army unit?",
+    "alternatives": {
+      "1": "Silver Shields",
+      "2": "Ghost Army",
+      "3": "Desert Rats",
+      "4": "Iron Wolves"
+    },
+    "correctChoice": 4,
+    "tag": "elite"
   }
-
-
-
-
 
 
 

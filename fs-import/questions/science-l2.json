@@ -759,7 +759,7 @@
       "4": "Rain"
     },
     "correctChoice": 2,
-    "type": "elite"
+    "tag": "elite"
   },
   {
     "id": "science-l2-q059",
@@ -773,7 +773,7 @@
       "4": "1024" 
     },
     "correctChoice": 2,
-    "type": "elite"
+    "tag": "elite"
   },
   {
     "id": "science-l2-q060",
@@ -787,7 +787,7 @@
       "4": "Magnet"
     },
     "correctChoice": 3,
-    "type": "elite"
+    "tag": "elite"
   },
   {
     "id": "science-l2-q061",
@@ -801,7 +801,7 @@
       "4": "How predictable radioactive decay is"
     },
     "correctChoice": 3,
-    "type": "elite"
+    "tag": "elite"
   },
   {
     "id": "science-l2-q062",
@@ -815,7 +815,7 @@
       "4": "Only valid in physics"
     },
     "correctChoice": 3,
-    "type": "elite"
+    "tag": "elite"
   },
   {
     "id": "science-l2-q063",
@@ -829,7 +829,7 @@
       "4": "Norway, 2001"
     },
     "correctChoice": 4,
-    "type": "elite"
+    "tag": "elite"
   },
   {
     "id": "science-l2-q064",
@@ -843,7 +843,7 @@
       "4": "Higher, like helium"
     },
     "correctChoice": 1,
-    "type": "elite"
+    "tag": "elite"
   },
   {
     "id": "science-l2-q065",
@@ -857,7 +857,7 @@
       "4": "1°C"
     },
     "correctChoice": 2,
-    "type": "elite"
+    "tag": "elite"
   },
   {
     "id": "science-l2-q066",
@@ -871,7 +871,7 @@
       "4": "Eclipse timing"
     },
     "correctChoice": 3,
-    "type": "elite"
+    "tag": "elite"
   },
   {
     "id": "science-l2-q067",
@@ -885,7 +885,7 @@
       "4": "Potassium-70"
     },
     "correctChoice": 1,
-    "type": "elite"
+    "tag": "elite"
   },
   {
     "id": "science-l2-q068",
@@ -899,7 +899,7 @@
       "4": "Myth, old glass was made unevenly"
     },
     "correctChoice": 4,
-    "type": "elite"
+    "tag": "elite"
   },
   {
     "id": "science-l2-q069",
@@ -913,7 +913,7 @@
       "4": "Sulfur"
     },
     "correctChoice": 3,
-    "type": "elite"
+    "tag": "elite"
   },
   {
     "id": "science-l2-q070",
@@ -927,7 +927,7 @@
       "4": "Trap insects to eat"
     },
     "correctChoice": 4,
-    "type": "elite"
+    "tag": "elite"
   },
   {
     "id": "science-l2-q071",
@@ -941,7 +941,7 @@
       "4": "Static electricity from the roots"
     },
     "correctChoice": 1,
-    "type": "elite"
+    "tag": "elite"
   }
 
 ]

@@ -701,17 +701,78 @@
     },
     "correctChoice": 4
   },
-
-
-
-
+  {
+    "id": "history-l2-q055",
+    "topic": "history",
+    "level": 2,
+    "text": "Dutch windmills became famous for helping to...?",
+    "alternatives": {
+      "1": "Water tulips",
+      "2": "Pump water off the land",
+      "3": "Grind seed",
+      "4": "Dry cloth"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "history-l2-q056",
+    "topic": "history",
+    "level": 2,
+    "text": "Who benefited the least from the first farming surpluses?",
+    "alternatives": {
+      "1": "Working farmers",
+      "2": "Rulers",
+      "3": "Priests",
+      "4": "Scribes"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "history-l2-q057",
+    "topic": "history",
+    "level": 2,
+    "text": "Crusaders marched from Europe to capture...?",
+    "alternatives": {
+      "1": "Rome",
+      "2": "Moscow",
+      "3": "Cairo",
+      "4": "Jerusalem"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "history-l2-q058",
+    "topic": "history",
+    "level": 2,
+    "text": "The Aztec capital Tenochtitlan was built on...?",
+    "alternatives": {
+      "1": "A mountain top",
+      "2": "A desert",
+      "3": "A lake",
+      "4": "A glacier"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "history-l2-q059",
+    "topic": "history",
+    "level": 2,
+    "text": "Which Pacific island is famous for stone monoliths?",
+    "alternatives": {
+      "1": "Hawaii",
+      "2": "Easter Island",
+      "3": "Skull Island",
+      "4": "Jura"
+    },
+    "correctChoice": 2
+  },
 
 
 
 
 
   {
-    "id": "history-l1-q055",
+    "id": "history-l1-q060",
     "topic": "history",
     "level": 1,
     "text": "China's first emperor was buried with a terracotta army. When?",
@@ -725,7 +786,7 @@
     "tag": "elite"
   },
   {
-    "id": "history-l1-q056",
+    "id": "history-l1-q061",
     "topic": "history",
     "level": 1,
     "text": "Humans walked from Siberia to Alaska. When?",
@@ -739,7 +800,7 @@
     "tag": "elite"
   },
   {
-    "id": "history-l1-q057",
+    "id": "history-l1-q062",
     "topic": "history",
     "level": 1,
     "text": "In WW2, Britain seriously planned a giant aircraft carrier made of...?",
@@ -753,7 +814,7 @@
     "tag": "elite"
   },
   {
-    "id": "history-l1-q058",
+    "id": "history-l1-q063",
     "topic": "history",
     "level": 1,
     "text": "Beer is roughly as old as...?",
@@ -767,7 +828,7 @@
     "tag": "elite"
   },
   {
-    "id": "history-l1-q059",
+    "id": "history-l1-q064",
     "topic": "history",
     "level": 1,
     "text": "The compass was invented in China. What was it first used for?",
@@ -781,7 +842,7 @@
     "tag": "elite"
   },
   {
-    "id": "history-l1-q060",
+    "id": "history-l1-q065",
     "topic": "history",
     "level": 1,
     "text": "What mainly made the Vikings so successful?",
@@ -795,7 +856,7 @@
     "tag": "elite"
   },
   {
-    "id": "history-l1-q061",
+    "id": "history-l1-q066",
     "topic": "history",
     "level": 1,
     "text": "What mainly made the Mongols so successful?",
@@ -809,7 +870,7 @@
     "tag": "elite"
   },
   {
-    "id": "history-l1-q062",
+    "id": "history-l1-q067",
     "topic": "history",
     "level": 1,
     "text": "The oldest known cave paintings were found in...?",
@@ -823,7 +884,7 @@
     "tag": "elite"
   },
   {
-    "id": "history-l1-q063",
+    "id": "history-l1-q068",
     "topic": "history",
     "level": 1,
     "text": "When was the Russian Revolution that ended the tsars?",
@@ -837,7 +898,7 @@
     "tag": "elite"
   },
   {
-    "id": "history-l1-q064",
+    "id": "history-l1-q069",
     "topic": "history",
     "level": 1,
     "text": "Laika was the first animal in orbit (1957). Who was first in space (1947)?",
@@ -851,7 +912,7 @@
     "tag": "elite"
   },
   {
-    "id": "history-l1-q065",
+    "id": "history-l1-q070",
     "topic": "history",
     "level": 1,
     "text": "The first plastic, celluloid (1860s), was mainly invented to replace what in billiard balls?",
@@ -865,7 +926,7 @@
     "tag": "elite"
   },
   {
-    "id": "history-l1-q066",
+    "id": "history-l1-q071",
     "topic": "history",
     "level": 1,
     "text": "Which of these words did not exist before 1944?",
@@ -879,7 +940,7 @@
     "tag": "elite"
   },
   {
-    "id": "history-l1-q067",
+    "id": "history-l1-q072",
     "topic": "history",
     "level": 1,
     "text": "Who first reached the summit of Mt. Everest (1953)?",
@@ -893,7 +954,7 @@
     "tag": "elite"
   },
   {
-    "id": "history-l1-q068",
+    "id": "history-l1-q073",
     "topic": "history",
     "level": 1,
     "text": "Which queen led a revolt against Rome in ∿60 CE?",

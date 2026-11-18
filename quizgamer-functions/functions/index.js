@@ -30,7 +30,8 @@ const QUESTIONS_PER_GAME = 10;
 const BANK_SIZES = {          // how many questions exist per topic+level
   "science-l1": 71,
   "science-l2": 71,
-  "history-l1": 68,
+  "history-l1": 73,
+  "history-l2": 83,
   // add one line per game as you import banks
 };
 
