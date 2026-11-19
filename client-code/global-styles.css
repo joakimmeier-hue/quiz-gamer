@@ -506,7 +506,7 @@ a.button-link:hover {
 .arrow-anchor-wrapper::after {
   content: '';
   position: absolute;
-  inset: -4rem;         /* extra clickable area on every side */
+  inset: -2rem;         /* extra clickable area on every side */
 }
 
 /* --------- MASK-TOP-CLONE ------------- */
