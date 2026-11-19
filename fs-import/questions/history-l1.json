@@ -78,17 +78,17 @@
     "correctChoice": 4
   },
   {
-  "id": "history-l1-q007",
-  "topic": "history",
-  "level": 1,
-  "text": "Which city is credited with the first democracy, around 508 BCE?",
-  "alternatives": {
-    "1": "Atlantis",
-    "2": "Sparta",
-    "3": "Athens",
-    "4": "Rome"
-  },
-  "correctChoice": 3
+    "id": "history-l1-q007",
+    "topic": "history",
+    "level": 1,
+    "text": "Which city is credited with the first democracy, around 508 BCE?",
+    "alternatives": {
+      "1": "Atlantis",
+      "2": "Sparta",
+      "3": "Athens",
+      "4": "Rome"
+    },
+    "correctChoice": 3
   },
   {
     "id": "history-l1-q008",
@@ -702,9 +702,9 @@
     "correctChoice": 4
   },
   {
-    "id": "history-l2-q055",
+    "id": "history-l1-q055",
     "topic": "history",
-    "level": 2,
+    "level": 1,
     "text": "Dutch windmills became famous for helping to...?",
     "alternatives": {
       "1": "Water tulips",
@@ -715,9 +715,9 @@
     "correctChoice": 2
   },
   {
-    "id": "history-l2-q056",
+    "id": "history-l1-q056",
     "topic": "history",
-    "level": 2,
+    "level": 1,
     "text": "Who benefited the least from the first farming surpluses?",
     "alternatives": {
       "1": "Working farmers",
@@ -728,9 +728,9 @@
     "correctChoice": 1
   },
   {
-    "id": "history-l2-q057",
+    "id": "history-l1-q057",
     "topic": "history",
-    "level": 2,
+    "level": 1,
     "text": "Crusaders marched from Europe to capture...?",
     "alternatives": {
       "1": "Rome",
@@ -741,9 +741,9 @@
     "correctChoice": 4
   },
   {
-    "id": "history-l2-q058",
+    "id": "history-l1-q058",
     "topic": "history",
-    "level": 2,
+    "level": 1,
     "text": "The Aztec capital Tenochtitlan was built on...?",
     "alternatives": {
       "1": "A mountain top",
@@ -754,9 +754,9 @@
     "correctChoice": 3
   },
   {
-    "id": "history-l2-q059",
+    "id": "history-l1-q059",
     "topic": "history",
-    "level": 2,
+    "level": 1,
     "text": "Which Pacific island is famous for stone monoliths?",
     "alternatives": {
       "1": "Hawaii",
