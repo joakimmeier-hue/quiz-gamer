@@ -1,4 +1,4 @@
-// TEMP DEBUG - remove later
+/* // TEMP DEBUG - remove later
 (function () {
   const box = document.createElement('div');
   box.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#000;color:#0f0;font:11px monospace;padding:4px;pointer-events:none;white-space:pre-wrap;max-height:30vh;overflow:hidden';
@@ -41,7 +41,7 @@
     }, 600);
   }, true);
 })();
-
+ */
 
 
 
@@ -1173,16 +1173,18 @@ row.addEventListener('pointerdown', function(e) {
   const currentTableRow = this.closest('.question-card');
   if (!currentTableRow) return;
 
-  const nextTableRow = currentTableRow.nextElementSibling;
-
+  // NEW: skip hidden/removed cards (display:none), so a discarded question can't become the target
+  let nextTableRow = currentTableRow.nextElementSibling;
+  while (nextTableRow && nextTableRow.getClientRects().length === 0) {
+    nextTableRow = nextTableRow.nextElementSibling;
+  }
   if (nextTableRow) {
     currentQuestionWrapper.scrollTimeout = setTimeout(() => {
       const start = window.scrollY;
       const end = nextTableRow.getBoundingClientRect().top + window.scrollY - (window.innerHeight * topOffsetPercent);
-      // NEW: finish-btn is not a question-card, so for it never scroll up, only down (or stay)
-      const aimedAtFinish = !nextTableRow.classList.contains('question-card');
-      const finalEnd = aimedAtFinish ? Math.max(start, end) : end;
-      const distance = finalEnd - start;
+      // NEW: auto-advance only ever moves down; if the target is already above the line, do nothing
+      if (end <= start) return;
+      const distance = end - start;
       let startTime = null;
 
       function easeInOut(t) {
