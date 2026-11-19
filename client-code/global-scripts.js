@@ -321,7 +321,7 @@ document.addEventListener('keydown', function(e) {
       return;
     }
   }
-  
+
   // NEW: lobby inventory is always on top, so leave the key to the inventory listener
   if (window.lobbyInvOpen) return;
   const overlays = document.querySelectorAll('.rules-overlay, .leaderboard-overlay, .about-overlay');
@@ -1101,9 +1101,7 @@ row.addEventListener('pointerdown', function(e) {
 
  if (clickedCheckbox) {
   if (wasAlreadyActive) {
-    // Snap instantly to the "off" look (no transition), reflow, then
-    // re-enable the transition and animate back in — otherwise start
-    // and end values are identical and nothing visibly moves.
+    // Snap instantly to the "off" look (no transition), reflow, then re-enable the transition and animate back in — otherwise start and end values are identical and nothing visibly moves.
     clickedCheckbox.classList.add('no-transition');
     clickedCheckbox.classList.remove('is-active');
     void clickedCheckbox.offsetWidth;
@@ -1132,7 +1130,10 @@ row.addEventListener('pointerdown', function(e) {
     currentQuestionWrapper.scrollTimeout = setTimeout(() => {
       const start = window.scrollY;
       const end = nextTableRow.getBoundingClientRect().top + window.scrollY - (window.innerHeight * topOffsetPercent);
-      const distance = end - start;
+      // NEW: finish-btn is not a question-card, so for it never scroll up, only down (or stay)
+      const aimedAtFinish = !nextTableRow.classList.contains('question-card');
+      const finalEnd = aimedAtFinish ? Math.max(start, end) : end;
+      const distance = finalEnd - start;
       let startTime = null;
 
       function easeInOut(t) {
