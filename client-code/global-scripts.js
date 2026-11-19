@@ -321,7 +321,9 @@ document.addEventListener('keydown', function(e) {
       return;
     }
   }
-
+  
+  // NEW: lobby inventory is always on top, so leave the key to the inventory listener
+  if (window.lobbyInvOpen) return;
   const overlays = document.querySelectorAll('.rules-overlay, .leaderboard-overlay, .about-overlay');
   for (const overlay of overlays) {
     const style = window.getComputedStyle(overlay);

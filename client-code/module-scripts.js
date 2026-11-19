@@ -970,7 +970,7 @@ document.addEventListener('keydown', (e) => {
     const style = window.getComputedStyle(modal);
     return style.display !== 'none' && style.visibility !== 'hidden' && modal.getClientRects().length > 0;
   });
-  if (createProfileOpen) return;
+  if (createProfileOpen) return;  
 
   // --- 1) PP-GRID-WRAPPER PRIORITY: ESC should close any open pp-grid-wrapper first ---
   if (key === 'escape') {
@@ -981,7 +981,7 @@ document.addEventListener('keydown', (e) => {
     });
     if (openGrid) {
       e.preventDefault();
-      e.stopPropagation();
+      e.stopImmediatePropagation();
       hidePPDropdown();
       return; // stop further handling — pp-grid-wrapper closed
     }
@@ -1067,6 +1067,7 @@ document.addEventListener('keydown', (e) => {
     if (key === 'escape') {
       if (window.lobbyInvOpen) {
         e.preventDefault();
+        e.stopImmediatePropagation(); // NEW
         const overlay = document.querySelector('.inventory-overlay');
         if (overlay) closeLobbyInventory(overlay);
       }
