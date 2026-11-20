@@ -636,7 +636,14 @@ a.button-link:hover {
 .leaderboard-overlay .dropdown-gamelevel {
   animation:
     fadeIn 0.2s 0.05s ease-in forwards,
-    enableClicks 0s 0.25s forwards;
+    enableClicks 0s 0.25s forwards,
+    hintBob 1.6s 0.5s ease-in-out 0;   /* 0 = never runs */
+}
+.leaderboard-overlay .dropdown-gamelevel.hint-bob {
+  animation-iteration-count: 1, 1, infinite;
+}
+.leaderboard-overlay .dropdown-gamelevel.hint-bob:hover {
+  animation-play-state: running, running, paused;
 }
 
 /*picked state = white box, like the start-page dropdown */
@@ -695,15 +702,6 @@ a.button-link:hover {
   42.9% { transform: translateY(30%); }
   57.1% { transform: translateY(0); }
   100%  { transform: translateY(0); }   /* 0.6s pause */
-}
-.leaderboard-overlay .dropdown-gamelevel.hint-bob {
-  animation:
-    fadeIn 0.2s 0.05s ease-in forwards,
-    enableClicks 0s 0.25s forwards,
-    hintBob 1.6s 0.5s ease-in-out infinite;
-}
-.leaderboard-overlay .dropdown-gamelevel.hint-bob:hover {
-  animation-play-state: paused;
 }
 
 /* Filter gets its own intrinsic track, followed by three equal dropdown tracks. */
