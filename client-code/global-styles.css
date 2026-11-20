@@ -639,14 +639,22 @@ a.button-link:hover {
 .leaderboard-overlay .dropdown-gamelevel {
   animation:
     fadeIn 0.2s 0.05s ease-in forwards,
-    enableClicks 0s 0.1s forwards,
-    hintBob 1.6s 0.5s ease-in-out 0;   /* 0 = never runs */
+    enableClicks 0s 0.25s forwards;
 }
-.leaderboard-overlay .dropdown-gamelevel.hint-bob {
-  animation-iteration-count: 1, 1, infinite;
+
+@keyframes hintBob {
+  0%    { translate: 0 0; }
+  14.3% { translate: 0 30%; }
+  28.6% { translate: 0 0; }
+  42.9% { translate: 0 30%; }
+  57.1% { translate: 0 0; }
+  100%  { translate: 0 0; }
 }
-.leaderboard-overlay .dropdown-gamelevel.hint-bob:hover {
-  animation-play-state: running, running, paused;
+.leaderboard-overlay .dropdown-gamelevel.hint-bob .dropdown-toggle-lvl {
+  animation: hintBob 1.6s 0.5s ease-in-out infinite;
+}
+.leaderboard-overlay .dropdown-gamelevel.hint-bob:hover .dropdown-toggle-lvl {
+  animation-play-state: paused;
 }
 
 /*picked state = white box, like the start-page dropdown */
@@ -695,16 +703,6 @@ a.button-link:hover {
 .lb-row-1.hide,
 .game-info {
   transition: filter 200ms ease-out;
-}
-
-/* LB HINT: first dropdown bobs until the player clicks it */
-@keyframes hintBob {
-  0%    { transform: translateY(0); }
-  14.3% { transform: translateY(30%); }
-  28.6% { transform: translateY(0); }
-  42.9% { transform: translateY(30%); }
-  57.1% { transform: translateY(0); }
-  100%  { transform: translateY(0); }   /* 0.6s pause */
 }
 
 /* Filter gets its own intrinsic track, followed by three equal dropdown tracks. */
