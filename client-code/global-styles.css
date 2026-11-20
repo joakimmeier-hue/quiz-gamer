@@ -541,7 +541,7 @@ a.button-link:hover {
   pointer-events: none;
   animation:
     fadeIn 0.2s 0.07s ease-in forwards,
-    enableClicks 0s 0.5s forwards;
+    enableClicks 0s 0.1s forwards;
 }
 @keyframes enableClicks {
   to { pointer-events: auto; }
@@ -639,7 +639,7 @@ a.button-link:hover {
 .leaderboard-overlay .dropdown-gamelevel {
   animation:
     fadeIn 0.2s 0.05s ease-in forwards,
-    enableClicks 0s 0.2s forwards,
+    enableClicks 0s 0.1s forwards,
     hintBob 1.6s 0.5s ease-in-out 0;   /* 0 = never runs */
 }
 .leaderboard-overlay .dropdown-gamelevel.hint-bob {
