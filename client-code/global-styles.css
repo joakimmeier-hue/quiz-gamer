@@ -661,7 +661,7 @@ DROPDOWNS VARIANT
   top: 100%;
   left: 0;
   right: 0;
-  z-index: 100;
+  z-index: 770;
 }
 /* Dip: make room below the row when a dropdown opens */
 .leaderboard-overlay .lb-row-1.select-lb:has(.w--open),
