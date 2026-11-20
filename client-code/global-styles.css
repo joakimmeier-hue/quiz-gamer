@@ -632,8 +632,6 @@ a.button-link:hover {
   display: none !important;
 }
 
-/* ──────────────────────────────────────────── LB ───────────────────────────────────────────────────
-DROPDOWNS VARIANT
  Snabbare animationer enbart för dropdowns inne i leaderboarden */
 .leaderboard-overlay .dropdown-gamelevel {
   animation:
@@ -655,18 +653,19 @@ DROPDOWNS VARIANT
 /* Make it Floating */
 .dropdown-gamelevel {
   position: relative; /* the absolute list anchors to this */
+  z-index: 10;
 }
 .dropdown-gamelevel .dropdown-gllist {
   position: absolute;
   top: 100%;
   left: 0;
   right: 0;
-  z-index: 770;
+  z-index: 100;
 }
 /* Dip: make room below the row when a dropdown opens */
 .leaderboard-overlay .lb-row-1.select-lb:has(.w--open),
 .row-gamestart:has(.w--open) {
-  margin-bottom: 3rem;
+  margin-bottom: 1rem;
 }
 .leaderboard-overlay .lb-row-1.select-lb,
 .row-gamestart {
