@@ -2615,6 +2615,7 @@ window.addEventListener('keydown', function(e) {
  
 // Klasser som ska skalas upp till 1.15 vid hover (stor effekt)
 const HOVER_SCALE_CLASSES = [
+    'alternative-row',
     'burger-links',
     'button',
     'button-link',
