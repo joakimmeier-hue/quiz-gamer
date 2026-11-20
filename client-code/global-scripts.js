@@ -431,9 +431,11 @@ function updateTierLocks(playerLevel = 1) {
 
     if (lockImg) {
       if (playerLevel >= requiredLevel) {
-        lockImg.style.display = 'none'; // Unlocked
+        lockImg.style.opacity = '0';           // Unlocked: invisible but still takes space
+        lockImg.style.visibility = 'hidden';
       } else {
-        lockImg.style.display = '';     // Locked (default state)
+        lockImg.style.opacity = '';            // Locked: back to the default look
+        lockImg.style.visibility = '';
       }
     }
   });
