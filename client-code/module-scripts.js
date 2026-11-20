@@ -2815,7 +2815,7 @@ if (location.hash === '#leaderboard') {
       // NEW: bob every visible dropdown that has not been picked yet
       const visible = { type: true, topic: showTopic, tier: showTier };
       Object.entries(roots).forEach(([k, dd]) => {
-        dd.classList.toggle('hint-bob', visible[k] && !dd.classList.contains('is-picked'));
+        dd.classList.toggle('hint-bob', visible[k] && !dd.classList.contains('is-picked') && !dd.dataset.hinted);
       });
       const id = boardId();
       if (id) loadBoard(id);
@@ -2826,7 +2826,10 @@ if (location.hash === '#leaderboard') {
       const toggle = dd.querySelector('.dropdown-toggle-lvl');
       const list = dd.querySelector('.dropdown-gllist');
       if (!toggle || !list) return;
-            dd.addEventListener('click', () => dd.classList.remove('hint-bob'));
+            dd.addEventListener('click', () => {
+            dd.dataset.hinted = '1';
+            dd.classList.remove('hint-bob');
+          }, true);
 
       toggle.addEventListener('click', () => {
         if (typeof playSFX === 'function') playSFX(toggle.classList.contains('w--open') ? 'back' : 'select');
