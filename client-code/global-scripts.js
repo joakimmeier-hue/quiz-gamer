@@ -810,6 +810,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // SCENARIO 2: Player level too low
         const playerLevel = window.currentUserData?.level || 1;
         const requiredLevel = TIER_REQUIREMENTS[selectedTier] || 1;
+           option.classList.toggle('is-unlocked', playerLevel >= requiredLevel); // NEW: lets CSS know this tier is open
         if (playerLevel < requiredLevel) {
           showGlobalInfo(INFO_MESSAGES.LEVEL_TOO_LOW(requiredLevel));
           return;

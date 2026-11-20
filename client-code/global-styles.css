@@ -623,6 +623,15 @@ a.button-link:hover {
               transform 0.25s 0.1s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
+/* Selected tier shown at the top (closed state): centered, no lock slot */
+.dropdown-toggle-lvl > .game-level-option {
+  justify-content: center;
+}
+/* Only unlocked tiers drop the invisible lock slot, so the text is truly centered */
+.dropdown-toggle-lvl > .game-level-option.is-unlocked .lock-game {
+  display: none;
+}
+
 /* ──────────────────────────────────────────── LB ───────────────────────────────────────────────────
 DROPDOWNS VARIANT
  Snabbare animationer enbart för dropdowns inne i leaderboarden */
