@@ -627,8 +627,8 @@ a.button-link:hover {
 .dropdown-toggle-lvl > .game-level-option {
   justify-content: center;
 }
-/* Only unlocked tiers drop the invisible lock slot, so the text is truly centered */
-.dropdown-toggle-lvl > .game-level-option.is-unlocked .lock-game {
+/* Unlocked tier (T1 and any later one) selected at the top: no lock slot */
+.dropdown-toggle-lvl > .game-level-option .lock-game.is-open {
   display: none !important;
 }
 

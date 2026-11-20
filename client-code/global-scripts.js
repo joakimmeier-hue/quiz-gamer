@@ -429,14 +429,11 @@ function updateTierLocks(playerLevel = 1) {
     // Find the lock image inside this row or check data-locked-tier
     const lockImg = option.querySelector('.lock-game, [data-locked-tier]');
 
-    if (lockImg) {
-      if (playerLevel >= requiredLevel) {
-        lockImg.style.opacity = '0';           // Unlocked: invisible but still takes space
-        lockImg.style.visibility = 'hidden';
-      } else {
-        lockImg.style.opacity = '';            // Locked: back to the default look
-        lockImg.style.visibility = '';
-      }
+        if (lockImg) {
+      const unlocked = playerLevel >= requiredLevel;
+      lockImg.style.opacity = unlocked ? '0' : '';
+      lockImg.style.pointerEvents = unlocked ? 'none' : '';
+      lockImg.classList.toggle('is-open', unlocked); // NEW: marks an unlocked tier's lock for CSS
     }
   });
 
@@ -810,7 +807,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // SCENARIO 2: Player level too low
         const playerLevel = window.currentUserData?.level || 1;
         const requiredLevel = TIER_REQUIREMENTS[selectedTier] || 1;
-           option.classList.toggle('is-unlocked', playerLevel >= requiredLevel); // NEW: lets CSS know this tier is open
         if (playerLevel < requiredLevel) {
           showGlobalInfo(INFO_MESSAGES.LEVEL_TOO_LOW(requiredLevel));
           return;
