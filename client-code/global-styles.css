@@ -687,17 +687,30 @@ a.button-link:hover {
   right: 0;
   z-index: 100;
 }
+/* Dip: make room below the row when a dropdown opens */
+.leaderboard-overlay .lb-row-1.select-lb:has(.w--open),
+.row-gamestart:has(.w--open) {
+  margin-bottom: 1rem;
+}
+.leaderboard-overlay .lb-row-1.select-lb,
+.row-gamestart {
+  transition: margin-bottom 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
 
-
-
-
-
-
-
-
-
-
-
+/* Blur */
+.leaderboard-overlay:has(.select-lb .w--open) .lb-row-1.blur,
+.leaderboard-overlay:has(.select-lb .w--open) .lb-row-1.hide,
+.vertical-center:has(.dropdown-gllist.w--open) .game-info {
+  -webkit-filter: blur(5px);
+  filter: blur(5px);
+  transition: filter 100ms ease-in;
+}
+/* Soft return when the menu closes (keep your existing rule, add .game-info) */
+.lb-row-1.blur,
+.lb-row-1.hide,
+.game-info {
+  transition: filter 200ms ease-out;
+}
 
 /* Filter gets its own intrinsic track, followed by three equal dropdown tracks. */
 .leaderboard-overlay .lb-row-1.select-lb {
