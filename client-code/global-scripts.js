@@ -2615,7 +2615,6 @@ window.addEventListener('keydown', function(e) {
  
 // Klasser som ska skalas upp till 1.15 vid hover (stor effekt)
 const HOVER_SCALE_CLASSES = [
-    'alternative-row',
     'burger-links',
     'button',
     'button-link',
@@ -2654,8 +2653,10 @@ const HOVER_SCALE_CLASSES = [
 
 // ---- Small hover scale ---  1.08
 const HOVER_SCALE_CLASSES_SM = [
-    'wtc-wrapper',
-    'login-modal-btn'
+    'alternative-row',
+    'login-modal-btn',
+    'wtc-wrapper'
+    
 ];
 // Hantera klick på wtc-wrapper för att trigga Y-rörelsen och nollställa hover
 document.addEventListener('DOMContentLoaded', () => {
