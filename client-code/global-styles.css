@@ -702,6 +702,10 @@ a.button-link:hover {
     enableClicks 0s 0.25s forwards,
     hintBob 1.6s 0.5s ease-in-out infinite;
 }
+.leaderboard-overlay .dropdown-gamelevel.hint-bob:hover {
+  animation-play-state: paused;
+}
+
 /* Filter gets its own intrinsic track, followed by three equal dropdown tracks. */
 .leaderboard-overlay .lb-row-1.select-lb {
   grid-template-columns: auto repeat(3, minmax(0, 1fr));

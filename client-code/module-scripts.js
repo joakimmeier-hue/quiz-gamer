@@ -2826,7 +2826,7 @@ if (location.hash === '#leaderboard') {
       const toggle = dd.querySelector('.dropdown-toggle-lvl');
       const list = dd.querySelector('.dropdown-gllist');
       if (!toggle || !list) return;
-            dd.addEventListener('pointerdown', () => dd.classList.remove('hint-bob'));
+            dd.addEventListener('click', () => dd.classList.remove('hint-bob'));
 
       toggle.addEventListener('click', () => {
         if (typeof playSFX === 'function') playSFX(toggle.classList.contains('w--open') ? 'back' : 'select');
