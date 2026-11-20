@@ -629,7 +629,7 @@ a.button-link:hover {
 }
 /* Only unlocked tiers drop the invisible lock slot, so the text is truly centered */
 .dropdown-toggle-lvl > .game-level-option.is-unlocked .lock-game {
-  display: none;
+  display: none !important;
 }
 
 /* ──────────────────────────────────────────── LB ───────────────────────────────────────────────────
