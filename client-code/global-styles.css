@@ -365,7 +365,7 @@ body .games-grid-clip.is-skewed {
 /* ───────── WTC-WRAPPER, welcome-text-container ───────── */
 /* ── HOVER-SCALE SYSTEM SUBTIL (1.08) — Smoother transition for wtc-wrapper ── */
 .js-hover-scale-sm {
-    transition: scale 0.15s cubic-bezier(0.25, 1, 0.5, 1);
+    transition: scale 0.08s cubic-bezier(0.25, 1, 0.5, 1);
 }
 .js-hover-scale-sm.is-hovered {
     scale: 1.08;
@@ -390,7 +390,7 @@ body .games-grid-clip.is-skewed {
 }
 /* Touch/penna: skalar UPP (blow up), som tidigare */
 .js-press-scale.is-pressed-up {
-  scale: 1.2;
+  scale: 1.17;
 }
 /* Mus: skalar NER istället - klassisk "button press"-känsla. Justera värdet efter smak */
 .js-press-scale.is-pressed-down {
