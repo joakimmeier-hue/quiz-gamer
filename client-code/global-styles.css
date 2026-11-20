@@ -550,6 +550,11 @@ a.button-link:hover {
   to { opacity: 1; }
 }
 
+.dropdown-gllist .game-level-option *,
+.dropdown-toggle-lvl .gamelevel-btn * {
+  pointer-events: none;
+}
+
 .mask-top .dropdown-gamelevel {
   opacity: 1 !important;
   pointer-events: none !important;

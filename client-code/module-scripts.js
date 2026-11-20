@@ -2831,10 +2831,12 @@ if (location.hash === '#leaderboard') {
       toggle.addEventListener('click', () => {
         if (typeof playSFX === 'function') playSFX(toggle.classList.contains('w--open') ? 'back' : 'select');
       });
-            
+
       // Click handler
       list.addEventListener('click', (e) => {
         const row = e.target.closest('.game-level-option');
+          console.log('LIST CLICK', e.target.className, 'row:', !!row, 'inList:', row && list.contains(row), 'selected:', row && optionIsSelected(kind, row));
+
         if (!row || !list.contains(row)) return;
         if (optionIsSelected(kind, row)) return;
         e.preventDefault();
