@@ -540,7 +540,7 @@ a.button-link:hover {
   opacity: 0;
   pointer-events: none;
   animation:
-    fadeIn 0.3s 0.1s ease-in forwards,
+    fadeIn 0.2s 0.07s ease-in forwards,
     enableClicks 0s 0.5s forwards;
 }
 @keyframes enableClicks {
