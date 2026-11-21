@@ -2582,7 +2582,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ── GLOBAL CLICK DELAY prevents double-clicking and spamming buttons  ────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+/* document.addEventListener('DOMContentLoaded', () => {
   let locked = false;
   document.addEventListener('click', (e) => {
     if (e.target.closest('a, input, textarea, select, .pp-dropdown, .i-closer-game, .button.i-lobby-back, .profile-pic-option, .pp-grid-wrapper')) return;
@@ -2591,7 +2591,7 @@ document.addEventListener('DOMContentLoaded', () => {
     locked = true;
     setTimeout(() => { locked = false; }, 500);
   }, true);
-});
+}); */
 
 // ── GLOBALT STOPP FÖR STANDARD TAB-FOKUS ────────────────────────────
 window.addEventListener('keydown', function(e) {
