@@ -2756,8 +2756,8 @@ if (location.hash === '#leaderboard') {
         const ownIndex = ownEntry ? sortedEntries.indexOf(ownEntry) : -1;
         myOutside = me || (ownEntry ? { ...ownEntry, rank: ownIndex + 1 } : null);
         const frag = document.createDocumentFragment();
-        sortedEntries.forEach((e, i) => {
-          if (e.isMe) return;
+          sortedEntries.forEach((e, i) => {
+          if (e.isMe && i >= 100) return; // only players at #101+ are lifted out; "Find me!" appends them below
           frag.appendChild(buildRow(e, i + 1));
         });
         rowList.appendChild(frag);
@@ -2786,12 +2786,21 @@ if (location.hash === '#leaderboard') {
 
       // "Find me!" -Handler: highlight and scroll to the player's own row.
       // Rows are re-created on every board change, so the highlight resets itself.
+            // Center a row inside .lb-scroll only, so the list scroll and the page scroll can't fight each other
+      const centerRowInList = (row, behavior = 'smooth') => {
+        const listRect = rowList.getBoundingClientRect();
+        const rowRect = row.getBoundingClientRect();
+        const delta = (rowRect.top - listRect.top) - (listRect.height - rowRect.height) / 2;
+        rowList.scrollTo({ top: rowList.scrollTop + delta, behavior });
+      };
       const findMeBtn = overlay.querySelector('.find-me-btn');
       if (findMeBtn) {
         findMeBtn.addEventListener('click', (e) => {
           e.preventDefault();
           let myRow = rowList && rowList.querySelector('[data-me]');
+          let justCreated = false;
           if (!myRow && myOutside && rowList && rowTemplate) {
+            justCreated = true;
             const rank = Number.isInteger(myOutside.rank) && myOutside.rank > 0
               ? myOutside.rank
               : '100+';
@@ -2807,7 +2816,13 @@ if (location.hash === '#leaderboard') {
 
           if (typeof playSFX === 'function') playSFX('select');
           myRow.classList.add('is-highlight');
-          myRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          requestAnimationFrame(() => centerRowInList(myRow));
+          if (justCreated) {
+            // a freshly added row can shift when the avatar loads, so re-center once it settles
+            const img = myRow.querySelector('img');
+            if (img && !img.complete) img.addEventListener('load', () => centerRowInList(myRow), { once: true });
+            setTimeout(() => centerRowInList(myRow), 400);
+          }
         });
       }
 
