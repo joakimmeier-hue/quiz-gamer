@@ -2589,7 +2589,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e._synthetic) return; 
     if (locked) { e.stopPropagation(); e.preventDefault(); return; }
     locked = true;
-    setTimeout(() => { locked = false; }, 200);
+    setTimeout(() => { locked = false; }, 250);
   }, true);
 });
 
