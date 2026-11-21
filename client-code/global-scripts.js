@@ -2582,16 +2582,16 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ── GLOBAL CLICK DELAY prevents double-clicking and spamming buttons  ────────────────────────────────────────────────
-/* document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
   let locked = false;
   document.addEventListener('click', (e) => {
-    if (e.target.closest('a, input, textarea, select, .pp-dropdown, .i-closer-game, .button.i-lobby-back, .profile-pic-option, .pp-grid-wrapper')) return;
+    if (e.target.closest('a, input, textarea, select, .pp-dropdown, .i-closer-game, .button.i-lobby-back, .profile-pic-option, .pp-grid-wrapper .dropdown-gamelevel')) return;
     if (e._synthetic) return; 
     if (locked) { e.stopPropagation(); e.preventDefault(); return; }
     locked = true;
-    setTimeout(() => { locked = false; }, 500);
+    setTimeout(() => { locked = false; }, 200);
   }, true);
-}); */
+});
 
 // ── GLOBALT STOPP FÖR STANDARD TAB-FOKUS ────────────────────────────
 window.addEventListener('keydown', function(e) {
@@ -2631,10 +2631,10 @@ const HOVER_SCALE_CLASSES = [
     'fat-cat-logo',
     'find-me-btn',
     'finish-btn',
-   /*  'game-level-option',
+    'game-level-option',
     'game-start-btn',
     'game-start-btn-gma',
-    'gamelevel-btn', */
+    'gamelevel-btn',
     'games-link-block',
     'inv-arrow-lobby',
     'inventory-btn-wrapper',
@@ -2685,10 +2685,10 @@ const PRESS_SCALE_CLASSES = [
     'fat-cat-logo',
     'find-me-btn',
     'finish-btn',
-    /* 'game-level-option',
+    'game-level-option',
     'game-start-btn',
     'game-start-btn-gma',
-    'gamelevel-btn', */
+    'gamelevel-btn',
     'games-link-block',
     'inv-arrow-lobby',
     'inventory-btn-wrapper',
