@@ -1634,18 +1634,23 @@ const RATING_URLS = { // ── RATINGS DATA ───────────�
   5: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3a729f5fafbcaa9390_1e843ebf46507e94a1d413a8073bb7d5_game-rating-5.json",
  };
 
-// 'topic-l LEVEL': { diff, bonus (1–5), questions, time }
+// ADD TOPICS HERE FOR GAMESTART 'topic-l LEVEL': { diff, bonus (1–5), questions, time }
 const GAME_CONFIG = {
   // Science
-  "science-l1": { diff: 2, bonus: 2, questions: 10, time: "none" },
+  "science-l1": { diff: 2, bonus: 1, questions: 10, time: "none" },
   "science-l2": { diff: 3, bonus: 3, questions: 10, time: "none" },
   "science-l3": { diff: 4, bonus: 3, questions: 10, time: "none" },
   "science-l4": { diff: 5, bonus: 2, questions: 10, time: "none" },
   // History
-  "history-l1": { diff: 1, bonus: 2, questions: 10, time: "none" },
+  "history-l1": { diff: 2, bonus: 2, questions: 10, time: "none" },
   "history-l2": { diff: 2, bonus: 3, questions: 10, time: "none" },
   "history-l3": { diff: 3, bonus: 3, questions: 10, time: "none" },
   "history-l4": { diff: 4, bonus: 4, questions: 10, time: "none" },
+  // Movies
+  "movies-l1": { diff: 1, bonus: 3, questions: 10, time: "none" },
+  "movies-l2": { diff: 2, bonus: 4, questions: 10, time: "none" },
+  "movies-l3": { diff: 2, bonus: 5, questions: 10, time: "none" },
+  "movies-l4": { diff: 3, bonus: 5, questions: 10, time: "none" },
   // ...movies, puzzle same pattern
 };
 

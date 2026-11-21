@@ -2581,7 +2581,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('resize', () => { if (hasClicked) applyMinWidth(); });
 });
 
-// ── GLOBAL CLICK DELAY prevents double-clicking and spamming buttons  ────────────────────────────────────────────────
+// ─────────────────── GLOBAL CLICK DELAY prevents double-clicking and spamming buttons  ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   let locked = false;
   document.addEventListener('click', (e) => {
