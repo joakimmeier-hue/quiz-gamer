@@ -2713,15 +2713,19 @@ function initHoverScale(classList, scaleClass) {
         document.querySelectorAll('.' + cls).forEach(el => {
             el.classList.add(scaleClass);
 
-            el.addEventListener('mouseenter', () => {
-                if (!el.classList.contains('is-click-blocked')) {
-                    el.classList.add('is-hovered');
-                }
-            });
+              el.addEventListener('mouseenter', () => {
+                  clearTimeout(el._leaveT);
+                  if (!el.classList.contains('is-click-blocked')) {
+                      el.classList.add('is-hovered');
+                  }
+              });
 
-            el.addEventListener('mouseleave', () => {
-                el.classList.remove('is-hovered');
-                el.classList.remove('is-click-blocked');
+              el.addEventListener('mouseleave', () => {
+              clearTimeout(el._leaveT);
+              el._leaveT = setTimeout(() => {
+                  el.classList.remove('is-hovered');
+                  el.classList.remove('is-click-blocked');
+              }, 60);
             });
         });
     });
@@ -2729,56 +2733,58 @@ function initHoverScale(classList, scaleClass) {
 // Hur länge (minst) press-effekten ska synas, även vid ett blixtsnabbt klick
 const MIN_PRESS_VISIBLE_MS = 140;
 function initPressScale(classList) {
-    classList.forEach(cls => {
-        document.querySelectorAll('.' + cls).forEach(el => {
-            el.classList.add('js-press-scale');
-            let pressStartTime = 0;
-            let releaseTimeoutId = null;
-            el.addEventListener('pointerdown', (e) => {
-                // Om ett tidigare, väntande release inte hunnit köra - avbryt det, ny press har börjat
-                if (releaseTimeoutId) {
-                    clearTimeout(releaseTimeoutId);
-                    releaseTimeoutId = null;
-                }
-                pressStartTime = performance.now();
-                if (e.pointerType === 'mouse') {
-                    el.classList.add('is-pressed-down'); // Mus -> skala NER
-                } else {
-                    el.classList.add('is-pressed-up');   // Touch/penna -> skala UPP
-                }
-            });
-            // Den faktiska återställningen - körs antingen direkt eller efter fördröjning
-            const CLICK_BLOCK_DURATION_MS = 350; // safety auto-clear window
+  classList.forEach(cls => {
+    document.querySelectorAll('.' + cls).forEach(el => {
+          el.classList.add('js-press-scale');
+          let pressStartTime = 0;
+          let releaseTimeoutId = null;
+          el.addEventListener('pointerdown', (e) => {
+              // Om ett tidigare, väntande release inte hunnit köra - avbryt det, ny press har börjat
+              if (releaseTimeoutId) {
+                  clearTimeout(releaseTimeoutId);
+                  releaseTimeoutId = null;
+              }
+              pressStartTime = performance.now();
+              if (e.pointerType === 'mouse') {
+                  el.classList.add('is-pressed-down'); // Mus -> skala NER
+              } else {
+                  el.classList.add('is-pressed-up');   // Touch/penna -> skala UPP
+              }
+          });
+          // Den faktiska återställningen - körs antingen direkt eller efter fördröjning
+          const CLICK_BLOCK_DURATION_MS = 350; // safety auto-clear window
 
-            const doRelease = () => {
-            el.classList.remove('is-pressed-down');
-            el.classList.remove('is-pressed-up');
-            el.classList.remove('is-hovered');
-            el.classList.add('is-click-blocked');
-            releaseTimeoutId = null;
+          const doRelease = () => {
+          el.classList.remove('is-pressed-down');
+          el.classList.remove('is-pressed-up');
+          el.classList.remove('is-hovered');
+          el.classList.add('is-click-blocked');
+          releaseTimeoutId = null;
 
-            // NEW: guarantee this clears itself even if mouseleave never fires
-            if (el._clickBlockTimeout) clearTimeout(el._clickBlockTimeout);
-            el._clickBlockTimeout = setTimeout(() => {
-                el.classList.remove('is-click-blocked');
+          // NEW: guarantee this clears itself even if mouseleave never fires
+          if (el._clickBlockTimeout) clearTimeout(el._clickBlockTimeout);
+              el._clickBlockTimeout = setTimeout(() => {
+              el.classList.remove('is-click-blocked');
             }, CLICK_BLOCK_DURATION_MS);
-};
-            const release = () => {
-                const elapsed = performance.now() - pressStartTime;
-                const remaining = MIN_PRESS_VISIBLE_MS - elapsed;
-                if (remaining > 0) {
-                    // Trycket var kortare än minimitiden - vänta ut resten innan vi återställer
-                    releaseTimeoutId = setTimeout(doRelease, remaining);
-                } else {
-                    // Trycket varade redan längre än minimitiden - återställ direkt
-                    doRelease();
-                }
-            };
+          };
+          const release = () => {
+              const elapsed = performance.now() - pressStartTime;
+              const remaining = MIN_PRESS_VISIBLE_MS - elapsed;
+              if (remaining > 0) {
+                  // Trycket var kortare än minimitiden - vänta ut resten innan vi återställer
+                  releaseTimeoutId = setTimeout(doRelease, remaining);
+              } else {
+                  // Trycket varade redan längre än minimitiden - återställ direkt
+                  doRelease();
+              }
+          };
             el.addEventListener('pointerup', release);
             el.addEventListener('pointercancel', release);
-            el.addEventListener('pointerleave', release);
-        });
+            el.addEventListener('pointerleave', () => {
+        if (el.classList.contains('is-pressed-down') || el.classList.contains('is-pressed-up')) release();
+      });
     });
+  });
 }
 document.addEventListener('DOMContentLoaded', () => {
     if (supportsRealHover) {
