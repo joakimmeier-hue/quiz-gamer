@@ -942,6 +942,19 @@
     },
     "correctChoice": 1,
     "tag": "elite"
+  },
+  {
+    "id": "science-l2-q072",
+    "topic": "science",
+    "level": 2,
+    "text": "Researchers studying long-lived people made circles on a map. Why are these areas called Blue Zones?",
+    "alternatives": {
+      "1": "The blue pen happened to be at hand",
+      "2": "It's the main color of Doctors Without Borders",
+      "3": "Mitochondria are blue",
+      "4": "The lab samples turned bluish"
+    },
+    "correctChoice": 1,
+    "tag": "elite"
   }
-
 ]

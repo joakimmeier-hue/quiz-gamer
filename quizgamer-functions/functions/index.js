@@ -25,18 +25,44 @@ const TIER_MULTIPLIERS = {
 
 const NO_LEADERBOARD_TOPICS = ["gma"];
 const QUESTION_WEIGHTS = { normal: 1, elite: 5 };
-// at the top of the file, next to TIER_MULTIPLIERS
 const QUESTIONS_PER_GAME = 10;
-const BANK_SIZES = {          // how many questions exist per topic+level
+const eliteCache = new Map(); // gameId -> { t, ids }
+const ELITE_CACHE_MS = 5 * 60 * 1000;
+
+// Step 1-5: the number on the lottie boxes AND the real time penalty
+const TIME_PENALTY_BY_STEP = {
+  1: 0.50,
+  2: 0.55,
+  3: 0.60,
+  4: 0.65,
+  5: 0.70,
+};
+
+const GAMES = {
+  "science-l1": { diff: 2, penaltyStep: 1, questions: 10, timeLimit: "none", bank: 71 },
+  "science-l2": { diff: 3, penaltyStep: 3, questions: 10, timeLimit: "none", bank: 72 },
+  "science-l3": { diff: 4, penaltyStep: 3, questions: 10, timeLimit: "none", bank: 0 },
+  "science-l4": { diff: 5, penaltyStep: 2, questions: 10, timeLimit: "none", bank: 0 },
+// History
+  "history-l1": { diff: 2, penaltyStep: 2, questions: 10, timeLimit: "none", bank: 73 },
+  "history-l2": { diff: 2, penaltyStep: 2, questions: 10, timeLimit: "none", bank: 83 },
+  "history-l3": { diff: 3, penaltyStep: 3, questions: 10, timeLimit: "none", bank: 0 },
+  "history-l4": { diff: 4, penaltyStep: 4, questions: 10, timeLimit: "none", bank: 0 },
+// Movies
+  "movies-l1": { diff: 1, penaltyStep: 3, questions: 10, timeLimit: "none", bank: 0 },
+  "movies-l2": { diff: 2, penaltyStep: 3, questions: 10, timeLimit: "none", bank: 0 },
+  "movies-l3": { diff: 2, penaltyStep: 4, questions: 10, timeLimit: "none", bank: 0 },
+  "movies-l4": { diff: 3, penaltyStep: 5, questions: 10, timeLimit: "none", bank: 0 },
+/* ..... */
+};
+
+/* const BANK_SIZES = {          // how many questions exist per topic+level
   "science-l1": 71,
-  "science-l2": 71,
+  "science-l2": 72,
   "history-l1": 73,
   "history-l2": 83,
   // add one line per game as you import banks
-};
-
-const eliteCache = new Map(); // gameId -> { t, ids }
-const ELITE_CACHE_MS = 5 * 60 * 1000;
+}; */
 
 async function getEliteIds(gameId, topic, level) {
   const hit = eliteCache.get(gameId);
@@ -61,7 +87,7 @@ function shuffle(arr) {
 }
 
 async function pickQuestionIds(gameId, topic, level) {
-  const size = BANK_SIZES[gameId];
+  const size = GAMES[gameId]?.bank;
   if (!size) return null;     // game without a bank (e.g. the 20 static GMA questions)
   const allIds = Array.from({ length: size }, (_, i) => `${gameId}-q${String(i + 1).padStart(3, "0")}`);
   const eliteSet = await getEliteIds(gameId, topic, level);
@@ -114,13 +140,13 @@ async function isUsernameTaken(rawName, uid) {
   return snap.docs.some(d => d.id !== uid);
 }
 
-// ── SCORING FORMULAS ──────────────────────────────────────────────
-function calcFinalScore(correctAnswers, weightedCorrect, seconds, previousAttempts, totalQuestions, tier) {
+// *_*_*_*_*─────────────────────────────────────────── SCORING FORMULAS ───────────────────────────────────────────────────────────*_*_*_*_*
+function calcFinalScore(correctAnswers, weightedCorrect, seconds, previousAttempts, totalQuestions, tier, timePenalty) {
   if (correctAnswers === 0) return 0;
-  const base = ((weightedCorrect * 1000) / (seconds / 2)) * ((correctAnswers / totalQuestions) ** BONUS_EXPONENT);
+  const base = ((weightedCorrect * 1000) / (seconds * timePenalty)) * ((correctAnswers / totalQuestions) ** BONUS_EXPONENT);
   // previousAttempts starts at 0 for a first-ever attempt.
   // attemptDivisor must never go below 1, or the "penalty" would boost the score.
-   const attemptMultiplier = ATTEMPT_FLOOR + (1 - ATTEMPT_FLOOR) / (1 + previousAttempts * ATTEMPT_RATE);
+  const attemptMultiplier = ATTEMPT_FLOOR + (1 - ATTEMPT_FLOOR) / (1 + previousAttempts * ATTEMPT_RATE);
   const penalized = base * attemptMultiplier;
 
   const finalRaw = penalized * tierMultiplier(tier); // penalty first, tier bonus last
@@ -129,9 +155,9 @@ function calcFinalScore(correctAnswers, weightedCorrect, seconds, previousAttemp
   return Math.max(rounded, 1);
 }
 
-function calcUnlimitedScore(correctAnswers, weightedCorrect, seconds, totalQuestions, tier) {
+function calcUnlimitedScore(correctAnswers, weightedCorrect, seconds, totalQuestions, tier, timePenalty) {
   if (correctAnswers === 0) return 0;
-  const raw = ((weightedCorrect * 1000) / (seconds / 2)) * ((correctAnswers / totalQuestions) ** BONUS_EXPONENT) * tierMultiplier(tier);
+  const raw = ((weightedCorrect * 1000) / (seconds * timePenalty)) * ((correctAnswers / totalQuestions) ** BONUS_EXPONENT) * tierMultiplier(tier);
   return Math.max(Math.ceil(raw), 1);
 }
 
@@ -269,7 +295,16 @@ async function renameInBoards(uid, oldName, newName) {
   await Promise.all(lbSnap.docs.map((d) => d.ref.update({ topUsername: newName })));
 }
 
-// ────────── CREATE PROFILE (first-time only) ──────────────────────────────
+exports.getGames = onCall(async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "You must be signed in.");
+  const out = {};
+  for (const [id, g] of Object.entries(GAMES)) {
+    out[id] = { diff: g.diff, penaltyStep: g.penaltyStep, questions: g.questions, timeLimit: g.timeLimit };
+  }
+  return out;
+});
+
+// ───────────── CREATE PROFILE (first-time only) ──────────────────────────────
 exports.completeProfile = onCall(async (request) => {
   console.log("completeProfile started");
   if (!request.auth) throw new HttpsError("unauthenticated", "You must be signed in.");
@@ -314,7 +349,7 @@ exports.completeProfile = onCall(async (request) => {
   return { success: true, username: rawName };
 });
 
-// ── CHANGE USERNAME (one-time) ─────────────────────────────────────
+// ─────────── CHANGE USERNAME (one-time) ─────────────────────────────────────
 exports.changeUsername = onCall(async (request) => {
   if (!request.auth) throw new HttpsError("unauthenticated", "You must be signed in.");
   const uid = request.auth.uid;
@@ -378,7 +413,7 @@ exports.getGameInfo = onCall(async (request) => {
   return { lbHighscore };
 });
 
-// ── START GAME SESSION (transactional + idempotent + level gated) ─────
+// ────────────── START GAME SESSION (transactional + idempotent + level gated) ─────
 exports.startGame = onCall(async (request) => {
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "You must be signed in.");
@@ -465,7 +500,7 @@ exports.startGame = onCall(async (request) => {
   return questions ? { sessionId, questions } : { sessionId };
 });
 
-// ── GRADE GAME — works for any topic+level ──────────────────────────
+// ─────────── GRADE GAME — works for any topic+level ──────────────────────────
 exports.gradeGame = onCall(async (request) => {
   // 1. Require authentication — never trust an anonymous caller
   if (!request.auth) {
@@ -513,7 +548,7 @@ exports.gradeGame = onCall(async (request) => {
   const totalQuestions = Array.isArray(allowedIds) ? allowedIds.length : answers.length;
 
 
-    // ── TIMER SYNC & SECURITY GATE ────────────────────────────────────
+    // ─────────── TIMER SYNC & SECURITY GATE ────────────────────────────────────
   const startedAt = sessionData.startedAt.toDate();
   const rawServerSecs = Math.max((Date.now() - startedAt.getTime()) / 1000, 0.001);
 
@@ -541,6 +576,7 @@ verifiedTimeSecs = Math.max(verifiedTimeSecs, answeredCount * MIN_SECS_PER_ANSWE
   const totalSecondsInt = Math.floor(verifiedTimeSecs);
   const timeStr = `${String(Math.floor(totalSecondsInt / 60)).padStart(2, "0")}:${String(totalSecondsInt % 60).padStart(2, "0")}`;
   const gameId = `${topic}-l${level}`;
+  const timePenalty = TIME_PENALTY_BY_STEP[GAMES[gameId]?.penaltyStep] ?? 0.5;
 
   // 2. Look up question docs and answer keys for server-side grading
   const questionIds = answers.map((a) => a.questionId);
@@ -580,8 +616,8 @@ verifiedTimeSecs = Math.max(verifiedTimeSecs, answeredCount * MIN_SECS_PER_ANSWE
   const previousAttempts = Math.max(attemptCountStored - 1, 0);
 
   // Scores now use verifiedTimeSecs
-  const finalScore = calcFinalScore(correctCount, weightedCorrect, verifiedTimeSecs, previousAttempts, totalQuestions, level);
-  const unlimitedScore = calcUnlimitedScore(correctCount, weightedCorrect, verifiedTimeSecs, totalQuestions, level);
+  const finalScore = calcFinalScore(correctCount, weightedCorrect, verifiedTimeSecs, previousAttempts, totalQuestions, level, timePenalty);
+  const unlimitedScore = calcUnlimitedScore(correctCount, weightedCorrect, verifiedTimeSecs, totalQuestions, level, timePenalty);
 
   const newAttemptCount = attemptCountStored || 1;
   const previousBest = attemptSnap.exists ? attemptSnap.data().bestScore || 0 : 0;
@@ -717,7 +753,7 @@ verifiedTimeSecs = Math.max(verifiedTimeSecs, answeredCount * MIN_SECS_PER_ANSWE
   };
 });
 
-//  ── SCHEDULED: RECOMPUTE GLOBAL RANKS ───────────────────────────────
+//  ─────────── SCHEDULED: RECOMPUTE GLOBAL RANKS ───────────────────────────────
 exports.recomputeRanks = onSchedule("every 15 minutes", async () => {
   const usersSnap = await db.collection("users")
     .orderBy("totalScore", "desc")
@@ -782,7 +818,7 @@ exports.refreshTopLists = onSchedule("every 15 minutes", async () => {
   }
 });
 
-// ── SCHEDULED: CLEAN UP ABANDONED SESSIONS ──────────────────────────
+// ──────── SCHEDULED: CLEAN UP ABANDONED SESSIONS ──────────────────────────
 exports.cleanupAbandonedSessions = onSchedule("every 30 minutes", async () => {
   // Rensa allt som är äldre än 30 minuter
   const cutoff = new Date(Date.now() - 30 * 60 * 1000);
@@ -821,7 +857,7 @@ exports.cleanupAbandonedSessions = onSchedule("every 30 minutes", async () => {
   }
 });
 
-// ── GET REVIEW (answer key for the last finished game) ─────────────
+// ──────── GET REVIEW (answer key for the last finished game) ─────────────
 exports.getReview = onCall(async (request) => {
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "You must be signed in.");
@@ -862,7 +898,7 @@ exports.getReview = onCall(async (request) => {
   return { topic: g.topic, level: g.level, timeStr: g.timeStr, questions };
 });
 
-// ── PAY FOR REVIEW (cost = 10% of the last game's Final Score) ─────
+// ──────── PAY FOR REVIEW (cost = 10% of the last game's Final Score) ─────
 const REVIEW_COST_PERCENT = 10;
 
 exports.payForReview = onCall(async (request) => {
@@ -909,7 +945,7 @@ exports.payForReview = onCall(async (request) => {
   });
 });
 
-// ── GET LEADERBOARDS (one cached top-100 list) ─────────────────────────
+// ────────────── GET LEADERBOARDS (one cached top-100 list) ─────────────────────────
 exports.getLeaderboards = onCall(async (request) => {
   const myUid = request.auth ? request.auth.uid : null;
   const { boardId } = request.data;

@@ -1,3 +1,4 @@
+// Use this only when levelCost changes.
 // Recalculates level + levelProgress for every user from totalScore.
 // Run locally only (VS Code terminal), never in Webflow or in browser JS.
 //   node recalc-levels.js

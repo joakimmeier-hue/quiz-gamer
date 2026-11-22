@@ -358,7 +358,7 @@ document.addEventListener('keydown', function(e) {
   }
 }, true);
 
-// ────────────────── GAME-START PAGES ──────────────────
+// ──────────────────────────────────── GAME-START PAGES ───────────────────────────────────────────────────────────────────────────────
 
 // ── TIER LEVEL REQUIREMENTS ──────────────────────────────────────────
 const TIER_REQUIREMENTS = {
@@ -411,7 +411,7 @@ window.syncTopClone = window.syncClone = function() {
   // Force link colors inside clone
   clone.querySelectorAll('a').forEach(el => { el.style.color = 'white'; });
     // Lotties in the clone: empty + hide from Webflow, module paints them later
-  clone.querySelectorAll('.game-rating-diff, .game-rating-bonus').forEach(el => {
+  clone.querySelectorAll('.game-rating-diff, .game-rating-timepenalty').forEach(el => {
     el.innerHTML = '';
     ['data-animation-type', 'data-src', 'data-loading', 'data-autoplay']
       .forEach(a => el.removeAttribute(a));
@@ -427,7 +427,7 @@ window.syncTopClone = window.syncClone = function() {
 // 1. Force game-info elements to opacity 1 so they show up in the clone
   const gameInfoEls = clone.querySelectorAll('.game-info, .game-info *');
   gameInfoEls.forEach(el => {
-    if (el.closest('.game-rating-diff, .game-rating-bonus')) return;
+    if (el.closest('.game-rating-diff, .game-rating-timepenalty')) return;
     if (el.classList.contains('small-square')) return;
     el.style.opacity = '1';
     el.style.transform = 'translateY(0%)'; 

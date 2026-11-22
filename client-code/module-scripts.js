@@ -33,6 +33,7 @@ const functions = getFunctions(app);
 // ── CALLABLE FUNCTIONS ──
 const completeProfileFn = httpsCallable(functions, "completeProfile");
 const changeUsernameFn = httpsCallable(functions, "changeUsername");
+const getGamesFn = httpsCallable(functions, "getGames");
 const getGameInfoFn = httpsCallable(functions, "getGameInfo");
 const startGameFn = httpsCallable(functions, "startGame");
 const gradeGameFn = httpsCallable(functions, "gradeGame");
@@ -1537,13 +1538,13 @@ function validateUsernameRules(rawName) {
     return errors;
 }
 
-// ────────────────────────────────────── GAME START ──────────────────────────────────────
+// ────────────────────────────────────────────────── GAME START ──────────────────────────────────────────────────────────────
 // ── GAME INFO PANEL ───
 let gameInfoLoadId = 0;
 window.loadGameInfo = async function(topic, level) {
   window.applyGameConfig(topic, level); 
   if (!currentUser) return;
-
+  
   const myLoad = ++gameInfoLoadId;
   setGameInfoLoading(true);
 
@@ -1618,14 +1619,17 @@ async function loadGmaPanel() {
       setTimeout(tryInitialLoad, 200);
       return;
     }
-      window.resetGameInfoPanel();
+    loadGames();
+    [1, 2, 3, 4, 5].forEach(getRatingData);
+    window.resetGameInfoPanel();
+
       if (topic === "gma") loadGmaPanel();
     };
   tryInitialLoad();
 })();
 
 
-// ───────────────── DYNAMIC GAME RATING SYSTEM (DIFF & BONUS LOTTIES) ──────────────────────────────
+// ───────────────── DYNAMIC GAME RATING SYSTEM (DIFF & timePenalty LOTTIES) ──────────────────────────────
 const RATING_URLS = { // ── RATINGS DATA ─────────────────────────────────────
   1: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3a01ff91c4daae84ea_8e887747e3ba33e13abe0f0ecf20f8c3_game-rating-1.json",
   2: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3aacb1ae9005246beb_fb961f804f2fdd5ce30bc34154460c81_game-rating-2.json",
@@ -1634,30 +1638,21 @@ const RATING_URLS = { // ── RATINGS DATA ───────────�
   5: "https://cdn.prod.website-files.com/693d8d6b18be20357a9cf397/69f24a3a729f5fafbcaa9390_1e843ebf46507e94a1d413a8073bb7d5_game-rating-5.json",
  };
 
-// ADD TOPICS HERE FOR GAMESTART 'topic-l LEVEL': { diff, bonus (1–5), questions, time }
-const GAME_CONFIG = {
-  // Science
-  "science-l1": { diff: 2, bonus: 1, questions: 10, time: "none" },
-  "science-l2": { diff: 3, bonus: 3, questions: 10, time: "none" },
-  "science-l3": { diff: 4, bonus: 3, questions: 10, time: "none" },
-  "science-l4": { diff: 5, bonus: 2, questions: 10, time: "none" },
-  // History
-  "history-l1": { diff: 2, bonus: 2, questions: 10, time: "none" },
-  "history-l2": { diff: 2, bonus: 3, questions: 10, time: "none" },
-  "history-l3": { diff: 3, bonus: 3, questions: 10, time: "none" },
-  "history-l4": { diff: 4, bonus: 4, questions: 10, time: "none" },
-  // Movies
-  "movies-l1": { diff: 1, bonus: 3, questions: 10, time: "none" },
-  "movies-l2": { diff: 2, bonus: 4, questions: 10, time: "none" },
-  "movies-l3": { diff: 2, bonus: 5, questions: 10, time: "none" },
-  "movies-l4": { diff: 3, bonus: 5, questions: 10, time: "none" },
-  // ...movies, puzzle same pattern
-};
+let GAME_CONFIG = {};
+let gamesReady = null;
+function loadGames() {
+  if (!gamesReady) {
+    gamesReady = getGamesFn()
+      .then((r) => { GAME_CONFIG = r.data; })
+      .catch((e) => { gamesReady = null; console.error("getGames failed:", e.message); });
+  }
+  return gamesReady;
+}
 
-const BONUS_DELAY_MS = 800;
+const TIMEPENALTY_DELAY_MS = 800;
 const ratingCache = {};
 const ratingTokens = new Map();
-let bonusTimer = null;
+let timePenaltyTimer = null;
 let lottiePromise = null;
 
 function getLottieLib() {
@@ -1682,8 +1677,8 @@ function getRatingData(n) {
   return ratingCache[n];
 }
 
-const ratingState = { diff: 0, bonus: 0 };   // what should be shown (final state)
-const RATING_SELECTORS = { diff: ".game-rating-diff", bonus: ".game-rating-bonus" };
+const ratingState = { diff: 0, timePenalty: 0 };   // what should be shown (final state)
+const RATING_SELECTORS = { diff: ".game-rating-diff", timePenalty: ".game-rating-timePenalty" };
 
 // stop Webflow from (re)initialising this element on its own
 function neutralize(el) {
@@ -1759,25 +1754,26 @@ window.resetGameInfoPanel = function () {
   setText("time-limit", "-");
   setGameInfoLoading(false);
   ratingState.diff = 0;
-  ratingState.bonus = 0;
+  ratingState.timePenalty = 0;
   playRating("diff", 0, "empty");
-  playRating("bonus", 0, "empty");
+  playRating("timePenalty", 0, "empty");
 };
 
-window.applyGameConfig = function (topic, level) {
+window.applyGameConfig = async function (topic, level) {
+  await loadGames();
   const cfg = GAME_CONFIG[`${topic}-l${level}`] || {};
   setText("questions-qty", cfg.questions ?? "-");
-  setText("time-limit", cfg.time ?? "-");
+  setText("time-limit", cfg.timeLimit ?? "-");
 
   ratingState.diff = cfg.diff || 0;
-  ratingState.bonus = cfg.bonus || 0;
+  ratingState.timePenalty = cfg.penaltyStep  || 0;
 
   playRating("diff", ratingState.diff);
-  clearTimeout(bonusTimer);
-  playRating("bonus", 0, "empty");   // empty boxes during the delay
-  bonusTimer = setTimeout(
-    () => playRating("bonus", ratingState.bonus),
-    BONUS_DELAY_MS
+  clearTimeout(timePenaltyTimer);
+  playRating("timePenalty", 0, "empty");   // empty boxes during the delay
+  timePenaltyTimer = setTimeout(
+    () => playRating("timePenalty", ratingState.timePenalty),
+    TIMEPENALTY_DELAY_MS
   );
 };
 
