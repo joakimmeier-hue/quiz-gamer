@@ -1678,7 +1678,7 @@ function getRatingData(n) {
 }
 
 const ratingState = { diff: 0, timePenalty: 0 };   // what should be shown (final state)
-const RATING_SELECTORS = { diff: ".game-rating-diff", timePenalty: ".game-rating-timePenalty" };
+const RATING_SELECTORS = { diff: ".game-rating-diff", timePenalty: ".game-rating-timepenalty" };
 
 // stop Webflow from (re)initialising this element on its own
 function neutralize(el) {
