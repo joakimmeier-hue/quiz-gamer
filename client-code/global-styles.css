@@ -556,8 +556,8 @@ a.button-link:hover {
   to { opacity: 1; }
 }
 
-.mask-middle .dropdown-gamelevel { transition: z-index 0s 0.3s; }
-.mask-middle .dropdown-gamelevel:has(.w--open) { transition: z-index 0s; }
+.mask-middle { transition: z-index 0s 0.3s; }
+.mask-middle:has(.w--open) { transition: z-index 0s; }
 
 .dropdown-gllist .game-level-option *,
 .dropdown-toggle-lvl .gamelevel-btn * {
