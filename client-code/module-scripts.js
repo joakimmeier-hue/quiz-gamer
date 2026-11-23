@@ -1357,7 +1357,12 @@ window.currentUserData = null; // <-- ADDED 1: Initialize global variable
 
   currentUser = user;
   updateAuthUI(user);
-
+  
+  const lbUid = user ? user.uid : null;
+  if (lbUid !== lastLbUid) {
+    lastLbUid = lbUid;
+    window.lbResetIdentity?.();
+  }
   // 1. LOGGED OUT STATE
   if (!user) {
     window.currentUserData = null;
