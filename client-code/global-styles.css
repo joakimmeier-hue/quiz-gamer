@@ -536,7 +536,6 @@ a.button-link:hover {
 
 
 /* ---- COMPONENT .dropdown-gamelevel ---- */
-
 .dropdown-gamelevel {
   opacity: 0;
   pointer-events: none;
@@ -547,7 +546,7 @@ a.button-link:hover {
 /* Only game-start fade in delay */
 .mask-middle .dropdown-gamelevel {
  animation:
-    fadeIn 0.2s 0.6s ease-in forwards,
+    fadeIn 0.2s 0.75s ease-in forwards,
     enableClicks 0s 0.8s forwards;
 }
 
@@ -587,7 +586,6 @@ a.button-link:hover {
   max-height: calc-size(auto, size);
   opacity: 1;
   transform: translateY(0%);
-  z-index: 800;
   transition: max-height 0s,        /* opens instantly, so it's clickable at once */
               opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1),
               transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
