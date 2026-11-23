@@ -697,7 +697,7 @@ a.button-link:hover {
   width: max-content;
   z-index: 100;
 }
-.dropdown-gamelevel:has(.w--open) {
+.mask-middle:has(.w--open) {
   z-index: 700;
 }
 
