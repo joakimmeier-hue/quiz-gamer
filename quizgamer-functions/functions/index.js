@@ -45,7 +45,7 @@ const GAMES = {
   "science-l4": { diff: 5, penaltyStep: 2, questions: 10, timeLimit: "none", bank: 0 },
 // History
   "history-l1": { diff: 2, penaltyStep: 2, questions: 10, timeLimit: "none", bank: 73 },
-  "history-l2": { diff: 2, penaltyStep: 2, questions: 10, timeLimit: "none", bank: 83 },
+  "history-l2": { diff: 3, penaltyStep: 2, questions: 10, timeLimit: "none", bank: 83 },
   "history-l3": { diff: 3, penaltyStep: 3, questions: 10, timeLimit: "none", bank: 0 },
   "history-l4": { diff: 4, penaltyStep: 4, questions: 10, timeLimit: "none", bank: 0 },
 // Movies

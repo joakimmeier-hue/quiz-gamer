@@ -354,7 +354,7 @@ body .games-grid-clip.is-skewed {
   animation: noiseFlash 0.2s ease-in-out 0.3s forwards; 
 }
 
-/* ──────────── HOVER-SCALE SYSTEM STOR (1.15) ──────────────── */
+/* ────────────────────────── HOVER-SCALE SYSTEM STOR (1.15) ───────────────────────────────────── */
 .js-hover-scale {
   transition: scale 0.1s cubic-bezier(0.455, 0.03, 0.515, 0.955);
 }
@@ -362,7 +362,7 @@ body .games-grid-clip.is-skewed {
   scale: 1.15;
 }
 
-/* ───────── WTC-WRAPPER, welcome-text-container ───────── */
+/* ──────────────── WTC-WRAPPER, welcome-text-container ───────── */
 /* ── HOVER-SCALE SYSTEM SUBTIL (1.08) — Smoother transition for wtc-wrapper ── */
 .js-hover-scale-sm {
     transition: scale 0.08s cubic-bezier(0.25, 1, 0.5, 1);
@@ -384,7 +384,7 @@ body .games-grid-clip.is-skewed {
 }
 
 
- /* ── PRESS-SCALE / "BLOW UP" SYSTEM (ersätter click-scale-interactions) ── */
+ /* ──────────────────────── PRESS-SCALE / "BLOW UP" SYSTEM (ersätter click-scale-interactions) ─────────────────────── */
 .js-press-scale {
   transition: scale 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* ≈ Power1 Out */
 }
@@ -398,7 +398,7 @@ body .games-grid-clip.is-skewed {
   filter: invert(0.5) brightness(0.7);
 }
 
-/* ────────────── INVENTORY ────────────── */
+/* ─────────────────────────────────── INVENTORY ─────────────────────────────────── */
 .player-info.username {
   pointer-events: none;
 }
@@ -486,8 +486,8 @@ a.button-link:hover {
     background-color: var(--gold-sand, #75634e);
 }
 
-/* ────────────────── GAME START PAGES ──────────────────
-/* ARROW SCROLL ANCHOR */
+/* ───────────────────────── GAME START PAGES ────────────────────────────────
+/*  ARROW SCROLL ANCHOR */
 .arrow-anchor-wrapper {
   opacity: 0;
   pointer-events: none;
@@ -536,6 +536,21 @@ a.button-link:hover {
 
 
 /* ---- COMPONENT .dropdown-gamelevel ---- */
+/* Only game-start fade in delay */
+.mask-middle.dropdown-gamelevel {
+  opacity: 0;
+  pointer-events: none;
+  animation:
+    fadeIn 0.2s 0.7s ease-in forwards,
+    enableClicks 0s 1s forwards;
+}
+@keyframes enableClicks {
+  to { pointer-events: auto; }
+}
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
 .dropdown-gamelevel {
   opacity: 0;
   pointer-events: none;
@@ -647,7 +662,7 @@ a.button-link:hover {
     enableClicks 0s 0.15s forwards;
 }
 
-/* HINT-BIB */
+/* HINT-BOB */
 .leaderboard-overlay .dropdown-gamelevel:not(.is-picked) .dropdown-toggle-lvl {
   animation: hintBob 1.6s 0.5s ease-in-out infinite;
 }
