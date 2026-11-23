@@ -1335,6 +1335,7 @@ window.currentUserData = null; // <-- ADDED 1: Initialize global variable
 
 // ── FIREBASE AUTH OBSERVER ── & ── INCOMPLETE ACCOUNT RECOVERY ──
 // ── UPDATE onAuthStateChanged to RESOLVE when profile is complete ──
+  let lastLbUid;   // once, above onAuthStateChanged
   onAuthStateChanged(auth, async (user) => {
   const isUnverifiedEmailAccount = user &&
     user.providerData.some((provider) => provider.providerId === 'password') &&
@@ -2797,6 +2798,10 @@ if (location.hash === '#leaderboard') {
       if (findMeBtn) {
         findMeBtn.addEventListener('click', (e) => {
           e.preventDefault();
+          if (!currentUser) {
+            if (typeof window.showGlobalInfo === 'function') window.showGlobalInfo(window.INFO_MESSAGES.NO_LB_RECORD);
+            return;
+          }
           let myRow = rowList && rowList.querySelector('[data-me]');
           let justCreated = false;
           if (!myRow && myOutside && rowList && rowTemplate) {
@@ -2810,7 +2815,7 @@ if (location.hash === '#leaderboard') {
             fitScores();
           }
             if (!myRow) {
-            if (typeof window.showGlobalInfo === 'function') window.showGlobalInfo(window.INFO_MESSAGES.NO_LB_RECORD); // not on this board (or outside the top 100)
+            if (typeof window.showGlobalInfo === 'function') window.showGlobalInfo(window.INFO_MESSAGES.NOT_LOGGED_IN); // not on this board (or outside the top 100)
             return;
           }
 
@@ -2918,6 +2923,17 @@ if (location.hash === '#leaderboard') {
     };
     document.addEventListener('visibilitychange', reloadIfEmpty);
     window.addEventListener('online', reloadIfEmpty);    
+    window.lbResetIdentity = () => {
+      lbCache.clear();
+      myOutside = null;
+      if (rowList) rowList.querySelectorAll('[data-me]').forEach(r => {
+        delete r.dataset.me;
+        r.classList.remove('is-highlight');
+      });
+      activeBoardId = null;
+      const id = boardId();
+      if (id) loadBoard(id);
+    };
     sync(); // initial state: only the type dropdown visible, Total Score board loaded
   }
 

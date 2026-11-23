@@ -219,6 +219,7 @@ function revealFoucElements() {
 // Pop up message dictionary 
 const INFO_MESSAGES = {
   // Start Page / Tier Selection
+  NOT_LOGGED_IN: "You need to log in first!",
   NO_TIER_SELECTED: "Please select a tier!",
   LEVEL_TOO_LOW: (reqLvl) => `Progress to level ${reqLvl} to play this tier!`,
   // Score page

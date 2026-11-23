@@ -549,13 +549,15 @@ a.button-link:hover {
     fadeIn 0.2s 0.75s ease-in forwards,
     enableClicks 0s 0.8s forwards;
 }
-
 @keyframes enableClicks {
   to { pointer-events: auto; }
 }
 @keyframes fadeIn {
   to { opacity: 1; }
 }
+
+.mask-middle .dropdown-gamelevel { transition: z-index 0s 0.3s; }
+.mask-middle .dropdown-gamelevel:has(.w--open) { transition: z-index 0s; }
 
 .dropdown-gllist .game-level-option *,
 .dropdown-toggle-lvl .gamelevel-btn * {
@@ -695,6 +697,10 @@ a.button-link:hover {
   width: max-content;
   z-index: 100;
 }
+.dropdown-gamelevel:has(.w--open) {
+  z-index: 700;
+}
+
 /* Dip: make room below the row when a dropdown opens */
 .leaderboard-overlay .lb-row-1.select-lb:has(.w--open),
 .row-gamestart:has(.w--open) {

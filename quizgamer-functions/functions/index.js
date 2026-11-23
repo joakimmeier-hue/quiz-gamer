@@ -296,7 +296,6 @@ async function renameInBoards(uid, oldName, newName) {
 }
 
 exports.getGames = onCall(async (request) => {
-  if (!request.auth) throw new HttpsError("unauthenticated", "You must be signed in.");
   const out = {};
   for (const [id, g] of Object.entries(GAMES)) {
     out[id] = { diff: g.diff, penaltyStep: g.penaltyStep, questions: g.questions, timeLimit: g.timeLimit };
