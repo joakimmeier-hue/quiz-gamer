@@ -1357,7 +1357,7 @@ window.currentUserData = null; // <-- ADDED 1: Initialize global variable
 
   currentUser = user;
   updateAuthUI(user);
-  
+
   const lbUid = user ? user.uid : null;
   if (lbUid !== lastLbUid) {
     lastLbUid = lbUid;
@@ -2820,7 +2820,7 @@ if (location.hash === '#leaderboard') {
             fitScores();
           }
             if (!myRow) {
-            if (typeof window.showGlobalInfo === 'function') window.showGlobalInfo(window.INFO_MESSAGES.NOT_LOGGED_IN); // not on this board (or outside the top 100)
+            if (typeof window.showGlobalInfo === 'function') window.showGlobalInfo(window.INFO_MESSAGES.NO_LB_RECORD); // not on this board (or outside the top 100)
             return;
           }
 
