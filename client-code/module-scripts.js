@@ -2212,7 +2212,7 @@ Webflow.push(function() {
   const barEl = document.querySelector('.level-bar');
   if (barEl) barEl.style.width = ((data.levelProgress || 0) * 100) + "%";
 
-    // Level-up popup only for a fresh result, never when the saved copy is shown again
+  // LEVEL-UP POPUP. ONLY FOR A FRESH RESULT, never when the saved copy is shown again
   const levelsGained = isFreshResult ? (data.levelsGained || 0) : 0;
   // Keep a copy so the score page can be shown again from the review page
   sessionStorage.setItem('lastGameResultView', resultDataRaw);
@@ -2223,7 +2223,7 @@ Webflow.push(function() {
     sessionStorage.setItem('pendingLevelUpTarget', data.newLevel);
     justTriggeredThisLoad = true;
 
-    const triggerEl = document.querySelector('.sub-result-2.init-lvlup');
+    const triggerEl = document.querySelector('.sub-result-1.init-lvlup');
     const levelUpEl = document.querySelector('.level-up');
 
     if (triggerEl && levelUpEl) {
@@ -2851,7 +2851,6 @@ if (location.hash === '#leaderboard') {
       // Click handler
       list.addEventListener('click', (e) => {
         const row = e.target.closest('.game-level-option');
-          console.log('LIST CLICK', e.target.className, 'row:', !!row, 'inList:', row && list.contains(row), 'selected:', row && optionIsSelected(kind, row));
 
         if (!row || !list.contains(row)) return;
         if (optionIsSelected(kind, row)) return;
