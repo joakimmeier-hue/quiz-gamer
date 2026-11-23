@@ -2153,7 +2153,7 @@ function tryShowLevelUpPopup(attempts = 0, maxAttempts = 8) {
 window.showLevelUpPopup = showLevelUpPopup;
 window.tryShowLevelUpPopup = tryShowLevelUpPopup;
 
-// ────────── READ AND SHOW GAME RESULT ──────────────
+// ────────────────── READ AND SHOW GAME RESULT ──────────────────────
 Webflow.push(function() {
   // Fresh result from a just-finished game, or a saved copy when coming back from the review page
   const isFreshResult = !!sessionStorage.getItem('lastGameResult');
@@ -2242,7 +2242,7 @@ Webflow.push(function() {
 window.Webflow = window.Webflow || [];
 window.Webflow.push(setTitleStart);
 
-// ── TRIGGER SCORE PAGE wfIx (custom event "score-page") ──
+// ────── TRIGGER SCORE PAGE wfIx (custom event "score-page") ──────
 Webflow.push(function() {
   if (currentSlug !== 'score') return;
   const startIntro = () => {
@@ -2450,7 +2450,7 @@ if (location.hash === '#leaderboard') {
 }
 
 
-// ────────────────────────────────────── LEADERBOARD lb FILTERS ──────────────────────────────────────
+// ────────────────────────────────────── LEADERBOARD lb FILTER ──────────────────────────────────────
 // Three chained dropdowns (type → topic → tier) inside .leaderboard-overlay.
 // Everything is looked up through the overlay, never through document-wide class names,
 // so the game start dropdown on the *-start pages is never touched.
@@ -2478,23 +2478,27 @@ if (location.hash === '#leaderboard') {
       if (label && txt) label.textContent = txt;
     });
 
-    // Topic rows are generated from GAME_CONFIG ("science-l1" -> "science")
-    const topics = [...new Set(Object.keys(GAME_CONFIG).map(k => k.replace(/-l\d+$/, '')))];
-    const topicList = roots.topic.querySelector('.dropdown-gllist');
-    const template = topicList && topicList.querySelector('.game-level-option'); // first row has no lock icon
-    if (template) {
-      const rows = topics.map(t => {
-        const row = template.cloneNode(true);
-        row.removeAttribute('data-level');
-        row.dataset.topic = t;
-        row.classList.remove('is-selected');
-        const label = row.querySelector('.game-level-text');
-        if (label) label.textContent = t.charAt(0).toUpperCase() + t.slice(1);
-        return row;
-      });
-      topicList.querySelectorAll('.game-level-option').forEach(r => r.remove());
-      topicList.prepend(...rows);
-    }
+      // Topic rows are generated from the games list ("science-l1" -> "science")
+      const topicList = roots.topic.querySelector('.dropdown-gllist');
+      const template = topicList && topicList.querySelector('.game-level-option'); // first row has no lock icon
+      const buildTopicRows = () => {
+        if (!template) return;
+        const topics = [...new Set(Object.keys(GAME_CONFIG).map(k => k.replace(/-l\d+$/, '')))];
+        if (!topics.length) return; // games not loaded: keep the rows from the Designer
+        const rows = topics.map(t => {
+          const row = template.cloneNode(true);
+          row.removeAttribute('data-level');
+          row.dataset.topic = t;
+          row.classList.remove('is-selected');
+          const label = row.querySelector('.game-level-text');
+          if (label) label.textContent = t.charAt(0).toUpperCase() + t.slice(1);
+          return row;
+        });
+        topicList.querySelectorAll('.game-level-option').forEach(r => r.remove());
+        topicList.prepend(...rows);
+        syncDropdownOptions();
+      };
+      loadGames().then(buildTopicRows);
 
       const boardId = () => {
         if (LB_STATE.type === 'total') return 'total';
