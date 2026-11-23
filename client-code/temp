@@ -1,0 +1,29 @@
+/* Can i add this only or need to scope the other one to .leaderboard-overlay so that the both work independently..? */
+/* Only game-start fade in delay */
+.mask-middle.dropdown-gamelevel {
+  opacity: 0;
+  pointer-events: none;
+  animation:
+    fadeIn 0.2s 0.7s ease-in forwards,
+    enableClicks 0s 1s forwards;
+}
+@keyframes enableClicks {
+  to { pointer-events: auto; }
+}
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+.dropdown-gamelevel {
+  opacity: 0;
+  pointer-events: none;
+  animation:
+    fadeIn 0.2s 0.07s ease-in forwards,
+    enableClicks 0s 0.1s forwards;
+}
+@keyframes enableClicks {
+  to { pointer-events: auto; }
+}
+@keyframes fadeIn {
+  to { opacity: 1; }
+}

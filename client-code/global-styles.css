@@ -537,7 +537,7 @@ a.button-link:hover {
 
 /* ---- COMPONENT .dropdown-gamelevel ---- */
 /* Only game-start fade in delay */
-.mask-middle.dropdown-gamelevel {
+.mask-middle .dropdown-gamelevel {
   opacity: 0;
   pointer-events: none;
   animation:
@@ -551,7 +551,7 @@ a.button-link:hover {
   to { opacity: 1; }
 }
 
-.dropdown-gamelevel {
+.leaderboard-overlay .dropdown-gamelevel {
   opacity: 0;
   pointer-events: none;
   animation:
