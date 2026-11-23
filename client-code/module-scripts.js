@@ -2804,7 +2804,7 @@ if (location.hash === '#leaderboard') {
         findMeBtn.addEventListener('click', (e) => {
           e.preventDefault();
           if (!currentUser) {
-            if (typeof window.showGlobalInfo === 'function') window.showGlobalInfo(window.INFO_MESSAGES.NO_LB_RECORD);
+            if (typeof window.showGlobalInfo === 'function') window.showGlobalInfo(window.INFO_MESSAGES.NOT_LOGGED_IN);
             return;
           }
           let myRow = rowList && rowList.querySelector('[data-me]');
