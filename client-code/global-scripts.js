@@ -520,6 +520,22 @@ document.addEventListener('DOMContentLoaded', () => {
   window.Webflow.push(() => setTimeout(forceClosed, 0)); // end force close
   
   levelRows.forEach(row => { row.__originalNextSibling = row.nextSibling; });
+  function fitDropdownWidth() {
+    const probe = document.createElement('div');
+    probe.style.cssText = 'position:absolute;visibility:hidden;left:0;top:0;width:max-content;white-space:nowrap;pointer-events:none;';
+    dropdownComponent.appendChild(probe);
+    let widest = 0;
+    levelRows.forEach(row => {
+      const c = row.cloneNode(true);
+      c.style.cssText = 'width:max-content;min-width:0;max-width:none;flex:none;';
+      probe.appendChild(c);
+      widest = Math.max(widest, c.getBoundingClientRect().width);
+    });
+    probe.remove();
+    dropdownToggle.style.minWidth = Math.ceil(widest) + 'px';
+  }
+  document.fonts.ready.then(fitDropdownWidth);
+  window.addEventListener('load', fitDropdownWidth);
 
   const slug = (typeof currentSlug !== 'undefined' && currentSlug) || window.location.pathname.split('/').pop();
   const startMatch = slug.match(/^([a-z0-9-]+)-start$/i);
@@ -564,6 +580,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Swap elements
       if (currentlyShown) {
+        currentlyShown.style.width = '';
         dropdownList.insertBefore(currentlyShown, currentlyShown.__originalNextSibling);
       }
       gamelvlBtn.insertAdjacentElement('beforebegin', row);

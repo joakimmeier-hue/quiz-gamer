@@ -1,4 +1,4 @@
-/* Can i add this only or need to scope the other one to .leaderboard-overlay so that the both work independently..? */
+/* Can i add this only or need to scope the other one to .leaderboard-overlay so that the both work independently..? when i did it started working */
 /* Only game-start fade in delay */
 .mask-middle.dropdown-gamelevel {
   opacity: 0;
