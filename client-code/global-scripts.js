@@ -13,17 +13,41 @@ window.addEventListener('keydown', (e) => {
 }, true);
 
 // Turn off Lottie SUB-frame render, 30FPS stays 30, easier on CPUs
+// Exception list: these get sub-frame (smooth) rendering only on screens wider than 991px
 (function () {
+  var SMOOTH_SELECTORS = ['.snowfall-loop'];   // add more classes here
+  var wide = window.matchMedia('(min-width: 992px)');
+
+  function wantsSmooth(a) {
+    if (!wide.matches || !a.wrapper || !a.wrapper.closest) return false;
+    return SMOOTH_SELECTORS.some(function (sel) { return a.wrapper.closest(sel); });
+  }
+
   function apply() {
     var w = window.Webflow && Webflow.require && Webflow.require('lottie');
     if (!w || !w.lottie) return false;
     w.lottie.setSubframeRendering(false);
-    w.lottie.getRegisteredAnimations().forEach(function (a) { a.setSubframe(false); });
+    w.lottie.getRegisteredAnimations().forEach(function (a) { a.setSubframe(wantsSmooth(a)); });
     return true;
   }
+
+  // Webflow lottie loads lazily: when the animation renders into the element, apply again
+  function watchExceptions() {
+    SMOOTH_SELECTORS.forEach(function (sel) {
+      document.querySelectorAll(sel).forEach(function (el) {
+        if (el._sfObserved) return;
+        el._sfObserved = true;
+        new MutationObserver(apply).observe(el, { childList: true });
+      });
+    });
+  }
+
+  function run() { apply(); watchExceptions(); }
+
   window.Webflow = window.Webflow || [];
-  Webflow.push(apply);
-  window.addEventListener('load', function () { setTimeout(apply, 500); });
+  Webflow.push(run);
+  window.addEventListener('load', function () { setTimeout(run, 500); });
+  wide.addEventListener('change', apply);   // resizing across 991px switches it live
 })();
 
 // ─────────────────── GLOBAL INPUT PROTECTION & BUTTON SHIELD ──────────────────────

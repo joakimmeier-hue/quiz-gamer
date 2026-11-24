@@ -1,0 +1,429 @@
+[
+  {
+    "id": "movies-l1-q001",
+    "topic": "movies",
+    "level": 1,
+    "text": "What was Sam's profession?",
+    "alternatives": {
+      "1": "Cook",
+      "2": "Gardener",
+      "3": "Hunter",
+      "4": "Carpenter"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "movies-l1-q002",
+    "topic": "movies",
+    "level": 1,
+    "text": "What was Gollum before the Ring twisted him?",
+    "alternatives": {
+      "1": "An Elf",
+      "2": "A Hobbit-like person",
+      "3": "A Dwarf",
+      "4": "A very small Orc"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "movies-l1-q003",
+    "topic": "movies",
+    "level": 1,
+    "text": "How many Rings of Power were made, counting the One Ring?",
+    "alternatives": {
+      "1": "3",
+      "2": "12",
+      "3": "20",
+      "4": "31"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "movies-l1-q004",
+    "topic": "movies",
+    "level": 1,
+    "text": "Which hobbit knocked a skeleton down a well in Moria?",
+    "alternatives": {
+      "1": "Sam",
+      "2": "Frodo",
+      "3": "Merry",
+      "4": "Pippin"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "movies-l1-q005",
+    "topic": "movies",
+    "level": 1,
+    "text": "What meal does Pippin ask Aragorn about on Weathertop?",
+    "alternatives": {
+      "1": "Second breakfast",
+      "2": "Midnight snack",
+      "3": "Brunch",
+      "4": "Dessert"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "movies-l1-q006",
+    "topic": "movies",
+    "level": 1,
+    "text": "Aragorn's sword Anduril was reforged from the shards of which sword?",
+    "alternatives": {
+      "1": "Glamdring",
+      "2": "Narsil",
+      "3": "Orcrist",
+      "4": "Sting"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "movies-l1-q007",
+    "topic": "movies",
+    "level": 1,
+    "text": "Who is the father of Boromir and Faramir?",
+    "alternatives": {
+      "1": "Theoden",
+      "2": "Elrond",
+      "3": "Denethor",
+      "4": "Isildur"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "movies-l1-q008",
+    "topic": "movies",
+    "level": 1,
+    "text": "Which river carries Boromir's funeral boat toward the Falls of Rauros?",
+    "alternatives": {
+      "1": "Isen",
+      "2": "Brandywine",
+      "3": "Bruinen",
+      "4": "Anduin"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "movies-l1-q009",
+    "topic": "movies",
+    "level": 1,
+    "text": "Who was the head of the White Council?",
+    "alternatives": {
+      "1": "Saruman",
+      "2": "Gandalf",
+      "3": "Elrond",
+      "4": "Radagast"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "movies-l1-q010",
+    "topic": "movies",
+    "level": 1,
+    "text": "Which James Bond actor turned down the role of Gandalf?",
+    "alternatives": {
+      "1": "Sean Connery",
+      "2": "Daniel Craig",
+      "3": "Pierce Brosnan",
+      "4": "Roger Moore"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "movies-l1-q011",
+    "topic": "movies",
+    "level": 1,
+    "text": "What's the name of Gandalf's white horse?",
+    "alternatives": {
+      "1": "Brego",
+      "2": "Bill",
+      "3": "Shadowfax",
+      "4": "Asfaloth"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "movies-l1-q012",
+    "topic": "movies",
+    "level": 1,
+    "text": "What's the purpose of the One Ring?",
+    "alternatives": {
+      "1": "Control the other ringbearers",
+      "2": "Increase the owner's power",
+      "3": "Grant longevity",
+      "4": "Turn the wearer invisible"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "movies-l1-q013",
+    "topic": "movies",
+    "level": 1,
+    "text": "Where in Middle-earth does Mordor lie?",
+    "alternatives": {
+      "1": "In the north east",
+      "2": "Beyond the sea to the west",
+      "3": "In the south-east",
+      "4": "Beneath the Misty Mountains"
+    },
+    "correctChoice": 3
+  }, 
+  {
+    "id": "movies-l1-q014",
+    "topic": "movies",
+    "level": 1,
+    "text": "What is the name of the Dwarves' lost kingdom in The Hobbit?",
+    "alternatives": {
+      "1": "Erebor",
+      "2": "Moria",
+      "3": "Gondor",
+      "4": "Rivendell"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "movies-l1-q015",
+    "topic": "movies",
+    "level": 1,
+    "text": "What is Frodo tasked to do with the One Ring?",
+    "alternatives": {
+      "1": "Take it to Elrond",
+      "2": "Hide it",
+      "3": "Destroy it",
+      "4": "Take it to Sauron"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "movies-l1-q016",
+    "topic": "movies",
+    "level": 1,
+    "text": "What kind of creature guards the treasure inside the Lonely Mountain?",
+    "alternatives": {
+      "1": "A Balrog",
+      "2": "A dragon",
+      "3": "A giant spider",
+      "4": "A cave troll"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "movies-l1-q017",
+    "topic": "movies",
+    "level": 1,
+    "text": "In which forest does Treebeard live?",
+    "alternatives": {
+      "1": "Mirkwood",
+      "2": "Lothlorien",
+      "3": "Silverglades",
+      "4": "Fangorn"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "movies-l1-q018",
+    "topic": "movies",
+    "level": 1,
+    "text": "Under which mountain range do the Mines of Moria lie?",
+    "alternatives": {
+      "1": "White Mountains",
+      "2": "Misty Mountains",
+      "3": "Blue Mountains",
+      "4": "Ash Mountains"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "movies-l1-q019",
+    "topic": "movies",
+    "level": 1,
+    "text": "In which town do the hobbits meet Strider at the Prancing Pony?",
+    "alternatives": {
+      "1": "Hobbiton",
+      "2": "Bree",
+      "3": "Dale",
+      "4": "Rivendell"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "movies-l1-q020",
+    "topic": "movies",
+    "level": 1,
+    "text": "What is the name of Sauron's great dark tower?",
+    "alternatives": {
+      "1": "Orthanc",
+      "2": "Minas Morgul",
+      "3": "Cirith Ungol",
+      "4": "Barad-dur"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "movies-l1-q021",
+    "topic": "movies",
+    "level": 1,
+    "text": "Aragorn's ancestors came from an island kingdom that sank beneath the sea. What was it called?",
+    "alternatives": {
+      "1": "Numenor",
+      "2": "Valinor",
+      "3": "Umbar",
+      "4": "Lindon"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "movies-l1-q022",
+    "topic": "movies",
+    "level": 1,
+    "text": "Which ruined city on the Anduin was once the capital of Gondor?",
+    "alternatives": {
+      "1": "Edoras",
+      "2": "Dol Guldur",
+      "3": "Osgiliath",
+      "4": "Annuminas"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "movies-l1-q023",
+    "topic": "movies",
+    "level": 1,
+    "text": "Why does the Fellowship go into Moria?",
+    "alternatives": {
+      "1": "They were hindered by Saruman",
+      "2": "They ran out of food",
+      "3": "They wanted mithril",
+      "4": "The original route was too well watched"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "movies-l1-q024",
+    "topic": "movies",
+    "level": 1,
+    "text": "What is the name of Bilbo and Frodo's home in the Shire?",
+    "alternatives": {
+      "1": "Brandy Hall",
+      "2": "Crickhollow",
+      "3": "Bagshot Row",
+      "4": "Bag End"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "movies-l1-q025",
+    "topic": "movies",
+    "level": 1,
+    "text": "Where did the dragon Smaug make his lair?",
+    "alternatives": {
+      "1": "Mount Doom",
+      "2": "The Lonely Mountain",
+      "3": "Mount Gundabad",
+      "4": "The Grey Mountains"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "movies-l1-q026",
+    "topic": "movies",
+    "level": 1,
+    "text": "What does Boromir want to do with the One Ring?",
+    "alternatives": {
+      "1": "Sell it",
+      "2": "Use it",
+      "3": "Destroy it",
+      "4": "Give it to his brother"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "movies-l1-q027",
+    "topic": "movies",
+    "level": 1,
+    "text": "Which book was the first in the franchise, published in 1937?",
+    "alternatives": {
+      "1": "The Hobbit",
+      "2": "The Fellowship of the Ring",
+      "3": "The Silmarillion",
+      "4": "The Two Towers"
+    },
+    "correctChoice": 1
+  },
+
+
+
+
+
+
+ {
+    "id": "movies-l1-q028",
+    "topic": "movies",
+    "level": 1,
+    "text": "Which name did Sauron use as a disguise?",
+    "alternatives": {
+      "1": "Balrog",
+      "2": "Smeagol",
+      "3": "Annatar",
+      "4": "Gorathan"
+    },
+    "correctChoice": 3,
+    "tag": "elite"
+  },
+  {
+    "id": "movies-l1-q029",
+    "topic": "movies",
+    "level": 1,
+    "text": "Why did Boromir originally travel to Rivendell?",
+    "alternatives": {
+      "1": "To escort Frodo",
+      "2": "Because of a prophetic dream",
+      "3": "To spy for Denethor",
+      "4": "To request soldiers for Gondor"
+    },
+    "correctChoice": 2,
+    "tag": "elite"
+  },
+  {
+    "id": "movies-l1-q030",
+    "topic": "movies",
+    "level": 1,
+    "text": "Why does Gondor have a Steward instead of a King?",
+    "alternatives": {
+      "1": "The last king vanished without an heir",
+      "2": "Elrond forbade them a king",
+      "3": "The Ring destroyed the royal line",
+      "4": "Sauron killed the last king"
+    },
+    "correctChoice": 1,
+    "tag": "elite"
+  },
+  {
+    "id": "movies-l1-q031",
+    "topic": "movies",
+    "level": 1,
+    "text": "What is the actual name of the fortress at Helm's Deep?",
+    "alternatives": {
+      "1": "Edoras",
+      "2": "The Hornburg",
+      "3": "Dol Guldur",
+      "4": "Osgiliath"
+    },
+    "correctChoice": 2,
+    "tag": "elite"
+  },
+  {
+    "id": "movies-l1-q032",
+    "topic": "movies",
+    "level": 1,
+    "text": "How did Thorin earn the nickname \"Oakenshield\"?",
+    "alternatives": {
+      "1": "He carved his shield from a sacred tree",
+      "2": "He used an oak branch as a shield in battle",
+      "3": "He was born under the Great Oak of Erebor",
+      "4": "He carries a shield made of oak"
+    },
+    "correctChoice": 2,
+    "tag": "elite"
+  }
+]

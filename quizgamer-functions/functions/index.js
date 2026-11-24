@@ -49,7 +49,7 @@ const GAMES = {
   "history-l3": { diff: 3, penaltyStep: 3, questions: 10, timeLimit: "none", bank: 0 },
   "history-l4": { diff: 4, penaltyStep: 4, questions: 10, timeLimit: "none", bank: 0 },
 // Movies
-  "movies-l1": { diff: 1, penaltyStep: 3, questions: 10, timeLimit: "none", bank: 0 },
+  "movies-l1": { diff: 2, penaltyStep: 3, questions: 10, timeLimit: "none", bank: 32 },
   "movies-l2": { diff: 2, penaltyStep: 3, questions: 10, timeLimit: "none", bank: 0 },
   "movies-l3": { diff: 2, penaltyStep: 4, questions: 10, timeLimit: "none", bank: 0 },
   "movies-l4": { diff: 3, penaltyStep: 5, questions: 10, timeLimit: "none", bank: 0 },
