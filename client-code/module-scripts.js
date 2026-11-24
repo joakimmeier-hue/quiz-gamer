@@ -2707,7 +2707,10 @@ if (location.hash === '#leaderboard') {
       const buildRow = (entry, rank) => {
       const row = rowTemplate.cloneNode(true);
       row.dataset.lbRow = '1';
-      if (entry.isMe) row.dataset.me = '1';
+        if (entry.isMe) {
+          row.dataset.me = '1';
+          row.classList.add('is-highlight');
+        }
       const cells = row.children; // order: # / avatar / player / lvl / score / fav topic
       cells[0].textContent = rank;
       const img = cells[1].tagName === 'IMG' ? cells[1] : cells[1].querySelector('img');
