@@ -948,14 +948,14 @@ function hidePPDropdown() {
       overlay.style.display = 'flex';
       requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-              overlay.style.transition = 'opacity 40ms ease-out';
+              overlay.style.transition = 'opacity 300ms ease-out';
               overlay.style.opacity = '1';
           });
       });
   }
  function closeLobbyInventory(overlay) {
   window.lobbyInvOpen = false;
-   const fadeDurationMs = 1400;
+   const fadeDurationMs = 300;
    overlay.style.transition = `opacity ${fadeDurationMs}ms ease-out`;
    overlay.style.opacity = '0';
    setTimeout(() => {
