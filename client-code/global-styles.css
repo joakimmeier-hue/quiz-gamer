@@ -817,9 +817,13 @@ a.button-link:hover {
 }
 
 /* The Trophy fades in if .lb-scroll is scrollTop */
-.leaderboard-overlay .trophy{
+@keyframes trophyIn {
+  from { opacity: 0; }
+}
+.leaderboard-overlay .trophy {
   opacity: 1;
   transition: opacity 0.18s ease;
+  animation: trophyIn 0.18s ease 0.7s backwards;
 }
 
 
