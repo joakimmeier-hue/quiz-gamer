@@ -479,7 +479,7 @@ async function handleLogin(provider) {
         
         mergeDiv.innerHTML = `
           <div style="padding: 2rem 4rem; text-align:center; max-width:25rem; color:white; border-right: var(--stroke) solid var(--grey-stroke); border-left: var(--stroke) solid var(--grey-stroke);">
-            <h3 style="margin-top:0; margin-bottom: 1rem; font-size: 1.3rem;">Account Already Exists</h3>
+            <h2 style="margin-top:0; margin-bottom: 1rem; font-size: 1.3rem;">Account Already Exists</h2>
             <p style="margin-bottom:1rem; font-size: 0.9rem; line-height: 1.4;">The email <b>${email}</b> is already registered with another provider.</p>
             <p style="margin-bottom: 2rem; font-size: 0.9rem; line-height: 1.4;">Please verify your identity with ${verificationName} to link your accounts.</p>
             
@@ -948,14 +948,14 @@ function hidePPDropdown() {
       overlay.style.display = 'flex';
       requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-              overlay.style.transition = 'opacity 400ms ease-out';
+              overlay.style.transition = 'opacity 40ms ease-out';
               overlay.style.opacity = '1';
           });
       });
   }
  function closeLobbyInventory(overlay) {
   window.lobbyInvOpen = false;
-   const fadeDurationMs = 400;
+   const fadeDurationMs = 1400;
    overlay.style.transition = `opacity ${fadeDurationMs}ms ease-out`;
    overlay.style.opacity = '0';
    setTimeout(() => {
