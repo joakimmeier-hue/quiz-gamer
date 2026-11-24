@@ -2677,33 +2677,35 @@ const PRESS_SCALE_CLASSES = [
 const supportsRealHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
 // scaleClass = 'js-hover-scale' (1.15) eller 'js-hover-scale-sm' (1.08)
-function initHoverScale(classList, scaleClass) {
-    classList.forEach(cls => {
-        document.querySelectorAll('.' + cls).forEach(el => {
-            el.classList.add(scaleClass);
+function bindHoverScale(el, scaleClass) {
+    el.classList.add(scaleClass);
 
-              el.addEventListener('mouseenter', () => {
-                  clearTimeout(el._leaveT);
-                  if (!el.classList.contains('is-click-blocked')) {
-                      el.classList.add('is-hovered');
-                  }
-              });
+    el.addEventListener('mouseenter', () => {
+        clearTimeout(el._leaveT);
+        if (!el.classList.contains('is-click-blocked')) {
+            el.classList.add('is-hovered');
+        }
+    });
 
-              el.addEventListener('mouseleave', () => {
-              clearTimeout(el._leaveT);
-              el._leaveT = setTimeout(() => {
-                  el.classList.remove('is-hovered');
-                  el.classList.remove('is-click-blocked');
-              }, 60);
-            });
-        });
+    el.addEventListener('mouseleave', () => {
+        clearTimeout(el._leaveT);
+        el._leaveT = setTimeout(() => {
+            el.classList.remove('is-hovered');
+            el.classList.remove('is-click-blocked');
+        }, 60);
     });
 }
+window.bindHoverScale = bindHoverScale;
+
+// scaleClass = 'js-hover-scale' (1.15) eller 'js-hover-scale-sm' (1.08)
+function initHoverScale(classList, scaleClass) {
+    classList.forEach(cls => {
+        document.querySelectorAll('.' + cls).forEach(el => bindHoverScale(el, scaleClass));
+    });
+}
+
 // Hur länge (minst) press-effekten ska synas, även vid ett blixtsnabbt klick
-const MIN_PRESS_VISIBLE_MS = 140;
-function initPressScale(classList) {
-  classList.forEach(cls => {
-    document.querySelectorAll('.' + cls).forEach(el => {
+function bindPressScale(el) {
           el.classList.add('js-press-scale');
           let pressStartTime = 0;
           let releaseTimeoutId = null;
@@ -2752,16 +2754,14 @@ function initPressScale(classList) {
             el.addEventListener('pointerleave', () => {
         if (el.classList.contains('is-pressed-down') || el.classList.contains('is-pressed-up')) release();
       });
-    });
+}
+window.bindPressScale = bindPressScale;
+
+function initPressScale(classList) {
+  classList.forEach(cls => {
+    document.querySelectorAll('.' + cls).forEach(bindPressScale);
   });
 }
-document.addEventListener('DOMContentLoaded', () => {
-    if (supportsRealHover) {
-        initHoverScale(HOVER_SCALE_CLASSES, 'js-hover-scale');
-        initHoverScale(HOVER_SCALE_CLASSES_SM, 'js-hover-scale-sm');
-    }
-    initPressScale(PRESS_SCALE_CLASSES);
-});
 
 // ══════════════════════════════════════════════════════════════════════
 // SCROLL-PULSE SYSTEM (FÖR CUSTOM <LOTTIE-PLAYER>)

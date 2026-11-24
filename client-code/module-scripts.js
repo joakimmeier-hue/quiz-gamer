@@ -2496,6 +2496,10 @@ if (location.hash === '#leaderboard') {
           row.removeAttribute('data-level');
           row.dataset.topic = t;
           row.classList.remove('is-selected');
+          if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+            window.bindHoverScale?.(row, 'js-hover-scale');
+          }
+          window.bindPressScale?.(row);
           const label = row.querySelector('.game-level-text');
           if (label) label.textContent = t.charAt(0).toUpperCase() + t.slice(1);
           return row;
