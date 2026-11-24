@@ -383,6 +383,23 @@ body .games-grid-clip.is-skewed {
     pointer-events: none;
 }
 
+/* Special hover/press scale on lb Ppic/avatar */
+.lb-avatar-hover-preview {
+  position: fixed;
+  z-index: 2147483647;
+  display: block;
+  pointer-events: none;
+  opacity: 1;
+  scale: 1;
+  transition: scale 0.18s ease;
+}
+.lb-avatar-hover-preview[hidden] {
+  display: none;
+}
+.lb-avatar-hover-preview.is-visible {
+  scale: 3;
+}
+
 
  /* ──────────────────────── PRESS-SCALE / "BLOW UP" SYSTEM (ersätter click-scale-interactions) ─────────────────────── */
 .js-press-scale {
@@ -799,22 +816,6 @@ a.button-link:hover {
   animation: rowFadeIn 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
-/* Special hover/press scale on lb Ppic */
-.lb-avatar-hover-preview {
-  position: fixed;
-  z-index: 2147483647;
-  display: block;
-  pointer-events: none;
-  opacity: 1;
-  scale: 1;
-  transition: scale 0.18s ease;
-}
-.lb-avatar-hover-preview[hidden] {
-  display: none;
-}
-.lb-avatar-hover-preview.is-visible {
-  scale: 3;
-}
 /* The Trophy fades in if .lb-scroll is scrollTop */
 .leaderboard-overlay .trophy{
   opacity: 1;

@@ -2705,6 +2705,7 @@ function initHoverScale(classList, scaleClass) {
 }
 
 // Hur länge (minst) press-effekten ska synas, även vid ett blixtsnabbt klick
+const MIN_PRESS_VISIBLE_MS = 140;
 function bindPressScale(el) {
           el.classList.add('js-press-scale');
           let pressStartTime = 0;
@@ -2762,6 +2763,13 @@ function initPressScale(classList) {
     document.querySelectorAll('.' + cls).forEach(bindPressScale);
   });
 }
+document.addEventListener('DOMContentLoaded', () => {
+    if (supportsRealHover) {
+        initHoverScale(HOVER_SCALE_CLASSES, 'js-hover-scale');
+        initHoverScale(HOVER_SCALE_CLASSES_SM, 'js-hover-scale-sm');
+    }
+    initPressScale(PRESS_SCALE_CLASSES);
+});
 
 // ══════════════════════════════════════════════════════════════════════
 // SCROLL-PULSE SYSTEM (FÖR CUSTOM <LOTTIE-PLAYER>)
