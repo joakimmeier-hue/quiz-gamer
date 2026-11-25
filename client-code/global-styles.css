@@ -823,7 +823,7 @@ a.button-link:hover {
 .leaderboard-overlay .trophy {
   opacity: 1;
   transition: opacity 0.18s ease;
-  animation: trophyIn 0.3s ease 0.7s backwards;
+  animation: trophyIn 2s ease 0.7s backwards;
 }
 
 
