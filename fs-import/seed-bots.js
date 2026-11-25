@@ -80,6 +80,7 @@ const PIC_REGEX = /^https:\/\/cdn\.prod\.website-files\.com\/693d8d6b18be20357a9
 function levelCost(level) {
   return level * 512;
 }
+const usernameKey = (name) => name.normalize("NFKC").toLowerCase();
 
 function calcLevelInfo(totalScore) {
   let level = 1;
@@ -90,6 +91,7 @@ function calcLevelInfo(totalScore) {
   }
   const xpIntoLevel = totalScore - cumulativeThreshold;
   const xpForNext = levelCost(level);
+  
   return {
     level,
     xpIntoLevel,
@@ -227,6 +229,7 @@ function makeBots(names, avatars) {
     return {
       uid: BOT_PREFIX + String(i + 1).padStart(3, "0"),
       username,
+      usernameLower: usernameKey(username),   // use your variable name for the bot's name
       profilePicUrl: pick(avatars),
       favTopic,
       totalScore: total,

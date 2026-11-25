@@ -3,6 +3,7 @@ const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
+
 const BONUS_EXPONENT = 1.6; // how much extra many correct answers are worth
 const ATTEMPT_FLOOR = 0.05;  // a replay never gives less than x% of the base score
 const ATTEMPT_RATE = 0.13;   // higher = penalty bites faster. EG. with RATE = 0.13, 20 pre attempts rewards ~34% of the score.
@@ -135,8 +136,12 @@ function validateUsernameServer(rawName) {
   return errors;
 }
 
+function usernameKey(name) {
+  return name.normalize("NFKC").toLowerCase();
+}
 async function isUsernameTaken(rawName, uid) {
-  const snap = await db.collection("users").where("username", "==", rawName).get();
+  const snap = await db.collection("users")
+    .where("usernameLower", "==", usernameKey(rawName)).get();
   return snap.docs.some(d => d.id !== uid);
 }
 
@@ -303,6 +308,8 @@ exports.getGames = onCall(async (request) => {
   return out;
 });
 
+
+
 // ───────────── CREATE PROFILE (first-time only) ──────────────────────────────
 exports.completeProfile = onCall(async (request) => {
   console.log("completeProfile started");
@@ -335,6 +342,7 @@ exports.completeProfile = onCall(async (request) => {
   console.log("About to write to Firestore");
   await userRef.set({
     username: rawName,
+    usernameLower: usernameKey(rawName),
     profilePicUrl,
     level: 1,
     totalScore: 0,
@@ -376,6 +384,7 @@ exports.changeUsername = onCall(async (request) => {
   const oldName = userSnap.data().username;
   await userRef.set({
     username: rawName,
+    usernameLower: usernameKey(rawName),
     hasChangedUsername: true,
     updatedAt: new Date(),
   }, { merge: true });
@@ -560,133 +569,161 @@ exports.gradeGame = onCall(async (request) => {
   // 1. Client can never claim MORE time than raw server duration.
   // 2. Minimum 1.0 second floor prevents division-by-zero explosions.
   // 3. Client can't claim much less time than the server saw (INTRO_ALLOWANCE), or less than MIN_SECS_PER_ANSWER per answered question.
-const INTRO_ALLOWANCE = 15; // seconds, covers page load and intro
-let verifiedTimeSecs = Math.min(claimedTime, rawServerSecs);
-console.log("time gap:", rawServerSecs - claimedTime);
-if (rawServerSecs - claimedTime > INTRO_ALLOWANCE) console.warn("allowance hit:", rawServerSecs - claimedTime);
-const minPlausible = Math.max(rawServerSecs - INTRO_ALLOWANCE, 1.0);
-verifiedTimeSecs = Math.max(verifiedTimeSecs, minPlausible);
-verifiedTimeSecs = Math.max(verifiedTimeSecs, 1.0);
-const answeredCount = answers.filter((a) => typeof a.choice === "number").length;
-const MIN_SECS_PER_ANSWER = 1.5; // tune this to your fastest honest answers
-verifiedTimeSecs = Math.max(verifiedTimeSecs, answeredCount * MIN_SECS_PER_ANSWER);
+  const INTRO_ALLOWANCE = 15; // seconds, covers page load and intro
+  let verifiedTimeSecs = Math.min(claimedTime, rawServerSecs);
+  console.log("time gap:", rawServerSecs - claimedTime);
+  if (rawServerSecs - claimedTime > INTRO_ALLOWANCE) console.warn("allowance hit:", rawServerSecs - claimedTime);
+  const minPlausible = Math.max(rawServerSecs - INTRO_ALLOWANCE, 1.0);
+  verifiedTimeSecs = Math.max(verifiedTimeSecs, minPlausible);
+  verifiedTimeSecs = Math.max(verifiedTimeSecs, 1.0);
+  const answeredCount = answers.filter((a) => typeof a.choice === "number").length;
+  const MIN_SECS_PER_ANSWER = 1.5; // tune this to your fastest honest answers
+  verifiedTimeSecs = Math.max(verifiedTimeSecs, answeredCount * MIN_SECS_PER_ANSWER);
 
-  // Build the MM:SS string directly from verified visual time
-  const totalSecondsInt = Math.floor(verifiedTimeSecs);
-  const timeStr = `${String(Math.floor(totalSecondsInt / 60)).padStart(2, "0")}:${String(totalSecondsInt % 60).padStart(2, "0")}`;
-  const gameId = `${topic}-l${level}`;
-  const timePenalty = TIME_PENALTY_BY_STEP[GAMES[gameId]?.penaltyStep] ?? 0.5;
+    // Build the MM:SS string directly from verified visual time
+    const totalSecondsInt = Math.floor(verifiedTimeSecs);
+    const timeStr = `${String(Math.floor(totalSecondsInt / 60)).padStart(2, "0")}:${String(totalSecondsInt % 60).padStart(2, "0")}`;
+    const gameId = `${topic}-l${level}`;
+    const timePenalty = TIME_PENALTY_BY_STEP[GAMES[gameId]?.penaltyStep] ?? 0.5;
 
-  // 2. Look up question docs and answer keys for server-side grading
-  const questionIds = answers.map((a) => a.questionId);
-  if (new Set(questionIds).size !== questionIds.length) {
-    throw new HttpsError("invalid-argument", "Duplicate questions.");
-  }
-  const questionRefs = questionIds.map((id) => db.collection("questions").doc(id));
-  const questionSnaps = await db.getAll(...questionRefs);
-  const keySnaps = await db.getAll(
-    ...questionIds.map((id) => db.collection("answerKeys").doc(id))
-  );
-
-  let correctCount = 0;
-  let weightedCorrect = 0;
-  let eliteCorrectCount = 0;
-  let eliteTotalCount = 0;
-  questionSnaps.forEach((snap, i) => {
-    if (!snap.exists) return;
-    const question = snap.data();
-    const isElite = question.tag === "elite";
-    if (isElite) eliteTotalCount++;
-    if (!keySnaps[i].exists) return;
-    const key = keySnaps[i].data();
-    if (answers[i].choice === key.correctChoice) {
-      correctCount++;
-      weightedCorrect += QUESTION_WEIGHTS[question.tag] || 1;
-      if (isElite) eliteCorrectCount++;
+    // 2. Look up question docs and answer keys for server-side grading
+    const questionIds = answers.map((a) => a.questionId);
+    if (new Set(questionIds).size !== questionIds.length) {
+      throw new HttpsError("invalid-argument", "Duplicate questions.");
     }
+    const questionRefs = questionIds.map((id) => db.collection("questions").doc(id));
+    const questionSnaps = await db.getAll(...questionRefs);
+    const keySnaps = await db.getAll(
+      ...questionIds.map((id) => db.collection("answerKeys").doc(id))
+    );
+
+    let correctCount = 0;
+    let weightedCorrect = 0;
+    let eliteCorrectCount = 0;
+    let eliteTotalCount = 0;
+    questionSnaps.forEach((snap, i) => {
+      if (!snap.exists) return;
+      const question = snap.data();
+      const isElite = question.tag === "elite";
+      if (isElite) eliteTotalCount++;
+      if (!keySnaps[i].exists) return;
+      const key = keySnaps[i].data();
+      if (answers[i].choice === key.correctChoice) {
+        correctCount++;
+        weightedCorrect += QUESTION_WEIGHTS[question.tag] || 1;
+        if (isElite) eliteCorrectCount++;
+      }
+    });
+
+    //NEW STRUCTURE for fluid multi games
+    const attemptRef = db.collection("users").doc(uid).collection("attempts").doc(gameId);
+    const userRef = db.collection("users").doc(uid);
+    const out = await db.runTransaction(async (tx) => {
+    // all reads first
+    const attemptSnap = await tx.get(attemptRef);
+    const userSnap = await tx.get(userRef);
+
+
+
+
+    // 3. Read attempts doc
+    const attemptCountStored = attemptSnap.exists ? (attemptSnap.data().attemptCount || 0) : 0;
+    
+    
+    const previousAttempts = Math.max(attemptCountStored - 1, 0);
+
+    // Scores now use verifiedTimeSecs
+    const finalScore = calcFinalScore(correctCount, weightedCorrect, verifiedTimeSecs, previousAttempts, totalQuestions, level, timePenalty);
+    const unlimitedScore = calcUnlimitedScore(correctCount, weightedCorrect, verifiedTimeSecs, totalQuestions, level, timePenalty);
+
+    const newAttemptCount = attemptCountStored || 1;
+    const previousBest = attemptSnap.exists ? attemptSnap.data().bestScore || 0 : 0;
+    const newBest = Math.max(previousBest, finalScore);
+    const previousBestUnlim = attemptSnap.exists ? attemptSnap.data().bestScoreUnlim || 0 : 0;
+    const newBestUnlim = Math.max(previousBestUnlim, unlimitedScore);
+    const previousBestTimeSecs = attemptSnap.exists &&
+      Number.isFinite(attemptSnap.data().bestScoreTimeSecs)
+      ? attemptSnap.data().bestScoreTimeSecs
+      : null;
+    const previousBestUnlimTimeSecs = attemptSnap.exists &&
+      Number.isFinite(attemptSnap.data().bestScoreUnlimTimeSecs)
+      ? attemptSnap.data().bestScoreUnlimTimeSecs
+      : null;
+    const scoreBestChanged = finalScore > previousBest ||
+      (finalScore > 0 && finalScore === previousBest &&
+        verifiedTimeSecs < (previousBestTimeSecs ?? Infinity));
+    const unlimitedBestChanged = unlimitedScore > previousBestUnlim ||
+      (unlimitedScore > 0 && unlimitedScore === previousBestUnlim &&
+        verifiedTimeSecs < (previousBestUnlimTimeSecs ?? Infinity));
+    const bestScoreTimeSecs = scoreBestChanged ? verifiedTimeSecs : previousBestTimeSecs;
+    const bestScoreUnlimTimeSecs = unlimitedBestChanged
+      ? verifiedTimeSecs
+      : previousBestUnlimTimeSecs;
+
+    // 5. Read + update user's global totals
+    const previousTotalScore = userSnap.exists ? userSnap.data().totalScore || 0 : 0;
+    const oldLevel = calcLevel(previousTotalScore);
+
+    const newTotalScore = previousTotalScore + finalScore;
+    const newInfo = calcLevelInfo(newTotalScore);
+    const newLevel = calcLevel(newTotalScore);
+
+  
+    
+
+
+    tx.set(attemptRef, {
+      topic,
+      level,
+      attemptCount: newAttemptCount,
+      bestScore: newBest,
+      bestScoreTimeSecs,
+      bestScoreUnlim: newBestUnlim,
+      bestScoreUnlimTimeSecs,
+      updatedAt: new Date()
+    }, { merge: true });
+
+    tx.set(userRef, { totalScore: newTotalScore, 
+      level: newLevel, 
+      levelProgress: newInfo.progress, 
+      isBot: false, 
+      updatedAt: new Date() }, 
+      { merge: true });
+
+    return {
+      finalScore, unlimitedScore, newAttemptCount, newBest, newBestUnlim,
+      bestScoreTimeSecs, bestScoreUnlimTimeSecs, scoreBestChanged, unlimitedBestChanged,
+      oldLevel, newLevel, newInfo,
+      userData: userSnap.exists ? userSnap.data() : {},
+    };
   });
+  // END NEW STRUCTURE
 
-  // 3. Read attempts doc
-  const attemptRef = db.collection("users").doc(uid).collection("attempts").doc(gameId);
-  const attemptSnap = await attemptRef.get();
-  const attemptCountStored = attemptSnap.exists ? (attemptSnap.data().attemptCount || 0) : 0;
-  
-  
-  const previousAttempts = Math.max(attemptCountStored - 1, 0);
+  const {
+    finalScore, unlimitedScore, newAttemptCount, newBest, newBestUnlim,
+    bestScoreTimeSecs, bestScoreUnlimTimeSecs, scoreBestChanged, unlimitedBestChanged,
+    oldLevel, newLevel, newInfo, userData,
+  } = out;
 
-  // Scores now use verifiedTimeSecs
-  const finalScore = calcFinalScore(correctCount, weightedCorrect, verifiedTimeSecs, previousAttempts, totalQuestions, level, timePenalty);
-  const unlimitedScore = calcUnlimitedScore(correctCount, weightedCorrect, verifiedTimeSecs, totalQuestions, level, timePenalty);
+  const onLeaderboard = !NO_LEADERBOARD_TOPICS.includes(topic);
 
-  const newAttemptCount = attemptCountStored || 1;
-  const previousBest = attemptSnap.exists ? attemptSnap.data().bestScore || 0 : 0;
-  const newBest = Math.max(previousBest, finalScore);
-  const previousBestUnlim = attemptSnap.exists ? attemptSnap.data().bestScoreUnlim || 0 : 0;
-  const newBestUnlim = Math.max(previousBestUnlim, unlimitedScore);
-  const previousBestTimeSecs = attemptSnap.exists &&
-    Number.isFinite(attemptSnap.data().bestScoreTimeSecs)
-    ? attemptSnap.data().bestScoreTimeSecs
-    : null;
-  const previousBestUnlimTimeSecs = attemptSnap.exists &&
-    Number.isFinite(attemptSnap.data().bestScoreUnlimTimeSecs)
-    ? attemptSnap.data().bestScoreUnlimTimeSecs
-    : null;
-  const scoreBestChanged = finalScore > previousBest ||
-    (finalScore > 0 && finalScore === previousBest &&
-      verifiedTimeSecs < (previousBestTimeSecs ?? Infinity));
-  const unlimitedBestChanged = unlimitedScore > previousBestUnlim ||
-    (unlimitedScore > 0 && unlimitedScore === previousBestUnlim &&
-      verifiedTimeSecs < (previousBestUnlimTimeSecs ?? Infinity));
-  const bestScoreTimeSecs = scoreBestChanged ? verifiedTimeSecs : previousBestTimeSecs;
-  const bestScoreUnlimTimeSecs = unlimitedBestChanged
-    ? verifiedTimeSecs
-    : previousBestUnlimTimeSecs;
-
-  // 4. Write back updated attempt doc
-  await attemptRef.set({
-    topic,
-    level,
-    attemptCount: newAttemptCount,
-    bestScore: newBest,
-    bestScoreTimeSecs,
-    bestScoreUnlim: newBestUnlim,
-    bestScoreUnlimTimeSecs,
-    updatedAt: new Date()
-  }, { merge: true });
-
-  // 5. Read + update user's global totals
-  const userRef = db.collection("users").doc(uid);
-  const userSnap = await userRef.get();
-  const previousTotalScore = userSnap.exists ? userSnap.data().totalScore || 0 : 0;
-  const oldLevel = calcLevel(previousTotalScore);
-
-  const newTotalScore = previousTotalScore + finalScore;
-  const newInfo = calcLevelInfo(newTotalScore);
-  const newLevel = calcLevel(newTotalScore);
-
-  await userRef.set(
-    { totalScore: newTotalScore, level: newLevel, levelProgress: newInfo.progress, isBot: false, updatedAt: new Date() },
-    { merge: true },
-     );
-
-     const onLeaderboard = !NO_LEADERBOARD_TOPICS.includes(topic);
   // 6. Keep cached top score updated
   if (onLeaderboard) {
     const lbRef = db.collection("leaderboards").doc(gameId);
   await db.runTransaction(async (tx) => {
     const lbSnap = await tx.get(lbRef);
     const currentTop = lbSnap.exists ? lbSnap.data().topScore || 0 : 0;
-    const username = userSnap.exists ? userSnap.data().username : null;
+    const username = userData.username || null;
     if (newBest > currentTop) {
       tx.set(lbRef, { topScore: newBest, topUsername: username, updatedAt: new Date() }, { merge: true });
     }
-   });
+    });
 
   const info = {
-  username: userSnap.exists ? userSnap.data().username : null,
+  username: userData.username || null,
   level: newLevel,
-  profilePicUrl: userSnap.exists ? userSnap.data().profilePicUrl || null : null,
-  favTopic: userSnap.exists ? userSnap.data().favTopic || null : null 
+  profilePicUrl: userData.profilePicUrl || null,
+  favTopic: userData.favTopic || null
   };
   if (scoreBestChanged) {
     await updateTopList(`score-${gameId}`, uid, info, newBest, bestScoreTimeSecs);
@@ -728,8 +765,7 @@ verifiedTimeSecs = Math.max(verifiedTimeSecs, answeredCount * MIN_SECS_PER_ANSWE
     reviewPaid: false,
   });
 
-  // Clean up session
-  await sessionRef.delete();
+  
 
   // 8. Return data for score page
   return {
