@@ -2794,6 +2794,7 @@ if (location.hash === '#leaderboard') {
         });
         rowList.appendChild(frag);
         fitScores();
+        requestAnimationFrame(() => { rowList.scrollTop = rowList.scrollTop; });
         if (userPicked) hideIntro();
       };
 
