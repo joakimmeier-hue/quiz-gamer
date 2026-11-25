@@ -2992,12 +2992,14 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     input.addEventListener('copy', e => e.preventDefault());
     input.addEventListener('cut', e => e.preventDefault());
-    // ── ENTER-TRYCK (LÖSENORDSKONTROLL) ──
+
+    // ── THE FUNCTION (PASSWORD CHECK) WITH ENTER-PRESS ──
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
             if (input.value.toLowerCase() === "bosse") {
                 if (typeof playSFX === 'function') playSFX('select');
+                sessionStorage.setItem('gmaAuthorized', 'true');
 
                 const isStaging = window.location.hostname.includes('webflow.io');
                 const targetUrl = isStaging

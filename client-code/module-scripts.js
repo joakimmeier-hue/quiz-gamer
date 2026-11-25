@@ -348,7 +348,7 @@ if (emailAuthModal) {
     emailAuthSubmit.value = emailAuthMode === 'signin' ? 'Signing in...' : 'Creating...';
     emailAuthSubmit.disabled = true;
 
-// ──── 4. VERIFICATION EMAIL AND LINK ────
+// ──────── 4. VERIFICATION EMAIL AND LINK ──────────
     let emailAuthUser = null;
     let sendingVerificationEmail = false;
     let usedDefaultVerificationHandler = false;
@@ -1467,7 +1467,12 @@ if (currentSlug === 'score-review' && cameFrom !== 'score') {
         window.location.replace('/');
         return;
     }
-
+if (currentSlug === 'gma-start') {
+    if (sessionStorage.getItem('gmaAuthorized') !== 'true') {
+        window.location.replace('/');
+        return;
+    }
+}
       if (currentSlug === 'quiz-game' || currentSlug === 'gma-game-1') {
       const topic = sessionStorage.getItem('activeTopic');
       if (!topic || cameFrom !== `${topic}-start`) {
