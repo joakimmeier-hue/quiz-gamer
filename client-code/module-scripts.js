@@ -357,7 +357,7 @@ if (emailAuthModal) {
     (usedDefault
       ? 'Verify your email, return to this site, then sign in to play.'
       : 'Verify your email, then sign in to play. Good luck!') +
-      ' No email? Check your spam or junk folder.';
+      '\n\nNo email? Check your spam or junk folder.';
 
     try {
       if (emailAuthMode === 'signin') {

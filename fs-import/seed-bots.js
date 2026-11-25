@@ -416,7 +416,7 @@ async function seed(dry) {
   const now = new Date();
   for (const b of bots) {
     w.set(db.collection("users").doc(b.uid), {
-      username: b.username, profilePicUrl: b.profilePicUrl, favTopic: b.favTopic,
+      username: b.username, usernameLower: b.usernameLower, profilePicUrl: b.profilePicUrl, favTopic: b.favTopic,
       level: b.level, levelProgress: b.levelProgress, totalScore: b.totalScore,
       topicCounts: b.topicCounts, rank: rankOf.get(b.uid) || 0,
       hasChangedUsername: true, isBot: true, updatedAt: now,
