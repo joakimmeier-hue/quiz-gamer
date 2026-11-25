@@ -3,7 +3,7 @@
     "id": "movies-l1-q001",
     "topic": "movies",
     "level": 1,
-    "text": "What was Sam's profession?",
+    "text": "What is Sam's profession?",
     "alternatives": {
       "1": "Cook",
       "2": "Gardener",
@@ -350,28 +350,508 @@
     },
     "correctChoice": 1
   },
-
-
-
-
-
-
- {
+{
     "id": "movies-l1-q028",
     "topic": "movies",
     "level": 1,
-    "text": "Which name did Sauron use as a disguise?",
+    "text": "What is a Nazgûl?",
     "alternatives": {
-      "1": "Balrog",
-      "2": "Smeagol",
-      "3": "Annatar",
-      "4": "Gorathan"
+      "1": "An orc chieftain",
+      "2": "A marshland dweller",
+      "3": "A Ringwraith",
+      "4": "A flying creature"
     },
-    "correctChoice": 3,
-    "tag": "elite"
+    "correctChoice": 3
   },
   {
     "id": "movies-l1-q029",
+    "topic": "movies",
+    "level": 1,
+    "text": "How many Ringwraiths are there?",
+    "alternatives": {
+      "1": "6",
+      "2": "13",
+      "3": "9",
+      "4": "20"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "movies-l1-q030",
+    "topic": "movies",
+    "level": 1,
+    "text": "At Bag End, what does Gandalf catch Sam doing?",
+    "alternatives": {
+      "1": "Eating",
+      "2": "Stealing",
+      "3": "Napping",
+      "4": "Eavesdropping"
+    },
+    "correctChoice": 4
+  },
+{
+    "id": "movies-l1-q031",
+    "topic": "movies",
+    "level": 1,
+    "text": "In the films, who rescues Frodo after he is stabbed at Weathertop?",
+    "alternatives": {
+      "1": "Galadriel",
+      "2": "Arwen",
+      "3": "Éowyn",
+      "4": "Tauriel"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "movies-l1-q032",
+    "topic": "movies",
+    "level": 1,
+    "text": "What is the name of King Théoden's niece?",
+    "alternatives": {
+      "1": "Arwen",
+      "2": "Galadriel",
+      "3": "Éowyn",
+      "4": "Rosie"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "movies-l1-q033",
+    "topic": "movies",
+    "level": 1,
+    "text": "How is Merry related to Pippin?",
+    "alternatives": {
+      "1": "Brother",
+      "2": "Uncle",
+      "3": "Cousin",
+      "4": "Father"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "movies-l1-q034",
+    "topic": "movies",
+    "level": 1,
+    "text": "In Middle-earth, what flaw are Dwarves most known for?",
+    "alternatives": {
+      "1": "Greed",
+      "2": "Clumsiness",
+      "3": "Laziness",
+      "4": "Vanity"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "movies-l1-q035",
+    "topic": "movies",
+    "level": 1,
+    "text": "Who helps Aragorn turn the tide at the Battle of Minas Tirith?",
+    "alternatives": {
+      "1": "The Eagles",
+      "2": "The Ents",
+      "3": "The Army of the Dead",
+      "4": "The Dwarves"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "movies-l1-q036",
+    "topic": "movies",
+    "level": 1,
+    "text": "Besides Orcs, who fights for Sauron at Minas Tirith?",
+    "alternatives": {
+      "1": "Men from the South",
+      "2": "Dark Elves",
+      "3": "Men from the North",
+      "4": "Rogue Wizards"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "movies-l1-q037",
+    "topic": "movies",
+    "level": 1,
+    "text": "What does Gimli initially call Galadriel?",
+    "alternatives": {
+      "1": "A fairy",
+      "2": "A witch",
+      "3": "A demon",
+      "4": "An enchantress"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "movies-l1-q038",
+    "topic": "movies",
+    "level": 1,
+    "text": "Roughly how long after Isildur's failure does Frodo get the Ring?",
+    "alternatives": {
+      "1": "500 years",
+      "2": "1,000 years",
+      "3": "2,000 years",
+      "4": "3,000 years"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "movies-l1-q039",
+    "topic": "movies",
+    "level": 1,
+    "text": "What is Bilbo to Frodo?",
+    "alternatives": {
+      "1": "Father",
+      "2": "Son",
+      "3": "Nephew",
+      "4": "Uncle"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "movies-l1-q040",
+    "topic": "movies",
+    "level": 1,
+    "text": "Where was Frodo born?",
+    "alternatives": {
+      "1": "Rivendell",
+      "2": "Bree",
+      "3": "The Shire",
+      "4": "Blue Mountains"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "movies-l1-q041",
+    "topic": "movies",
+    "level": 1,
+    "text": "Who is Galadriel?",
+    "alternatives": {
+      "1": "Queen of Gondor",
+      "2": "Lady of Lothlórien",
+      "3": "Princess of Rivendell",
+      "4": "Leader of the Ents"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "movies-l1-q042",
+    "topic": "movies",
+    "level": 1,
+    "text": "How did Isildur die?",
+    "alternatives": {
+      "1": "Killed by Sauron",
+      "2": "Fell into Mount Doom",
+      "3": "Died of old age",
+      "4": "Shot by Orcs"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "movies-l1-q043",
+    "topic": "movies",
+    "level": 1,
+    "text": "Was Sauron originally a human?",
+    "alternatives": {
+      "1": "Yes, a corrupted king",
+      "2": "No, he's an immortal spirit",
+      "3": "No, he's an Elf",
+      "4": "Yes, a fallen wizard"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "movies-l1-q044",
+    "topic": "movies",
+    "level": 1,
+    "text": "Why did Gollum bite Frodo's finger off?",
+    "alternatives": {
+      "1": "To take the One Ring",
+      "2": "To escape Mount Doom",
+      "3": "To poison him",
+      "4": "To eat it"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "movies-l1-q045",
+    "topic": "movies",
+    "level": 1,
+    "text": "Who is Faramir?",
+    "alternatives": {
+      "1": "Aragorn's cousin",
+      "2": "Boromir's brother",
+      "3": "Gandalf's apprentice",
+      "4": "Théoden's son"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "movies-l1-q046",
+    "topic": "movies",
+    "level": 1,
+    "text": "Elves are fairest, Men desire power, and Dwarves are great...",
+    "alternatives": {
+      "1": "Craftsmen",
+      "2": "Explorers",
+      "3": "Hunters",
+      "4": "Writers"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "movies-l1-q047",
+    "topic": "movies",
+    "level": 1,
+    "text": "Men desire power, Dwarves are great craftsmen, and Elves are...",
+    "alternatives": {
+      "1": "Bravest",
+      "2": "Strongest",
+      "3": "Youngest",
+      "4": "Fairest"
+    },
+    "correctChoice": 4
+  },
+{
+    "id": "movies-l1-q048",
+    "topic": "movies",
+    "level": 1,
+    "text": "Elves are fairest, Dwarves are great craftsmen, and Men desire...",
+    "alternatives": {
+      "1": "Gold",
+      "2": "Magic",
+      "3": "Immortality",
+      "4": "Power"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "movies-l1-q049",
+    "topic": "movies",
+    "level": 1,
+    "text": "What is Sting?",
+    "alternatives": {
+      "1": "A person",
+      "2": "A staff",
+      "3": "A creature",
+      "4": "A sword"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "movies-l1-q050",
+    "topic": "movies",
+    "level": 1,
+    "text": "What is Elvish for \"friend\"?",
+    "alternatives": {
+      "1": "Mellon",
+      "2": "Mithril",
+      "3": "Lembas",
+      "4": "Valar"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "movies-l1-q051",
+    "topic": "movies",
+    "level": 1,
+    "text": "What is Frodo's gift from Galadriel?",
+    "alternatives": {
+      "1": "A dagger",
+      "2": "A vial of light",
+      "3": "Bread",
+      "4": "Hair"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "movies-l1-q052",
+    "topic": "movies",
+    "level": 1,
+    "text": "Why do Frodo and Sam cross the Dead Marshes?",
+    "alternatives": {
+      "1": "The Black Gate is too well watched",
+      "2": "The southern tunnel is blocked",
+      "3": "Gollum tricks them",
+      "4": "Frodo gets lost"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "movies-l1-q053",
+    "topic": "movies",
+    "level": 1,
+    "text": "Why did Sauron let the Rings of Power be made?",
+    "alternatives": {
+      "1": "To gain power",
+      "2": "He was forced to",
+      "3": "To become immortal",
+      "4": "He wanted fame and legacy"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "movies-l1-q054",
+    "topic": "movies",
+    "level": 1,
+    "text": "Why is the big party held in the Shire?",
+    "alternatives": {
+      "1": "A send-off for Frodo",
+      "2": "Gandalf turned 111",
+      "3": "A local anniversary",
+      "4": "Bilbo's birthday"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "movies-l1-q055",
+    "topic": "movies",
+    "level": 1,
+    "text": "Roughly how old is Gollum?",
+    "alternatives": {
+      "1": "∿400 years older than Bilbo",
+      "2": "As old as Gimli",
+      "3": "Older than Elrond",
+      "4": "∿111 years old"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "movies-l1-q056",
+    "topic": "movies",
+    "level": 1,
+    "text": "When did The Fellowship of the Ring premiere?",
+    "alternatives": {
+      "1": "1997",
+      "2": "2008",
+      "3": "2003",
+      "4": "2001"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "movies-l1-q057",
+    "topic": "movies",
+    "level": 1,
+    "text": "What are the Uruk-hai?",
+    "alternatives": {
+      "1": "An orc breed created by Saruman",
+      "2": "A dwarf clan",
+      "3": "Sauron's warriors from the South",
+      "4": "A race of goblins"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "movies-l1-q058",
+    "topic": "movies",
+    "level": 1,
+    "text": "What is NOT true about the One Ring? Its wearer...",
+    "alternatives": {
+      "1": "Ages more slowly",
+      "2": "Can turn invisible",
+      "3": "Becomes invulnerable to fire",
+      "4": "Eventually gets corrupted"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "movies-l1-q059",
+    "topic": "movies",
+    "level": 1,
+    "text": "Who composed the soundtrack to the LOTR trilogy?",
+    "alternatives": {
+      "1": "Hans Zimmer",
+      "2": "John Williams",
+      "3": "Howard Shore",
+      "4": "James Horner"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "movies-l1-q060",
+    "topic": "movies",
+    "level": 1,
+    "text": "What real-world conflict heavily inspired Tolkien's Mordor?",
+    "alternatives": {
+      "1": "World War I",
+      "2": "The Crusades",
+      "3": "The American Civil War",
+      "4": "The Cold War"
+    },
+    "correctChoice": 1
+  },
+  {
+    "id": "movies-l1-q061",
+    "topic": "movies",
+    "level": 1,
+    "text": "How many Oscars did The Return of the King win?",
+    "alternatives": {
+      "1": "1",
+      "2": "5",
+      "3": "11",
+      "4": "22"
+    },
+    "correctChoice": 3
+  },
+  {
+    "id": "movies-l1-q062",
+    "topic": "movies",
+    "level": 1,
+    "text": "What does Gollum often call the One Ring?",
+    "alternatives": {
+      "1": "His treasure",
+      "2": "His precious",
+      "3": "His ring",
+      "4": "His cloak"
+    },
+    "correctChoice": 2
+  },
+  {
+    "id": "movies-l1-q063",
+    "topic": "movies",
+    "level": 1,
+    "text": "Who is the \"Lord\" in The Lord of the Rings?",
+    "alternatives": {
+      "1": "Witch-king",
+      "2": "Saruman",
+      "3": "Gollum",
+      "4": "Sauron"
+    },
+    "correctChoice": 4
+  },
+  {
+    "id": "movies-l1-q064",
+    "topic": "movies",
+    "level": 1,
+    "text": "Who lights the beacon at Minas Tirith?",
+    "alternatives": {
+      "1": "Gandalf",
+      "2": "A Gondor guard",
+      "3": "Merry",
+      "4": "Pippin"
+    },
+    "correctChoice": 4
+  },
+
+
+
+
+
+  {
+    "id": "movies-l1-q065",
+    "topic": "movies",
+    "level": 1,
+    "text": "Roughly how old is Gollum?",
+    "alternatives": {
+      "1": "Twice Bilbo's age",
+      "2": "Half Elrond's age",
+      "3": "Older than Saruman",
+      "4": "∿Six times that of Aragorn"
+    },
+    "correctChoice": 4,
+    "tag": "elite"
+  },
+  {
+    "id": "movies-l1-q066",
     "topic": "movies",
     "level": 1,
     "text": "Why did Boromir originally travel to Rivendell?",
@@ -385,7 +865,7 @@
     "tag": "elite"
   },
   {
-    "id": "movies-l1-q030",
+    "id": "movies-l1-q067",
     "topic": "movies",
     "level": 1,
     "text": "Why does Gondor have a Steward instead of a King?",
@@ -399,7 +879,7 @@
     "tag": "elite"
   },
   {
-    "id": "movies-l1-q031",
+    "id": "movies-l1-q068",
     "topic": "movies",
     "level": 1,
     "text": "What is the actual name of the fortress at Helm's Deep?",
@@ -413,7 +893,7 @@
     "tag": "elite"
   },
   {
-    "id": "movies-l1-q032",
+    "id": "movies-l1-q069",
     "topic": "movies",
     "level": 1,
     "text": "How did Thorin earn the nickname \"Oakenshield\"?",
@@ -424,6 +904,174 @@
       "4": "He carries a shield made of oak"
     },
     "correctChoice": 2,
+    "tag": "elite"
+  },
+  {
+    "id": "movies-l1-q070",
+    "topic": "movies",
+    "level": 1,
+    "text": "Why does Halbrand play along with Celebrimbor?",
+    "alternatives": {
+      "1": "To win a seat on the council",
+      "2": "To convince a reluctant smith",
+      "3": "To steer the crafting",
+      "4": "Because Celebrimbor wants to forge amulets"
+    },
+    "correctChoice": 3,
+    "tag": "elite"
+  },
+  {
+    "id": "movies-l1-q071",
+    "topic": "movies",
+    "level": 1,
+    "text": "Why do the Rohirrim ride out from Edoras to Helm's Deep?",
+    "alternatives": {
+      "1": "To outflank Isengard",
+      "2": "To retreat from Dunland",
+      "3": "To help Gondor",
+      "4": "To shelter their people"
+    },
+    "correctChoice": 4,
+    "tag": "elite"
+  },
+  {
+    "id": "movies-l1-q072",
+    "topic": "movies",
+    "level": 1,
+    "text": "What do Thorin and Thranduil clash over at Erebor?",
+    "alternatives": {
+      "1": "A throne",
+      "2": "Honor",
+      "3": "Rings",
+      "4": "A promise"
+    },
+    "correctChoice": 4,
+    "tag": "elite"
+  },
+  {
+    "id": "movies-l1-q073",
+    "topic": "movies",
+    "level": 1,
+    "text": "Why does young Galadriel refuse to stop hunting Sauron?",
+    "alternatives": {
+      "1": "She is mocked by Adar",
+      "2": "She thinks he holds elves captive",
+      "3": "She believes he is a threat",
+      "4": "She seeks his rings"
+    },
+    "correctChoice": 3,
+    "tag": "elite"
+  },
+  {
+    "id": "movies-l1-q074",
+    "topic": "movies",
+    "level": 1,
+    "text": "Which name did Sauron use as a disguise?",
+    "alternatives": {
+      "1": "Alatar",
+      "2": "Eönwë",
+      "3": "Annatar",
+      "4": "Gorathan"
+    },
+    "correctChoice": 3,
+    "tag": "elite"
+  },
+  {
+    "id": "movies-l1-q075",
+    "topic": "movies",
+    "level": 1,
+    "text": "Who makes the first move at the Battle of Helm's Deep?",
+    "alternatives": {
+      "1": "An Elf soldier",
+      "2": "Haldir",
+      "3": "A Rohan archer",
+      "4": "An Uruk-hai archer"
+    },
+    "correctChoice": 3,
+    "tag": "elite"
+  },
+  {
+    "id": "movies-l1-q076",
+    "topic": "movies",
+    "level": 1,
+    "text": "What did the Prancing Pony's innkeeper forget?",
+    "alternatives": {
+      "1": "To lock the doors",
+      "2": "To hide Frodo's name",
+      "3": "To warn Aragorn",
+      "4": "To send Gandalf's letter"
+    },
+    "correctChoice": 4,
+    "tag": "elite"
+  },
+  {
+    "id": "movies-l1-q077",
+    "topic": "movies",
+    "level": 1,
+    "text": "Where is Frodo's group first forced to fight the Nazgûl?",
+    "alternatives": {
+      "1": "The Prancing Pony",
+      "2": "Bucklebury Ferry",
+      "3": "Weathertop",
+      "4": "Farmer Maggot's farm"
+    },
+    "correctChoice": 3,
+    "tag": "elite"
+  },
+  {
+    "id": "movies-l1-q078",
+    "topic": "movies",
+    "level": 1,
+    "text": "What deals the coup de grâce to Isengard?",
+    "alternatives": {
+      "1": "Orthanc is breached",
+      "2": "Fire in the deep pits",
+      "3": "Human reinforcements",
+      "4": "Flooding from a broken dam"
+    },
+    "correctChoice": 4,
+    "tag": "elite"
+  },
+  {
+    "id": "movies-l1-q079",
+    "topic": "movies",
+    "level": 1,
+    "text": "What's a Palantír famous for NOT being able to do?",
+    "alternatives": {
+      "1": "Communicate with another stone",
+      "2": "Show distant lands",
+      "3": "Show lies",
+      "4": "Drain the user's mind"
+    },
+    "correctChoice": 3,
+    "tag": "elite"
+  },
+  {
+    "id": "movies-l1-q080",
+    "topic": "movies",
+    "level": 1,
+    "text": "What is Orthanc, the tower in Isengard, famous for?",
+    "alternatives": {
+      "1": "Time is frozen inside it",
+      "2": "Its unbreakable stone",
+      "3": "It boosts its owner's power",
+      "4": "An orb that sees the future"
+    },
+    "correctChoice": 2,
+    "tag": "elite"
+  },
+  {
+    "id": "movies-l1-q081",
+    "topic": "movies",
+    "level": 1,
+    "text": "Why does Bilbo hide at the start of The Fellowship of the Ring?",
+    "alternatives": {
+      "1": "Greedy relatives",
+      "2": "A promise to Gandalf",
+      "3": "Annoying niece",
+      "4": "Previous Ring owners"
+    },
+    "correctChoice": 1,
     "tag": "elite"
   }
 ]

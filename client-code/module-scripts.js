@@ -352,6 +352,13 @@ if (emailAuthModal) {
     let emailAuthUser = null;
     let sendingVerificationEmail = false;
     let usedDefaultVerificationHandler = false;
+    const verificationSentMessage = (email, usedDefault) =>
+    `A verification link has been sent to ${email}. ` +
+    (usedDefault
+      ? 'Verify your email, return to this site, then sign in to play.'
+      : 'Verify your email, then sign in to play. Good luck!') +
+      ' No email? Check your spam or junk folder.';
+
     try {
       if (emailAuthMode === 'signin') {
         emailVerificationAuthTransition = true;
@@ -366,13 +373,10 @@ if (emailAuthModal) {
           updateEmailAuthUI();
           emailAuthSubmit.value = 'Sign In';
           emailAuthSubmit.disabled = false;
-          if (typeof window.showGlobalInfo === 'function') {
-            window.showGlobalInfo(
-              usedDefaultVerificationHandler
-                ? `A verification link has been sent to ${email}. Verify your email, return to this site, then sign in to play.`
-                : `A verification link has been sent to ${email}. Verify your email, then sign in to play. Good luck!`
-            );
-          }
+            if (typeof window.showGlobalInfo === 'function') {
+              window.showGlobalInfo(verificationSentMessage(email, usedDefaultVerificationHandler));
+            }
+          
           return;
         }
       } else {
@@ -387,13 +391,9 @@ if (emailAuthModal) {
         updateEmailAuthUI();
         emailAuthSubmit.value = 'Sign In';
         emailAuthSubmit.disabled = false;
-        if (typeof window.showGlobalInfo === 'function') {
-          window.showGlobalInfo(
-            usedDefaultVerificationHandler
-              ? `A verification link has been sent to ${email}. Verify your email, return to this site, then sign in to play.`
-              : `A verification link has been sent to ${email}. Verify your email, then sign in to play. Good luck!`
-          );
-        }
+          if (typeof window.showGlobalInfo === 'function') {
+            window.showGlobalInfo(verificationSentMessage(email, usedDefaultVerificationHandler));
+          }
         return;
       }
       emailAuthModal.style.display = 'none';
@@ -436,6 +436,17 @@ if (emailAuthModal) {
   });
 }
 
+// Message on the old tab after verifying from the email inbox
+const authChannel = (() => { try { return new BroadcastChannel('qg-auth'); } catch (e) { return null; } })();
+if (authChannel) {
+  authChannel.onmessage = (ev) => {
+    if (!currentUser && ev.data && ev.data.type === 'email-verified' && typeof window.showGlobalInfo === 'function') {
+        window.showGlobalInfo('Email verified! You can sign in here, or continue in the other tab.');
+    }
+  };
+  
+}
+
 if (new URLSearchParams(window.location.search).get('emailVerified') === '1') {
   const cleanUrl = new URL(window.location.href);
   cleanUrl.searchParams.delete('emailVerified');
@@ -450,7 +461,9 @@ if (new URLSearchParams(window.location.search).get('emailVerified') === '1') {
   } else {
     showVerifiedNotice();
   }
+  authChannel?.postMessage({ type: 'email-verified' });
 }
+
 
 // ── LOGIN HANDLER (Popup-Blocker Safe) ──
 async function handleLogin(provider) {
