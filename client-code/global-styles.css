@@ -816,11 +816,6 @@ a.button-link:hover {
   animation: rowFadeIn 1s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* Attempt to make lb-column/board/paint-glitch stop jumping at the bottom of list */
- .lb-scroll {
-  transform: translateZ(0);
-}
-
 /* The Trophy fades in if .lb-scroll is scrollTop */
 @keyframes trophyIn {
   from { opacity: 0; }
