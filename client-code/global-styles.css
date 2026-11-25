@@ -813,7 +813,7 @@ a.button-link:hover {
 }
 /* Applicera animationen på alla kolumner i leaderboarden */
 .leaderboard-overlay .lb-column {
-  animation: rowFadeIn 1s cubic-bezier(0.25, 1, 0.5, 1);
+  animation: rowFadeIn 0.6s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 /* The Trophy fades in if .lb-scroll is scrollTop */
