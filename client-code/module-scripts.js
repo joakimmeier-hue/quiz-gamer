@@ -2740,6 +2740,7 @@ if (location.hash === '#leaderboard') {
         img.removeAttribute('srcset'); // Webflow srcset would override src
         img.removeAttribute('sizes');
         img.src = entry.profilePicUrl;
+        img.loading = 'eager';
         img.alt = entry.username || '';
       }
       cells[2].textContent = entry.username || '-';
