@@ -1840,10 +1840,37 @@ document.addEventListener("visibilitychange", function() {
       audio.dataset.wasPlaying = "false";
     }
     document.querySelectorAll('video').forEach(v => {
-      if (v.hasAttribute('autoplay')) v.play().catch(() => {});
+      // decoder/network may have died while the tab was in the background
+      if (v.error || v.readyState === 0 || v.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+        v.load();
+      }
+      if (v.hasAttribute('autoplay')) v.play().catch(err => console.warn('video resume failed:', err));
     });
   }
 });
+// ── STRÖMSPAR-FUNKTIONER (VIDEO) ──────────────────────────────────────
+const powerSaveVideos = () => {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const video = entry.target;
+      if (entry.isIntersecting) { video.play().catch(() => {}); } 
+      else { video.pause(); }
+    });
+  }, { threshold: 0.1 }); 
+  document.querySelectorAll('video').forEach(v => observer.observe(v));
+};
+if (document.readyState === 'complete') { powerSaveVideos(); } 
+else { window.addEventListener('load', powerSaveVideos); }
+setInterval(() => {
+  document.querySelectorAll('video').forEach(v => {
+    const style = window.getComputedStyle(v);
+    const isHidden = (v.offsetWidth === 0 && v.offsetHeight === 0) || style.opacity === '0' || style.visibility === 'hidden';   
+    if (v.error) { v.load(); }                 
+    if (isHidden && !v.paused) { v.pause(); } 
+    else if (!isHidden && v.paused && v.hasAttribute('autoplay')) { v.play().catch(() => {}); }
+  });
+}, 6000); 
+
 
 // This covers a tab that stayed alive but was hidden for a long time
 let hiddenAt = 0;
@@ -2113,28 +2140,6 @@ document.addEventListener("keydown", function(e) {
     welcomeTarget.click();
   }
 });
-
-// ── STRÖMSPAR-FUNKTIONER (VIDEO) ──────────────────────────────────────
-const powerSaveVideos = () => {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      const video = entry.target;
-      if (entry.isIntersecting) { video.play().catch(() => {}); } 
-      else { video.pause(); }
-    });
-  }, { threshold: 0.9 }); 
-  document.querySelectorAll('video').forEach(v => observer.observe(v));
-};
-if (document.readyState === 'complete') { powerSaveVideos(); } 
-else { window.addEventListener('load', powerSaveVideos); }
-setInterval(() => {
-  document.querySelectorAll('video').forEach(v => {
-    const style = window.getComputedStyle(v);
-    const isHidden = (v.offsetWidth === 0 && v.offsetHeight === 0) || style.opacity === '0' || style.visibility === 'hidden';                    
-    if (isHidden && !v.paused) { v.pause(); } 
-    else if (!isHidden && v.paused && v.hasAttribute('autoplay')) { v.play().catch(() => {}); }
-  });
-}, 6000); 
 
 // ───────── FOCUS OVERLAYS ON LOBBY ─────────
 (function() {
