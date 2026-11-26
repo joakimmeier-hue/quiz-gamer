@@ -1861,8 +1861,8 @@ const powerSaveVideos = () => {
 };
 if (document.readyState === 'complete') { powerSaveVideos(); } 
 else { window.addEventListener('load', powerSaveVideos); }
+
 setInterval(() => {
-  
   // PAUSES VIDS COVERED BY FULLSCREEN OBERLAYS. videos outside an open fullscreen overlay are covered by it, so treat them as hidden
   const overlaySelectors = ['.about-overlay', '.inventory-overlay'];
   const isShown = (el) => {
