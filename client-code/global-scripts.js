@@ -15,7 +15,7 @@ window.addEventListener('keydown', (e) => {
 // Turn off Lottie SUB-frame render, 30FPS stays 30, easier on CPUs
 // Exception list: these get sub-frame (smooth) rendering only on screens wider than 991px
 (function () {
-  var SMOOTH_SELECTORS = ['.snowfall-loop'];   // add more classes here
+  var SMOOTH_SELECTORS = ['.snowfall-loop, .focus'];   // add more classes here
   var wide = window.matchMedia('(min-width: 992px)');
 
   function wantsSmooth(a) {
