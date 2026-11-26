@@ -1862,14 +1862,26 @@ const powerSaveVideos = () => {
 if (document.readyState === 'complete') { powerSaveVideos(); } 
 else { window.addEventListener('load', powerSaveVideos); }
 setInterval(() => {
+  
+  // PAUSES VIDS COVERED BY FULLSCREEN OBERLAYS. videos outside an open fullscreen overlay are covered by it, so treat them as hidden
+  const overlaySelectors = ['.about-overlay', '.inventory-overlay'];
+  const isShown = (el) => {
+    const s = window.getComputedStyle(el);
+    return s.display !== 'none' && s.visibility !== 'hidden' && parseFloat(s.opacity) > 0;
+  };
+  const openOverlays = overlaySelectors
+    .map(sel => document.querySelector(sel))
+    .filter(el => el && isShown(el));
+
   document.querySelectorAll('video').forEach(v => {
     const style = window.getComputedStyle(v);
-    const isHidden = (v.offsetWidth === 0 && v.offsetHeight === 0) || style.opacity === '0' || style.visibility === 'hidden';   
+    const coveredByOverlay = openOverlays.length > 0 && !openOverlays.some(o => o.contains(v));
+    const isHidden = (v.offsetWidth === 0 && v.offsetHeight === 0) || style.opacity === '0' || style.visibility === 'hidden' || coveredByOverlay;   
     if (v.error) { v.load(); }                 
     if (isHidden && !v.paused) { v.pause(); } 
     else if (!isHidden && v.paused && v.hasAttribute('autoplay')) { v.play().catch(() => {}); }
   });
-}, 6000); 
+}, 2000);
 
 
 // This covers a tab that stayed alive but was hidden for a long time
