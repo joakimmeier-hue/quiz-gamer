@@ -142,7 +142,7 @@ const args = new Set(process.argv.slice(2));
 function genName() {
   const a = pick(WORDS_A), b = pick(WORDS_B);
   const n = pick([1, 2, 2, 4]); // one, two or four digits
-  const d = n === 1 ? String(rint(1, 9)) : n === 2 ? String(rint(10, 99)) : String(rint(1970, 2012));
+  const d = n === 1 ? String(rint(1, 9)) : n === 2 ? String(rint(10, 99)) : String(rint(1961, 2012));
   const sep = pick(["", "-", "_"]);
   const name = pick([
     () => a + b, () => a + "_" + b, () => a + "-" + b, () => a + " " + b,
