@@ -1875,8 +1875,8 @@ const isShown = (el) => {
 let lastOpenKey = '';
 const syncVideos = () => {
   // all matching overlays, not just the first one
-  const openOverlays = [...document.querySelectorAll(overlaySelectors.join(','))].filter(isShown);
-
+const openOverlays = [...document.querySelectorAll(overlaySelectors.join(','))]
+  .filter(o => isShown(o) && [...o.querySelectorAll('video')].some(v => v.offsetWidth > 0 && v.offsetHeight > 0));
   if (VIDEO_DEBUG) {
     const key = openOverlays.map(o => o.className).join('|');
     if (key !== lastOpenKey) { lastOpenKey = key; console.log('[video] overlays counted as open:', openOverlays); }
