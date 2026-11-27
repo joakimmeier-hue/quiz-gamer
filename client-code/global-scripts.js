@@ -1881,7 +1881,7 @@ setInterval(() => {
     if (isHidden && !v.paused) { v.pause(); } 
     else if (!isHidden && v.paused && v.hasAttribute('autoplay')) { v.play().catch(() => {}); }
   });
-}, 2000); */
+}, 2000); 
 
 
 // This covers a tab that stayed alive but was hidden for a long time
@@ -1891,7 +1891,7 @@ document.addEventListener('visibilitychange', () => {
   if (hiddenAt && Date.now() - hiddenAt > 30 * 60 * 1000 && !isGamePage && !isReviewPage) {
     location.reload();   // a fresh load beats a half-asleep page
   }
-});
+});*/
 
 // ────────────────── REUSABLE TRANSITION COLOR OVERLAY & LOTTIE MANAGER ────────────────────────────────
  // LOTTIE PLAYER NEEDED FOR TRANSITION LOADING SCREEN
