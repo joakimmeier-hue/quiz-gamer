@@ -1848,7 +1848,10 @@ document.addEventListener("visibilitychange", function() {
     });
   }
 });
-/* // ── STRÖMSPAR-FUNKTIONER (VIDEO) ──────────────────────────────────────
+
+// ── STRÖMSPAR-FUNKTIONER (VIDEO) ──────────────────────────────────────
+const VIDEO_DEBUG = true;   // set to false when done testing
+
 const powerSaveVideos = () => {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -1862,26 +1865,46 @@ const powerSaveVideos = () => {
 if (document.readyState === 'complete') { powerSaveVideos(); } 
 else { window.addEventListener('load', powerSaveVideos); }
 
-setInterval(() => {
-  // PAUSES VIDS COVERED BY FULLSCREEN OBERLAYS. videos outside an open fullscreen overlay are covered by it, so treat them as hidden
-  const overlaySelectors = ['.about-overlay', '.inventory-overlay'];
-  const isShown = (el) => {
-    const s = window.getComputedStyle(el);
-    return s.display !== 'none' && s.visibility !== 'hidden' && parseFloat(s.opacity) > 0;
-  };
-  const openOverlays = overlaySelectors
-    .map(sel => document.querySelector(sel))
-    .filter(el => el && isShown(el));
+// Pauses videos covered by an open fullscreen overlay, resumes them as soon as it closes
+const overlaySelectors = ['.about-overlay', '.inventory-overlay'];
+const isShown = (el) => {
+  const s = window.getComputedStyle(el);
+  return s.display !== 'none' && s.visibility !== 'hidden' && parseFloat(s.opacity) > 0;
+};
+
+let lastOpenKey = '';
+const syncVideos = () => {
+  // all matching overlays, not just the first one
+  const openOverlays = [...document.querySelectorAll(overlaySelectors.join(','))].filter(isShown);
+
+  if (VIDEO_DEBUG) {
+    const key = openOverlays.map(o => o.className).join('|');
+    if (key !== lastOpenKey) { lastOpenKey = key; console.log('[video] overlays counted as open:', openOverlays); }
+  }
 
   document.querySelectorAll('video').forEach(v => {
     const style = window.getComputedStyle(v);
     const coveredByOverlay = openOverlays.length > 0 && !openOverlays.some(o => o.contains(v));
-    const isHidden = (v.offsetWidth === 0 && v.offsetHeight === 0) || style.opacity === '0' || style.visibility === 'hidden' || coveredByOverlay;   
-    if (v.error) { v.load(); }                 
-    if (isHidden && !v.paused) { v.pause(); } 
+    const isHidden = (v.offsetWidth === 0 && v.offsetHeight === 0) || style.opacity === '0' || style.visibility === 'hidden' || coveredByOverlay;
+    if (v.error) { v.load(); }
+    if (isHidden && !v.paused) { v.pause(); }
     else if (!isHidden && v.paused && v.hasAttribute('autoplay')) { v.play().catch(() => {}); }
   });
-}, 2000); 
+};
+
+// Re-check right after anything that can open or close an overlay (one check per frame at most)
+let syncQueued = false;
+const queueSync = () => {
+  if (syncQueued) return;
+  syncQueued = true;
+  requestAnimationFrame(() => { syncQueued = false; syncVideos(); });
+};
+['click', 'transitionend', 'animationend'].forEach(t => document.addEventListener(t, queueSync, true));
+const overlayWatcher = new MutationObserver(queueSync);
+document.querySelectorAll(overlaySelectors.join(',')).forEach(o => {
+  overlayWatcher.observe(o, { attributes: true, attributeFilter: ['class', 'style'] });
+});
+setInterval(syncVideos, 1000);   // fallback only
 
 
 // This covers a tab that stayed alive but was hidden for a long time
@@ -1891,7 +1914,7 @@ document.addEventListener('visibilitychange', () => {
   if (hiddenAt && Date.now() - hiddenAt > 30 * 60 * 1000 && !isGamePage && !isReviewPage) {
     location.reload();   // a fresh load beats a half-asleep page
   }
-});*/
+});
 
 // ────────────────── REUSABLE TRANSITION COLOR OVERLAY & LOTTIE MANAGER ────────────────────────────────
  // LOTTIE PLAYER NEEDED FOR TRANSITION LOADING SCREEN
