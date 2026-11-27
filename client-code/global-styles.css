@@ -599,8 +599,8 @@ a.button-link:hover {
   opacity: 0;
   transform: translateY(-40%);
   transition: max-height 0s 0.3s,   /* collapses after the fade-out */
-              opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1),
-              transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+              opacity 0.3s cubic-bezier ease-out,
+              transform 0.3s cubic-bezier ease-out;
 }
 
 .dropdown-gllist.w--open {
@@ -610,8 +610,8 @@ a.button-link:hover {
   opacity: 1;
   transform: translateY(0%);
   transition: max-height 0s,        /* opens instantly, so it's clickable at once */
-              opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1),
-              transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+              opacity 0.3s cubic-bezier ease-out,
+              transform 0.3s cubic-bezier ease-out;
 }
 
 /* SQUARE BASE TRANSITIONS */
@@ -665,6 +665,7 @@ a.button-link:hover {
 .dropdown-toggle-lvl > .game-level-option {
   justify-content: center;
 }
+
 /* Unlocked tier (T1 and any later one) selected at the top: no lock slot */
 .dropdown-toggle-lvl > .game-level-option .lock-game.is-open {
   display: none !important;

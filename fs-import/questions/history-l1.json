@@ -551,10 +551,10 @@
     "level": 1,
     "text": "Cortés conquered the Aztecs with ∿500 men. Besides smallpox, who helped him most?",
     "alternatives": {
-      "1": "Local peoples who hated the Aztecs",
+      "1": "Local peoples",
       "2": "The Vikings",
       "3": "The Mongols",
-      "4": "Domesticated llamas"
+      "4": "Wild llamas"
     },
     "correctChoice": 1
   },
