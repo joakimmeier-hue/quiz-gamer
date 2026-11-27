@@ -435,6 +435,10 @@ body .games-grid-clip.is-skewed {
   pointer-events: auto;
 }
 
+.inventory-overlay .inventory-grid.stash {
+overflow-x: hidden;
+}
+
 /* ── SCROLL-PULSE SYSTEM FOR BUTTONS ── */
 .button-wrapper .button,
 .button-wrapper .button-link {
