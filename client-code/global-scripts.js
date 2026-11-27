@@ -1867,13 +1867,15 @@ else { window.addEventListener('load', powerSaveVideos); }
 
 // Pauses videos covered by an open fullscreen overlay, resumes them as soon as it closes
 const overlaySelectors = ['.about-overlay', '.inventory-overlay'];
+const OVERLAY_OPEN_OPACITY = 0.7;   // below this, the overlay no longer counts as covering the page
 const isShown = (el) => {
   const s = window.getComputedStyle(el);
-  return s.display !== 'none' && s.visibility !== 'hidden' && parseFloat(s.opacity) > 0;
+  return s.display !== 'none' && s.visibility !== 'hidden' && parseFloat(s.opacity) > OVERLAY_OPEN_OPACITY;
 };
 
 let lastOpenKey = '';
 const syncVideos = () => {
+    if (document.hidden) return;   // don't resume videos while the tab is in the background
   // all matching overlays, not just the first one
 const openOverlays = [...document.querySelectorAll(overlaySelectors.join(','))]
   .filter(o => isShown(o) && [...o.querySelectorAll('video')].some(v => v.offsetWidth > 0 && v.offsetHeight > 0));
@@ -1892,14 +1894,21 @@ const openOverlays = [...document.querySelectorAll(overlaySelectors.join(','))]
   });
 };
 
-// Re-check right after anything that can open or close an overlay (one check per frame at most)
-let syncQueued = false;
+// After a click or change, re-check every 50ms for 1.5s so we catch the moment the fade crosses the threshold
+let burstUntil = 0, burstTimer = null;
 const queueSync = () => {
-  if (syncQueued) return;
-  syncQueued = true;
-  requestAnimationFrame(() => { syncQueued = false; syncVideos(); });
+  burstUntil = Math.max(burstUntil, performance.now() + 1500);
+  if (burstTimer) return;
+  const tick = () => {
+    syncVideos();
+    burstTimer = performance.now() < burstUntil ? setTimeout(tick, 50) : null;
+  };
+  tick();
 };
-['click', 'transitionend', 'animationend'].forEach(t => document.addEventListener(t, queueSync, true));
+document.addEventListener('click', queueSync, true);
+['transitionend', 'animationend'].forEach(t => document.addEventListener(t, (e) => {
+  if (e.target instanceof Element && e.target.closest(overlaySelectors.join(','))) queueSync();
+}, true));
 const overlayWatcher = new MutationObserver(queueSync);
 document.querySelectorAll(overlaySelectors.join(',')).forEach(o => {
   overlayWatcher.observe(o, { attributes: true, attributeFilter: ['class', 'style'] });
