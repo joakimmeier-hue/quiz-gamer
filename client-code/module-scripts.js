@@ -1260,10 +1260,21 @@ if (option && !isGameSide) {
 document.addEventListener('DOMContentLoaded', () => {
 const trigger = document.querySelector('.welcome-text-container');
 const inventoryArrow = document.querySelector('.inv-arrow-lobby');
-if (!trigger || !inventoryArrow) return;
+if (!inventoryArrow) return;
+
+// Intro already played earlier in this tab -> arrow is just there, no delay
+let introSeen = false;
+try { introSeen = sessionStorage.getItem('invArrowIntroSeen') === '1'; } catch (e) {}
+if (introSeen) {
+  inventoryArrow.classList.add('is-visible');
+  return;
+}
+
+if (!trigger) return;
 
 inventoryArrow.classList.remove('is-visible');
 trigger.addEventListener('click', () => {
+  try { sessionStorage.setItem('invArrowIntroSeen', '1'); } catch (e) {}
   setTimeout(() => inventoryArrow.classList.add('is-visible'), 7400);
 }, { once: true });
 });
