@@ -1107,9 +1107,9 @@ document.addEventListener("DOMContentLoaded", function() {
     document.body.classList.add('game-finished');
   }
 
-  const scrollDuration = 400; 
+  const scrollDuration = 260; 
   const topOffsetPercent = window.innerWidth < 600 ? 0.16 : 0.20;
-  const animationDelay = 450;  // Väntar tills keyframe-animationen är klar
+  const animationDelay = 310;  // Väntar tills keyframe-animationen är klar
 
   const alternativeRows = document.querySelectorAll('.alternative-row');
 
