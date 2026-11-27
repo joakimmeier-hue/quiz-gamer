@@ -1848,7 +1848,7 @@ document.addEventListener("visibilitychange", function() {
     });
   }
 });
-// ── STRÖMSPAR-FUNKTIONER (VIDEO) ──────────────────────────────────────
+/* // ── STRÖMSPAR-FUNKTIONER (VIDEO) ──────────────────────────────────────
 const powerSaveVideos = () => {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -1881,7 +1881,7 @@ setInterval(() => {
     if (isHidden && !v.paused) { v.pause(); } 
     else if (!isHidden && v.paused && v.hasAttribute('autoplay')) { v.play().catch(() => {}); }
   });
-}, 2000);
+}, 2000); */
 
 
 // This covers a tab that stayed alive but was hidden for a long time
