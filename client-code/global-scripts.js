@@ -1850,7 +1850,6 @@ document.addEventListener("visibilitychange", function() {
 });
 
 // ── STRÖMSPAR-FUNKTIONER (VIDEO) ──────────────────────────────────────
-const VIDEO_DEBUG = true;   // set to false when done testing
 
 const powerSaveVideos = () => {
   const observer = new IntersectionObserver((entries) => {
@@ -1873,16 +1872,11 @@ const isShown = (el) => {
   return s.display !== 'none' && s.visibility !== 'hidden' && parseFloat(s.opacity) > OVERLAY_OPEN_OPACITY;
 };
 
-let lastOpenKey = '';
 const syncVideos = () => {
     if (document.hidden) return;   // don't resume videos while the tab is in the background
   // all matching overlays, not just the first one
 const openOverlays = [...document.querySelectorAll(overlaySelectors.join(','))]
   .filter(o => isShown(o) && [...o.querySelectorAll('video')].some(v => v.offsetWidth > 0 && v.offsetHeight > 0));
-  if (VIDEO_DEBUG) {
-    const key = openOverlays.map(o => o.className).join('|');
-    if (key !== lastOpenKey) { lastOpenKey = key; console.log('[video] overlays counted as open:', openOverlays); }
-  }
 
   document.querySelectorAll('video').forEach(v => {
     const style = window.getComputedStyle(v);
