@@ -599,8 +599,8 @@ a.button-link:hover {
   opacity: 0;
   transform: translateY(-40%);
   transition: max-height 0s 0.3s,   /* collapses after the fade-out */
-              opacity 0.3s cubic-bezier ease-out,
-              transform 0.3s cubic-bezier ease-out;
+              opacity 0.3s ease-out,
+              transform 0.3s ease-out;
 }
 
 .dropdown-gllist.w--open {
@@ -610,8 +610,8 @@ a.button-link:hover {
   opacity: 1;
   transform: translateY(0%);
   transition: max-height 0s,        /* opens instantly, so it's clickable at once */
-              opacity 0.3s cubic-bezier ease-out,
-              transform 0.3s cubic-bezier ease-out;
+              opacity 0.3s ease-out,
+              transform 0.3s ease-out;
 }
 
 /* SQUARE BASE TRANSITIONS */
